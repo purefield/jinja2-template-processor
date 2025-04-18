@@ -1,0 +1,4 @@
+---
+hosts:{% for host in hosts.keys() %}
+  - name: {{ host }}{%- if network.primary.bond %}
+    config: {% include 'sub-template.j2' %}{% endif %}{% endfor %}
