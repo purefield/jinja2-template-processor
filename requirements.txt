@@ -1,0 +1,3 @@
+PyYAML>=5.3
+Jinja2>=3.0
+yamllint>=1.26

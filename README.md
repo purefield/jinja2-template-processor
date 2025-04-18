@@ -1,4 +1,15 @@
 # python jinja2-template-processor
+## YAML Jinja Template Processor Setup
+This script renders Jinja2 templates using YAML data and validates the result with `yamllint`.
+
+## 🧰 Requirements
+- Python 3.6+
+- pip (Python package manager)
+
+## 📦 Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
 ## Render agent-config.yaml
 ```bash
