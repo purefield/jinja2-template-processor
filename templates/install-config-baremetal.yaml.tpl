@@ -33,7 +33,7 @@ networking:
   networkType: {{ network.primary.type|default("OVNKubernetes", true) }}
   clusterNetwork:
     - cidr: {{ network.cluster.subnet }}
-      hostPrefix: {{ network.cluster.hostPrefix }}
+      hostPrefix: {{ network.cluster.hostPrefix|default(23, true) }}
   machineNetwork:
     - cidr: {{ network.primary.subnet }}
   serviceNetwork:

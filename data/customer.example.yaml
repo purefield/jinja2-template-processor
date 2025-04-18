@@ -17,9 +17,8 @@ network:
   primary:
     bond: False
     vlan: False
-    prefix: 24
     gateway: 10.0.0.1
-    network: 10.0.0.0
+    subnet: 10.0.0.0/24
     vips:
       api:  [10.0.0.2]
       apps: [10.0.0.3]

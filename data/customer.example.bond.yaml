@@ -24,6 +24,7 @@ network:
       apps: [10.0.0.3]
   cluster:
     subnet: 10.1.0.0/16
+    hostPrefix: 23
   service:
     subnet: 10.2.0.0/16
 hosts:
