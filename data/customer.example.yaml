@@ -30,7 +30,7 @@ hosts:
   control01.base.domain:
     role: control
     storage:
-      os: wwn01
+      os: {wwn: wwn01}
     network:
       interfaces:
         - name: eth0
@@ -49,7 +49,7 @@ hosts:
   control02.base.domain:
     role: control
     storage:
-      os: wwn02
+      os: {wwn: wwn02}
     network:
       interfaces:
         - name: eth0
@@ -68,7 +68,7 @@ hosts:
   control03.base.domain:
     role: control
     storage:
-      os: wwn03
+      os: {wwn: wwn03}
     network:
       interfaces:
         - name: eth0
@@ -87,7 +87,7 @@ hosts:
   worker01.base.domain:
     role: worker
     storage:
-      os: wwn13
+      os: {wwn: wwn13}
     network:
       interfaces:
         - name: eth0
@@ -106,7 +106,7 @@ hosts:
   worker02.base.domain:
     role: worker
     storage:
-      os: wwn14
+      os: {wwn: wwn14}
     network:
       interfaces:
         - name: eth0
