@@ -1,0 +1,124 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.18.7
+  name: cluster
+  sshKey: 2023/acm/id_rsa.pub
+network:
+  domain: base.domain
+  trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
+  proxy:
+    httpProxy:  http://proxy.company.tld:8080/
+    httpsProxy: http://proxy.company.tld:8080/
+  ntpservers:  [10.0.0.100]
+  nameservers: [10.0.0.100]
+  dnsResolver:
+    search: ["example.com","foo.com"]
+  primary:
+    bond: 802.3ad
+    vlan: 1234
+    gateway: 10.0.0.1
+    subnet:  10.0.0.0/24
+    vips:
+      api:  [10.0.0.2]
+      apps: [10.0.0.3]
+  cluster:
+    subnet: 10.1.0.0/16
+  service:
+    subnet: 10.2.0.0/16
+hosts:
+  control01.base.domain:
+    role: control
+    storage:
+      os: wwn01
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:11
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:12
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:13
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:14
+      primary:
+        address: 10.0.0.4
+        ports: 
+          - eth0
+          - eth1
+  control02.base.domain:
+    role: control
+    storage:
+      os: wwn02
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:21
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:22
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:23
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:24
+      primary:
+        address: 10.0.0.5
+        ports: 
+          - eth0
+          - eth1
+  control03.base.domain:
+    role: control
+    storage:
+      os: wwn03
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:31
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:32
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:33
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:34
+      primary:
+        address: 10.0.0.6
+        ports: 
+          - eth0
+          - eth1
+  worker01.base.domain:
+    role: worker
+    storage:
+      os: wwn13
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:41
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:42
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:43
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:44
+      primary:
+        address: 10.0.0.11
+        ports: 
+          - eth0
+          - eth1
+  worker02.base.domain:
+    role: worker
+    storage:
+      os: wwn14
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:51
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:52
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:53
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:54
+      primary:
+        address: 10.0.0.21
+        ports: 
+          - eth0
+          - eth1
