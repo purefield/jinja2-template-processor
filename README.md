@@ -22,3 +22,9 @@ cat agent-config.yaml
 ./process.py data/customer.example.bond.vlan.yaml templates/install-config-baremetal.yaml.tpl > install-config.yaml
 cat install-config.yaml
 ```
+
+## Data Models
+- Standard: `customer.example.yaml`
+- VLAN only: `customer.example.vlan.yaml`
+- Bond only: `customer.example.bond.yaml`
+- Bond + VLAN: `customer.example.bond.vlan.yaml`
