@@ -16,7 +16,8 @@ hosts:{% for name,host in hosts.items() %}
     networkConfig:{% set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
       interfaces:{%- if network.primary.bond %}{% set ifName="bond0" %}
         - type: bond
-          name: {{ ifName }}
+          name: {{ ifName }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
           ipv6: {{ enabledFalse }}
@@ -26,14 +27,16 @@ hosts:{% for name,host in hosts.items() %}
               miimon: "150"
             port: {{ host.network.primary.ports }}{% else %}
         - type: ethernet
-          name: {{ ifName }}
+          name: {{ ifName }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
           ipv6: {{ enabledFalse }}{% endif %}{%- if network.primary.vlan %}
         - type: vlan
           name: {{ ifName ~ "." ~ network.primary.vlan }}
           ipv4: {{ ipv4 }}
-          ipv6: {{ enabledFalse }}
+          ipv6: {{ enabledFalse }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           vlan:
             base-iface: {{ ifName }}
