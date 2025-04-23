@@ -1,0 +1,32 @@
+{%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
+{%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
+---
+apiVersion: extensions.hive.openshift.io/v1beta1
+kind: AgentClusterInstall
+metadata:
+  name: {{ cluster.name }}
+  namespace: {{ cluster.name }}
+  labels:
+    cluster-name: {{ cluster.name }}
+spec:
+  clusterDeploymentRef:
+    name: virt
+  imageSetRef:
+    name: openshift-v{{ cluster.version }}
+  platformType: BareMetal{% if controlCount > 1 %}
+    apiVIPs: {{ network.primary.vips.api }}
+    ingressVIPs: {{ network.primary.vips.apps }}{% endif %}
+  networking:
+    userManagedNetworking: false
+    networkType: {{ network.primary.type|default("OVNKubernetes", true) }}
+    clusterNetwork:
+      - cidr: {{ network.cluster.subnet }}
+        hostPrefix: {{ network.cluster.hostPrefix|default(23, true) }}
+    machineNetwork:
+      - cidr: {{ network.primary.subnet }}
+    serviceNetwork:
+    - {{ network.service.subnet }}
+  provisionRequirements:
+    controlPlaneAgents: {{ controlCount }}
+    workerAgents: {{ workerCount }}
+  sshPublicKey: '{{load_file(cluster.sshKey)|safe}}'

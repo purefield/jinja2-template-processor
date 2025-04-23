@@ -1,0 +1,14 @@
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: {{ cluster.name }}
+  namespace: {{ cluster.name }}
+  labels:
+    name: {{ cluster.name }}
+    cloud: BareMetal
+    vendor: OpenShift
+    location: {{ cluster.location }}
+spec:
+  hubAcceptsClient: true
+  leaseDurationSeconds: 60

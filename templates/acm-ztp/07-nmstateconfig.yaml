@@ -1,0 +1,55 @@
+# https://nmstate.io/examples.html
+# https://access.redhat.com/solutions/7011711
+apiVersion: v1
+items:{% set enabledFalse='{"enabled":false}' %}{% for name,host in hosts.items() -%}
+  {%- set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
+- apiVersion: agent-install.openshift.io/v1beta1
+  kind: NMStateConfig
+  metadata:
+    labels:
+      agent-install.openshift.io/bmh: {{ name }}
+      infraenvs.agent-install.openshift.io: {{ cluster.name }}
+    name: {{ name }}-nmstate
+    namespace: {{ cluster.name }}
+  spec:
+    config:
+      interfaces:{%- if network.primary.bond %}{% set ifName="bond0" %}
+        - type: bond
+          name: {{ ifName }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
+          state: up
+          ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
+          ipv6: {{ enabledFalse }}
+          link-aggregation:
+            mode: {{ network.primary.bond }}
+            options:
+              miimon: "150"
+            port: {{ host.network.primary.ports }}{% else %}
+        - type: ethernet
+          name: {{ ifName }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
+          state: up
+          ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
+          ipv6: {{ enabledFalse }}{% endif %}{%- if network.primary.vlan %}
+        - type: vlan
+          name: {{ ifName ~ "." ~ network.primary.vlan }}
+          ipv4: {{ ipv4 }}
+          ipv6: {{ enabledFalse }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
+          state: up
+          vlan:
+            base-iface: {{ ifName }}
+            id: {{ network.primary.vlan }}{% set ifName=ifName ~ "." ~ network.primary.vlan %}{% endif %}
+      dns-resolver:
+        config:
+          server: {{ network.nameservers }}{% if network.dnsResolver and network.dnsResolver.search %}
+          search: {{ network.dnsResolver.search }}{% endif %}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ network.primary.gateway }}
+            next-hop-interface: {{ ifName }}
+            table-id: 254{%- endfor %}
+kind: List
+metadata:
+  resourceVersion: ""
