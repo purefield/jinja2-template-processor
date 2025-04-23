@@ -1,6 +1,7 @@
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
+
 items:
 - kind: Namespace
   apiVersion: v1
@@ -29,7 +30,7 @@ items:
     clusterDeploymentRef:
       name: virt
     imageSetRef:
-      name: openshift-v{{ cluster.version }}
+      name: img{{ cluster.version }}-x86-64-appsub
     platformType: {% if controlCount > 1 %}BareMetal
     apiVIPs: {{ network.primary.vips.api }}
     ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
@@ -168,8 +169,8 @@ items:
     password: '{{load_file(host.bmc.password)}}'
   kind: Secret
   metadata:
-    name: idrac-bmc-secret-xpv-vsh01
-    namespace: virt
+    name: bmc-secret-{{ name }}
+    namespace: {{ cluster.name }}
     labels:
       environment.metal3.io: baremetal
   type: Opaque{% endif %}
