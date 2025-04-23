@@ -23,6 +23,13 @@ cat agent-config.yaml
 cat install-config.yaml
 ```
 
+## Render acm-ztp.yaml
+Configuration file for ACM zero touch provisioning
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/acm-ztp.yaml.tpl > acm-ztp.yaml
+cat acm-ztp.yaml
+```
+
 ## Data Models
 - Standard: `customer.example.yaml`
 - VLAN only: `customer.example.vlan.yaml`
