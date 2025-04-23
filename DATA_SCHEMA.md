@@ -8,6 +8,7 @@ cluster:
   version: string (required)
   name: string (required)
   sshKey: string (required)
+  location: string (required)
 
 network:
   domain: string (required)
@@ -59,6 +60,12 @@ hosts:
         serialNumber: string
         minSizeGigabytes: integer
         rotational: boolean
+    bmc:
+      vendor: string
+      username: string
+      password: string
+      address: string
+      macAddress: string
     network:
       interfaces:
         - name: string
@@ -68,6 +75,13 @@ hosts:
         ports:
           - string
 ```
+### Files to import
+
+- account.pullSecret
+- cluster.trustBundle
+- host.*.bmc.password
+- cluster.sshKey
+
 
 ### Valid Bond Types
 

@@ -4,6 +4,7 @@ cluster:
   version: 4.18.7
   name: cluster
   sshKey: 2023/acm/id_rsa.pub
+  location: dc1
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
@@ -16,7 +17,7 @@ network:
     search: ["example.com","foo.com"]
   primary:
     bond: 802.3ad
-    vlan: False
+    vlan: false
     mtu: 9000
     gateway: 10.0.0.1
     subnet:  10.0.0.0/24
@@ -33,6 +34,12 @@ hosts:
     role: control
     storage:
       os: {wwn: wwn01}
+    bmc:
+      vendor: dell
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.4
+      macAddress: 00:1A:2B:3C:4D:10
     network:
       interfaces:
         - name: eth0
@@ -52,6 +59,12 @@ hosts:
     role: control
     storage:
       os: {wwn: wwn02}
+    bmc:
+      vendor: dell
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.5
+      macAddress: 00:1A:2B:3C:4D:20
     network:
       interfaces:
         - name: eth0
@@ -71,6 +84,12 @@ hosts:
     role: control
     storage:
       os: {wwn: wwn03}
+    bmc:
+      vendor: dell
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.6
+      macAddress: 00:1A:2B:3C:4D:30
     network:
       interfaces:
         - name: eth0
@@ -90,6 +109,12 @@ hosts:
     role: worker
     storage:
       os: {wwn: wwn13}
+    bmc:
+      vendor: dell
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.11
+      macAddress: 00:1A:2B:3C:4D:40
     network:
       interfaces:
         - name: eth0
@@ -109,6 +134,12 @@ hosts:
     role: worker
     storage:
       os: {wwn: wwn14}
+    bmc:
+      vendor: dell
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.21
+      macAddress: 00:1A:2B:3C:4D:50
     network:
       interfaces:
         - name: eth0

@@ -1,0 +1,39 @@
+apiVersion: v1
+items:
+{% for name,host in hosts.items() %}{% if host.bmc %}
+- apiVersion: v1
+  stringData:
+    username: '{{ host.bmc.username }}'
+    password: '{{load_file(host.bmc.password)}}'
+  kind: Secret
+  metadata:
+    name: idrac-bmc-secret-xpv-vsh01
+    namespace: virt
+    labels:
+      environment.metal3.io: baremetal
+  type: Opaque{% endif %}
+- apiVersion: metal3.io/v1alpha1
+  kind: BareMetalHost
+  metadata:
+    annotations:
+      bmac.agent-install.openshift.io/hostname: {{ name }} 
+      bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}
+      inspect.metal3.io: disabled
+    labels:
+      infraenvs.agent-install.openshift.io: {{ cluster.name }}
+    name: {{ name }}
+    namespace: {{ cluster.name }}
+  spec:
+    rootDeviceHints:  {{ host.storage.os }}
+    automatedCleaningMode: metadata{% if host.bmc %}
+    bmc:
+      address: {{ 'idrac-virtualmedia://'+host.bmc.address+'/redfish/v1/Systems/System.Embedded.1' if host.bmc.vendor == 'dell' else 'TODO' }}
+      credentialsName: bmc-secret-{{ name }}
+      disableCertificateVerification: true{% endif %}
+    bootMACAddress: {{ host.network.primary.ports[0]}}
+    online: true
+    customDeploy:
+      method: start_assisted_install{%- endfor %}
+kind: List
+metadata:
+  resourceVersion: ""
