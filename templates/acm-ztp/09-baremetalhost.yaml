@@ -29,8 +29,8 @@ items:
     bmc:
       address: {{ 'idrac-virtualmedia://'+host.bmc.address+'/redfish/v1/Systems/System.Embedded.1' if host.bmc.vendor == 'dell' else 'TODO' }}
       credentialsName: bmc-secret-{{ name }}
-      disableCertificateVerification: true{% endif %}
-    bootMACAddress: {{ host.network.primary.ports[0]}}
+      disableCertificateVerification: true{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
+    bootMACAddress: {{ bootNic.macAddress }}
     online: true
     customDeploy:
       method: start_assisted_install{%- endfor %}

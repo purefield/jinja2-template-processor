@@ -13,9 +13,9 @@ spec:
     name: virt
   imageSetRef:
     name: openshift-v{{ cluster.version }}
-  platformType: BareMetal{% if controlCount > 1 %}
-    apiVIPs: {{ network.primary.vips.api }}
-    ingressVIPs: {{ network.primary.vips.apps }}{% endif %}
+  platformType: {% if controlCount > 1 %}BareMetal
+  apiVIPs: {{ network.primary.vips.api }}
+  ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
   networking:
     userManagedNetworking: false
     networkType: {{ network.primary.type|default("OVNKubernetes", true) }}
