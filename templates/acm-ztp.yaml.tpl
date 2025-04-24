@@ -28,7 +28,7 @@ items:
       cluster-name: {{ cluster.name }}
   spec:
     clusterDeploymentRef:
-      name: virt
+      name: {{ cluster.name }}
     imageSetRef:
       name: img{{ cluster.version }}-x86-64-appsub
     platformType: {% if controlCount > 1 %}BareMetal
