@@ -125,11 +125,14 @@ items:
     name: {{ name }}-nmstate
     namespace: {{ cluster.name }}
   spec:
+    interfaces:{% for interface in host.network.interfaces %}
+      - name: {{ interface.name }}
+        macAddress: {{ interface.macAddress }}{% endfor %}
     config:
       interfaces:{% set nextHopInterface=host.network.primary.ports[0] %}{% for interface in host.network.interfaces %}
         - type: ethernet
           name: {{ interface.name }}
-          macAddress: {{ interface.macAddress }}{% if network.primary.mtu %}
+          mac-address: {{ interface.macAddress }}{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
