@@ -30,7 +30,7 @@ items:
     clusterDeploymentRef:
       name: {{ cluster.name }}
     imageSetRef:
-      name: img{{ cluster.version }}-x86-64-appsub
+      name: img{{ cluster.version }}-multi-appsub
     platformType: {% if controlCount > 1 %}BareMetal
     apiVIPs: {{ network.primary.vips.api }}
     ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
@@ -210,7 +210,8 @@ items:
       networkType: static
     annotations:{% if account.bmc %}
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
-  spec:
+  spec:{%- if network.proxy %}
+    proxy: {{ network.proxy }}{% endif %}
     additionalNTPSources: {{ network.ntpservers }}
     agentLabels:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}

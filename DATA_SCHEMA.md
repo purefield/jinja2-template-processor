@@ -17,6 +17,7 @@ network:
   proxy:
     httpProxy: string (optional)
     httpsProxy: string (optional)
+    noProxy: string (optional)
 
   ntpservers:
     - string
