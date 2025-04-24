@@ -66,7 +66,6 @@ hosts:
       username: string
       password: string
       address: string
-      macAddress: string
     network:
       interfaces:
         - name: string
