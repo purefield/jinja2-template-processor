@@ -35,7 +35,7 @@ items:
     apiVIPs: {{ network.primary.vips.api }}
     ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
     networking:
-      userManagedNetworking: false
+      userManagedNetworking: {{ false if controlCount > 1 else true }}
       networkType: {{ network.primary.type|default("OVNKubernetes", true) }}
       clusterNetwork:
         - cidr: {{ network.cluster.subnet }}
