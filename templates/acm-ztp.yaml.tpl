@@ -126,9 +126,16 @@ items:
     namespace: {{ cluster.name }}
   spec:
     config:
-      interfaces:{%- if network.primary.bond %}{% set ifName="bond0" %}
+      interfaces:{% set nextHopInterface=host.network.primary.ports[0] %}{% for interface in host.network.interfaces %}
+        - type: ethernet
+          name: {{ interface.name }}
+          macAddress: {{ interface.macAddress }}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
+          state: up
+          ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
+          ipv6: {{ enabledFalse }}{% endfor %}{%- if network.primary.bond %}{% set nextHopInterface="bond0" %}
         - type: bond
-          name: {{ ifName }}{% if network.primary.mtu %}
+          name: bond0{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
@@ -137,22 +144,16 @@ items:
             mode: {{ network.primary.bond }}
             options:
               miimon: "150"
-            port: {{ host.network.primary.ports }}{% else %}
-        - type: ethernet
-          name: {{ ifName }}{% if network.primary.mtu %}
-          mtu: {{ network.primary.mtu }}{% endif %}
-          state: up
-          ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
-          ipv6: {{ enabledFalse }}{% endif %}{%- if network.primary.vlan %}
+            port: {{ host.network.primary.ports }}{% endif %}{% if network.primary.vlan %}
         - type: vlan
-          name: {{ ifName ~ "." ~ network.primary.vlan }}
+          vlan:
+            base-iface: {{ nextHopInterface }}{% set nextHopInterface=nextHopInterface ~ "." ~ network.primary.vlan %}
+            id: {{ network.primary.vlan }}{% endif %}
+          name: {{ nextHopInterface }}
           ipv4: {{ ipv4 }}
           ipv6: {{ enabledFalse }}{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
-          vlan:
-            base-iface: {{ ifName }}
-            id: {{ network.primary.vlan }}{% set ifName=ifName ~ "." ~ network.primary.vlan %}{% endif %}
       dns-resolver:
         config:
           server: {{ network.nameservers }}{% if network.dnsResolver and network.dnsResolver.search %}
@@ -161,7 +162,7 @@ items:
         config:
           - destination: 0.0.0.0/0
             next-hop-address: {{ network.primary.gateway }}
-            next-hop-interface: {{ ifName }}
+            next-hop-interface: {{ nextHopInterface }}
             table-id: 254{% if host.bmc %}
 - apiVersion: v1
   stringData:
