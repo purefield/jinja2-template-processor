@@ -7,7 +7,7 @@ account:
 cluster:
   version: string (required)
   name: string (required)
-  sshKey: string (required)
+  sshKey: [string, string] (required)
   location: string (required)
 
 network:

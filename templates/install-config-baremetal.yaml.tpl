@@ -47,6 +47,7 @@ platform:{% if controlCount > 1 %}
 
 publish: External
 pullSecret: '{{load_file(account.pullSecret)|safe}}'
-sshKey: '{{load_file(cluster.sshKey)|safe}}'
+sshKey: |{% for pubKey in cluster.sshKey %}
+  {{ load_file(pubKey)|trim|safe }}{% endfor %}
 additionalTrustBundle: |
 {{ load_file(network.trustBundle) | indent(2, true) }}
