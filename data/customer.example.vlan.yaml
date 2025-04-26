@@ -3,7 +3,9 @@ account:
 cluster:
   version: 4.18.10
   name: cluster
-  sshKey: 2023/acm/id_rsa.pub
+  sshKey: 
+    - 2023/acm/id_rsa.pub
+    - 2023/acm/id_rsa.pub
   location: dc1
 network:
   domain: base.domain
