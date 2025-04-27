@@ -47,7 +47,8 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKey)|safe}}'
+    sshPublicKey: |{% for pubKey in cluster.sshKeys %}
+      {{ load_file(pubKey)|trim|safe }}{% endfor %}
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:
@@ -222,8 +223,7 @@ items:
         infraenvs.agent-install.openshift.io: {{ cluster.name }}
     pullSecretRef:
       name: pullsecret-{{ cluster.name }}
-    sshAuthorizedKey: |{% for pubKey in cluster.sshKey %}
-      {{ load_file(pubKey)|trim|safe }}{% endfor %}
+    sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)|safe}}'
     clusterRef:
       name: {{ cluster.name }}
       namespace: {{ cluster.name }}

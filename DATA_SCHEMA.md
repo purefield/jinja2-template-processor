@@ -7,7 +7,7 @@ account:
 cluster:
   version: string (required)
   name: string (required)
-  sshKey: [string, string] (required)
+  sshKeys: [string, string] (required)
   location: string (required)
 
 network:
@@ -80,7 +80,7 @@ hosts:
 - account.pullSecret
 - cluster.trustBundle
 - host.*.bmc.password
-- cluster.sshKey
+- cluster.sshKeys
 
 
 ### Valid Bond Types

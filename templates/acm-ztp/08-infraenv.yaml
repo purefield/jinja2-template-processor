@@ -20,7 +20,7 @@ spec:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
   pullSecretRef:
     name: pullsecret-{{ cluster.name }}
-  sshAuthorizedKey: '{{load_file(cluster.sshKey)}}'
+  sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)}}'
   clusterRef:
     name: {{ cluster.name }}
     namespace: {{ cluster.name }}

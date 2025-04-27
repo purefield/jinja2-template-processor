@@ -4,7 +4,7 @@ Generates the OpenShift `install-config.yaml`.
 
 ## Required Fields
 
-- cluster (version, name, sshKey)
+- cluster (version, name, sshKeys)
 - account.pullSecret
 - network:
   - domain, trustBundle

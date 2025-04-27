@@ -29,4 +29,5 @@ spec:
   provisionRequirements:
     controlPlaneAgents: {{ controlCount }}
     workerAgents: {{ workerCount }}
-  sshPublicKey: '{{load_file(cluster.sshKey)|safe}}'
+  sshPublicKey: |{% for pubKey in cluster.sshKeys %}
+    {{ load_file(pubKey)|trim|safe }}{% endfor %}
