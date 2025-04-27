@@ -47,8 +47,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: |{% for pubKey in cluster.sshKeys %}
-      {{ load_file(pubKey)|trim|safe }}{% endfor %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:
