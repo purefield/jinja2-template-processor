@@ -59,30 +59,32 @@ if __name__ == "__main__":
     except (FileNotFoundError, ValueError) as e:
         print(e)
 
-    outputDict = {}
-    try:
-        outputDict = yaml.safe_load(processedTemplate)
-    except Exception as e:
-        print(e)
+    if args.template_file.endswith('yaml.tpl'):
+        outputDict = {}
+        try:
+            outputDict = yaml.safe_load(processedTemplate)
+        except Exception as e:
+            print(e)
 
-    outputYaml = yaml.dump(
-        outputDict,
-        width=4096,
-        Dumper=IndentDumper,
-        explicit_start=True, 
-        indent=2, 
-        sort_keys=False,
-        default_style=None,
-        default_flow_style=None,
-        allow_unicode=True
-    )
+        outputYaml = yaml.dump(
+            outputDict,
+            width=4096,
+            Dumper=IndentDumper,
+            explicit_start=True, 
+            indent=2, 
+            sort_keys=False,
+            default_style=None,
+            default_flow_style=None,
+            allow_unicode=True
+        )
 
-    try:
-        problems = yamllint.linter.run(outputYaml, config)
-        for problem in problems:
-            print(problem, file=sys.stderr)
-        print(outputYaml)
-        # print(processedTemplate)
-    except Exception as e:
-        print(e)
-
+        try:
+            problems = yamllint.linter.run(outputYaml, config)
+            for problem in problems:
+                print(problem, file=sys.stderr)
+            print(outputYaml)
+            # print(processedTemplate)
+        except Exception as e:
+            print(e)
+    else:
+        print(processedTemplate)
