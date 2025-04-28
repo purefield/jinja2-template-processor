@@ -206,7 +206,7 @@ items:
     name: {{ cluster.name }}
     namespace: {{ cluster.name }}
     labels:
-      agentclusterinstalls.extensions.hive.openshift.io/location: ola
+      agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
       networkType: static
     annotations:{% if account.bmc %}
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
