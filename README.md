@@ -30,6 +30,12 @@ Configuration file for ACM zero touch provisioning
 cat acm-ztp.yaml
 ```
 
+## Render test-dns.sh
+Create forward and reverse DNS verification script
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/test-dns.sh.tpl | bash
+```
+
 ## Data Models
 - Standard: `customer.example.yaml`
 - VLAN only: `customer.example.vlan.yaml`
