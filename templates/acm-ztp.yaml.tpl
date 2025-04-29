@@ -208,7 +208,8 @@ items:
     name: tls-ca-bundle-configmap
     namespace: {{ cluster.name }}
   data:
-    tls-ca-bundle.pem: '{{ load_file(network.trustBundle) }}'{% endif %}
+    tls-ca-bundle.pem: |
+{{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
 - kind: InfraEnv
   apiVersion: agent-install.openshift.io/v1beta1
   metadata:
