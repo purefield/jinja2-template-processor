@@ -222,8 +222,7 @@ items:
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
   spec:{%- if network.proxy %}
     proxy: {{ network.proxy }}{% endif %}{% if network.trustBundle %}
-    additionalTrustBundle:
-    - name: tls-ca-bundle-configmap{% endif %}
+    additionalTrustBundle: tls-ca-bundle-configmap{% endif %}
     additionalNTPSources: {{ network.ntpservers }}
     agentLabels:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
