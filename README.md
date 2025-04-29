@@ -30,6 +30,13 @@ Configuration file for ACM zero touch provisioning
 cat acm-ztp.yaml
 ```
 
+## Render acm-asc.yaml
+Configuration file for ACM Agent Service Config
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/acm-asc.yaml.tpl > acm-asc.yaml
+cat acm-asc.yaml
+```
+
 ## Render test-dns.sh
 Create forward and reverse DNS verification script
 ```bash
