@@ -222,7 +222,7 @@ items:
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
   spec:{%- if network.proxy %}
     proxy: {{ network.proxy }}{% endif %}{% if network.trustBundle %}
-    extraManifestsRefs:
+    additionalTrustBundle:
     - name: tls-ca-bundle-configmap{% endif %}
     additionalNTPSources: {{ network.ntpservers }}
     agentLabels:
