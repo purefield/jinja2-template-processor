@@ -1,7 +1,9 @@
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
-
+kind: List
+metadata:
+  resourceVersion: ""
 items:
 - kind: Namespace
   apiVersion: v1
@@ -229,6 +231,3 @@ items:
     agentLabelSelector:
       matchLabels:
         cluster-name: {{ cluster.name }}
-kind: List
-metadata:
-  resourceVersion: ""
