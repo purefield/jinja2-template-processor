@@ -201,7 +201,14 @@ items:
     bootMACAddress: {{ bootNic.macAddress }}
     online: true
     customDeploy:
-      method: start_assisted_install{%- endfor %}
+      method: start_assisted_install{%- endfor %}{% if network.trustBundle %}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: tls-ca-bundle-configmap
+    namespace: {{ cluster.name }}
+  data:
+    tls-ca-bundle.pem: '{{ load_file(network.trustBundle) }}'{% endif %}
 - kind: InfraEnv
   apiVersion: agent-install.openshift.io/v1beta1
   metadata:
@@ -213,7 +220,9 @@ items:
     annotations:{% if account.bmc %}
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
   spec:{%- if network.proxy %}
-    proxy: {{ network.proxy }}{% endif %}
+    proxy: {{ network.proxy }}{% endif %}{% if network.trustBundle %}
+    extraManifestsRefs:
+    - name: tls-ca-bundle-configmap{% endif %}
     additionalNTPSources: {{ network.ntpservers }}
     agentLabels:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
