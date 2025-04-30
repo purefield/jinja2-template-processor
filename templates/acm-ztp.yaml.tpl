@@ -28,7 +28,8 @@ items:
     namespace: {{ cluster.name }}
     labels:
       cluster-name: {{ cluster.name }}
-  spec:
+  spec:{%- if network.proxy %}
+    proxy: {{ network.proxy }}{% endif %}
     clusterDeploymentRef:
       name: {{ cluster.name }}
     imageSetRef:
