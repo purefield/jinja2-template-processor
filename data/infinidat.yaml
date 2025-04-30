@@ -1,0 +1,4 @@
+config:
+  multipathConf:  data/infinidat.multipath.conf
+  infinidatConf:  data/infinidat.conf
+  infinidatRules: data/infinidat-queue.rules

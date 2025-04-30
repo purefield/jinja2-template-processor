@@ -42,6 +42,11 @@ Create forward and reverse DNS verification script
 ```bash
 ./process.py data/customer.example.bond.vlan.yaml templates/test-dns.sh.tpl | bash
 ```
+## Render infinibox-machine-config.yaml.tpl
+This generates the infinidat machine configuration files with the configured content
+```bash
+./process.py data/infinidat.yaml templates/infinibox-machine-config.yaml.tpl
+```
 
 ## Data Models
 - Standard: `customer.example.yaml`
