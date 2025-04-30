@@ -1,0 +1,6 @@
+ACTION=="add|change", KERNEL=="sd[a-z]*", SUBSYSTEM=="block", ENV{ID_VENDOR}=="NFINIDAT", ATTR{queue/scheduler}="none"
+ACTION=="add|change", KERNEL=="dm-*", SUBSYSTEM=="block", ENV{DM_SERIAL}=="36742b0f*", ATTR{queue/scheduler}="none"
+ACTION=="add|change", KERNEL=="sd[a-z]*", SUBSYSTEM=="block", ENV{ID_VENDOR}=="NFINIDAT", ATTR{queue/add_random}="0"
+ACTION=="add|change", KERNEL=="dm-*", SUBSYSTEM=="block", ENV{DM_SERIAL}=="36742b0f*", ATTR{queue/add_random}="0"
+ACTION=="add|change", KERNEL=="sd[a-z]*", SUBSYSTEM=="block", ENV{ID_VENDOR}=="NFINIDAT", ATTR{queue/rq_affinity}="2"
+ACTION=="add|change", KERNEL=="dm-*", SUBSYSTEM=="block", ENV{DM_SERIAL}=="36742b0f*", ATTR{queue/rq_affinity}="2"
