@@ -9,6 +9,7 @@ cluster:
   name: string (required)
   sshKeys: [string, string] (required)
   location: string (required)
+  manifests: [string, string] (optional)
 
 network:
   domain: string (required)
@@ -81,6 +82,7 @@ hosts:
 - cluster.trustBundle
 - host.*.bmc.password
 - cluster.sshKeys
+- cluster.manifests
 
 
 ### Valid Bond Types
