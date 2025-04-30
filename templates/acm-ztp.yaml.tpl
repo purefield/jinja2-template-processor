@@ -50,7 +50,15 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests %}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: extraClusterManifests
+    namespace: {{ cluster.name }}
+  data:{% for manifest in cluster.manifests %}
+    99-{{ manifest.name }}: |
+{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:
@@ -64,7 +72,9 @@ items:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
   spec:
     clusterName: {{ cluster.name }}
-    baseDomain: {{ network.domain }}
+    baseDomain: {{ network.domain }}{% if cluster.manifests|length %}
+    manifestsConfigMapRef:
+      name: extraClusterManifests{% endif %}
     clusterInstallRef:
       version: v1beta1
       kind: AgentClusterInstall
