@@ -54,7 +54,7 @@ items:
 - kind: ConfigMap
   apiVersion: v1
   metadata:
-    name: extraClusterManifests
+    name: extraclustermanifests
     namespace: {{ cluster.name }}
   data:{% for manifest in cluster.manifests %}
     99-{{ manifest.name }}: |
@@ -74,7 +74,7 @@ items:
     clusterName: {{ cluster.name }}
     baseDomain: {{ network.domain }}{% if cluster.manifests|length %}
     manifestsConfigMapRef:
-      name: extraClusterManifests{% endif %}
+      name: extraclustermanifests{% endif %}
     clusterInstallRef:
       version: v1beta1
       kind: AgentClusterInstall
