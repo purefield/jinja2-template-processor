@@ -145,7 +145,8 @@ items:
       interfaces:{% set nextHopInterface=host.network.primary.ports[0] %}{% for interface in host.network.interfaces %}
         - type: ethernet
           name: {{ interface.name }}
-          mac-address: {{ interface.macAddress }}{% if network.primary.mtu %}
+          mac-address: {{ interface.macAddress }}{% if network.primary.lldp %}
+          lldp: {enabled: true}{% endif %}{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
@@ -160,6 +161,7 @@ items:
             mode: {{ network.primary.bond }}
             options:
               miimon: "150"
+              primary: {{ host.network.primary.ports[0] }}
             port: {{ host.network.primary.ports }}{% endif %}{% if network.primary.vlan %}
         - type: vlan
           vlan:
