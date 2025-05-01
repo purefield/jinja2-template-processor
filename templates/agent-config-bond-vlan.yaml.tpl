@@ -14,9 +14,17 @@ hosts:{% for name,host in hosts.items() %}
     rootDeviceHints: {{ host.storage.os }}{% endif %}
     interfaces: {{ host.network.interfaces }}{% set ifName = host.network.primary.ports | first %}
     networkConfig:{% set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
-      interfaces:{%- if network.primary.bond %}{% set ifName="bond0" %}
+      interfaces:{% set nextHopInterface=host.network.primary.ports[0] %}{% for interface in host.network.interfaces %}
+        - type: ethernet
+          name: {{ interface.name }}
+          mac-address: {{ interface.macAddress }}{% if network.primary.lldp %}
+          lldp: {enabled: true}{% endif %}{% if network.primary.mtu %}
+          mtu: {{ network.primary.mtu }}{% endif %}
+          state: up
+          ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
+          ipv6: {{ enabledFalse }}{% endfor %}{%- if network.primary.bond %}{% set nextHopInterface="bond0" %}
         - type: bond
-          name: {{ ifName }}{% if network.primary.mtu %}
+          name: bond0{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
@@ -26,22 +34,16 @@ hosts:{% for name,host in hosts.items() %}
             options:
               miimon: "150"
               primary: {{ host.network.primary.ports[0] }}
-            port: {{ host.network.primary.ports }}{% else %}
-        - type: ethernet
-          name: {{ ifName }}{% if network.primary.mtu %}
-          mtu: {{ network.primary.mtu }}{% endif %}
-          state: up
-          ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
-          ipv6: {{ enabledFalse }}{% endif %}{%- if network.primary.vlan %}
+            port: {{ host.network.primary.ports }}{% endif %}{% if network.primary.vlan %}
         - type: vlan
-          name: {{ ifName ~ "." ~ network.primary.vlan }}
+          vlan:
+            base-iface: {{ nextHopInterface }}{% set nextHopInterface=nextHopInterface ~ "." ~ network.primary.vlan %}
+            id: {{ network.primary.vlan }}{% endif %}
+          name: {{ nextHopInterface }}
           ipv4: {{ ipv4 }}
           ipv6: {{ enabledFalse }}{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
-          vlan:
-            base-iface: {{ ifName }}
-            id: {{ network.primary.vlan }}{% set ifName=ifName ~ "." ~ network.primary.vlan %}{% endif %}
       dns-resolver:
         config:
           server: {{ network.nameservers }}{% if network.dnsResolver and network.dnsResolver.search %}
@@ -50,5 +52,5 @@ hosts:{% for name,host in hosts.items() %}
         config:
           - destination: 0.0.0.0/0
             next-hop-address: {{ network.primary.gateway }}
-            next-hop-interface: {{ ifName }}
+            next-hop-interface: {{ nextHopInterface }}
             table-id: 254{%- endfor -%}
