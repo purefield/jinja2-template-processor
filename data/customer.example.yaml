@@ -24,8 +24,9 @@ network:
   dnsResolver:
     search: ["base.domain"]
   primary:
-    bond: 802.3ad
-    vlan: 1234
+    bond: false
+    vlan: false
+    lldp: true
     mtu: 9000
     gateway: 10.0.0.1
     subnet:  10.0.0.0/24

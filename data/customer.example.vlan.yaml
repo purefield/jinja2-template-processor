@@ -7,6 +7,11 @@ cluster:
     - 2023/acm/id_rsa.pub
     - 2023/acm/id_rsa.pub
   location: dc1
+  manifests:
+  - name: crio-config
+    file: templates/installer/99-crio-config.yaml
+  - name: set-core-passwd-master
+    file: templates/installer/99-set-core-passwd-master.yaml
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
@@ -19,8 +24,9 @@ network:
   dnsResolver:
     search: ["base.domain"]
   primary:
-    bond: 802.3ad
+    bond: false
     vlan: 1234
+    lldp: true
     mtu: 9000
     gateway: 10.0.0.1
     subnet:  10.0.0.0/24
@@ -42,6 +48,7 @@ hosts:
       username: root
       password: bmc-password.txt
       address: 10.0.1.4
+      macAddress: 00:1A:2B:3C:4D:10
     network:
       interfaces:
         - name: eth0
