@@ -25,6 +25,7 @@ hosts:{% for name,host in hosts.items() %}
             mode: {{ network.primary.bond }}
             options:
               miimon: "150"
+              primary: {{ host.network.primary.ports[0] }}
             port: {{ host.network.primary.ports }}{% else %}
         - type: ethernet
           name: {{ ifName }}{% if network.primary.mtu %}
