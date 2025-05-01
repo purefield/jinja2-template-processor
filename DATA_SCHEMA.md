@@ -33,6 +33,7 @@ network:
   primary:
     bond: "802.3ad" | "active-backup" | false
     vlan: integer (1-4094) | false
+    lldp: boolean | false
     mtu: integer
     gateway: string
     subnet: string
