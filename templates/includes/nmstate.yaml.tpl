@@ -10,8 +10,7 @@
       ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
       ipv6: {{ enabledFalse }}{% endfor %}{%- if network.primary.bond %}{% set nextHopInterface="bond0" %}
     - type: bond
-      name: bond0
-      mac-address: {{ bootNic.macAddress }}{% if network.primary.mtu %}
+      name: bond0{{ bootNic.macAddress }}{% if network.primary.mtu %}
       mtu: {{ network.primary.mtu }}{% endif %}
       state: up
       ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
