@@ -191,6 +191,7 @@ items:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
     cpuArchitecture: x86_64
     ipxeScriptType: DiscoveryImageAlways
+    imageType: full-iso
     nmStateConfigLabelSelector:
       matchLabels:
         infraenvs.agent-install.openshift.io: {{ cluster.name }}
