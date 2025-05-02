@@ -137,12 +137,9 @@ items:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
     name: {{ name }}-nmstate
     namespace: {{ cluster.name }}
-  spec:
-    interfaces:{% for interface in host.network.interfaces %}
-      - name: {{ interface.name }}
-        macAddress: {{ interface.macAddress }}{% endfor %}
-    config:
-      interfaces:{% set nextHopInterface=host.network.primary.ports[0] %}{% for interface in host.network.interfaces %}
+  spec:{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
+    config:{% set nextHopInterface=host.network.primary.ports[0] %}
+      interfaces:{% for interface in host.network.interfaces %}
         - type: ethernet
           name: {{ interface.name }}
           mac-address: {{ interface.macAddress }}{% if network.primary.lldp %}
@@ -152,7 +149,8 @@ items:
           ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}
           ipv6: {{ enabledFalse }}{% endfor %}{%- if network.primary.bond %}{% set nextHopInterface="bond0" %}
         - type: bond
-          name: bond0{% if network.primary.mtu %}
+          name: bond0
+          mac-address: {{ bootNic.macAddress }}{% if network.primary.mtu %}
           mtu: {{ network.primary.mtu }}{% endif %}
           state: up
           ipv4: {{ enabledFalse if network.primary.vlan else ipv4 }}
@@ -182,6 +180,11 @@ items:
             next-hop-address: {{ network.primary.gateway }}
             next-hop-interface: {{ nextHopInterface }}
             table-id: 254{% if host.bmc %}
+    interfaces:{% if network.primary.bond %}
+      - name: bond0
+        macAddress: {{ bootNic.macAddress }}{% endif %}{% for interface in host.network.interfaces %}
+      - name: {{ interface.name }}
+        macAddress: {{ interface.macAddress }}{% endfor %}
 - apiVersion: v1
   stringData:
     username: '{{ host.bmc.username }}'
