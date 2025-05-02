@@ -42,9 +42,7 @@
         next-hop-address: {{ network.primary.gateway }}
         next-hop-interface: {{ nextHopInterface }}
         table-id: 254
-interfaces:{% if network.primary.bond %}
-  - name: bond0
-    macAddress: {{ bootNic.macAddress }}{% endif %}{% for interface in host.network.interfaces %}
+interfaces:{% for interface in host.network.interfaces %}
   - name: {{ interface.name }}
     macAddress: {{ interface.macAddress }}{% endfor %}
 
