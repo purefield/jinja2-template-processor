@@ -53,7 +53,8 @@ def process_template(data_file, template_file):
     except yaml.YAMLError as e:
         raise ValueError(f"Error: Invalid YAML format in '{data_file}': {e}")
     template_dir = os.path.dirname(os.path.abspath(template_file))
-    env = Environment(loader=FileSystemLoader(template_dir))
+    includes_dir = os.path.join(template_dir, 'includes')
+    env = Environment(loader=FileSystemLoader([template_dir,includes_dir]))
     env.globals["load_file"] = load_file
     try:
         template = env.get_template(os.path.basename(template_file))
