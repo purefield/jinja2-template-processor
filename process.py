@@ -4,6 +4,7 @@ from jinja2 import Environment, FileSystemLoader
 import argparse
 import os
 import sys
+import base64
 import yamllint.config
 import yamllint.linter
 
@@ -37,6 +38,11 @@ def load_file(path):
     except (FileNotFoundError, IOError):
         return ""
 
+def base64encode(s):
+    if isinstance(s, str):
+        s = s.encode("utf-8")
+    return base64.b64encode(s).decode("utf-8")
+
 def process_template(data_file, template_file):
     """
     Processes a Jinja2 template with data loaded from a YAML file.
@@ -56,6 +62,7 @@ def process_template(data_file, template_file):
     includes_dir = os.path.join(template_dir, 'includes')
     env = Environment(loader=FileSystemLoader([template_dir,includes_dir]))
     env.globals["load_file"] = load_file
+    env.filters["base64encode"] = base64encode
     try:
         template = env.get_template(os.path.basename(template_file))
     except jinja2.exceptions.TemplateNotFound:

@@ -23,8 +23,7 @@ items:
           - path: /etc/multipath.conf
             mode: 0644
             contents:
-              inline: |
-{{ load_file(config.multipathConf)|safe|indent(16,true) }}
+              source: data:;base64,{{ load_file(config.multipathConf)|base64encode }}
 - kind: MachineConfig
   # MachineConfig for FC driver tuning: /etc/modprobe.d/infinidat.conf
   apiVersion: machineconfiguration.openshift.io/v1
@@ -41,8 +40,7 @@ items:
           - path: /etc/modprobe.d/infinidat.conf
             mode: 0644
             contents:
-              inline: |
-{{ load_file(config.infinidatConf)|safe|indent(16,true) }}
+              source: data:;base64,{{ load_file(config.infinidatConf)|base64encode }}
 - kind: MachineConfig
   # MachineConfig for udev queue tuning
   apiVersion: machineconfiguration.openshift.io/v1
@@ -59,5 +57,4 @@ items:
           - path: /etc/udev/rules.d/99-infinidat-queue.rules
             mode: 0644
             contents:
-              inline: |
-{{ load_file(config.infinidatRules)|safe|indent(16,true) }}
+              source: data:;base64,{{ load_file(config.infinidatRules)|base64encode }}
