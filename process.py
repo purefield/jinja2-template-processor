@@ -34,7 +34,7 @@ def load_file(path):
     try:
         with open(path, 'r') as f:
             content = f.read()
-        return content
+        return content.rstrip()
     except (FileNotFoundError, IOError):
         return ""
 
