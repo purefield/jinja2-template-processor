@@ -47,6 +47,12 @@ This generates the infinidat machine configuration files with the configured con
 ```bash
 ./process.py data/infinidat.yaml templates/infinibox-machine-config.yaml.tpl
 ```
+## Render acm-creds.yaml.tpl
+This generates the hostinventory credentials for ACM
+```bash
+./process.py data/customer.example.yaml templates/acm-creds.yaml.tpl > acm-creds.yaml
+cat acm-creds.yaml
+```
 
 ## Data Models
 - Standard: `customer.example.yaml`
