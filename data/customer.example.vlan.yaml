@@ -12,6 +12,19 @@ cluster:
     file: templates/installer/99-crio-config.yaml
   - name: set-core-passwd-master
     file: templates/installer/99-set-core-passwd-master.yaml
+  mirrors:
+  - source: registry.access.redhat.com
+    prefix: ""
+    mirrors:
+    - internal-registry.tld/registry-access-redhat-com
+  - source: registry.redhat.io
+    prefix: ""
+    mirrors:
+    - internal-registry.tld/registry-redhat-io
+  - source: quay.io
+    prefix: ""
+    mirrors:
+    - internal-registry.tld/quay-io
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem

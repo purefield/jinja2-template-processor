@@ -10,6 +10,7 @@ cluster:
   sshKeys: [string, string] (required)
   location: string (required)
   manifests: [string, string] (optional)
+  mirrors: [{source: [mirrors]] (optional)
 
 network:
   domain: string (required)
@@ -95,6 +96,10 @@ hosts:
 - `broadcast`
 - `balance-tlb`
 - `balance-alb`
+
+### Mirror List
+- source: quay.io
+  mirrors: [ { source: registry, mirrors: [internal-registry], prefix=''} ]
 
 ### VLAN
 
