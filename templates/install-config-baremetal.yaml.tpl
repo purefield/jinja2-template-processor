@@ -50,4 +50,6 @@ pullSecret: '{{load_file(account.pullSecret)|safe}}'
 sshKey: |{% for pubKey in cluster.sshKeys %}
   {{ load_file(pubKey)|trim|safe }}{% endfor %}
 additionalTrustBundle: |
-{{ load_file(network.trustBundle) | indent(2, true) }}
+{{ load_file(network.trustBundle) | indent(2, true) }}{% if cluster.mirrors %}
+{% include "includes/imageContentSource.yaml.tpl" %}
+{% endif %}

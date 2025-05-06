@@ -33,7 +33,10 @@ items:
     clusterDeploymentRef:
       name: {{ cluster.name }}
     imageSetRef:
-      name: img{{ cluster.version }}-multi-appsub
+      name: img{{ cluster.version }}-multi-appsub{% if cluster.mirrors %}
+    mirrorRegistryRef:
+      name: mirror-registries-{{ cluster.name }}
+      namespace: multicluster-engine{% endif %}
     platformType: {% if controlCount > 1 %}BareMetal
     apiVIPs: {{ network.primary.vips.api }}
     ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
@@ -50,7 +53,19 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.mirrors %}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: mirror-registries-{{ cluster.name }}
+    namespace: multicluster-engine
+    labels:
+      app: assisted-service
+  data:{% if network.trustBundle %}
+    ca-bundle.crt: |
+{{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
+    registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -200,7 +215,10 @@ items:
     sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)|safe}}'
     clusterRef:
       name: {{ cluster.name }}
-      namespace: {{ cluster.name }}
+      namespace: {{ cluster.name }}{% if cluster.mirrors %}
+    mirrorRegistryRef:
+      name: mirror-registries-{{ cluster.name }}
+      namespace: multicluster-engine{% endif %}
     agentLabelSelector:
       matchLabels:
         cluster-name: {{ cluster.name }}
