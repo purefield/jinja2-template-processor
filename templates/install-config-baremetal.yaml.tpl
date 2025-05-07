@@ -13,21 +13,15 @@ metadata:
 baseDomain: {{ network.domain }}
 
 controlPlane:
-  architecture: amd64
-  hyperthreading: Enabled
   name: master
   replicas: {{ controlCount }}
-  platform: {} # TODO
-
-{%- if network.proxy %}
-proxy: {{ network.proxy }}{% endif %}
 
 compute:
   - name: worker
-    replicas: {{ workerCount }}{% if workerCount %}
-    architecture: amd64
-    hyperthreading: Enabled
-    platform: {}{% endif %}
+    replicas: {{ workerCount }}
+
+{%- if network.proxy %}
+proxy: {{ network.proxy }}{% endif %}
 
 networking:
   networkType: {{ network.primary.type|default("OVNKubernetes", true) }}
