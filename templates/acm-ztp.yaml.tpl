@@ -65,15 +65,31 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
     name: extraclustermanifests
     namespace: {{ cluster.name }}
-  data:{% for manifest in cluster.manifests %}
+  data:{% if cluster.manifests %}{% for manifest in cluster.manifests %}
     99-{{ manifest.name }}: |
-{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}
+{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+    99-image-digest-mirror-set: |
+      kind: ImageDigestMirrorSet
+      apiVersion: config.openshift.io/v1
+      metadata:
+        name: mirror-registries
+      spec:
+        imageDigestMirrors:
+{{ sources | indent(10, true)}}
+    99-image-tag-mirror-set: |
+      kind: ImageTagMirrorSet
+      apiVersion: config.openshift.io/v1
+      metadata:
+        name: mirror-registries
+      spec:
+        imageTagMirrors:
+{{ sources | indent(10, true)}}{% endif %}{% endif %}
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:
@@ -87,7 +103,7 @@ items:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
   spec:
     clusterName: {{ cluster.name }}
-    baseDomain: {{ network.domain }}{% if cluster.manifests|length %}
+    baseDomain: {{ network.domain }}{% if cluster.manifests or cluster.mirrors %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}
     clusterInstallRef:
