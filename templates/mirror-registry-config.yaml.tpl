@@ -3,13 +3,6 @@ kind: List
 metadata:
   resourceVersion: ""
 items:
-- kind: ImageContentSourcePolicy
-  apiVersion: operator.openshift.io/v1alpha1
-  metadata:
-    name: mirror-registries
-  spec:
-    repositoryDigestMirrors:
-{{ sources | indent(8, true)}}
 - kind: ImageDigestMirrorSet
   apiVersion: config.openshift.io/v1
   metadata:
