@@ -45,5 +45,6 @@ sshKey: |{% for pubKey in cluster.sshKeys %}
   {{ load_file(pubKey)|trim|safe }}{% endfor %}
 additionalTrustBundle: |
 {{ load_file(network.trustBundle) | indent(2, true) }}{% if cluster.mirrors %}
-{% include "includes/imageContentSource.yaml.tpl" %}
+imageContentSources:{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+{{ sources | indent(2, true)}}
 {% endif %}
