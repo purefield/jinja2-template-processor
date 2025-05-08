@@ -20,7 +20,7 @@ items:
 - kind: ImageTagMirrorSet
   apiVersion: config.openshift.io/v1
   metadata:
-    name: global
+    name: mirror-registries
   spec:
     imageTagMirrors:
 {{ sources | indent(8, true)}}
