@@ -2,12 +2,6 @@ config:
   multipathConf:  data/infinidat.multipath.conf
   infinidatConf:  data/infinidat.conf
   infinidatRules: data/infinidat-queue.rules
-  infinidatCreds:
-    password: pass
-    username: user
-    node.session.auth.password: ""
-    node.session.auth.username: ""
-    node.session.auth.password_in: ""
-    node.session.auth.username_in: ""
+  infinidatCreds: data/infinidat-creds.json
 storageClass:
   poolName: Pool_1

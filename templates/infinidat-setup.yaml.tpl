@@ -78,7 +78,7 @@ items:
       app.kubernetes.io/name: infiniboxcsidriver
       app.kubernetes.io/part-of: infinidat-csi-operator
       app.kubernetes.io/version: ''
-  stringData: {{ config.infinidatCreds }}
+  stringData: {{ load_file(config.infinidatCreds) }}
 - kind: RoleBinding
   apiVersion: rbac.authorization.k8s.io/v1
   metadata:

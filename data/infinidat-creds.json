@@ -1,0 +1,8 @@
+{
+"password": "pass",
+"username": "user",
+"node.session.auth.password": "",
+"node.session.auth.username": "",
+"node.session.auth.password_in": "",
+"node.session.auth.username_in": ""
+}
