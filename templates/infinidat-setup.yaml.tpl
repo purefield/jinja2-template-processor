@@ -186,9 +186,6 @@ items:
     logLevel: debug
     nodeSelector:
       kubernetes.io/os: linux
-    Infinibox_Cred:
-      SecretName: infinibox-creds
-      hostname: {{ storageClass.hostname }}
     csiDriverName: infinibox-csi-driver
     removeDomainName: false
     createEvents: true
@@ -198,7 +195,7 @@ items:
     e2etesting: false
     autoUpdate: false
     instanceCount: 1
-    skipCredentialsCreation: false
+    skipCredentialsCreation: true
     images:
       # https://github.com/Infinidat/infinibox-csi-driver/blob/77478fd7cfe0216da421d8826d812b17bea6dd34/deploy/helm/infinibox-csi-driver/values.yaml
       snapshottersidecar: 'registry.k8s.io/sig-storage/csi-snapshotter@sha256:339a83a86e6e1eead14413fe494b43de8bc48243d146c2810b39dd741d26ca6a'
@@ -241,12 +238,12 @@ items:
     pool_name: {{ storageClass.poolname }}
     storage_protocol: "fc"
     # optional parameters
+    unix_permissions: "777" # optional volume mount permissions
     # max_vols_per_host: "100"
     # provision_type: "THIN"
     # ssd_enabled: "false"
-    # unix_permissions: "777" # optional volume mount permissions
-    uid: "3000" # UID of volume
-    gid: "3000" # GID of volume
+    # uid: "3000" # UID of volume
+    # gid: "3000" # GID of volume
 - kind: VolumeSnapshotClass
   apiVersion: snapshot.storage.k8s.io/v1
   metadata:
