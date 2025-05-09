@@ -25,6 +25,10 @@ cluster:
     prefix: ""
     mirrors:
     - internal-registry.tld/quay-io
+  - source: registry.connect.redhat.com
+    prefix: ""
+    mirrors:
+    - internal-registry.tld/registry-connect-redhat-com
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
