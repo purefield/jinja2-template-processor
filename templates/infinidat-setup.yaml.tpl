@@ -145,6 +145,60 @@ items:
     kind: ClusterRole
     name: system:openshift:scc:hostnetwork
     apiGroup: rbac.authorization.k8s.io
+    apiVersion: operators.coreos.com/v1
+- kind: OperatorGroup
+  apiVersion: operators.coreos.com/v1
+  metadata:
+    annotations:
+      olm.providedAPIs: 'Iboxreplica.v1.csidriver.infinidat.com,InfiniboxCsiDriver.v1alpha1.csidriver.infinidat.com'
+    name: infinidat-csi
+    namespace: infinidat-csi
+  spec:
+    targetNamespaces:
+      - infinidat-csi
+    upgradeStrategy: Default
+- kind: Subscription
+  apiVersion: operators.coreos.com/v1alpha1
+  metadata:
+    labels:
+      operators.coreos.com/infinibox-operator-certified.infinidat-csi: ''
+    name: infinibox-operator-certified
+    namespace: infinidat-csi
+  spec:
+    channel: stable
+    installPlanApproval: Automatic
+    name: infinibox-operator-certified
+    source: certified-operators
+    sourceNamespace: openshift-marketplace
+    startingCSV: infinibox-operator-certified.v2.20.0
+- kind: InfiniboxCsiDriver
+  apiVersion: csidriver.infinidat.com/v1alpha1
+  metadata:
+    labels:
+      app.kubernetes.io/created-by: infinibox-operator-certified
+      app.kubernetes.io/instance: infiniboxcsidriver-sample
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: infiniboxcsidriver
+      app.kubernetes.io/part-of: infinibox-operator-certified
+    name: infinibox-csi-driver
+    namespace: infinidat-csi
+  spec:
+    logLevel: debug
+    nodeSelector:
+      kubernetes.io/os: linux
+    Infinibox_Cred:
+      SecretName: infinibox-creds
+      hostname: {{ storageClass.hostname }}
+    csiDriverName: infinibox-csi-driver
+    removeDomainName: false
+    createEvents: true
+    csiDriverVersion: v2.20.0
+    replicaCount: 1
+    volumeNamePrefix: ibox
+    e2etesting: false
+    autoUpdate: false
+    instanceCount: 1
+    skipCredentialsCreation: false
 - kind: StorageClass
   apiVersion: storage.k8s.io/v1
   metadata:
@@ -168,7 +222,7 @@ items:
     csi.storage.k8s.io/node-expand-secret-namespace: infinidat-csi
     csi.storage.k8s.io/fstype: ext4
     # Infinibox configuration
-    pool_name: {{ storageClass.poolName }}
+    pool_name: {{ storageClass.poolname }}
     storage_protocol: "fc"
     # optional parameters
     # max_vols_per_host: "100"
