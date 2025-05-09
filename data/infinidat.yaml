@@ -4,5 +4,4 @@ config:
   infinidatRules: data/infinidat-queue.rules
   infinidatCreds: data/infinidat-creds.json
 storageClass:
-  hostname: hostname
   poolname: Pool_1
