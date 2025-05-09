@@ -217,8 +217,8 @@ items:
   metadata:
     name: ibox-fc-block-rwx
     annotations:
-      storageclass.kubernetes.io/is-default-class: true
-      storageclass.kubevirt.io/is-default-virt-class: true
+      storageclass.kubernetes.io/is-default-class: 'true'
+      storageclass.kubevirt.io/is-default-virt-class: 'true'
   provisioner: infinibox-csi-driver
   reclaimPolicy: Delete
   volumeBindingMode: Immediate
