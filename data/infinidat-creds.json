@@ -1,4 +1,5 @@
 {
+"hostname": "hostname",
 "password": "pass",
 "username": "user",
 "node.session.auth.password": "",
