@@ -199,6 +199,22 @@ items:
     autoUpdate: false
     instanceCount: 1
     skipCredentialsCreation: false
+    images:
+      # https://github.com/Infinidat/infinibox-csi-driver/blob/77478fd7cfe0216da421d8826d812b17bea6dd34/deploy/helm/infinibox-csi-driver/values.yaml
+      snapshottersidecar: 'registry.k8s.io/sig-storage/csi-snapshotter@sha256:339a83a86e6e1eead14413fe494b43de8bc48243d146c2810b39dd741d26ca6a'
+      csidriver: 'registry.connect.redhat.com/infinidat/infinibox-csidriver-certified@sha256:22eb763eec637d66f95401b591d26d845bfbe9a745d0c9b25adaaf643a336830'
+      attachersidecar: 'registry.k8s.io/sig-storage/csi-attacher@sha256:47ab8aebebdc59316004ba8d51a903637d808f4e62a6d0f599ed3c2483cea901'
+      registrarsidecar: 'registry.k8s.io/sig-storage/csi-node-driver-registrar@sha256:f032a0ca4c699eebe403988a0e217c3dfc82e2cee8b7d9d247a493e5a2425f24'
+      livenesssidecar: 'registry.k8s.io/sig-storage/livenessprobe@sha256:13f6b1f9d0514b859e549e20b731d93c90a144186deb68bfc931e3dbf9041afc'
+      provisionersidecar: 'registry.k8s.io/sig-storage/csi-provisioner@sha256:67ee5137252811fd471b8571efe9e173145ec8af7b520861eeccf7c078a772f2'
+      resizersidecar: 'registry.k8s.io/sig-storage/csi-resizer@sha256:706f7cdcccd30ca5f0e94d548e2e0c658f69c0fe4b68a5bf37818a04ca618d3d'
+      livenesssidecar_pull_policy: IfNotPresent
+      provisionersidecar_pull_policy: IfNotPresent
+      resizersidecar_pull_policy: IfNotPresent
+      snapshottersidecar_pull_policy: IfNotPresent
+      csidriver_pull_policy: Always
+      attachersidecar_pull_policy: IfNotPresent
+      registrarsidecar_pull_policy: IfNotPresent
 - kind: StorageClass
   apiVersion: storage.k8s.io/v1
   metadata:
