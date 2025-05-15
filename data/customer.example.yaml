@@ -55,6 +55,24 @@ network:
     hostPrefix: 23
   service:
     subnet: 172.30.0.0/16
+  secondary:
+  - name: vm
+    type: bridge
+    state: up
+    namespace: demo
+    vlan: 123
+    ports: [eth3]
+    subnet: dhcp
+  - name: migration
+    type: macvlan
+    state: up
+    namespace: openshift-cnv
+    bond: active-backup
+    ports: [eth3,eth4]
+    vlan: 100
+    lldp: true
+    mtu: 9000
+    subnet: 10.0.0.0/24
 hosts:
   control01.base.domain:
     role: control
