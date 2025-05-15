@@ -60,6 +60,11 @@ This generates the infinidat machine, operator, driver configuration files with 
 ```bash
 ./process.py data/infinidat.yaml templates/infinidat-setup.yaml.tpl
 ```
+## Render secondary-network-setup.yaml.tpl
+This generates secondary network configuration based on network.secondary list
+```bash
+./process.py data/infinidat.yaml templates/secondary-network-setup.yaml.tpl
+```
 
 ## Data Models
 - Standard: `customer.example.yaml`

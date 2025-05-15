@@ -44,6 +44,15 @@ network:
       apps:
         - string
 
+  secondary: 
+    - name: string
+      bond: "802.3ad" | "active-backup" | false
+      vlan: integer (1-4094) | false
+      lldp: boolean | false
+      mtu: integer
+      subnet: string
+      ports : [string]
+
   cluster:
     subnet: string
     hostPrefix: integer
