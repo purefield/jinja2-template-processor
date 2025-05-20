@@ -3,8 +3,7 @@
 {%- set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
   interfaces:{% for interface in host.network.interfaces %}
     - type: ethernet
-      name: {{ interface.name }}{% if network.primary.lldp %}
-      lldp: {enabled: true}{% endif %}{% if network.primary.mtu %}
+      name: {{ interface.name }}{% if network.primary.mtu %}
       mtu: {{ network.primary.mtu }}{% endif %}
       state: up
       ipv4: {{ enabledFalse if interface.name != nextHopInterface or network.primary.vlan or network.primary.bond else ipv4 }}

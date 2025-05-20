@@ -43,7 +43,6 @@ network:
   primary:
     bond: false
     vlan: false
-    lldp: true
     mtu: 9000
     gateway: 10.0.0.1
     subnet:  10.0.0.0/24
@@ -70,7 +69,6 @@ network:
     bond: active-backup
     ports: [eth3,eth4]
     vlan: 100
-    lldp: true
     mtu: 9000
     subnet: 10.0.0.0/24
 hosts:
