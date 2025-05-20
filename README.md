@@ -65,6 +65,15 @@ This generates secondary network configuration based on network.secondary list
 ```bash
 ./process.py data/infinidat.yaml templates/secondary-network-setup.yaml.tpl
 ```
+### any reason to prever ovn vs linux bridge?
+* if micro-segmentation comes up AND/OR any type of firewalling for VLAN based networks use OVNK localnet + MultiNetworkPolicy (linux-bridge does not support it)
+* If possible avoid creating bridge mappings for br-ex bridge and use dedicated NICs/bonds (dont pollute OCP control plane traffic with VM dataplane)
+* If VMs need to be attached to the same VLAN as machineNetwork, must use ONK localnet with br-ex bridge mappings
+* Always advocate for bonds VS single NICs for VM dataplane traffic
+* live migration network should use a dedicated NIC and preferably a macvlan (it offers best perfomance)
+* if VM guest tagging is required must use linux-bridge (it allows disabling mac spoofing where as OVNK localnet does not)
+* if there is no DHCP available but they want to auto assign IPs to VMs, must use linux-bridge (only linux-bridge supports openshift ipam with whereabouts)
+* For VNF use cases with service-chaining must use linux-bridge (when routing is required only linux-bridge allows disabling mac spoofing where as OVNK localnet does not)
 
 ## Data Models
 - Standard: `customer.example.yaml`
