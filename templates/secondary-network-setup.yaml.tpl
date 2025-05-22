@@ -2,7 +2,7 @@ apiVersion: v1
 kind: List
 metadata:
   resourceVersion: ""
-items:{% for network in network.secondary %}{%- set interface=network.ports[0] %}{%- set interfaceName=interface %}
+items:{%- set enabledFalse='{"enabled":false}' %}{% for network in network.secondary %}{%- set interface=network.ports[0] %}{%- set interfaceName=interface %}
 - kind: NodeNetworkConfigurationPolicy
   apiVersion: nmstate.io/v1
   spec:
@@ -37,8 +37,8 @@ items:{% for network in network.secondary %}{%- set interface=network.ports[0] %
             port:
               - name: {{ interface }}
                 vlan: {}
-          ipv4: { enabled: false }
-          ipv6: { enabled: false }{% endif %}
+          ipv4: {{ enabledFalse }}
+          ipv6: {{ enabledFalse }}{% endif %}
   metadata:
     name: {{ network.name }}
     annotations:{% set description %}{{ network.name }} network on {{ interface }}{% endset %}
