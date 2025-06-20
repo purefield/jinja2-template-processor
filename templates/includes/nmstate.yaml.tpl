@@ -19,6 +19,7 @@
         mode: {{ network.primary.bond }}
         options:
           miimon: "150"
+          # lacp_rate: fast
           primary: {{ host.network.primary.ports[0] }}
         port: {{ host.network.primary.ports }}{% endif %}{% if network.primary.vlan %}
     - type: vlan
