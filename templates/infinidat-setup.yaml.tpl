@@ -58,6 +58,9 @@ items:
             mode: 0644
             contents:
               source: data:;base64,{{ load_file(config.infinidatRules)|base64encode }}
+TODO: Wait for all nodes to apply machine configuraiton before installing the operator
+https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/machine_configuration/machine-config-node-disruption_machine-configs-configure
+
 - kind: Namespace
   apiVersion: v1
   metadata:
