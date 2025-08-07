@@ -33,7 +33,7 @@ items:
     clusterDeploymentRef:
       name: {{ cluster.name }}
     imageSetRef:
-      name: img{{ cluster.version }}-multi-appsub{% if cluster.mirrors %}
+      name: img{{ cluster.version }}-{{ cluster.arch | default("x86-64", true) }}-appsub{% if cluster.mirrors %}
     mirrorRegistryRef:
       name: mirror-registries-{{ cluster.name }}
       namespace: multicluster-engine{% endif %}
