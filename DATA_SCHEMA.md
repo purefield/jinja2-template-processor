@@ -6,6 +6,7 @@ account:
 
 cluster:
   version: string (required)
+  arch: string (x86-64|multi optional)
   name: string (required)
   sshKeys: [string, string] (required)
   location: string (required)

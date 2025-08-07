@@ -2,6 +2,7 @@ account:
   pullSecret: 2023/pull-secret.json
 cluster:
   version: 4.18.10
+  arch: x86-64
   name: cluster
   sshKeys: 
     - 2023/acm/id_rsa.pub
