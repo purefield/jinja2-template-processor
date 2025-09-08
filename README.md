@@ -80,3 +80,31 @@ This generates secondary network configuration based on network.secondary list
 - VLAN only: `customer.example.vlan.yaml`
 - Bond only: `customer.example.bond.yaml`
 - Bond + VLAN: `customer.example.bond.vlan.yaml`
+---
+
+## 🔄 Parameter Overrides with JSONPath
+
+You can override values from the cluster data YAML directly on the command line  
+without editing the file. Overrides use **JSONPath syntax**.
+
+### Example 1: Single value
+```bash
+./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'metadata.name=mycluster'
+```
+
+### Example 2: Nested values
+```bash
+./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'networking.networkType=OVNKubernetes'
+```
+
+### Example 3: Multi-line value
+```bash
+./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'spec.additionalTrustBundle=-----BEGIN CERTIFICATE-----\nABC123\n-----END CERTIFICATE-----'
+```
+
+### Example 4: Multiple overrides
+```bash
+./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'metadata.name=testcluster'   -p 'networking.machineNetwork[0].cidr=192.168.0.0/24'
+```
+
+All overrides are applied **after** loading the cluster file, so they deterministically replace or add to its contents without modifying the original file.
