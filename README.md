@@ -82,29 +82,24 @@ This generates secondary network configuration based on network.secondary list
 - Bond + VLAN: `customer.example.bond.vlan.yaml`
 ---
 
-## 🔄 Parameter Overrides with JSONPath
+## JSON/CLI Data Sources
 
-You can override values from the cluster data YAML directly on the command line  
-without editing the file. Overrides use **JSONPath syntax**.
-
-### Example 1: Single value
+### Inline JSON as `data_file`
+You can pass inline JSON instead of a file:
 ```bash
-./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'metadata.name=mycluster'
+./process.py '{"cluster":{"name":"inline"}}' templates/console-notification.yaml.tmpl -p color=red
 ```
 
-### Example 2: Nested values
+If it parses as JSON, it will be used directly; otherwise it is treated as a filename.
+
+### No file, only `-p`
+If you omit `data_file`, an empty object is created and seeded from `-p`:
 ```bash
-./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'networking.networkType=OVNKubernetes'
+./process.py templates/console-notification.yaml.tmpl -p cluster.name=foo -p color=red
 ```
 
-### Example 3: Multi-line value
+## Create-if-missing overrides
+`-p` supports creating missing paths using dotted keys and `[index]`:
 ```bash
-./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'spec.additionalTrustBundle=-----BEGIN CERTIFICATE-----\nABC123\n-----END CERTIFICATE-----'
+./process.py '{}' templates/console-notification.yaml.tmpl -p cluster.name=foo -p items[0].key=value
 ```
-
-### Example 4: Multiple overrides
-```bash
-./process.py data/customer.yaml templates/install-config.yaml.tpl   -p 'metadata.name=testcluster'   -p 'networking.machineNetwork[0].cidr=192.168.0.0/24'
-```
-
-All overrides are applied **after** loading the cluster file, so they deterministically replace or add to its contents without modifying the original file.

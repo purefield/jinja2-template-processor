@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import yaml
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 import argparse
 import os
 import sys
@@ -8,6 +8,8 @@ import base64
 import yamllint.config
 import yamllint.linter
 import jsonpath_ng
+import json
+import re
 
 class IndentDumper(yaml.SafeDumper):
     def increase_indent(self, flow=False, indentless=False):
@@ -17,14 +19,11 @@ def __represent_multiline_yaml_str():
     """Compel ``yaml`` library to use block style literals for multi-line
     strings to prevent unwanted multiple newlines.
     """
-
     yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
     def repr_str(dumper, data):
         if '\n' in data:
-            return dumper.represent_scalar(
-                'tag:yaml.org,2002:str', data, style='|')
+            return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
         return dumper.org_represent_str(data)
-
     yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
 __represent_multiline_yaml_str()
 
@@ -53,60 +52,162 @@ def process_template(config_data, template_file):
     """
     template_dir = os.path.dirname(os.path.abspath(template_file))
     includes_dir = os.path.join(template_dir, 'includes')
-    env = Environment(loader=FileSystemLoader([template_dir,includes_dir]))
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir]))
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     try:
         template = env.get_template(os.path.basename(template_file))
     except jinja2.exceptions.TemplateNotFound:
         raise FileNotFoundError(f"Error: Template file '{template_file}' not found.")
-    rendered_output = template.render(config_data)
-    return rendered_output
+    return template.render(config_data)
+
+# --- JSONPath upsert helpers -------------------------------------------------
+
+_key_index_re = re.compile(r"([^.\[\]]+)|(\[(\d+)\])")  # tokens: key or [index]
+
+def _ensure_container(parent, token_key, next_token_is_index):
+    """Ensure that the next container exists under parent for token_key.
+    If next is index -> create list; else create dict.
+    """
+    if isinstance(parent, dict):
+        if token_key not in parent or parent[token_key] is None:
+            parent[token_key] = [] if next_token_is_index else {}
+        return parent[token_key]
+    return parent  # best effort; caller guards types
+
+def _set_by_path(doc, path_expr, value):
+    """Create-or-update value at a dotted/array path like:
+       'a.b[0].c' or '$.a.b[1]'. Creates missing dicts/lists as needed.
+    """
+    # Normalize: remove leading '$' and optional '.'
+    if path_expr.startswith('$'):
+        path_expr = path_expr[1:]
+    if path_expr.startswith('.'):
+        path_expr = path_expr[1:]
+
+    if path_expr == '':
+        # root replacement (rare; not recommended)
+        return value
+
+    tokens = _key_index_re.findall(path_expr)
+    # tokens is list of tuples (key, idx_group, idx_num). We map to sequence of ('key', name) or ('idx', int)
+    parsed = []
+    for key, idxgrp, idxnum in tokens:
+        if key:
+            parsed.append(('key', key))
+        else:
+            parsed.append(('idx', int(idxnum)))
+
+    cur = doc
+    parent = None
+    parent_key = None
+    for i, (ttype, tval) in enumerate(parsed):
+        last = (i == len(parsed) - 1)
+        if ttype == 'key':
+            # lookahead: is next token an index?
+            next_is_index = (i + 1 < len(parsed) and parsed[i+1][0] == 'idx')
+            if not isinstance(cur, dict):
+                # convert to dict if possible
+                if parent is not None:
+                    if isinstance(parent, list) and isinstance(parent_key, int):
+                        parent[parent_key] = {}
+                        cur = parent[parent_key]
+                    elif isinstance(parent, dict):
+                        parent[parent_key] = {}
+                        cur = parent[parent_key]
+                    else:
+                        raise TypeError("Path traversal encountered non-container type")
+                else:
+                    raise TypeError("Root is not a dict; cannot set by key")  # shouldn't happen for our usage
+            if last:
+                cur[tval] = value
+                return doc
+            parent, parent_key = cur, tval
+            cur = _ensure_container(cur, tval, next_is_index)
+        else:  # index
+            idx = tval
+            if not isinstance(cur, list):
+                # convert to list
+                if parent is not None:
+                    if isinstance(parent, dict):
+                        parent[parent_key] = []
+                        cur = parent[parent_key]
+                    elif isinstance(parent, list) and isinstance(parent_key, int):
+                        parent[parent_key] = []
+                        cur = parent[parent_key]
+                    else:
+                        raise TypeError("Path traversal encountered non-container type")
+                else:
+                    raise TypeError("Root is not a list; cannot index")
+            # ensure size
+            while len(cur) <= idx:
+                cur.append({})
+            if last:
+                cur[idx] = value
+                return doc
+            parent, parent_key = cur, idx
+            cur = cur[idx]
+    return doc
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process Jinja2 templates with YAML data.")
-    parser.add_argument("data_file",     help="Path to the YAML data file")
+    parser.add_argument("data_file", nargs="?", help="Path to the YAML data file, inline JSON string, or omit to use -p only")
     parser.add_argument("template_file", help="Path to the main Jinja2 template file")
     parser.add_argument(
         "-p", "--param", action="append", default=[],
-        help="Override parameter using JSONPath syntax: path=value (repeatable)"
+        help="Override parameter using JSONPath syntax: path=value (repeatable). Supports dotted paths and [index]."
     )
     args = parser.parse_args()
 
-    try:
-        with open(args.data_file, 'r') as f:
-            data = yaml.safe_load(f)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Error: Data file '{args.data_file}' not found.")
-    except yaml.YAMLError as e:
-        raise ValueError(f"Error: Invalid YAML format in '{args.data_file}': {e}")
+    # Load data source (file path OR inline JSON). If omitted, start from {}.
+    data = {}
+    if args.data_file:
+        # Try parsing as JSON string first
+        try:
+            data = json.loads(args.data_file)
+        except Exception:
+            # Fallback to file path (YAML/JSON)
+            try:
+                with open(args.data_file, 'r') as f:
+                    data = yaml.safe_load(f) or {}
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Error: Data file '{args.data_file}' not found.")
+            except yaml.YAMLError as e:
+                raise ValueError(f"Error: Invalid YAML format in '{args.data_file}': {e}")
 
-    # Apply JSONPath overrides
+    # Require at least one input source
+    if not data and not args.param:
+        parser.error("Provide either a data_file or at least one -p override.")
+
+    # Apply JSONPath overrides with create-if-missing semantics
     for override in args.param:
         if "=" not in override:
             continue
         path_expr, val = override.split("=", 1)
-        expr = jsonpath_ng.parse(path_expr)
+        # allow multi-line via \n, \t, etc.
         val = val.encode("utf-8").decode("unicode_escape")
-        for match in expr.find(data):
-            path = match.full_path
-            path.update(data, val)
-
-    import tempfile
-    tmp = tempfile.NamedTemporaryFile("w+", delete=False)
-    yaml.safe_dump(data, tmp)
-    tmp.flush()
-    data_file = tmp.name
+        try:
+            # Try strict JSONPath update for existing nodes
+            expr = jsonpath_ng.parse(path_expr)
+            matches = expr.find(data)
+            if matches:
+                for m in matches:
+                    m.full_path.update(data, val)
+                continue
+        except Exception:
+            # If parse fails, fall back to dotted/indexed path
+            pass
+        # Create missing structure using dotted/index fallback
+        _set_by_path(data, path_expr, val)
 
     config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
 
     try:
         processedTemplate = process_template(data, args.template_file)
-        # print(processedTemplate)
     except (FileNotFoundError, ValueError) as e:
         print(e)
 
-    if args.template_file.endswith('yaml.tpl'):
+    if args.template_file.endswith('yaml.tpl') or args.template_file.endswith('yaml.tmpl'):
         outputDict = {}
         try:
             outputDict = yaml.safe_load(processedTemplate)
@@ -130,7 +231,6 @@ if __name__ == "__main__":
             for problem in problems:
                 print(problem, file=sys.stderr)
             print(outputYaml)
-            # print(processedTemplate)
         except Exception as e:
             print(e)
     else:
