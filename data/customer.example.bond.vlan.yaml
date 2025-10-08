@@ -61,6 +61,7 @@ hosts:
       os: {wwn: wwn01}
     bmc:
       vendor: dell
+      version: 9
       username: root
       password: bmc-password.txt
       address: 10.0.1.4
@@ -86,6 +87,7 @@ hosts:
       os: {wwn: wwn02}
     bmc:
       vendor: dell
+      version: 9
       username: root
       password: bmc-password.txt
       address: 10.0.1.5
@@ -111,6 +113,7 @@ hosts:
       os: {wwn: wwn03}
     bmc:
       vendor: dell
+      version: 9
       username: root
       password: bmc-password.txt
       address: 10.0.1.6
@@ -136,6 +139,7 @@ hosts:
       os: {wwn: wwn13}
     bmc:
       vendor: dell
+      version: 9
       username: root
       password: bmc-password.txt
       address: 10.0.1.11
@@ -161,6 +165,7 @@ hosts:
       os: {wwn: wwn14}
     bmc:
       vendor: dell
+      version: 9
       username: root
       password: bmc-password.txt
       address: 10.0.1.21
