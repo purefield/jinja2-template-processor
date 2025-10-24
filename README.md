@@ -1,6 +1,7 @@
 # python jinja2-template-processor
 ## YAML Jinja Template Processor Setup
-This script renders Jinja2 templates using YAML data and validates the result with `yamllint`.
+This script renders Jinja2 templates using YAML input data and parameters in jsonpath format.
+When the template is producing yaml, it validates the result with `yamllint`.
 
 ## 🧰 Requirements
 - Python 3.6+
@@ -11,6 +12,20 @@ This script renders Jinja2 templates using YAML data and validates the result wi
 pip install -r requirements.txt
 ```
 
+## 📦 Use as container image
+Create container image
+```bash
+podman build -t quay.io/dds/process:latest -f Containerfile
+podman login quay.io/dds
+podman push quay.io/dds/process:latest
+```
+Use wrapper script with container image (all path need to be inside the working directory)
+```bash
+process.sh [data-file] [-p ""]* [template file]
+```
+
+
+# Examples
 ## Agent Based Installer
 ### Render agent-config.yaml
 ```bash
