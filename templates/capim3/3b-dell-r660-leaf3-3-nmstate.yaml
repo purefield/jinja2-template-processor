@@ -1,0 +1,108 @@
+apiVersion: agent-install.openshift.io/v1beta1
+kind: NMStateConfig
+metadata:
+  labels:
+    # Must match what is in nmStateConfigLabelSelector in Something Else???
+    node: dellr660leaf33
+    role: controller
+  name: dell-r660-leaf3-3
+  namespace: adobe
+spec:
+  config:
+    dns-resolver:
+      config:
+        server:
+        - 172.20.129.10
+    interfaces:
+    - ipv4:
+        dhcp: false
+        enabled: false
+      ipv6:
+        enabled: false
+      link-aggregation:
+        mode: 802.3ad
+        options:
+          downdelay: 200
+          lacp_rate: 1
+          miimon: 100
+          updelay: 200
+          xmit_hash_policy: layer2+3
+        port:
+        - eno12399np0
+        - eno12409np1
+      mtu: 9000
+      name: bond0
+      state: up
+      type: bond
+    - name: bond0.2100
+      type: vlan
+      state: up
+      vlan:
+        base-iface: bond0
+        id: 2100
+      ipv4:
+        address:
+        - ip: 172.21.192.13
+          prefix-length: 24
+        dhcp: false
+        enabled: true
+      mtu: 9000
+    - ipv4:
+        dhcp: false
+        enabled: false
+      ipv6:
+        enabled: false
+      link-aggregation:
+        mode: 802.3ad
+        options:
+          downdelay: 200
+          lacp_rate: 1
+          miimon: 100
+          updelay: 200
+          xmit_hash_policy: layer2+3
+        port:
+        - eno12419np2
+        - eno12429np3
+      mtu: 9000
+      name: bond1
+      state: up
+      type: bond
+    - ipv4:
+        dhcp: false
+        enabled: false
+      ipv6:
+        enabled: false
+      link-aggregation:
+        mode: 802.3ad
+        options:
+          downdelay: 200
+          lacp_rate: 1
+          miimon: 100
+          updelay: 200
+          xmit_hash_policy: layer2+3
+        port:
+        - ens2f0np0
+        - ens2f1np1
+      mtu: 9000
+      name: bond2
+      state: up
+      type: bond
+    routes:
+      config:
+      - destination: 0.0.0.0/0
+        next-hop-address: 172.21.192.1
+        next-hop-interface: bond0.2100
+        table-id: 254
+  interfaces:
+  - macAddress: 6C:92:CF:1D:00:E0
+    name: eno12399np0
+  - macAddress: 6C:92:CF:1D:00:E1
+    name: eno12409np1
+  - macAddress: 6C:92:CF:1D:00:E2
+    name: eno12419np2
+  - macAddress: 6C:92:CF:1D:00:E3
+    name: eno12429np3
+  - macAddress: B4:83:51:18:11:3E
+    name: ens2f0np0
+  - macAddress: B4:83:51:18:11:3F
+    name: ens2f1
