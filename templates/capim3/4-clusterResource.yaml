@@ -1,0 +1,23 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: adobecluster
+  namespace: adobe
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 172.18.0.0/20
+    services:
+      cidrBlocks:
+        - 10.96.0.0/12
+  controlPlaneRef: 
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha2
+    kind: OpenshiftAssistedControlPlane
+    name:  adobecluster
+    namespace: adobe
+  infrastructureRef: 
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: Metal3Cluster
+    name: adobecluster
+    namespace: adobe
