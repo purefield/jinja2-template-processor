@@ -19,10 +19,10 @@ items:
     clusterNetwork:
       pods:
         cidrBlocks:
-          - 172.18.0.0/20
+          - {{ network.cluster.subnet }}
       services:
         cidrBlocks:
-          - 10.96.0.0/12
+          - {{ network.service.subnet }}
     controlPlaneRef: 
       apiVersion: controlplane.cluster.x-k8s.io/v1alpha2
       kind: OpenshiftAssistedControlPlane
@@ -51,12 +51,10 @@ items:
       nmStateConfigLabelSelector: 
         matchLabels:
           role: controller
-    distributionVersion: 4.19.10
-    config:
-      apiVIPs:
-      - 172.21.0.201
-      ingressVIPs:
-      - 172.21.0.200
+    distributionVersion: {{ cluster.version }}
+    config:{% if controlCount > 1 %}
+      apiVIPs: {{ network.primary.vips.api }}
+      ingressVIPs: {{ network.primary.vips.apps }}{% endif %}
       baseDomain: {{ network.domain }}
       pullSecretRef:
         name: pullsecret-{{ cluster.name }}
@@ -67,7 +65,7 @@ items:
         kind: Metal3MachineTemplate
         name: {{ cluster.name }}-master
         namespace: {{ cluster.name }}
-    replicas: 3
+    replicas: {{ controlCount }}
 - kind: Secret
   apiVersion: v1
   metadata:
@@ -110,7 +108,7 @@ items:
      namespace: {{ cluster.name }}
   spec:
      clusterName: {{ cluster.name }}
-{% for name,host in hosts.items() %}
+{% for name,host in hosts.items() -%}
 - kind: Secret
   apiVersion: v1
   metadata:
