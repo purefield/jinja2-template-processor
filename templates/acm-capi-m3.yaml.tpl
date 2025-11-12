@@ -116,7 +116,7 @@ items:
     namespace: {{ cluster.name }}
   type: Opaque
   data:
-    nmstate: {% set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset -%}
+    nmstate: {% set nmstate %}{% include "includes/nmstate.config.yaml.tpl" %}{% endset -%}
      {{ nmstate | base64encode }}{% if host.bmc %}
 - kind: Secret
   apiVersion: v1
@@ -146,4 +146,5 @@ items:
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
-    online: false{%- endfor %}
+    online: false
+{% endfor %}
