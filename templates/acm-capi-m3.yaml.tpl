@@ -63,7 +63,7 @@ items:
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: Metal3MachineTemplate
-        name: {{ cluster.name }}-master
+        name: {{ cluster.name }}-controller
         namespace: {{ cluster.name }}
     replicas: {{ controlCount }}
 - kind: Secret
@@ -87,7 +87,7 @@ items:
 - kind: Metal3MachineTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
-    name: {{ cluster.name }}-master
+    name: {{ cluster.name }}-controller
     namespace: {{ cluster.name }}
   spec:
     nodeReuse: false
@@ -98,13 +98,13 @@ items:
             role: controller
         automatedCleaningMode: metadata
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-master
+          name: {{ cluster.name }}-machine-template-controller
         customDeploy:
           method: install_coreos
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
-     name: {{ cluster.name }}-machine-template-master
+     name: {{ cluster.name }}-machine-template-controller
      namespace: {{ cluster.name }}
   spec:
      clusterName: {{ cluster.name }}
@@ -129,6 +129,17 @@ items:
     labels:
       environment.metal3.io: baremetal
   type: Opaque{% endif %}
+- kind: NMStateConfig
+  apiVersion: agent-install.openshift.io/v1beta1
+  metadata:
+    labels:
+      node: {{ name }}
+      role: {{ 'controller' if host.role == 'control' else 'worker' }}
+    name: {{ name }}-nmstate
+    namespace: {{ cluster.name }}
+  spec:
+    config: {%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset %}
+{{ nmstate | indent(4,true) }}
 - kind: BareMetalHost
   apiVersion: metal3.io/v1alpha1
   metadata:
@@ -136,7 +147,7 @@ items:
       inspect.metal3.io: disabled
     labels:
       node: {{ name }} 
-      role: {{ 'master' if host.role == 'control' else 'worker' }}
+      role: {{ 'controller' if host.role == 'control' else 'worker' }}
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
