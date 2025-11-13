@@ -42,7 +42,7 @@ items:
     annotations: 
       controlplane.cluster.x-k8s.io/install-config-override: |
         { "networking": { "machineNetwork": [ {"cidr": "{{ network.primary.subnet }}"} ],
-                          "clusterNetwork": [ {"cidr": "{{ network.cluster.subnet }}", "hostPrefix: {{ network.cluster.hostPrefix|default(23, true) }}} ] },
+                          "clusterNetwork": [ {"cidr": "{{ network.cluster.subnet }}", "hostPrefix": {{ network.cluster.hostPrefix|default(23, true) }}} ] },
           "compute": [ { "name": "worker", "replicas": 3 } ] }
       #cluster.x-k8s.io/release-image-repository-override: registry.ci.openshift.org/ocp/release
   spec:
