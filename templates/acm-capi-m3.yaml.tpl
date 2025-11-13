@@ -38,7 +38,10 @@ items:
   metadata:
     name: {{ cluster.name }}
     namespace: {{ cluster.name }}
-    annotations: {}
+    annotations: 
+      controlplane.cluster.x-k8s.io/install-config-override: |
+        { "networking": { "machineNetwork": [ {"cidr": "{{ network.primary.subnet }}"} ] },
+          "compute": [ { "name": "worker", "replicas": 3 } ] }
       #cluster.x-k8s.io/release-image-repository-override: registry.ci.openshift.org/ocp/release
   spec:
     openshiftAssistedConfigSpec:
