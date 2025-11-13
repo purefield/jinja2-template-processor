@@ -1,3 +1,4 @@
+{#- https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted -#}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
@@ -111,11 +112,11 @@ items:
      namespace: {{ cluster.name }}
   spec:
      clusterName: {{ cluster.name }}
-{% for name,host in hosts.items() -%}
+{% for name,host in hosts.items() %}{% set shortname=name.split('.')[0]%}
 - kind: Secret
   apiVersion: v1
   metadata:
-    name: {{ name }}-nmstate
+    name: {{ shortname }}-provisioning-nmstate
     namespace: {{ cluster.name }}
   type: Opaque
   data:
@@ -136,9 +137,9 @@ items:
   apiVersion: agent-install.openshift.io/v1beta1
   metadata:
     labels:
-      node: {{ name }}
+      node: {{ shortname }}
       role: {{ 'controller' if host.role == 'control' else 'worker' }}
-    name: {{ name }}-nmstate
+    name: {{ shortname }}-nmstate
     namespace: {{ cluster.name }}
   spec:
     config: {%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset %}
@@ -149,12 +150,12 @@ items:
     annotations:
       inspect.metal3.io: disabled
     labels:
-      node: {{ name }} 
+      node: {{ shortname }} 
       role: {{ 'controller' if host.role == 'control' else 'worker' }}
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
-    preprovisioningNetworkDataName: {{ name }}-nmstate
+    preprovisioningNetworkDataName: {{ shortname }}-provisioning-nmstate
     rootDeviceHints:  {{ host.storage.os }}
     automatedCleaningMode: metadata{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
