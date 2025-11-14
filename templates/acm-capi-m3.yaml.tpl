@@ -1,4 +1,8 @@
 {#- https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted -#}
+{%- set automatedCleaningMode = "disabled" -%}
+{%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
+{%- set imageUrl=" https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
+{%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
@@ -101,21 +105,98 @@ items:
         hostSelector:
           matchLabels:
             role: controller
-        automatedCleaningMode: metadata
+        automatedCleaningMode: {{ automatedCleaningMode }}
         dataTemplate:
           name: {{ cluster.name }}-machine-template-controller
         image:
           format: qcow2
           checksumType: sha256
-          checksum: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt
-          url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2
+          checksum: {{ imageChecksum }}
+          url: {{ imageUrl }}
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
      name: {{ cluster.name }}-machine-template-controller
      namespace: {{ cluster.name }}
   spec:
+    clusterName: {{ cluster.name }}{% if workerCount > 0 %}
+- kind: Metal3MachineTemplate
+  apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+  metadata:
+    name: {{ cluster.name }}-worker
+    namespace: {{ cluster.name }}
+  spec:
+    nodeReuse: false
+    template:
+      spec:
+        hostSelector:
+          matchLabels:
+            role: worker
+        automatedCleaningMode: {{ automatedCleaningMode }}
+        dataTemplate:
+          name: {{ cluster.name }}-machine-template-worker
+        image:
+          format: qcow2
+          checksumType: sha256
+          checksum: {{ imageChecksum }}
+          url: {{ imageUrl }}
+- kind: Metal3DataTemplate
+  apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+  metadata:
+     name: {{ cluster.name }}-machine-template-worker
+     namespace: {{ cluster.name }}
+  spec:
      clusterName: {{ cluster.name }}
+- kind: MachineDeployment
+  apiVersion: cluster.x-k8s.io/v1beta1
+  metadata:
+    name: {{ cluster.name }}-worker
+    namespace: {{ cluster.name }}
+    labels:
+      cluster.x-k8s.io/cluster-name: {{ cluster.name }}
+  spec:
+    clusterName: {{ cluster.name }}
+    replicas: 2
+    selector:
+      matchLabels:
+        cluster.x-k8s.io/cluster-name: {{ cluster.name }}
+    template:
+      metadata:
+        labels:
+          cluster.x-k8s.io/cluster-name: {{ cluster.name }}
+      spec:
+        clusterName: {{ cluster.name }}
+        bootstrap:
+          configRef:
+            name: {{ cluster.name }}-worker
+            apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+            kind: OpenshiftAssistedConfigTemplate
+        infrastructureRef:
+          name: {{ cluster.name }}-worker
+          apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+          kind: Metal3MachineTemplate
+- kind: OpenshiftAssistedConfigTemplate
+  apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+  metadata:
+    name: {{ cluster.name }}-worker
+    namespace: {{ cluster.name }}
+    labels:
+      cluster.x-k8s.io/cluster-name: {{ cluster.name }}
+  spec:
+    template:
+      metadata:
+        annotations:
+          openshiftassistedconfig.cluster.x-k8s.io/discovery-ignition-override: '{{ ignitionOverride }}'
+      spec:
+        nodeRegistration:
+          kubeletExtraLabels:
+            - 'metal3.io/uuid="${METADATA_UUID}"'
+        nmStateConfigLabelSelector:
+          matchLabels:
+            role: worker
+        pullSecretRef:
+          name: "pullsecret-{{ cluster.name }}"
+        sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% endif%}
 {% for name,host in hosts.items() %}{% set shortname=name.split('.')[0]%}
 - kind: Secret
   apiVersion: v1
@@ -161,7 +242,7 @@ items:
   spec:
     preprovisioningNetworkDataName: {{ shortname }}-provisioning-nmstate
     rootDeviceHints:  {{ host.storage.os }}
-    automatedCleaningMode: metadata{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    automatedCleaningMode: {{ automatedCleaningMode }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
