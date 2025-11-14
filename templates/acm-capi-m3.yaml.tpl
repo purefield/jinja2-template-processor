@@ -104,8 +104,11 @@ items:
         automatedCleaningMode: metadata
         dataTemplate:
           name: {{ cluster.name }}-machine-template-controller
-        customDeploy:
-          method: install_coreos
+        image:
+          format: qcow2
+          checksumType: sha256
+          checksum: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt
+          url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
