@@ -1,4 +1,5 @@
 {#- https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted -#}
+{#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}
 {%- set automatedCleaningMode = "disabled" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
 {%- set imageUrl=" https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
