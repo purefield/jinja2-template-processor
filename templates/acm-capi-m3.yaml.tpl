@@ -2,7 +2,8 @@
 {#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}
 {%- set automatedCleaningMode = "disabled" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
-{%- set imageUrl=" https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
+{%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
+{%- set imageUrl="" -%}
 {%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
@@ -108,12 +109,14 @@ items:
             role: controller
         automatedCleaningMode: {{ automatedCleaningMode }}
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-controller
+          name: {{ cluster.name }}-machine-template-controller{% if imageUrl %}
         image:
           format: qcow2
           checksumType: sha256
           checksum: {{ imageChecksum }}
-          url: {{ imageUrl }}
+          url: {{ imageUrl }}{% else %}
+        customDeploy:
+          method: install_coreos{% endif %}
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
@@ -135,12 +138,14 @@ items:
             role: worker
         automatedCleaningMode: {{ automatedCleaningMode }}
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-worker
+          name: {{ cluster.name }}-machine-template-worker{% if imageUrl %}
         image:
           format: qcow2
           checksumType: sha256
           checksum: {{ imageChecksum }}
-          url: {{ imageUrl }}
+          url: {{ imageUrl }}{% else %}
+        customDeploy:
+          method: install_coreos{% endif %}
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
