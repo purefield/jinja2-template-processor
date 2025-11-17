@@ -3,7 +3,9 @@
 {%- set enabledFalse='{"enabled":false}' %}
 {%- set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
 interfaces:{% for interface in host.network.interfaces %}
-  - type: ethernet
+  - type: ethernet{% if not skipMacMapping %}
+    identifier: mac-address
+    mac-address: {{ interface.macAddress }}{% endif %}
     name: {{ interface.name }}{% if network.primary.mtu %}
     mtu: {{ network.primary.mtu }}{% endif %}
     state: up
