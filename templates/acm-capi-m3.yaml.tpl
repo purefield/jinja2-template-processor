@@ -49,7 +49,7 @@ items:
       controlplane.cluster.x-k8s.io/install-config-override: |
         { "networking": { "machineNetwork": [ {"cidr": "{{ network.primary.subnet }}"} ],
                           "clusterNetwork": [ {"cidr": "{{ network.cluster.subnet }}", "hostPrefix": {{ network.cluster.hostPrefix|default(23, true) }}} ] },
-          "compute": [ { "name": "worker", "replicas": 3 } ] }
+          "compute": [ { "name": "worker", "replicas": {{ workerCount }} } ] }
       #cluster.x-k8s.io/release-image-repository-override: registry.ci.openshift.org/ocp/release
   spec:
     openshiftAssistedConfigSpec:
@@ -162,7 +162,7 @@ items:
       cluster.x-k8s.io/cluster-name: {{ cluster.name }}
   spec:
     clusterName: {{ cluster.name }}
-    replicas: 2
+    replicas: {{ workerCount }}
     selector:
       matchLabels:
         cluster.x-k8s.io/cluster-name: {{ cluster.name }}
