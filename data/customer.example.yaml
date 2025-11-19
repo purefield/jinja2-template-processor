@@ -52,7 +52,7 @@ network:
       apps: [10.0.0.3]
   cluster:
     subnet: 10.128.0.0/14
-    hostPrefix: 23
+    hostPrefix: 22
   service:
     subnet: 172.30.0.0/16
   secondary:
