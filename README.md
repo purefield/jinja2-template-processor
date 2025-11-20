@@ -52,6 +52,14 @@ Configuration file for ACM zero touch provisioning
 cat acm-ztp.yaml
 ```
 
+## CAPI+Metal3 Installation using MCE
+### Render acm-capi-m3.yaml
+Configuration file for ACM zero touch provisioning
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
+cat acm-capi-m3.yaml
+```
+
 ### Render acm-asc.yaml
 Configuration file for ACM Agent Service Config
 ```bash
