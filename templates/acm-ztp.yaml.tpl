@@ -168,7 +168,7 @@ items:
     name: {{ name }}-nmstate
     namespace: {{ cluster.name }}
   spec:
-    config: {%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset -%}
+    config: {%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset %}
 {{ nmstate | indent(4,true) }}{% if host.bmc %}
 - apiVersion: v1
   stringData:
@@ -194,14 +194,9 @@ items:
     namespace: {{ cluster.name }}
   spec:
     rootDeviceHints:  {{ host.storage.os }}
-    automatedCleaningMode: metadata{% if host.bmc %}
+    automatedCleaningMode: metadata{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
-      address: {% if    host.bmc.vendor == 'dell'             %}{{ 'redfish' if host.bmc.version >= 9 else 'idrac' }}-virtualmedia://{{ host.bmc.address }}/redfish/v1/Systems/System.Embedded.1
-               {%- elif host.bmc.vendor == 'hp'               %}redfish-virtualmedia+https://{{ host.bmc.address }}/redfish/v1/Systems/1
-               {%- elif host.bmc.vendor == 'ksushy'           %}redfish-virtualmedia://{{ host.bmc.address }}/redfish/v1/Systems/{{ cluster.name }}-cluster/{{ name | replace(".", "-") }}
-               {%- elif host.bmc.vendor == 'kubevirt-redfish' %}redfish-virtualmedia+https://{{ host.bmc.address }}/redfish/v1/Systems/{{ name.replace('.','-') }}{% endif %}
-      credentialsName: bmc-secret-{{ name }}
-      disableCertificateVerification: true{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
+{{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: true
     customDeploy:
