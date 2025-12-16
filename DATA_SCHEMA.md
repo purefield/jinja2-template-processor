@@ -12,6 +12,10 @@ cluster:
   location: string (required)
   manifests: [string, string] (optional)
   mirrors: [{source: [mirrors]] (optional)
+  platform: "baremetal" | "none" | "nutanix"
+
+plugins:
+  nutanix: string (optional)
 
 network:
   domain: string (required)
@@ -95,6 +99,7 @@ hosts:
 - host.*.bmc.password
 - cluster.sshKeys
 - cluster.manifests
+- plugins.nutanix
 
 
 ### Valid Bond Types

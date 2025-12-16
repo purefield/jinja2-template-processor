@@ -1,6 +1,6 @@
 # https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html
 # rules for use with Agent installer
-# - baremetal, vsphere, and none platforms are supported.
+# - baremetal, nutanix, vsphere, and none platforms are supported.
 # - If `none` is used, the number of control plane replicas must be 1 and the total number of worker replicas must be 0.
 # - apiVIPs and ingressVIPs parameters must be set for bare metal and vSphere platforms and not for `none`.
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
@@ -33,10 +33,13 @@ networking:
   serviceNetwork:
     - {{ network.service.subnet }}
 
-platform:{% if controlCount > 1 %}
+platform:{% set platform = cluster.platform if cluster.platform is defined else 'baremetal' if controlCount > 1 else 'none' %}{% if platform == 'baremetal' %}
   baremetal:
     apiVIPs: {{ network.primary.vips.api }}
-    ingressVIPs: {{ network.primary.vips.apps }}{% else%}
+    ingressVIPs: {{ network.primary.vips.apps }}{% elif platform != "none" %}
+  {{ platform }}: {% set platformConfig %}{% include plugins[platform].platform  %}{% endset %}
+{{ platformConfig | indent(4,true) }}
+  {% else%}
   none: {}{% endif %}
 
 publish: External

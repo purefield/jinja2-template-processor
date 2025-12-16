@@ -1,8 +1,11 @@
 account:
   pullSecret: 2023/pull-secret.json
+plugins:
+  nutanix: 
+    platform: nutanix.yaml
 cluster:
   version: 4.18.10
-  platform: baremetal
+  platform: nutanix
   arch: x86-64
   name: cluster
   sshKeys: 
