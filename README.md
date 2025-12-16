@@ -37,6 +37,11 @@ cat agent-config.yaml
 ./process.py data/customer.example.bond.vlan.yaml templates/install-config-baremetal.yaml.tpl > install-config.yaml
 cat install-config.yaml
 ```
+### Render install-config.yaml for Nutanix
+```bash
+./process.py data/customer.example.nutanix.yaml templates/install-config-baremetal.yaml.tpl > install-config.yaml
+cat install-config.yaml
+```
 ### Render mirror-registry-config.yaml
 ```bash
 mkdir openshift
