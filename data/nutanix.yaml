@@ -1,0 +1,23 @@
+apiServer: https://1.1.1.1:1234 
+clusterOSImage: "https://red.ht/nutanix-coreos.img" # URL to the RHCOS image
+machines:
+  - controlPlane: {}
+    platform:
+      nutanix:
+        categories:
+          - key: "env"
+            value: "ocp"
+        subnetUUID: "<uuid_of_your_subnet>" # UUID of your Nutanix subnet
+  - compute: {}
+    platform:
+      nutanix:
+        categories:
+          - key: "env"
+            value: "ocp"
+        subnetUUID: "<uuid_of_your_subnet>" # UUID of your Nutanix subnet
+prismCentral:
+  endpoint:
+    address: 1.1.1.1
+    port: 9440
+  password: nutanix.pass.txt
+  username: nutanix.user.txt

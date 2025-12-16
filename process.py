@@ -42,7 +42,7 @@ def base64encode(s):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode("utf-8")
 
-def process_template(config_data, template_file):
+def process_template(config_data, template_file, data_file):
     """
     Processes a Jinja2 template with data loaded from a YAML file.
 
@@ -51,8 +51,9 @@ def process_template(config_data, template_file):
         template_file (str): Path to the main Jinja2 template file.
     """
     template_dir = os.path.dirname(os.path.abspath(template_file))
+    config_dir   = os.path.dirname(os.path.abspath(data_file))
     includes_dir = os.path.join(template_dir, 'includes')
-    env = Environment(loader=FileSystemLoader([template_dir, includes_dir]))
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, config_dir]))
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     try:
@@ -203,7 +204,7 @@ if __name__ == "__main__":
     config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
 
     try:
-        processedTemplate = process_template(data, args.template_file)
+        processedTemplate = process_template(data, args.template_file, args.data_file)
     except (FileNotFoundError, ValueError) as e:
         print(e)
 
