@@ -15,7 +15,8 @@ cluster:
   platform: "baremetal" | "none" | "nutanix"
 
 plugins:
-  nutanix: string (optional)
+  <plugin-key>:
+    platform: string (optional)
 
 network:
   domain: string (required)
@@ -99,7 +100,7 @@ hosts:
 - host.*.bmc.password
 - cluster.sshKeys
 - cluster.manifests
-- plugins.nutanix
+- plugins.<platform-key>.platform
 
 
 ### Valid Bond Types
