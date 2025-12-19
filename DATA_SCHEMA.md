@@ -15,7 +15,7 @@ cluster:
   platform: "baremetal" | "none" | "nutanix"
 
 plugins:
-  <plugin-key>:
+  <platformKey>:
     platform: string (optional)
 
 network:
