@@ -19,5 +19,5 @@ prismCentral:
   endpoint:
     address: 1.1.1.1
     port: 9440
-  password: nutanix.pass.txt
-  username: nutanix.user.txt
+  password: {{ load_file("data/nutanix.pass.txt")|trim|safe }}
+  username: prismUser
