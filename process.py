@@ -10,6 +10,11 @@ import yamllint.linter
 import jsonpath_ng
 import json
 import re
+try:
+    import jsonschema
+    from jsonschema import FormatChecker
+except Exception:
+    jsonschema = None
 
 class IndentDumper(yaml.SafeDumper):
     def increase_indent(self, flow=False, indentless=False):
@@ -158,7 +163,16 @@ if __name__ == "__main__":
         "-p", "--param", action="append", default=[],
         help="Override parameter using JSONPath syntax: path=value (repeatable). Supports dotted paths and [index]."
     )
+    parser.add_argument("-s", "--schema", help="Path to a JSON Schema (JSON or YAML) to validate the data file against")
+    parser.add_argument("--validate-scope", choices=["data", "data+params"], default="data",
+                        help="When to run schema validation: 'data' validates before overrides, 'data+params' validates again after applying -p overrides")
+    parser.add_argument("-S", dest="validate_data_and_params", action="store_true",
+                        help="Shortcut flag: if present, validate both data and params (equivalent to --validate-scope=data+params)")
     args = parser.parse_args()
+
+    # If the -S shortcut flag was used, set validate_scope accordingly
+    if getattr(args, 'validate_data_and_params', False):
+        args.validate_scope = "data+params"
 
     # Load data source (file path OR inline JSON). If omitted, start from {}.
     data = {}
@@ -175,6 +189,51 @@ if __name__ == "__main__":
                 raise FileNotFoundError(f"Error: Data file '{args.data_file}' not found.")
             except yaml.YAMLError as e:
                 raise ValueError(f"Error: Invalid YAML format in '{args.data_file}': {e}")
+
+    # Schema validation helpers
+    def _load_schema(path):
+        s = None
+        try:
+            with open(path, 'r') as fh:
+                txt = fh.read()
+        except Exception as e:
+            raise FileNotFoundError(f"Schema file '{path}' not found: {e}")
+        try:
+            s = json.loads(txt)
+        except Exception:
+            try:
+                s = yaml.safe_load(txt)
+            except Exception as e:
+                raise ValueError(f"Could not parse schema file '{path}': {e}")
+        return s
+
+    def _validate_against_schema(obj, schema_path):
+        if not args.schema:
+            return []
+        if jsonschema is None:
+            raise RuntimeError("jsonschema package is required for schema validation. Install with: pip install jsonschema")
+        schema = _load_schema(schema_path)
+        Validator = jsonschema.validators.validator_for(schema)
+        validator = Validator(schema, format_checker=FormatChecker())
+        errors = sorted(validator.iter_errors(obj), key=lambda e: list(e.path))
+        msgs = []
+        for e in errors:
+            p = ".".join([str(x) for x in e.path]) if e.path else "<root>"
+            msgs.append(f"{p}: {e.message}")
+        return msgs
+
+    # If a schema was provided and scope includes 'data', validate original data before applying overrides
+    if args.schema and args.validate_scope in ("data", "data+params"):
+        try:
+            errs = _validate_against_schema(data, args.schema)
+        except Exception as e:
+            print(f"Schema validation setup error: {e}", file=sys.stderr)
+            sys.exit(2)
+        if errs:
+            print("Schema validation errors (data file):", file=sys.stderr)
+            for m in errs:
+                print(m, file=sys.stderr)
+            sys.exit(2)
 
     # Require at least one input source
     if not data and not args.param:
@@ -200,6 +259,19 @@ if __name__ == "__main__":
             pass
         # Create missing structure using dotted/index fallback
         _set_by_path(data, path_expr, val)
+
+    # If schema provided and scope is data+params, validate now after applying overrides
+    if args.schema and args.validate_scope == "data+params":
+        try:
+            errs = _validate_against_schema(data, args.schema)
+        except Exception as e:
+            print(f"Schema validation setup error: {e}", file=sys.stderr)
+            sys.exit(2)
+        if errs:
+            print("Schema validation errors (after applying overrides):", file=sys.stderr)
+            for m in errs:
+                print(m, file=sys.stderr)
+            sys.exit(2)
 
     config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
 
