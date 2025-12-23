@@ -131,3 +131,22 @@ If you omit `data_file`, an empty object is created and seeded from `-p`:
 ```bash
 ./process.py '{}' templates/console-notification.yaml.tmpl -p cluster.name=foo -p items[0].key=value
 ```
+
+## Schema validation
+
+You can validate input data against a JSON Schema using `-s` / `--schema`.
+To validate both the original data and again after applying `-p` overrides, use the `-S` flag (no argument) or the long form `--validate-scope data+params`.
+
+Validate data only:
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s clusterfile.schema.json
+```
+
+Validate data and overrides (shortcut `-S`):
+```bash
+./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s clusterfile.schema.json -S
+```
+
+Notes:
+- `-s` accepts a path to a JSON or YAML schema file.
+- `-S` is a shortcut flag equivalent to `--validate-scope data+params`.
