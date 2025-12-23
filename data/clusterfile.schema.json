@@ -628,7 +628,7 @@
                           "description": "World Wide Name (WWN) identifier for block storage devices.",
                           "x-doc-url": ["https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent-storage.html"]
                         },
-                        "device": {
+                        "deviceName": {
                           "type": "string",
                           "description": "Device path on the node, e.g. /dev/sda. Use with caution — path may vary across OS versions.",
                           "pattern": "^/dev/[A-Za-z0-9]+$"
