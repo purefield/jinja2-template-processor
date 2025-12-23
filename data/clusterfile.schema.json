@@ -618,29 +618,35 @@
               "description": "Storage hints for OS and persistent disks used by OpenShift. Provide device identifiers so automated provisioning can select the appropriate disk.",
               "properties": {
                 "os": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "type": "object",
-                      "description": "Structured device hint object. Prefer using one of the supported identifiers.",
+                      "description": "Structured root device hint object. Use one or more identifiers to target the OS disk during automated provisioning.",
                       "properties": {
-                        "wwn": {
-                          "type": "string",
-                          "description": "World Wide Name (WWN) identifier for block storage devices.",
-                          "x-doc-url": ["https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent-storage.html"]
-                        },
                         "deviceName": {
                           "type": "string",
-                          "description": "Device path on the node, e.g. /dev/sda. Use with caution — path may vary across OS versions.",
-                          "pattern": "^/dev/[A-Za-z0-9]+$"
+                          "description": "Device path on the node, for example /dev/sda. Use with caution — paths may vary across OS versions.",
+                          "pattern": "^/dev/[A-Za-z0-9._-]+$"
                         },
                         "byId": {
                           "type": "string",
-                          "description": "Stable by-id identifier (for example from /dev/disk/by-id) useful when device paths change.",
-                          "minLength": 3
-                        }
+                          "description": "Stable by-id identifier (for example from /dev/disk/by-id) useful when device paths change."
+                        },
+                        "wwn": {
+                          "type": "string",
+                          "description": "World Wide Name (WWN) identifier for block storage devices.",
+                          "x-doc-url": ["https://docs.redhat.com/en/documentation/openshift_container_platform/4.15/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"]
+                        },
+                        "serial": { "type": "string", "description": "Device serial number." },
+                        "model": { "type": "string", "description": "Device model string." },
+                        "vendor": { "type": "string", "description": "Device vendor string." },
+                        "rotational": { "type": "boolean", "description": "True for rotational (HDD) media, false for SSD/flash." },
+                        "minSizeGiB": { "type": "number", "minimum": 1, "description": "Minimum size in GiB required for the device to be considered." },
+                        "paths": { "type": "array", "items": { "type": "string" }, "description": "List of candidate device paths (for example /dev/sda, /dev/nvme0n1)." }
                       },
                       "additionalProperties": false
-                    }
+                    },
+                    { "type": "string", "description": "Simple device identifier or path (for example /dev/sda or a by-id string)." }
                   ]
                 }
               },
