@@ -139,12 +139,12 @@ To validate both the original data and again after applying `-p` overrides, use 
 
 Validate data only:
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s clusterfile.schema.json
+./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
 ```
 
 Validate data and overrides (shortcut `-S`):
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s clusterfile.schema.json -S
+./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
 ```
 
 Notes:
