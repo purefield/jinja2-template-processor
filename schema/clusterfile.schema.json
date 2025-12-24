@@ -530,8 +530,13 @@
                 "x-doc-url": []
               },
               "subnet": {
-                "type": "string",
-                "format": "cidr",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "cidr"
+                  },
+                  { "type": "string", "const": "dhcp" }
+                ],
                 "description": "Network CIDR for this secondary network (example: 192.168.0.0/24). Used to allocate IPs and determine routing for the network. Accepts IPv4 or IPv6 CIDRs.",
                 "x-doc-url": [
                   "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
