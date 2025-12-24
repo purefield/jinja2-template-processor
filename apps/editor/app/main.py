@@ -52,7 +52,7 @@ async def list_samples():
     if not SAMPLES_DIR.exists():
         return {"samples": []}
     samples = []
-    for f in SAMPLES_DIR.glob("*.clusterfle"):
+    for f in SAMPLES_DIR.glob("*.clusterfile"):
         samples.append({"name": f.stem, "filename": f.name})
     return {"samples": samples}
 
