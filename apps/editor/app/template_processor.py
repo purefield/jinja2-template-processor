@@ -215,12 +215,7 @@ def get_template_description(template_path: Path) -> str:
         "agent-config-bond-vlan.yaml.tpl": "Agent-based installer agent-config.yaml with bond/VLAN",
         "acm-ztp.yaml.tpl": "ACM Zero Touch Provisioning configuration",
         "acm-capi-m3.yaml.tpl": "ACM CAPI + Metal3 configuration for MCE",
-        "acm-asc.yaml.tpl": "ACM Agent Service Config",
-        "acm-creds.yaml.tpl": "ACM Host Inventory credentials",
         "mirror-registry-config.yaml.tpl": "Mirror registry configuration",
-        "nodes-config.yaml.tpl": "Nodes configuration",
-        "secondary-network-setup.yaml.tpl": "Secondary network configuration",
-        "infinidat-setup.yaml.tpl": "Infinidat storage setup",
         "test-dns.sh.tpl": "DNS verification script",
     }
     return descriptions.get(template_path.name, "Jinja2 template")

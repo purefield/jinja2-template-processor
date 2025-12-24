@@ -29,23 +29,23 @@ process.sh [data-file] [-p ""]* [template file]
 ## Agent Based Installer
 ### Render agent-config.yaml
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl   > agent-config.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl   > agent-config.yaml
 cat agent-config.yaml
 ```
 ### Render install-config.yaml
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/install-config-baremetal.yaml.tpl > install-config.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/install-config-baremetal.yaml.tpl > install-config.yaml
 cat install-config.yaml
 ```
 ### Render install-config.yaml for Nutanix
 ```bash
-./process.py data/customer.example.nutanix.yaml templates/install-config-baremetal.yaml.tpl > install-config.yaml
+./process.py data/customer.example.nutanix.clusterfile templates/install-config-baremetal.yaml.tpl > install-config.yaml
 cat install-config.yaml
 ```
 ### Render mirror-registry-config.yaml
 ```bash
 mkdir openshift
-./process.py data/customer.example.bond.vlan.yaml templates/mirror-registry-config.yaml.tpl > openshift/mirror-registry-config.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/mirror-registry-config.yaml.tpl > openshift/mirror-registry-config.yaml
 cat openshift/mirror-registry-config.yaml
 ```
 
@@ -53,7 +53,7 @@ cat openshift/mirror-registry-config.yaml
 ### Render acm-ztp.yaml
 Configuration file for ACM zero touch provisioning
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/acm-ztp.yaml.tpl > acm-ztp.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/acm-ztp.yaml.tpl > acm-ztp.yaml
 cat acm-ztp.yaml
 ```
 
@@ -61,14 +61,14 @@ cat acm-ztp.yaml
 ### Render acm-capi-m3.yaml
 Configuration file for ACM zero touch provisioning
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
 cat acm-capi-m3.yaml
 ```
 
 ### Render acm-asc.yaml
 Configuration file for ACM Agent Service Config
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/acm-asc.yaml.tpl > acm-asc.yaml
+./process.py data/customer.example.bond.vlan.clusterfile templates/acm-asc.yaml.tpl > acm-asc.yaml
 cat acm-asc.yaml
 ```
 ## Render acm-creds.yaml.tpl
@@ -81,7 +81,7 @@ cat acm-creds.yaml
 ## Render test-dns.sh
 Create forward and reverse DNS verification script
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/test-dns.sh.tpl | bash
+./process.py data/customer.example.bond.vlan.clusterfile templates/test-dns.sh.tpl | bash
 ```
 ## Render infinidat-setup.yaml.tpl
 This generates the infinidat machine, operator, driver configuration files with the configured content
@@ -105,9 +105,9 @@ This generates secondary network configuration based on network.secondary list
 
 ## Data Models
 - Standard: `customer.example.yaml`
-- VLAN only: `customer.example.vlan.yaml`
-- Bond only: `customer.example.bond.yaml`
-- Bond + VLAN: `customer.example.bond.vlan.yaml`
+- VLAN only: `customer.example.vlan.clusterfile`
+- Bond only: `customer.example.bond.clusterfile`
+- Bond + VLAN: `customer.example.bond.vlan.clusterfile`
 ---
 
 ## JSON/CLI Data Sources
@@ -139,12 +139,12 @@ To validate both the original data and again after applying `-p` overrides, use 
 
 Validate data only:
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
+./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
 ```
 
 Validate data and overrides (shortcut `-S`):
 ```bash
-./process.py data/customer.example.bond.vlan.yaml templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
+./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
 ```
 
 Notes:
