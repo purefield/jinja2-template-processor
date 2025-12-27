@@ -4,14 +4,16 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir poetry
 
-COPY pyproject.toml poetry.lock* ./
+COPY apps/editor/pyproject.toml apps/editor/poetry.lock* ./
 
 RUN poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi --no-root --only main
 
-COPY static/ ./static/
-
-COPY app/ ./app/
+COPY schema/              /app/schema/
+COPY templates            /app/templates/
+COPY data/*.clusterfile   /app/samples/
+COPY apps/editor/static/  /app/static/
+COPY apps/editor/app/     /app/app/
 
 EXPOSE 8000
 
