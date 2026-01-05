@@ -642,11 +642,12 @@
                           "description": "World Wide Name (WWN) identifier for block storage devices.",
                           "x-doc-url": ["https://docs.redhat.com/en/documentation/openshift_container_platform/4.15/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"]
                         },
-                        "serial": { "type": "string", "description": "Device serial number." },
+                        "serialNumber": { "type": "string", "description": "Device serial number." },
+                        "hctl": { "type": "string", "description": "A string containing a SCSI bus address like 0:0:0:0. The hint must match the actual value exactly." },
                         "model": { "type": "string", "description": "Device model string." },
                         "vendor": { "type": "string", "description": "Device vendor string." },
                         "rotational": { "type": "boolean", "description": "True for rotational (HDD) media, false for SSD/flash." },
-                        "minSizeGiB": { "type": "number", "minimum": 1, "description": "Minimum size in GiB required for the device to be considered." },
+                        "minSizeGigabytes": { "type": "number", "minimum": 1, "description": "Minimum size in GiB required for the device to be considered." },
                         "paths": { "type": "array", "items": { "type": "string" }, "description": "List of candidate device paths (for example /dev/sda, /dev/nvme0n1)." }
                       },
                       "additionalProperties": false
