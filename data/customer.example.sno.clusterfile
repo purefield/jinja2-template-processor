@@ -1,0 +1,111 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.18.10
+  platform: baremetal
+  arch: x86-64
+  name: cluster
+  sshKeys:
+    - 2023/acm/id_rsa.pub
+    - 2023/acm/id_rsa.pub
+  location: dc1
+  manifests:
+    - name: crio-config
+      file: templates/installer/99-crio-config.yaml
+    - name: set-core-passwd-master
+      file: templates/installer/99-set-core-passwd-master.yaml
+  mirrors:
+    - source: registry.access.redhat.com
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/registry-access-redhat-com
+    - source: registry.redhat.io
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/registry-redhat-io
+    - source: quay.io
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/quay-io
+    - source: registry.connect.redhat.com
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/registry-connect-redhat-com
+network:
+  domain: base.domain
+  trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
+  proxy:
+    httpProxy: http://proxy.company.tld:8080/
+    httpsProxy: http://proxy.company.tld:8080/
+    noProxy: .cluster.local,.svc,127.0.0.1,localhost,10.128.0.0/14,172.30.0.0/16,10.0.0.0/24
+  ntpservers:
+    - 10.0.0.100
+  nameservers:
+    - 10.0.0.100
+  dnsResolver:
+    search:
+      - base.domain
+  primary:
+    bond: false
+    vlan: false
+    mtu: 9000
+    gateway: 10.0.0.1
+    subnet: 10.0.0.0/24
+    vips:
+      api:
+        - 10.0.0.2
+      apps:
+        - 10.0.0.3
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 22
+  service:
+    subnet: 172.30.0.0/16
+  secondary:
+    - name: vm
+      type: bridge
+      state: up
+      namespace: demo
+      vlan: 123
+      ports:
+        - eth3
+      subnet: dhcp
+    - name: migration
+      type: macvlan
+      state: up
+      namespace: openshift-cnv
+      bond: active-backup
+      ports:
+        - eth3
+        - eth4
+      vlan: 100
+      mtu: 9000
+      subnet: 10.0.0.0/24
+hosts:
+  control01.base.domain:
+    role: control
+    storage:
+      os:
+        wwn: wwn01
+    bmc:
+      vendor: dell
+      version: 9
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.4
+      macAddress: 00:1A:2B:3C:4D:10
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:11
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:12
+        - name: eth2
+          macAddress: 00:1A:2B:3C:4D:13
+        - name: eth3
+          macAddress: 00:1A:2B:3C:4D:14
+      primary:
+        address: 10.0.0.4
+        ports:
+          - eth0
+          - eth1

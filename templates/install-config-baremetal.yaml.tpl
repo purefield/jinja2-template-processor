@@ -33,14 +33,24 @@ networking:
   serviceNetwork:
     - {{ network.service.subnet }}
 
-platform:{% set platform = cluster.platform if cluster.platform is defined else 'baremetal' if controlCount > 1 else 'none' %}{% if platform == 'baremetal' %}
+{% if cluster.platform is defined and controlCount > 1 -%}
+{% set platform = cluster.platform -%}
+{% elif controlCount > 1 -%}
+{% set platform = 'baremetal' -%}
+{% else -%}
+{% set platform = 'none' -%}
+{% endif -%}
+platform:{% if platform == 'baremetal' %}
   baremetal:
     apiVIPs: {{ network.primary.vips.api }}
     ingressVIPs: {{ network.primary.vips.apps }}{% elif platform != "none" %}
   {{ platform }}: {% set platformConfig %}{% include plugins[platform].platform  %}{% endset %}
 {{ platformConfig | indent(4,true) }}
   {% else%}
-  none: {}{% endif %}
+  none: {}{% if controlCount == 1 %}
+bootstrapInPlace:
+  installationDisk: {{ (hosts.values()|first).storage.os }}{% endif %}
+  {% endif %}
 
 publish: External
 pullSecret: '{{load_file(account.pullSecret)|safe}}'
