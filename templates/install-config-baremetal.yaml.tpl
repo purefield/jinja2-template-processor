@@ -49,7 +49,7 @@ platform:{% if platform == 'baremetal' %}
   {% else%}
   none: {}{% if controlCount == 1 %}
 bootstrapInPlace:
-  installationDisk: {{ (hosts.values()|first).storage.os }}{% endif %}
+  installationDisk: {{ (hosts.values()|first).storage.os.deviceName }}{% endif %}
   {% endif %}
 
 publish: External
