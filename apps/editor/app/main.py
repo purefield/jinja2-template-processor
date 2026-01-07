@@ -9,7 +9,7 @@ import json
 
 from app.template_processor import render_template, list_templates, get_template_content
 
-app = FastAPI(title="Clusterfile Editor", version="1.0.0")
+app = FastAPI(title="Clusterfile Editor", version="1.0.1")
 
 class RenderRequest(BaseModel):
     yaml_text: str

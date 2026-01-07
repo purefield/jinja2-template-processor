@@ -24,6 +24,30 @@ Use wrapper script with container image (all path need to be inside the working 
 process.sh [data-file] [-p ""]* [template file]
 ```
 
+## Clusterfile Editor
+The editor is a small web UI served from a container image in `apps/editor/`.
+
+### Quick start (local)
+```bash
+./clusterfile-editor.sh build
+./clusterfile-editor.sh run
+```
+
+### Versioned builds
+The version tag comes from `apps/editor/APP_VERSION`. The build step syncs:
+- `apps/editor/app/main.py` (FastAPI version)
+- `apps/editor/static/index.html` (UI version badge)
+
+```bash
+echo "1.0.1" > apps/editor/APP_VERSION
+./clusterfile-editor.sh build
+./clusterfile-editor.sh push
+```
+
+Notes:
+- The deployment file `../2023/apps/clusterfile-editor/app.yaml` is updated manually.
+- Override the tag without changing the file: `IMAGE_TAG=dev-20250221 ./clusterfile-editor.sh build`.
+
 
 # Examples
 ## Agent Based Installer
