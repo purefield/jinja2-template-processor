@@ -137,6 +137,17 @@
         });
 
         document.getElementById('tour-close').addEventListener('click', closeTour);
+
+        const versionBadge = document.getElementById('app-version');
+        if (versionBadge) {
+            versionBadge.addEventListener('click', showChangelog);
+            versionBadge.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    showChangelog();
+                }
+            });
+        }
         
         const helpBubble = document.getElementById('help-bubble');
         const helpClose = document.querySelector('.help-bubble-close');
@@ -199,6 +210,23 @@ plugins: {}
         }
     }
 
+    function showChangelog() {
+        switchSection('changelog');
+    }
+
+    async function loadChangelog() {
+        const content = document.getElementById('changelog-content');
+        if (!content) return;
+        if (content.dataset.loaded) return;
+        try {
+            const response = await fetch('/static/changelog.md', { cache: 'no-cache' });
+            content.textContent = await response.text();
+            content.dataset.loaded = 'true';
+        } catch (error) {
+            content.textContent = 'Failed to load changelog.';
+        }
+    }
+
     function setMode(mode) {
         state.mode = mode;
         localStorage.setItem(STORAGE_KEYS.MODE, mode);
@@ -215,16 +243,29 @@ plugins: {}
         
         const formContainer = document.getElementById('form-container');
         const templatesContainer = document.getElementById('templates-container');
+        const changelogContainer = document.getElementById('changelog-container');
         const editorPane = document.getElementById('editor-pane');
+        const formActions = document.querySelector('.form-actions');
         
         if (section === 'templates') {
             formContainer.style.display = 'none';
             templatesContainer.style.display = 'block';
+            if (changelogContainer) changelogContainer.style.display = 'none';
             editorPane.style.display = 'none';
+            if (formActions) formActions.style.display = 'none';
+        } else if (section === 'changelog') {
+            formContainer.style.display = 'none';
+            templatesContainer.style.display = 'none';
+            if (changelogContainer) changelogContainer.style.display = 'block';
+            editorPane.style.display = 'none';
+            if (formActions) formActions.style.display = 'none';
+            loadChangelog();
         } else {
             formContainer.style.display = 'block';
             templatesContainer.style.display = 'none';
+            if (changelogContainer) changelogContainer.style.display = 'none';
             editorPane.style.display = 'flex';
+            if (formActions) formActions.style.display = 'flex';
             renderCurrentSection();
         }
     }
