@@ -254,7 +254,8 @@ plugins: {}
     function setYamlText(yamlText, isBaseline = false) {
         try {
             state.currentYamlText = yamlText;
-            state.currentObject = jsyaml.load(yamlText) || {};
+            const parsedObject = jsyaml.load(yamlText) || {};
+            state.currentObject = state.schema ? coerceValueBySchema(parsedObject, state.schema) : parsedObject;
             
             if (isBaseline) {
                 state.baselineYamlText = yamlText;
@@ -279,7 +280,8 @@ plugins: {}
         try {
             const newObject = jsyaml.load(newYaml);
             state.currentYamlText = newYaml;
-            state.currentObject = newObject || {};
+            const parsedObject = newObject || {};
+            state.currentObject = state.schema ? coerceValueBySchema(parsedObject, state.schema) : parsedObject;
             renderCurrentSection();
             updateValidation();
             updateChanges();
@@ -466,11 +468,69 @@ plugins: {}
         const enumOption = options.find(o => o.enum);
         const objectOption = options.find(o => o.type === 'object');
         const stringOption = options.find(o => o.type === 'string' && !o.enum);
+        const numberOption = options.find(o => o.type === 'number' || o.type === 'integer');
+        const booleanFalseOption = options.find(o => o.type === 'boolean' && o.const === false);
+        const booleanTrueOption = options.find(o => o.type === 'boolean' && o.const === true);
 
         const wrapper = document.createElement('div');
         wrapper.className = 'anyof-field';
 
-        if (objectOption && stringOption && !enumOption) {
+        if (numberOption && (booleanFalseOption || booleanTrueOption) && !enumOption && !objectOption && !stringOption) {
+            const select = document.createElement('select');
+            select.className = 'anyof-mode-select';
+            const valueIsNumeric = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
+            const currentMode = valueIsNumeric ? 'number' : (value === false ? 'false' : (value === true ? 'true' : ''));
+
+            const falseLabel = booleanFalseOption ? 'Disabled' : 'False';
+            const trueLabel = booleanTrueOption ? 'Enabled' : 'True';
+
+            select.innerHTML = `
+                <option value="">-- Select --</option>
+                <option value="number" ${currentMode === 'number' ? 'selected' : ''}>Value</option>
+                ${booleanFalseOption ? `<option value="false" ${currentMode === 'false' ? 'selected' : ''}>${falseLabel}</option>` : ''}
+                ${booleanTrueOption ? `<option value="true" ${currentMode === 'true' ? 'selected' : ''}>${trueLabel}</option>` : ''}
+            `;
+            wrapper.appendChild(select);
+
+            const numberInput = document.createElement('input');
+            numberInput.type = 'number';
+            numberInput.value = valueIsNumeric ? Number(value) : '';
+            numberInput.placeholder = numberOption.description ? numberOption.description.substring(0, 50) : '';
+            if (numberOption.minimum !== undefined) numberInput.min = numberOption.minimum;
+            if (numberOption.maximum !== undefined) numberInput.max = numberOption.maximum;
+            numberInput.style.display = currentMode === 'number' ? 'block' : 'none';
+            numberInput.addEventListener('input', (e) => {
+                if (e.target.value === '') {
+                    updateFieldValue(path, undefined);
+                } else {
+                    const parsed = numberOption.type === 'integer' ? parseInt(e.target.value, 10) : Number(e.target.value);
+                    updateFieldValue(path, parsed);
+                }
+            });
+            wrapper.appendChild(numberInput);
+
+            select.addEventListener('change', (e) => {
+                const mode = e.target.value;
+                if (mode === 'number') {
+                    numberInput.style.display = 'block';
+                    if (numberInput.value === '') {
+                        updateFieldValue(path, undefined);
+                    } else {
+                        const parsed = numberOption.type === 'integer' ? parseInt(numberInput.value, 10) : Number(numberInput.value);
+                        updateFieldValue(path, parsed);
+                    }
+                } else {
+                    numberInput.style.display = 'none';
+                    if (mode === 'false') {
+                        updateFieldValue(path, false);
+                    } else if (mode === 'true') {
+                        updateFieldValue(path, true);
+                    } else {
+                        updateFieldValue(path, undefined);
+                    }
+                }
+            });
+        } else if (objectOption && stringOption && !enumOption) {
             const isObject = value !== null && typeof value === 'object';
             
             const modeSelect = document.createElement('select');
@@ -1024,7 +1084,9 @@ plugins: {}
 
     function syncObjectToYaml() {
         try {
-            const cleanedObject = cleanObject(state.currentObject);
+            const coercedObject = state.schema ? coerceValueBySchema(state.currentObject, state.schema) : state.currentObject;
+            const cleanedObject = cleanObject(coercedObject);
+            state.currentObject = coercedObject || {};
             state.currentYamlText = jsyaml.dump(cleanedObject, {
                 indent: 2,
                 lineWidth: -1,
@@ -1116,6 +1178,8 @@ plugins: {}
             delete schemaForValidation.$schema;
             
             const validate = ajv.compile(schemaForValidation);
+            const coercedObject = coerceValueBySchema(state.currentObject, schemaForValidation);
+            state.currentObject = coercedObject || {};
             const valid = validate(state.currentObject);
 
             if (valid) {
@@ -1414,7 +1478,7 @@ plugins: {}
     }
 
     function saveToLocalStorage() {
-        const yamlToSave = redactSecrets(state.currentYamlText);
+        const yamlToSave = redactSecrets(buildNormalizedYaml());
         localStorage.setItem(STORAGE_KEYS.LAST_YAML, yamlToSave);
         alert('Saved to browser storage');
     }
@@ -1424,7 +1488,8 @@ plugins: {}
     }
 
     function downloadYaml() {
-        const blob = new Blob([state.currentYamlText], { type: 'text/yaml' });
+        const normalizedYaml = buildNormalizedYaml();
+        const blob = new Blob([normalizedYaml], { type: 'text/yaml' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1437,8 +1502,7 @@ plugins: {}
 
     function formatYaml() {
         try {
-            const obj = jsyaml.load(state.currentYamlText);
-            const formatted = jsyaml.dump(obj, { indent: 2, lineWidth: -1, noRefs: true });
+            const formatted = buildNormalizedYaml({ preserveCurrentText: true });
             state.editor.setValue(formatted);
         } catch (error) {
             showError('Failed to format YAML: ' + error.message);
@@ -1446,7 +1510,8 @@ plugins: {}
     }
 
     function copyYaml() {
-        navigator.clipboard.writeText(state.currentYamlText).then(() => {
+        const normalizedYaml = buildNormalizedYaml();
+        navigator.clipboard.writeText(normalizedYaml).then(() => {
             alert('Copied to clipboard');
         }).catch(() => {
             showError('Failed to copy to clipboard');
@@ -1531,6 +1596,101 @@ plugins: {}
         } else {
             current[lastPart] = value;
         }
+    }
+
+    function coerceValueBySchema(value, schema) {
+        if (value === null || value === undefined || !schema) return value;
+
+        const composite = schema.anyOf || schema.oneOf;
+        if (composite && Array.isArray(composite)) {
+            const numberOption = composite.find(o => o.type === 'integer' || o.type === 'number');
+            if (numberOption && typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
+                return numberOption.type === 'integer' ? parseInt(value, 10) : Number(value);
+            }
+            const booleanOption = composite.find(o => o.type === 'boolean');
+            if (booleanOption && typeof value === 'string') {
+                if (value === 'true') return true;
+                if (value === 'false') return false;
+            }
+            const objectOption = composite.find(o => o.type === 'object' || o.properties || o.patternProperties);
+            if (objectOption && typeof value === 'object' && !Array.isArray(value)) {
+                return coerceObjectBySchema(value, objectOption);
+            }
+            const arrayOption = composite.find(o => o.type === 'array' || o.items);
+            if (arrayOption && Array.isArray(value)) {
+                const itemSchema = arrayOption.items || {};
+                return value.map(item => coerceValueBySchema(item, itemSchema));
+            }
+        }
+
+        if (schema.type === 'integer' || schema.type === 'number') {
+            if (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
+                return schema.type === 'integer' ? parseInt(value, 10) : Number(value);
+            }
+            return value;
+        }
+
+        if (schema.type === 'boolean') {
+            if (typeof value === 'string') {
+                if (value === 'true') return true;
+                if (value === 'false') return false;
+            }
+            return value;
+        }
+
+        if (schema.type === 'array' && Array.isArray(value)) {
+            const itemSchema = schema.items || {};
+            return value.map(item => coerceValueBySchema(item, itemSchema));
+        }
+
+        if ((schema.type === 'object' || schema.properties || schema.patternProperties) &&
+            typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            return coerceObjectBySchema(value, schema);
+        }
+
+        return value;
+    }
+
+    function coerceObjectBySchema(obj, schema) {
+        const props = schema.properties || {};
+        const patternProps = schema.patternProperties || {};
+        const additional = schema.additionalProperties;
+
+        const result = Array.isArray(obj) ? [] : {};
+        Object.entries(obj).forEach(([key, val]) => {
+            let childSchema = props[key];
+            if (!childSchema && patternProps && Object.keys(patternProps).length > 0) {
+                for (const [pattern, patternSchema] of Object.entries(patternProps)) {
+                    const regex = new RegExp(pattern);
+                    if (regex.test(key)) {
+                        childSchema = patternSchema;
+                        break;
+                    }
+                }
+            }
+            if (!childSchema && additional && typeof additional === 'object') {
+                childSchema = additional;
+            }
+            result[key] = childSchema ? coerceValueBySchema(val, childSchema) : val;
+        });
+
+        return result;
+    }
+
+    function buildNormalizedYaml(options = {}) {
+        const sourceObject = options.preserveCurrentText
+            ? (jsyaml.load(state.currentYamlText) || {})
+            : state.currentObject;
+        const coercedObject = state.schema
+            ? coerceValueBySchema(sourceObject, state.schema)
+            : sourceObject;
+        const cleanedObject = cleanObject(coercedObject);
+        return jsyaml.dump(cleanedObject, {
+            indent: 2,
+            lineWidth: -1,
+            noRefs: true,
+            sortKeys: false
+        });
     }
 
     function getDocUrl(schema) {
