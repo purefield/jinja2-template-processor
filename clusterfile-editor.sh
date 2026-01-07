@@ -14,6 +14,7 @@ IMAGE_REF="${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 usage() {
     cat <<EOF
 Usage: $0 [build|push|run|all|release] [major|minor|patch|x.y.z]
+Default: run
 
 Environment overrides:
   IMAGE_REGISTRY=quay.io/dds
@@ -74,6 +75,7 @@ release_image() {
 }
 
 run_image() {
+    echo "Running image: ${IMAGE_REF}"
     podman run -p 8000:8000 \
         -v "${SCRIPT_DIR}/templates:/app/templates" \
         -v "${SCRIPT_DIR}/data:/app/samples" \
