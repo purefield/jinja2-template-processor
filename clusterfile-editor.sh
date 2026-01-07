@@ -43,7 +43,7 @@ release_image() {
         read -r bump
     fi
 
-    if [[ "${bump}" =~ ^[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+    if [[ "${bump}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         next="${bump}"
     else
         IFS='.' read -r major minor patch <<< "${current}"
