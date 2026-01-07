@@ -30,7 +30,7 @@ The editor is a small web UI served from a container image in `apps/editor/`.
 ### Quick start (local)
 ```bash
 ./clusterfile-editor.sh build
-./clusterfile-editor.sh run
+./clusterfile-editor.sh
 ```
 
 ### Versioned builds
