@@ -1085,7 +1085,8 @@ plugins: {}
     function syncObjectToYaml() {
         try {
             const coercedObject = state.schema ? coerceValueBySchema(state.currentObject, state.schema) : state.currentObject;
-            const cleanedObject = cleanObject(coercedObject);
+            const baselineObject = jsyaml.load(state.baselineYamlText) || {};
+            const cleanedObject = cleanObject(coercedObject, baselineObject);
             state.currentObject = coercedObject || {};
             state.currentYamlText = jsyaml.dump(cleanedObject, {
                 indent: 2,
@@ -1102,18 +1103,33 @@ plugins: {}
         }
     }
 
-    function cleanObject(obj) {
+    function cleanObject(obj, baselineObj, path = '') {
         if (obj === null || obj === undefined) return undefined;
         if (typeof obj !== 'object') return obj;
         if (Array.isArray(obj)) {
-            const cleaned = obj.map(cleanObject).filter(v => v !== undefined);
+            const cleaned = obj
+                .map((item, index) => cleanObject(item, baselineObj, `${path}[${index}]`))
+                .filter(v => v !== undefined);
             return cleaned.length > 0 ? cleaned : undefined;
         }
 
         const cleaned = {};
-        for (const [key, value] of Object.entries(obj)) {
-            const cleanedValue = cleanObject(value);
-            if (cleanedValue !== undefined && cleanedValue !== '' && 
+        const baselineNode = baselineObj ? (path ? getNestedValue(baselineObj, path) : baselineObj) : undefined;
+        const baselineKeys = baselineNode && typeof baselineNode === 'object' && !Array.isArray(baselineNode)
+            ? Object.keys(baselineNode)
+            : [];
+        const objKeys = Object.keys(obj);
+        const orderedKeys = baselineKeys.concat(objKeys.filter(k => !baselineKeys.includes(k)));
+
+        for (const key of orderedKeys) {
+            if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+            const value = obj[key];
+            const nextPath = path ? `${path}.${key}` : key;
+            const cleanedValue = cleanObject(value, baselineObj, nextPath);
+            const baselineValue = baselineObj ? getNestedValue(baselineObj, nextPath) : undefined;
+            const allowEmptyString = cleanedValue === '' && baselineValue === '';
+            if (cleanedValue !== undefined &&
+                (cleanedValue !== '' || allowEmptyString) &&
                 !(typeof cleanedValue === 'object' && Object.keys(cleanedValue).length === 0)) {
                 cleaned[key] = cleanedValue;
             }
@@ -1684,7 +1700,8 @@ plugins: {}
         const coercedObject = state.schema
             ? coerceValueBySchema(sourceObject, state.schema)
             : sourceObject;
-        const cleanedObject = cleanObject(coercedObject);
+        const baselineObject = jsyaml.load(state.baselineYamlText) || {};
+        const cleanedObject = cleanObject(coercedObject, baselineObject);
         return jsyaml.dump(cleanedObject, {
             indent: 2,
             lineWidth: -1,
