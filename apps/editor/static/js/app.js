@@ -543,8 +543,6 @@ plugins: {}
         revertBtn.dataset.path = path;
         revertBtn.disabled = !hasChanged(path);
         revertBtn.addEventListener('click', (e) => { e.stopPropagation(); revertField(e.currentTarget.dataset.path); });
-        labelWrapper.appendChild(revertBtn);
-
         group.appendChild(labelWrapper);
 
         const control = document.createElement('div');
@@ -561,16 +559,18 @@ plugins: {}
 
         const controlRow = document.createElement('div');
         controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
+        const labelActions = document.createElement('div');
+        labelActions.className = 'field-label-actions';
+        labelActions.appendChild(helpButton);
+        labelActions.appendChild(revertBtn);
+
         if (!isComplex) {
             control.appendChild(controlRow);
-            controlRow.appendChild(helpButton);
-            helpButton.classList.add('field-help-inline');
         } else {
             labelWrapper.classList.add('form-label-top');
-            control.classList.add('field-control-complex');
-            helpButton.classList.add('field-help-floating');
-            control.appendChild(helpButton);
         }
+
+        labelWrapper.appendChild(labelActions);
 
         if (schema['x-is-file']) {
             renderFileField(control, key, schema, value, path, fieldId);

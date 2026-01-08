@@ -116,21 +116,17 @@
     align-self: flex-start;
 }
 
-.field-help-inline {
+.field-label-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.field-label-actions .pf-v6-c-button {
     flex: 0 0 auto;
-    margin-left: auto;
 }
 
-.field-control-complex {
-    position: relative;
-    padding-right: 36px;
-}
-
-.field-help-floating {
-    position: absolute;
-    top: 2px;
-    right: 0;
-}
 
 .file-path-indicator {
     color: #004080;
