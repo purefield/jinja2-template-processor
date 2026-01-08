@@ -320,12 +320,12 @@
 .nav-group-title {
     font-weight: 600;
     letter-spacing: 0.01em;
+    padding-left: var(--pf-v6-global--spacer--sm, 8px);
 }
 
 .nav-sublist {
-    margin-left: 12px;
-    padding-left: 10px;
-    border-left: 1px solid var(--pf-v6-global--BorderColor--200, #e0e0e0);
+    margin-left: 8px;
+    padding-left: 12px;
 }
 
 .nav-sublist .pf-v6-c-nav__link {
@@ -340,6 +340,19 @@
 
 .nav-sublist .pf-v6-c-nav__link {
     min-height: 28px;
+}
+
+.nav-sublist .pf-v6-c-nav__link.pf-m-current {
+    background: var(--pf-v6-global--BackgroundColor--200, #f5f5f5);
+    border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
+}
+
+.app-nav .pf-v6-c-nav__subnav {
+    margin-top: 2px;
+}
+
+.nav-footer-list {
+    padding-left: var(--pf-v6-global--spacer--sm, 8px);
 }
 
 .pf-v6-c-page__main-section {
