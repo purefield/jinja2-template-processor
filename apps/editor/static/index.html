@@ -144,8 +144,9 @@
                     <h1 class="pf-v6-c-title pf-m-xl" id="content-filename">untitled</h1>
                 </div>
                 <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-overflow-hidden">
-                    <div class="pf-v6-l-split pf-m-gutter pf-v6-u-h-100">
-                <div class="pf-v6-l-split__item pf-m-fill pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden" id="form-pane">
+                    <div class="pf-v6-l-grid pf-m-gutter pf-m-all-6-col-on-md pf-v6-u-h-100">
+                <div class="pf-v6-l-grid__item pf-v6-u-h-100 pf-v6-u-min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column">
+                    <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden" id="form-pane">
                     <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                         <div class="pf-v6-c-card__title">
                             <div class="pf-v6-l-stack pf-m-space-items-xs">
@@ -250,8 +251,10 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
-                <div class="pf-v6-l-split__item pf-m-fill pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden" id="editor-pane">
+                <div class="pf-v6-l-grid__item pf-v6-u-h-100 pf-v6-u-min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column">
+                <div class="pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden pf-v6-u-flex-grow-1 pf-v6-u-min-height-0" id="editor-pane">
                     <div class="pf-v6-l-stack__item">
                         <div class="pf-v6-c-tabs" role="tablist" aria-label="Editor mode">
                             <ul class="pf-v6-c-tabs__list">
@@ -264,7 +267,7 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill editor-main-panel" id="yaml-editor-item">
+                    <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-min-height-0 editor-main-panel" id="yaml-editor-item">
                     <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden yaml-editor-container">
                             <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                                 <div class="pf-v6-c-card__title">
@@ -278,11 +281,11 @@
                                 </div>
                             </div>
                             <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
-                                <div id="yaml-editor"></div>
+                                <div id="yaml-editor" class="pf-v6-u-h-100 pf-v6-u-w-100 pf-v6-u-overflow-hidden"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill editor-main-panel" id="template-output-item">
+                    <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-min-height-0 editor-main-panel" id="template-output-item">
                         <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden template-output-pane is-hidden" id="template-output-pane" hidden>
                             <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                                 <div class="pf-v6-c-card__title">
@@ -298,12 +301,12 @@
                                 </div>
                             </div>
                             <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
-                                <div id="template-output-editor"></div>
+                                <div id="template-output-editor" class="pf-v6-u-h-100 pf-v6-u-w-100 pf-v6-u-overflow-hidden"></div>
                             </div>
                             <div id="template-warnings" class="pf-v6-c-card__footer"></div>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill editor-tabs-panel">
+                    <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-min-height-0 editor-tabs-panel">
                         <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden tabs-container pf-v6-c-tabs">
                             <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
                                 <ul class="pf-v6-c-tabs__list" role="tablist">
@@ -336,6 +339,7 @@
                         </div>
                     </div>
                     </div>
+                </div>
                 </div>
             </div>
         </section>
