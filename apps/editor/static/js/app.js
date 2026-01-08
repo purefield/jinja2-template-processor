@@ -504,6 +504,7 @@ plugins: {}
     function switchSection(section, options = {}) {
         const { fromEditor = false } = options;
         state.currentSection = section;
+        document.body.classList.toggle('templates-view', section === 'templates');
         document.querySelectorAll('.pf-v6-c-nav__link[data-section]').forEach(link => {
             link.classList.toggle('pf-m-current', link.dataset.section === section);
         });
