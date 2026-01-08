@@ -120,18 +120,8 @@
     margin-left: auto;
 }
 
-.field-control {
-    position: relative;
-}
-
-.field-control-complex {
-    padding-right: 28px;
-}
-
-.field-help-floating {
-    position: absolute;
-    top: 0;
-    right: 0;
+.field-help-label {
+    margin-left: auto;
 }
 
 .file-path-indicator {

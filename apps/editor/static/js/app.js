@@ -755,9 +755,8 @@ plugins: {}
             helpButton.classList.add('field-help-inline');
         } else {
             labelWrapper.classList.add('form-label-top');
-            control.classList.add('field-control-complex');
-            helpButton.classList.add('field-help-floating');
-            control.appendChild(helpButton);
+            helpButton.classList.add('field-help-label');
+            labelWrapper.appendChild(helpButton);
         }
 
         if (schema['x-is-file']) {
