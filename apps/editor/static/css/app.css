@@ -107,6 +107,14 @@
     padding-top: 2px;
 }
 
+.pf-v6-c-form.pf-m-horizontal .pf-v6-c-form__group-label {
+    align-self: flex-start;
+}
+
+.pf-v6-c-form.pf-m-horizontal .pf-v6-c-form__group-control {
+    align-self: flex-start;
+}
+
 .field-help-inline {
     margin-left: auto;
 }
