@@ -488,7 +488,7 @@ plugins: {}
 
     function renderField(container, key, schema, value, path) {
         const group = document.createElement('div');
-        group.className = 'pf-v6-c-form__group';
+        group.className = 'pf-v6-c-form__group pf-m-top';
         group.dataset.path = path;
 
         const fieldId = `field-${path.replace(/[^a-z0-9]/gi, '-')}`;
@@ -510,7 +510,7 @@ plugins: {}
         helpButton.setAttribute('aria-label', 'Field information');
         helpButton.innerHTML = `
             <span class="pf-v6-c-button__icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                 </svg>
             </span>
@@ -530,10 +530,10 @@ plugins: {}
 
         const revertBtn = document.createElement('button');
         revertBtn.type = 'button';
-        revertBtn.className = 'pf-v6-c-button pf-m-plain pf-m-small';
+        revertBtn.className = 'pf-v6-c-button pf-m-plain';
         revertBtn.innerHTML = `
             <span class="pf-v6-c-button__icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 5a7 7 0 1 1-6.32 4H3l3.5-3.5L10 9H7.68A5.5 5.5 0 1 0 12 6.5V5z"/>
                 </svg>
             </span>
@@ -601,11 +601,11 @@ plugins: {}
     function createTrashButton(label) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'pf-v6-c-button pf-m-plain pf-m-small trash-btn';
+        btn.className = 'pf-v6-c-button pf-m-plain trash-btn';
         btn.setAttribute('aria-label', label);
         btn.innerHTML = `
             <span class="pf-v6-c-button__icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm2 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
                 </svg>
             </span>
@@ -628,7 +628,7 @@ plugins: {}
         input.placeholder = schema.default || '';
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value));
         group.appendChild(input);
     }
@@ -642,7 +642,7 @@ plugins: {}
         if (schema.maximum !== undefined) input.max = schema.maximum;
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
         input.addEventListener('input', (e) => {
             const val = e.target.value === '' ? undefined : Number(e.target.value);
             updateFieldValue(path, val);
@@ -654,7 +654,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
         select.innerHTML = `
             <option value="">-- Select --</option>
             <option value="true" ${value === true ? 'selected' : ''}>Yes</option>
@@ -671,7 +671,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
         select.innerHTML = `<option value="">-- Select --</option>`;
         schema.enum.forEach(opt => {
             const option = document.createElement('option');
@@ -1084,13 +1084,13 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-flex-wrap-nowrap';
+        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-flex-wrap-nowrap pf-v6-u-w-100';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
         input.value = value !== undefined ? value : '';
         input.dataset.path = path;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
         input.addEventListener('input', (e) => {
             const val = schema.type === 'number' || schema.type === 'integer' 
                 ? (e.target.value === '' ? undefined : Number(e.target.value))
@@ -1878,22 +1878,28 @@ plugins: {}
         e.target.value = '';
     }
 
-    function toggleNavGroup(menu) {
-        const list = document.querySelector(`[data-menu-list="${menu}"]`);
+    function setNavGroupExpanded(menu, expanded) {
         const button = document.querySelector(`.nav-group-toggle[data-menu="${menu}"]`);
         const item = button ? button.closest('.pf-v6-c-nav__item') : null;
-        if (!list || !button || !item) return;
-        const isExpanded = item.classList.contains('pf-m-expanded');
-        item.classList.toggle('pf-m-expanded', !isExpanded);
-        button.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
-        const subnav = button.nextElementSibling;
-        if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
-            if (!isExpanded) {
+        if (!button || !item) return;
+        const subnav = item.querySelector('.pf-v6-c-nav__subnav');
+        item.classList.toggle('pf-m-expanded', expanded);
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        if (subnav) {
+            if (expanded) {
                 subnav.removeAttribute('hidden');
             } else {
                 subnav.setAttribute('hidden', '');
             }
         }
+    }
+
+    function toggleNavGroup(menu) {
+        const button = document.querySelector(`.nav-group-toggle[data-menu="${menu}"]`);
+        const item = button ? button.closest('.pf-v6-c-nav__item') : null;
+        if (!button || !item) return;
+        const isExpanded = item.classList.contains('pf-m-expanded');
+        setNavGroupExpanded(menu, !isExpanded);
     }
 
     function updateNavGroupCurrent(section) {
@@ -1914,31 +1920,20 @@ plugins: {}
         if (templatesButton) templatesButton.classList.remove('pf-m-current');
         if (aboutButton) aboutButton.classList.remove('pf-m-current');
 
+        setNavGroupExpanded('clusterfile', false);
+        setNavGroupExpanded('templates', false);
+        setNavGroupExpanded('about', false);
+
         if (clusterActive && clusterList && clusterButton) {
-            if (clusterItem) clusterItem.classList.add('pf-m-expanded');
-            clusterButton.setAttribute('aria-expanded', 'true');
-            const subnav = clusterButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
-                subnav.removeAttribute('hidden');
-            }
+            setNavGroupExpanded('clusterfile', true);
         }
 
         if (templatesActive && templatesList && templatesButton) {
-            if (templatesItem) templatesItem.classList.add('pf-m-expanded');
-            templatesButton.setAttribute('aria-expanded', 'true');
-            const subnav = templatesButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
-                subnav.removeAttribute('hidden');
-            }
+            setNavGroupExpanded('templates', true);
         }
 
         if ((section === 'about' || section === 'changelog') && aboutList && aboutButton) {
-            if (aboutItem) aboutItem.classList.add('pf-m-expanded');
-            aboutButton.setAttribute('aria-expanded', 'true');
-            const subnav = aboutButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
-                subnav.removeAttribute('hidden');
-            }
+            setNavGroupExpanded('about', true);
         }
     }
 
