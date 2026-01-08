@@ -16,7 +16,13 @@
         <div class="pf-v6-c-masthead__main">
             <div class="pf-v6-c-masthead__brand">
                 <a class="pf-v6-c-masthead__brand-link" href="#">
-                    <span class="pf-v6-c-brand">Clusterfile Editor</span>
+                    <span class="app-logo" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" role="img" focusable="false">
+                            <path d="M16 2l11 6v8c0 7.18-4.72 12.73-11 14-6.28-1.27-11-6.82-11-14V8l11-6z"/>
+                            <path d="M16 8l6 3v5c0 4.2-2.6 7.7-6 8.8-3.4-1.1-6-4.6-6-8.8v-5l6-3z"/>
+                        </svg>
+                    </span>
+                    <span class="pf-v6-c-brand app-title">Clusterfile Editor</span>
                     <span class="pf-v6-c-label pf-m-blue pf-v6-u-ml-sm app-version-badge" id="app-version" role="button" tabindex="0" title="View changelog">
                         <span class="pf-v6-c-label__content">v1.1.0</span>
                     </span>
@@ -162,7 +168,14 @@
                 <div class="pf-v6-l-split__item pf-m-fill pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden" id="form-pane">
                     <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                         <div class="pf-v6-c-card__title">
-                            <h2 class="pf-v6-c-title pf-m-md" id="section-title">Account</h2>
+                            <div class="pf-v6-l-stack pf-m-space-items-xs">
+                                <div class="pf-v6-l-stack__item">
+                                    <h2 class="pf-v6-c-title pf-m-md" id="section-title">Account</h2>
+                                </div>
+                                <div class="pf-v6-l-stack__item">
+                                    <p class="pf-v6-c-content pf-v6-u-color-200 section-description" id="section-description"></p>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-actions action-cluster pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
                             <button id="btn-revert-section" class="pf-v6-c-button pf-m-link pf-m-small" type="button" title="Revert section changes">Revert Section</button>
@@ -259,7 +272,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="pf-v6-l-split__item pf-m-fill pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden" id="editor-pane">
+                <div class="pf-v6-l-split__item pf-m-fill pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden" id="editor-pane" data-view="clusterfile">
                     <div class="pf-v6-l-stack__item">
                         <div class="pf-v6-c-tabs" role="tablist" aria-label="Editor mode">
                             <ul class="pf-v6-c-tabs__list">
@@ -289,9 +302,7 @@
                                 <div id="yaml-editor"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill editor-main-panel">
-                        <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden template-output-pane" id="template-output-pane" style="display: none;">
+                        <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden template-output-pane" id="template-output-pane" hidden>
                             <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                                 <div class="pf-v6-c-card__title">
                                     <span>Template Output</span>

@@ -50,18 +50,53 @@
 }
 
 .app-version-badge .pf-v6-c-label__content {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.pf-v6-c-masthead__brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #e7f1ff, #cfe0ff);
+    box-shadow: inset 0 0 0 1px rgba(0, 102, 204, 0.2);
+}
+
+.app-logo svg {
+    width: 18px;
+    height: 18px;
+    fill: #0066cc;
+}
+
+.app-title {
     font-weight: 600;
-    letter-spacing: 0.02em;
+}
+
+.section-description {
+    margin: 0;
+    font-size: var(--pf-v6-global--FontSize--sm, 0.875rem);
 }
 
 .action-cluster {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     padding: 2px 6px;
     border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
     border: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
     background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
+}
+
+.action-cluster:not(.pf-v6-c-toolbar) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .array-controls {
@@ -85,7 +120,13 @@
 
 #editor-pane .editor-main-panel {
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
+}
+
+#editor-pane .editor-main-panel > .pf-v6-c-card {
+    flex: 1 1 auto;
 }
 
 #editor-pane .editor-tabs-panel {

@@ -227,7 +227,10 @@
         const savedMode = localStorage.getItem(STORAGE_KEYS.MODE);
         if (savedMode) {
             setMode(savedMode);
-            document.getElementById('mode-toggle').value = savedMode;
+            const modeToggle = document.getElementById('mode-toggle');
+            if (modeToggle) {
+                modeToggle.value = savedMode;
+            }
         }
 
         const savedFilename = localStorage.getItem(STORAGE_KEYS.LAST_FILENAME);
@@ -504,6 +507,7 @@ plugins: {}
             link.classList.toggle('pf-m-current', link.dataset.section === section);
         });
         document.getElementById('section-title').textContent = capitalizeFirst(section);
+        updateSectionDescription(section);
         updateNavGroupCurrent(section);
         if (FILE_SECTIONS.includes(section)) {
             rememberSectionForFile(section);
@@ -565,12 +569,14 @@ plugins: {}
 
     function switchTab(tab) {
         state.currentTab = tab;
-        document.querySelectorAll('.pf-v6-c-tabs__item').forEach(item => {
+        const tabsContainer = document.querySelector('.tabs-container');
+        if (!tabsContainer) return;
+        tabsContainer.querySelectorAll('.pf-v6-c-tabs__item').forEach(item => {
             const isCurrent = item.querySelector('.pf-v6-c-tabs__link').dataset.tab === tab;
             item.classList.toggle('pf-m-current', isCurrent);
             item.querySelector('.pf-v6-c-tabs__link').setAttribute('aria-selected', isCurrent ? 'true' : 'false');
         });
-        document.querySelectorAll('.tab-panel').forEach(panel => {
+        tabsContainer.querySelectorAll('.tab-panel').forEach(panel => {
             panel.hidden = panel.id !== 'panel-' + tab;
         });
     }
@@ -634,6 +640,7 @@ plugins: {}
         const container = document.getElementById('form-container');
         container.innerHTML = '';
         container.classList.add('pf-v6-c-form', 'pf-m-horizontal');
+        updateSectionDescription(state.currentSection);
 
         if (!state.schema || !state.schema.properties) return;
 
@@ -1349,7 +1356,7 @@ plugins: {}
                     <span>${hostname}</span>
                     <span class="pf-v6-c-label pf-m-compact ${roleClass} pf-v6-u-ml-sm"><span class="pf-v6-c-label__content">${role}</span></span>
                 </div>
-                <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center action-cluster">
                     <button class="pf-v6-c-button pf-m-secondary pf-m-small duplicate-btn" title="Duplicate host">Duplicate</button>
                     <button class="pf-v6-c-button pf-m-secondary pf-m-small remove-btn" title="Remove host">Remove</button>
                     <button class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small toggle-btn">Expand</button>
@@ -2102,6 +2109,17 @@ plugins: {}
         }
     }
 
+    function updateSectionDescription(section) {
+        const descEl = document.getElementById('section-description');
+        if (!descEl) return;
+        let description = '';
+        if (state.schema && state.schema.properties && state.schema.properties[section]) {
+            description = state.schema.properties[section].description || '';
+        }
+        descEl.textContent = description;
+        descEl.style.display = description ? 'block' : 'none';
+    }
+
     function handleEditorToggle(view) {
         setEditorMode(view);
     }
@@ -2122,16 +2140,26 @@ plugins: {}
 
     function setEditorView(view) {
         state.editorView = view;
+        const editorPane = document.getElementById('editor-pane');
         const yamlEditorContainer = document.querySelector('.yaml-editor-container');
         const templateOutputPane = document.getElementById('template-output-pane');
         const tabsContainer = document.querySelector('.tabs-container');
         if (!yamlEditorContainer || !templateOutputPane || !tabsContainer) return;
+        if (editorPane) {
+            editorPane.dataset.view = view;
+        }
         if (view === EDITOR_VIEWS.TEMPLATES) {
+            yamlEditorContainer.hidden = true;
+            templateOutputPane.hidden = false;
+            tabsContainer.hidden = true;
             yamlEditorContainer.style.display = 'none';
             templateOutputPane.style.display = 'flex';
             tabsContainer.style.display = 'none';
             refreshTemplateOutputEditor();
         } else {
+            yamlEditorContainer.hidden = false;
+            templateOutputPane.hidden = true;
+            tabsContainer.hidden = false;
             yamlEditorContainer.style.display = 'flex';
             templateOutputPane.style.display = 'none';
             tabsContainer.style.display = 'flex';
