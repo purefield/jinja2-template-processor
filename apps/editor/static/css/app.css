@@ -143,7 +143,7 @@
 }
 
 .app-nav .pf-v6-c-nav__list {
-    gap: var(--pf-v6-global--spacer--sm, 8px);
+    gap: var(--pf-v6-global--spacer--xs, 4px);
 }
 
 .app-nav .pf-v6-c-nav__item {
@@ -151,8 +151,8 @@
 }
 
 .app-nav .pf-v6-c-nav__link {
-    padding-top: var(--pf-v6-global--spacer--sm, 8px);
-    padding-bottom: var(--pf-v6-global--spacer--sm, 8px);
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .app-nav .pf-v6-c-nav__subnav {
@@ -170,15 +170,15 @@
 }
 
 .nav-sublist {
-    margin-left: var(--pf-v6-global--spacer--md, 16px);
-    padding-left: var(--pf-v6-global--spacer--sm, 8px);
-    border-left: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
+    margin-left: 12px;
+    padding-left: 10px;
+    border-left: 1px solid var(--pf-v6-global--BorderColor--200, #e0e0e0);
 }
 
 .nav-sublist .pf-v6-c-nav__link {
     font-size: var(--pf-v6-global--FontSize--sm, 0.875rem);
-    padding-top: var(--pf-v6-global--spacer--xs, 4px);
-    padding-bottom: var(--pf-v6-global--spacer--xs, 4px);
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .pf-v6-c-page__main-section {

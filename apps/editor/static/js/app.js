@@ -2078,9 +2078,9 @@ plugins: {}
         const clusterActive = FILE_SECTIONS.includes(section) || state.editorView === EDITOR_VIEWS.CLUSTERFILE;
         const templatesActive = section === 'templates' || state.editorView === EDITOR_VIEWS.TEMPLATES;
 
-        if (clusterButton) clusterButton.classList.toggle('pf-m-current', clusterActive);
-        if (templatesButton) templatesButton.classList.toggle('pf-m-current', templatesActive);
-        if (aboutButton) aboutButton.classList.toggle('pf-m-current', section === 'about' || section === 'changelog');
+        if (clusterButton) clusterButton.classList.remove('pf-m-current');
+        if (templatesButton) templatesButton.classList.remove('pf-m-current');
+        if (aboutButton) aboutButton.classList.remove('pf-m-current');
 
         if (clusterActive && clusterList && clusterButton) {
             if (clusterItem) clusterItem.classList.add('pf-m-expanded');
