@@ -227,6 +227,30 @@
     min-height: 0;
 }
 
+.editor-toggle-btn[aria-selected="true"] {
+    color: var(--pf-v6-global--link--Color, #0066cc);
+}
+
+.template-output-pane {
+    width: 100%;
+}
+
+#template-output-pane .pf-v6-c-card__header {
+    min-height: 72px;
+}
+
+#template-output-pane .pf-v6-c-card__actions .pf-v6-c-button {
+    white-space: nowrap;
+}
+
+#template-output-pane .pf-v6-c-card__footer {
+    min-height: 44px;
+}
+
+#template-output-pane .pf-v6-c-card__footer:empty {
+    display: block;
+}
+
 .templates-view #form-pane {
     flex: 0 0 360px;
     max-width: 400px;
