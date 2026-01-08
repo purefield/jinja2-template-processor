@@ -681,8 +681,15 @@ plugins: {}
 
         const helpButton = document.createElement('button');
         helpButton.type = 'button';
-        helpButton.className = 'pf-c-button pf-m-plain pf-m-small';
-        helpButton.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>';
+        helpButton.className = 'pf-c-button pf-m-plain pf-m-icon';
+        helpButton.setAttribute('aria-label', 'Field information');
+        helpButton.innerHTML = `
+            <span class="pf-c-button__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </span>
+        `;
         helpButton.dataset.description = schema.description || '';
         helpButton.dataset.docUrl = getDocUrl(schema);
         if (!helpButton.dataset.description && !helpButton.dataset.docUrl) {
@@ -752,6 +759,21 @@ plugins: {}
         }
 
         container.appendChild(group);
+    }
+
+    function createTrashButton(label) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pf-c-button pf-m-plain pf-m-small';
+        btn.setAttribute('aria-label', label);
+        btn.innerHTML = `
+            <span class="pf-c-button__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
+                </svg>
+            </span>
+        `;
+        return btn;
     }
 
     function renderTextField(group, key, schema, value, path, fieldId) {
@@ -1017,11 +1039,7 @@ plugins: {}
                                 updateFieldValue(path, currentVal);
                             });
                             itemRow.appendChild(itemInput);
-                            const removeBtn = document.createElement('button');
-                            removeBtn.type = 'button';
-                            removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
-                            removeBtn.innerHTML = '&#x2715;';
-                            removeBtn.setAttribute('aria-label', 'Remove item');
+                            const removeBtn = createTrashButton('Remove item');
                             removeBtn.addEventListener('click', () => {
                                 let currentVal = getNestedValue(state.currentObject, path);
                                 if (currentVal && Array.isArray(currentVal[propKey])) {
@@ -1186,6 +1204,27 @@ plugins: {}
         const items = Array.isArray(value) ? value : [];
         const itemSchema = schema.items || {};
 
+        const controls = document.createElement('div');
+        controls.className = 'pf-c-toolbar';
+        controls.innerHTML = `
+            <div class="pf-c-toolbar__content">
+                <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-u-ml-auto">
+                    <div class="pf-c-toolbar__item">
+                        <button class="pf-c-button pf-m-secondary array-add-btn" type="button">Add item</button>
+                    </div>
+                    <div class="pf-c-toolbar__item">
+                        <button class="pf-c-button pf-m-danger array-delete-btn" type="button">Delete all</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const addBtn = controls.querySelector('.array-add-btn');
+        addBtn.addEventListener('click', () => addArrayItem(path, itemSchema));
+        const deleteBtn = controls.querySelector('.array-delete-btn');
+        deleteBtn.disabled = items.length === 0;
+        deleteBtn.addEventListener('click', () => removeAllArrayItems(path));
+        wrapper.appendChild(controls);
+
         items.forEach((item, index) => {
             const itemPath = `${path}[${index}]`;
             if (itemSchema.type === 'object') {
@@ -1194,12 +1233,6 @@ plugins: {}
                 renderArrayPrimitiveItem(wrapper, itemSchema, item, itemPath, index);
             }
         });
-
-        const addBtn = document.createElement('button');
-        addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
-        addBtn.textContent = 'Add item';
-        addBtn.addEventListener('click', () => addArrayItem(path, itemSchema));
-        wrapper.appendChild(addBtn);
 
         group.appendChild(wrapper);
     }
@@ -1220,10 +1253,7 @@ plugins: {}
             updateArrayItemValue(path, val);
         });
 
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
-        removeBtn.innerHTML = '&#x2715;';
-        removeBtn.setAttribute('aria-label', 'Remove item');
+        const removeBtn = createTrashButton('Remove item');
         removeBtn.addEventListener('click', () => removeArrayItem(path));
 
         item.appendChild(input);
@@ -1239,10 +1269,7 @@ plugins: {}
         header.className = 'pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center';
         header.innerHTML = `<div class="pf-c-card__title"><span>Item ${index + 1}</span></div>`;
 
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
-        removeBtn.innerHTML = '&#x2715;';
-        removeBtn.setAttribute('aria-label', 'Remove item');
+        const removeBtn = createTrashButton('Remove item');
         removeBtn.addEventListener('click', () => removeArrayItem(path));
         header.appendChild(removeBtn);
 
@@ -1509,6 +1536,15 @@ plugins: {}
         
         if (Array.isArray(array)) {
             array.splice(index, 1);
+            syncObjectToYaml();
+            renderCurrentSection();
+        }
+    }
+
+    function removeAllArrayItems(path) {
+        const array = getNestedValue(state.currentObject, path);
+        if (Array.isArray(array)) {
+            array.length = 0;
             syncObjectToYaml();
             renderCurrentSection();
         }
