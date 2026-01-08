@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 import os
+import time
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = Path("/app")
@@ -34,10 +35,27 @@ STATIC_DIR = BASE_DIR / "static"
 SAMPLES_DIR = Path(os.environ.get("SAMPLES_DIR", str(REPO_ROOT / "samples")))
 TEMPLATES_DIR = Path(os.environ.get("TEMPLATES_DIR", str(REPO_ROOT / "templates")))
 SCHEMA_DIR = Path(os.environ.get("SCHEMA_DIR", str(REPO_ROOT / "schema")))
+DEV_MODE = os.environ.get("DEV_MODE") == "1"
 
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
+
+@app.get("/api/dev/reload-token")
+async def dev_reload_token():
+    if not DEV_MODE:
+        raise HTTPException(status_code=404, detail="Not found")
+    latest_mtime = 0.0
+    for root in (STATIC_DIR, BASE_DIR / "app"):
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if path.is_file():
+                try:
+                    latest_mtime = max(latest_mtime, path.stat().st_mtime)
+                except OSError:
+                    continue
+    return {"token": int(latest_mtime), "ts": int(time.time())}
 
 @app.get("/api/schema")
 async def get_schema():

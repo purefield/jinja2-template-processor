@@ -75,6 +75,7 @@
         renderCurrentSection();
         updateValidation();
         startDemoIfNeeded();
+        initDevReload();
     }
 
     async function loadSchema() {
@@ -2527,6 +2528,35 @@ plugins: {}
             clearTimeout(timeout);
             timeout = setTimeout(() => fn.apply(this, args), delay);
         };
+    }
+
+    function initDevReload() {
+        let lastToken = null;
+        let stopped = false;
+
+        async function poll() {
+            if (stopped) return;
+            try {
+                const response = await fetch('/api/dev/reload-token', { cache: 'no-store' });
+                if (response.status === 404) {
+                    stopped = true;
+                    return;
+                }
+                if (response.ok) {
+                    const data = await response.json();
+                    if (lastToken !== null && data.token !== lastToken) {
+                        window.location.reload();
+                        return;
+                    }
+                    lastToken = data.token;
+                }
+            } catch (error) {
+                // Ignore transient errors; keep polling.
+            }
+            setTimeout(poll, 1000);
+        }
+
+        poll();
     }
 
     async function loadTemplates() {
