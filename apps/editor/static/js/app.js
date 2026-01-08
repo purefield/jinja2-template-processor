@@ -494,7 +494,7 @@ plugins: {}
         const fieldId = `field-${path.replace(/[^a-z0-9]/gi, '-')}`;
 
         const labelWrapper = document.createElement('div');
-        labelWrapper.className = 'pf-v6-c-form__group-label pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm pf-v6-u-w-100';
+        labelWrapper.className = 'pf-v6-c-form__group-label pf-v6-l-stack pf-m-space-items-xs pf-v6-u-w-100';
 
         const label = document.createElement('label');
         label.className = 'pf-v6-c-form__label';
@@ -560,7 +560,7 @@ plugins: {}
         const controlRow = document.createElement('div');
         controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
         const labelActions = document.createElement('div');
-        labelActions.className = 'pf-v6-l-flex pf-m-space-items-xs pf-m-align-items-center pf-v6-u-ml-sm pf-v6-u-pt-xs';
+        labelActions.className = 'pf-v6-l-flex pf-m-space-items-xs pf-m-align-items-center';
         labelActions.appendChild(helpButton);
         labelActions.appendChild(revertBtn);
 
@@ -1084,7 +1084,7 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center';
+        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-flex-wrap-nowrap';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
