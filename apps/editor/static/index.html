@@ -254,7 +254,7 @@
                     </div>
                 </div>
                 <div class="pf-v6-l-grid__item pf-v6-u-h-100 pf-v6-u-min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column">
-                <div class="pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden pf-v6-u-flex-grow-1 pf-v6-u-min-height-0" id="editor-pane">
+                <div class="editor-pane pf-v6-u-h-100 pf-v6-u-overflow-hidden pf-v6-u-flex-grow-1 pf-v6-u-min-height-0" id="editor-pane">
                     <div class="pf-v6-l-stack__item">
                         <div class="pf-v6-c-tabs" role="tablist" aria-label="Editor mode">
                             <ul class="pf-v6-c-tabs__list">
@@ -306,7 +306,7 @@
                             <div id="template-warnings" class="pf-v6-c-card__footer"></div>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-min-height-0 editor-tabs-panel">
+                    <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-min-height-0 editor-tabs-panel" id="editor-tabs-panel">
                         <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden tabs-container pf-v6-c-tabs">
                             <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
                                 <ul class="pf-v6-c-tabs__list" role="tablist">
@@ -320,7 +320,7 @@
                                         <button class="pf-v6-c-tabs__link" id="tab-diff" role="tab" aria-selected="false" data-tab="diff">Diff Preview</button>
                                     </li>
                                 </ul>
-                                <div class="tab-content pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
+                                <div class="tab-content pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden" style="overflow: auto; min-height: 0;">
                                     <div id="panel-validation" class="tab-panel pf-v6-u-h-100 pf-v6-u-overflow-auto pf-v6-u-p-md">
                                         <div id="validation-results"></div>
                                     </div>

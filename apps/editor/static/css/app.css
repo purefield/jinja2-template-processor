@@ -12,3 +12,39 @@
     font-size: 13px;
     padding-left: 1px;
 }
+
+.editor-pane {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 0.4fr);
+    gap: var(--pf-t--global--spacer--gutter--default);
+    height: 100%;
+    min-height: 0;
+}
+
+.editor-pane.is-template-view {
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.editor-pane .editor-main-panel,
+.editor-pane .editor-tabs-panel,
+.editor-pane .yaml-editor-container,
+.editor-pane .template-output-pane,
+.editor-pane .tabs-container {
+    min-height: 0;
+}
+
+.editor-pane .tabs-container {
+    height: 100%;
+}
+
+.editor-pane .tabs-container .pf-v6-c-card__body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.editor-pane .tab-content {
+    overflow: auto;
+    min-height: 0;
+    height: 100%;
+}

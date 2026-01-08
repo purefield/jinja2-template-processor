@@ -1972,14 +1972,16 @@ plugins: {}
         const templateOutputItem = document.getElementById('template-output-item');
         const yamlEditorContainer = document.querySelector('.yaml-editor-container');
         const templateOutputPane = document.getElementById('template-output-pane');
-        const tabsContainer = document.querySelector('.tabs-container');
-        if (!yamlEditorContainer || !templateOutputPane || !tabsContainer || !yamlEditorItem || !templateOutputItem) return;
+        const tabsContainer = document.getElementById('editor-tabs-panel');
+        const editorPane = document.getElementById('editor-pane');
+        if (!yamlEditorContainer || !templateOutputPane || !tabsContainer || !yamlEditorItem || !templateOutputItem || !editorPane) return;
         if (view === EDITOR_VIEWS.TEMPLATES) {
             setVisibility(yamlEditorItem, false);
             setVisibility(templateOutputItem, true);
             setVisibility(yamlEditorContainer, false);
             setVisibility(templateOutputPane, true);
             setVisibility(tabsContainer, false);
+            editorPane.classList.add('is-template-view');
             refreshTemplateOutputEditor();
         } else {
             setVisibility(yamlEditorItem, true);
@@ -1987,6 +1989,7 @@ plugins: {}
             setVisibility(yamlEditorContainer, true);
             setVisibility(templateOutputPane, false);
             setVisibility(tabsContainer, true);
+            editorPane.classList.remove('is-template-view');
             if (!state.currentTab) {
                 state.currentTab = 'validation';
             }
