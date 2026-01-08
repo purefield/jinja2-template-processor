@@ -2531,7 +2531,7 @@ plugins: {}
 
     async function handleDevHook() {
         const params = new URLSearchParams(window.location.search);
-        const sample = params.get('sample');
+        const sample = params.get('sample') || params.get('clusterfile');
         const section = params.get('section');
         const template = params.get('template');
         const editorView = params.get('editor');
