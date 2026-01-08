@@ -57,7 +57,8 @@
         validationErrors: 0,
         samples: [],
         lastSavedYaml: null,
-        editorView: EDITOR_VIEWS.CLUSTERFILE
+        editorView: EDITOR_VIEWS.CLUSTERFILE,
+        currentTab: 'validation'
     };
 
     async function init() {
@@ -560,6 +561,7 @@ plugins: {}
     }
 
     function switchTab(tab) {
+        state.currentTab = tab;
         document.querySelectorAll('.pf-c-tabs__item').forEach(item => {
             const isCurrent = item.querySelector('.pf-c-tabs__link').dataset.tab === tab;
             item.classList.toggle('pf-m-current', isCurrent);
@@ -695,8 +697,9 @@ plugins: {}
 
         const revertBtn = document.createElement('button');
         revertBtn.type = 'button';
-        revertBtn.className = 'pf-c-button pf-m-link pf-m-inline pf-m-small revert-btn';
-        revertBtn.textContent = 'Revert';
+        revertBtn.className = 'pf-c-button pf-m-plain pf-m-small revert-btn';
+        revertBtn.innerHTML = '&#x2715;';
+        revertBtn.setAttribute('aria-label', 'Revert field');
         revertBtn.title = 'Revert to original value';
         revertBtn.dataset.path = path;
         revertBtn.disabled = !hasChanged(path);
@@ -1016,8 +1019,9 @@ plugins: {}
                             itemRow.appendChild(itemInput);
                             const removeBtn = document.createElement('button');
                             removeBtn.type = 'button';
-                            removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
-                            removeBtn.textContent = 'X';
+                            removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
+                            removeBtn.innerHTML = '&#x2715;';
+                            removeBtn.setAttribute('aria-label', 'Remove item');
                             removeBtn.addEventListener('click', () => {
                                 let currentVal = getNestedValue(state.currentObject, path);
                                 if (currentVal && Array.isArray(currentVal[propKey])) {
@@ -1039,7 +1043,7 @@ plugins: {}
                         const addBtn = document.createElement('button');
                         addBtn.type = 'button';
                         addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
-                        addBtn.textContent = '+ Add';
+                        addBtn.textContent = 'Add item';
                         addBtn.addEventListener('click', () => {
                             let currentVal = getNestedValue(state.currentObject, path);
                             if (typeof currentVal !== 'object' || currentVal === null) {
@@ -1193,7 +1197,7 @@ plugins: {}
 
         const addBtn = document.createElement('button');
         addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
-        addBtn.textContent = '+ Add Item';
+        addBtn.textContent = 'Add item';
         addBtn.addEventListener('click', () => addArrayItem(path, itemSchema));
         wrapper.appendChild(addBtn);
 
@@ -1217,8 +1221,9 @@ plugins: {}
         });
 
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
-        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
+        removeBtn.innerHTML = '&#x2715;';
+        removeBtn.setAttribute('aria-label', 'Remove item');
         removeBtn.addEventListener('click', () => removeArrayItem(path));
 
         item.appendChild(input);
@@ -1235,8 +1240,9 @@ plugins: {}
         header.innerHTML = `<div class="pf-c-card__title"><span>Item ${index + 1}</span></div>`;
 
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
-        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'pf-c-button pf-m-plain pf-m-small';
+        removeBtn.innerHTML = '&#x2715;';
+        removeBtn.setAttribute('aria-label', 'Remove item');
         removeBtn.addEventListener('click', () => removeArrayItem(path));
         header.appendChild(removeBtn);
 
@@ -2049,6 +2055,10 @@ plugins: {}
             yamlEditorContainer.style.display = 'flex';
             templateOutputPane.style.display = 'none';
             tabsContainer.style.display = 'flex';
+            if (!state.currentTab) {
+                state.currentTab = 'validation';
+            }
+            switchTab(state.currentTab);
         }
         document.querySelectorAll('.editor-toggle-btn').forEach(btn => {
             const isActive = btn.dataset.editorView === view;
