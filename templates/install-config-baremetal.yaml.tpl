@@ -47,9 +47,10 @@ platform:{% if platform == 'baremetal' %}
   {{ platform }}: {% set platformConfig %}{% include plugins[platform].platform  %}{% endset %}
 {{ platformConfig | indent(4,true) }}
   {% else%}
-  none: {}{% if controlCount == 1 %}
+  none: {}{% if controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
+{% set bootstrapDisk = (hosts.values()|first).storage.os -%}
 bootstrapInPlace:
-  installationDisk: {{ (hosts.values()|first).storage.os.deviceName }}{% endif %}
+  installationDisk: {{ bootstrapDisk if bootstrapDisk is string else bootstrapDisk.deviceName }}{% endif %}
   {% endif %}
 
 publish: External
