@@ -323,6 +323,14 @@
     padding-bottom: 4px;
 }
 
+.app-nav .pf-v6-c-nav__link {
+    min-height: 32px;
+}
+
+.nav-sublist .pf-v6-c-nav__link {
+    min-height: 28px;
+}
+
 .pf-v6-c-page__main-section {
     background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
 }
