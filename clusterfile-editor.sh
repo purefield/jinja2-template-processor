@@ -13,7 +13,7 @@ IMAGE_REF="${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 usage() {
     cat <<EOF
-Usage: $0 [build|push|run|all|release] [major|minor|patch|x.y.z]
+Usage: $0 [build|push|run|run-dev|all|release] [major|minor|patch|x.y.z]
 Default: run
 
 Environment overrides:
@@ -77,6 +77,18 @@ release_image() {
 run_image() {
     echo "Running image: ${IMAGE_REF}"
     podman run -p 8000:8000 \
+        -v "${SCRIPT_DIR}/templates:/app/templates" \
+        -v "${SCRIPT_DIR}/data:/app/samples" \
+        -v "${SCRIPT_DIR}/schema:/app/schema" \
+        "${IMAGE_REF}"
+}
+
+run_image_dev() {
+    echo "Running dev image with live reload: ${IMAGE_REF}"
+    podman run -p 8000:8000 \
+        -e DEV_MODE=1 \
+        -v "${SCRIPT_DIR}/apps/editor/app:/app/app" \
+        -v "${SCRIPT_DIR}/apps/editor/static:/app/static" \
         -v "${SCRIPT_DIR}/templates:/app/templates" \
         -v "${SCRIPT_DIR}/data:/app/samples" \
         -v "${SCRIPT_DIR}/schema:/app/schema" \
@@ -160,6 +172,7 @@ case "${1:-run}" in
     build) build_image ;;
     push) push_image ;;
     run) run_image ;;
+    run-dev) run_image_dev ;;
     all) build_image; push_image ;;
     release) release_image "${2:-}" ;;
     -h|--help) usage ;;

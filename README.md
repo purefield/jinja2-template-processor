@@ -33,17 +33,15 @@ The editor is a small web UI served from a container image in `apps/editor/`.
 ./clusterfile-editor.sh
 ```
 
-### Live dev (no container, code reload only)
+### Live dev (container, local files mounted)
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install "fastapi[standard]" jinja2 jsonpath-ng jsonschema yamllint
-./apps/editor/run-dev.sh
+./clusterfile-editor.sh build
+./clusterfile-editor.sh run-dev
 ```
 
 Notes:
-- `run-dev.sh` sets `SAMPLES_DIR`, `TEMPLATES_DIR`, and `SCHEMA_DIR` to this repo.
-- The server restarts only on backend code changes (`apps/editor/app`). Static updates show on refresh.
+- `run-dev` mounts `apps/editor/app` and `apps/editor/static` for instant updates.
+- Backend code changes trigger auto-reload; static changes show on refresh.
 
 ### Versioned builds
 The version tag comes from `apps/editor/APP_VERSION`. The build step syncs:
