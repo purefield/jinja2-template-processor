@@ -23,12 +23,6 @@
         rendering: false
     };
 
-    let demoState = {
-        active: false,
-        canceled: false,
-        highlights: [],
-        outputMarks: []
-    };
 
     const SENSITIVE_FIELDS = ['pullSecret', 'password', 'secret'];
     const FILE_SECTIONS = ['account', 'cluster', 'network', 'hosts', 'plugins'];
@@ -72,7 +66,6 @@
         loadSavedState();
         renderCurrentSection();
         updateValidation();
-        startDemoIfNeeded();
         initDevReload();
         handleDevHook();
     }
@@ -184,12 +177,8 @@
                 }
             });
         }
-        const navReplay = document.getElementById('nav-replay-demo');
-        if (navReplay) navReplay.addEventListener('click', replayDemo);
         const aboutChangelog = document.getElementById('about-changelog');
         if (aboutChangelog) aboutChangelog.addEventListener('click', () => switchSection('changelog'));
-        const aboutReplay = document.getElementById('about-replay');
-        if (aboutReplay) aboutReplay.addEventListener('click', replayDemo);
         const paramsToggle = document.getElementById('toggle-params');
         if (paramsToggle) paramsToggle.addEventListener('click', toggleParamsPanel);
         const themeToggle = document.getElementById('theme-toggle');
@@ -288,40 +277,6 @@ plugins: {}
         }
     }
 
-    function startDemoIfNeeded() {
-        if (demoState.active) return;
-        if (localStorage.getItem(STORAGE_KEYS.DEMO_SHOWN)) return;
-        runDemoSequence().catch(() => {
-            stopDemo();
-        });
-    }
-
-    function replayDemo() {
-        if (demoState.active) {
-            stopDemo();
-        }
-        localStorage.removeItem(STORAGE_KEYS.DEMO_SHOWN);
-        runDemoSequence().catch(() => {
-            stopDemo();
-        });
-    }
-
-    function stopDemo() {
-        demoState.canceled = true;
-        demoState.active = false;
-        clearHighlights();
-        clearOutputHighlights();
-        hideDemoBanner();
-        localStorage.setItem(STORAGE_KEYS.DEMO_SHOWN, 'true');
-    }
-
-    function showDemoBanner(text) {
-        const banner = document.getElementById('demo-banner');
-        const textEl = document.getElementById('demo-text');
-        if (!banner || !textEl) return;
-        textEl.textContent = text;
-        banner.style.display = 'flex';
-    }
 
     function showToast(message, type = 'info') {
         const toast = document.getElementById('toast');
@@ -341,129 +296,7 @@ plugins: {}
         }, 3000);
     }
 
-    function hideDemoBanner() {
-        const banner = document.getElementById('demo-banner');
-        if (banner) banner.style.display = 'none';
-    }
-
-    function highlightElement(el) {
-        if (!el) return;
-        el.classList.add('demo-highlight');
-        demoState.highlights.push(el);
-        if (el.scrollIntoView) {
-            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
-    }
-
-    function clearHighlights() {
-        demoState.highlights.forEach(el => el.classList.remove('demo-highlight'));
-        demoState.highlights = [];
-    }
-
-    function clearOutputHighlights() {
-        demoState.outputMarks.forEach(mark => mark.clear());
-        demoState.outputMarks = [];
-    }
-
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    function stepDelay(multiplier = 1) {
-        return sleep(2000 * multiplier);
-    }
-
-    async function runDemoSequence() {
-        demoState.active = true;
-        demoState.canceled = false;
-
-        const skipBtn = document.getElementById('demo-skip');
-        if (skipBtn) skipBtn.addEventListener('click', stopDemo, { once: true });
-
-        showDemoBanner('Loading a sample clusterfile...');
-        const samplesSelect = document.getElementById('samples-select');
-        highlightElement(samplesSelect);
-        if (state.samples.length > 0) {
-            await loadSample(state.samples[0].filename);
-        }
-        await stepDelay(1.2);
-        clearHighlights();
-
-        const sections = ['account', 'cluster', 'network', 'hosts', 'plugins'];
-        for (const section of sections) {
-            if (demoState.canceled) return;
-            showDemoBanner(`Browsing ${capitalizeFirst(section)} settings...`);
-            const link = document.querySelector(`.pf-v6-c-nav__link[data-section="${section}"]`);
-            highlightElement(link);
-            switchSection(section);
-            highlightElement(document.getElementById('form-pane'));
-            await stepDelay(1.1);
-            clearHighlights();
-        }
-
-        if (demoState.canceled) return;
-        showDemoBanner('Rendering a template...');
-        switchSection('templates');
-        const templateSelect = document.getElementById('template-select');
-        const renderBtn = document.getElementById('btn-render');
-        if (templateSelect && templateState.templates.length > 0) {
-            templateSelect.value = templateState.templates[0].name;
-            handleTemplateSelect({ target: templateSelect });
-            highlightElement(templateSelect);
-            highlightElement(renderBtn);
-            await renderTemplate();
-            highlightElement(document.getElementById('template-output-pane'));
-            await stepDelay(1.1);
-        }
-        clearHighlights();
-
-        if (demoState.canceled) return;
-        const originalName = getNestedValue(state.currentObject, 'cluster.name');
-        const demoName = originalName ? `${originalName}-demo` : 'demo-cluster';
-        showDemoBanner('Making a change...');
-        switchSection('cluster');
-        updateFieldValue('cluster.name', demoName);
-        const changesBadge = document.getElementById('header-changes');
-        highlightElement(changesBadge);
-        switchTab('changes');
-        highlightElement(document.getElementById('changes-list'));
-        await stepDelay(1.3);
-        clearHighlights();
-
-        if (demoState.canceled) return;
-        showDemoBanner('Re-rendering with the change...');
-        switchSection('templates');
-        await renderTemplate();
-        highlightElement(document.getElementById('template-output-pane'));
-        highlightTemplateOutput(demoName);
-        await stepDelay(1.6);
-        clearOutputHighlights();
-
-        showDemoBanner('Demo complete. Ready to edit your own clusterfile.');
-        await stepDelay(1.0);
-
-        resetToBaseline();
-        hideDemoBanner();
-        demoState.active = false;
-        localStorage.setItem(STORAGE_KEYS.DEMO_SHOWN, 'true');
-    }
-
-    function highlightTemplateOutput(value) {
-        if (!templateState.outputEditor || !value) return;
-        clearOutputHighlights();
-        const doc = templateState.outputEditor.getDoc();
-        const text = doc.getValue();
-        let index = 0;
-        while (index !== -1) {
-            index = text.indexOf(value, index);
-            if (index === -1) break;
-            const from = doc.posFromIndex(index);
-            const to = doc.posFromIndex(index + value.length);
-            const mark = doc.markText(from, to, { className: 'demo-output-highlight' });
-            demoState.outputMarks.push(mark);
-            index += value.length;
-        }
-    }
+    // Demo flow removed.
 
     function resetToBaseline() {
         const baselineObject = jsyaml.load(state.baselineYamlText) || {};
@@ -2544,6 +2377,9 @@ plugins: {}
             }
             if (section) {
                 switchSection(section);
+            }
+            if (template && !section) {
+                switchSection('templates');
             }
             if (editorView && Object.values(EDITOR_VIEWS).includes(editorView)) {
                 setEditorView(editorView);
