@@ -2558,10 +2558,16 @@ plugins: {}
         const section = params.get('section');
         const template = params.get('template');
         const editorView = params.get('editor');
+        const tour = params.get('tour');
 
         if (!sample && !section && !template && !editorView) return;
 
         try {
+            if (tour === '0') {
+                localStorage.setItem(STORAGE_KEYS.TOUR_SHOWN, 'true');
+                const tourModal = document.getElementById('tour-modal');
+                if (tourModal) tourModal.style.display = 'none';
+            }
             if (sample) {
                 await loadSample(sample);
             }
