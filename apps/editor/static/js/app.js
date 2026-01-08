@@ -1238,10 +1238,10 @@ plugins: {}
             <div class="pf-v6-c-toolbar__content">
                 <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-v6-u-ml-auto">
                     <div class="pf-v6-c-toolbar__item">
-                        <button class="pf-v6-c-button pf-m-secondary array-add-btn" type="button">Add item</button>
+                        <button class="pf-v6-c-button pf-m-secondary pf-m-small array-add-btn" type="button">Add item</button>
                     </div>
                     <div class="pf-v6-c-toolbar__item">
-                        <button class="pf-v6-c-button pf-m-danger array-delete-btn" type="button">Delete all</button>
+                        <button class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small array-delete-btn" type="button">Delete all</button>
                     </div>
                 </div>
             </div>
@@ -1251,7 +1251,6 @@ plugins: {}
         const deleteBtn = controls.querySelector('.array-delete-btn');
         deleteBtn.disabled = items.length === 0;
         deleteBtn.addEventListener('click', () => removeAllArrayItems(path));
-        wrapper.appendChild(controls);
 
         items.forEach((item, index) => {
             const itemPath = `${path}[${index}]`;
@@ -1261,6 +1260,8 @@ plugins: {}
                 renderArrayPrimitiveItem(wrapper, itemSchema, item, itemPath, index);
             }
         });
+
+        wrapper.appendChild(controls);
 
         group.appendChild(wrapper);
     }
