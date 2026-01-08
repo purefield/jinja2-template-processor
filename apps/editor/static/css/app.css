@@ -40,3 +40,65 @@
     font-family: "RedHatMono", "Liberation Mono", consolas, monospace;
     font-size: 13px;
 }
+
+#help-bubble {
+    z-index: 300;
+}
+
+.app-version-badge {
+    cursor: pointer;
+}
+
+.app-version-badge .pf-v6-c-label__content {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.action-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
+    border: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
+    background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
+}
+
+.array-controls {
+    border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
+    padding: 4px;
+}
+
+.array-item-row {
+    flex-wrap: nowrap;
+}
+
+.array-item-row .pf-v6-c-form-control {
+    min-width: 0;
+}
+
+#editor-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#editor-pane .editor-main-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#editor-pane .editor-tabs-panel {
+    flex: 0 0 240px;
+    min-height: 0;
+}
+
+.pf-v6-c-page__main-section {
+    background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
+}
+
+@media (max-width: 768px) {
+    #editor-pane .editor-tabs-panel {
+        flex-basis: 200px;
+    }
+}

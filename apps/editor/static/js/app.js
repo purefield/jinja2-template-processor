@@ -53,6 +53,7 @@
         editor: null,
         helpTimeout: null,
         pinnedHelp: false,
+        helpTarget: null,
         currentFilename: 'untitled',
         validationErrors: 0,
         samples: [],
@@ -169,7 +170,7 @@
         document.getElementById('btn-revert-section').addEventListener('click', revertSection);
         document.getElementById('btn-revert-all').addEventListener('click', revertAll);
 
-        document.querySelectorAll('.pf-v6-c-tabs__link').forEach(tab => {
+        document.querySelectorAll('.pf-v6-c-tabs__link[data-tab]').forEach(tab => {
             tab.addEventListener('click', () => switchTab(tab.dataset.tab));
         });
 
@@ -216,6 +217,8 @@
         helpClose.addEventListener('mousedown', (e) => { e.stopPropagation(); });
         helpPin.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); togglePinHelp(); });
         helpPin.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+        window.addEventListener('resize', handleHelpReposition);
+        window.addEventListener('scroll', handleHelpReposition, true);
     }
 
     function loadSavedState() {
@@ -697,8 +700,10 @@ plugins: {}
         }
         helpButton.addEventListener('mouseenter', handleHelpHover);
         helpButton.addEventListener('mouseleave', handleHelpLeave);
+        helpButton.addEventListener('focus', handleHelpFocus);
+        helpButton.addEventListener('blur', handleHelpBlur);
+        helpButton.addEventListener('click', handleHelpClick);
         helpButton.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
-        helpButton.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); });
         labelWrapper.appendChild(label);
         labelWrapper.appendChild(helpButton);
 
@@ -1205,7 +1210,7 @@ plugins: {}
         const itemSchema = schema.items || {};
 
         const controls = document.createElement('div');
-        controls.className = 'pf-v6-c-toolbar';
+        controls.className = 'pf-v6-c-toolbar array-controls action-cluster';
         controls.innerHTML = `
             <div class="pf-v6-c-toolbar__content">
                 <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-v6-u-ml-auto">
@@ -1239,7 +1244,7 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center';
+        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center array-item-row';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
@@ -1856,6 +1861,36 @@ plugins: {}
             }, 400);
         }
     }
+
+    function handleHelpFocus(e) {
+        if (state.pinnedHelp) return;
+        showHelpBubble(e.currentTarget);
+    }
+
+    function handleHelpBlur() {
+        if (!state.pinnedHelp) {
+            hideHelpBubble();
+        }
+    }
+
+    function handleHelpClick(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        const target = e.currentTarget;
+        if (state.pinnedHelp && state.helpTarget === target) {
+            forceHideHelpBubble();
+            return;
+        }
+        state.pinnedHelp = true;
+        showHelpBubble(target);
+        updatePinButtonIcon();
+    }
+
+    function handleHelpReposition() {
+        const bubble = document.getElementById('help-bubble');
+        if (!bubble || bubble.style.display !== 'block' || !state.helpTarget) return;
+        positionHelpBubble(state.helpTarget);
+    }
     
     function handleBubbleEnter() {
         if (state.helpHideTimeout) {
@@ -1876,6 +1911,7 @@ plugins: {}
         const bubble = document.getElementById('help-bubble');
         const description = target.dataset.description;
         const docUrl = target.dataset.docUrl;
+        state.helpTarget = target;
 
         document.getElementById('help-description').textContent = description || 'No description available';
         
@@ -1910,16 +1946,23 @@ plugins: {}
         bubble.style.display = 'block';
         bubble.style.left = '0px';
         bubble.style.top = '0px';
-        
+
+        positionHelpBubble(target);
+        bubble.style.visibility = 'visible';
+    }
+
+    function positionHelpBubble(target) {
+        const bubble = document.getElementById('help-bubble');
+        if (!bubble) return;
         const bubbleWidth = bubble.offsetWidth;
         const bubbleHeight = bubble.offsetHeight;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        
+
         const rect = target.getBoundingClientRect();
         let left = rect.right + 10;
         let top = rect.top;
-        
+
         if (left + bubbleWidth > viewportWidth - 10) {
             left = rect.left - bubbleWidth - 10;
         }
@@ -1928,20 +1971,21 @@ plugins: {}
             top = viewportHeight - bubbleHeight - 10;
         }
         if (top < 10) top = 10;
-        
+
         bubble.style.left = `${left}px`;
         bubble.style.top = `${top}px`;
-        bubble.style.visibility = 'visible';
     }
 
     function hideHelpBubble() {
         if (state.pinnedHelp) return;
         document.getElementById('help-bubble').style.display = 'none';
+        state.helpTarget = null;
     }
 
     function forceHideHelpBubble() {
         state.pinnedHelp = false;
         document.getElementById('help-bubble').style.display = 'none';
+        state.helpTarget = null;
         updatePinButtonIcon();
     }
 
@@ -2509,8 +2553,9 @@ plugins: {}
         const paramsContainer = document.getElementById('params-container');
         if (paramsContainer) {
             paramsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-param-btn')) {
-                    removeParamRow(e.target);
+                const removeBtn = e.target.closest('.remove-param-btn');
+                if (removeBtn) {
+                    removeParamRow(removeBtn);
                 }
             });
         }
@@ -2560,7 +2605,13 @@ plugins: {}
         row.innerHTML = `
             <input type="text" class="pf-v6-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
             <input type="text" class="pf-v6-c-form-control param-value" placeholder="new-value" title="Value to set">
-            <button class="remove-param-btn pf-v6-c-button pf-m-plain" type="button" title="Remove">X</button>
+            <button class="remove-param-btn pf-v6-c-button pf-m-plain pf-m-small" type="button" title="Remove" aria-label="Remove override">
+                <span class="pf-v6-c-button__icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
+                    </svg>
+                </span>
+            </button>
         `;
         container.appendChild(row);
     }

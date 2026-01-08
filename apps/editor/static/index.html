@@ -17,7 +17,7 @@
             <div class="pf-v6-c-masthead__brand">
                 <a class="pf-v6-c-masthead__brand-link" href="#">
                     <span class="pf-v6-c-brand">Clusterfile Editor</span>
-                    <span class="pf-v6-c-label pf-m-blue pf-v6-u-ml-sm" id="app-version" role="button" tabindex="0" title="View changelog">
+                    <span class="pf-v6-c-label pf-m-blue pf-v6-u-ml-sm app-version-badge" id="app-version" role="button" tabindex="0" title="View changelog">
                         <span class="pf-v6-c-label__content">v1.1.0</span>
                     </span>
                 </a>
@@ -164,7 +164,7 @@
                         <div class="pf-v6-c-card__title">
                             <h2 class="pf-v6-c-title pf-m-md" id="section-title">Account</h2>
                         </div>
-                        <div class="form-actions pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                        <div class="form-actions action-cluster pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
                             <button id="btn-revert-section" class="pf-v6-c-button pf-m-link pf-m-small" type="button" title="Revert section changes">Revert Section</button>
                             <button id="btn-revert-all" class="pf-v6-c-button pf-m-link pf-m-small" type="button" title="Revert all changes">Revert All</button>
                         </div>
@@ -206,7 +206,13 @@
                                                     <div class="param-row pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-mb-sm">
                                                         <input type="text" class="pf-v6-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
                                                         <input type="text" class="pf-v6-c-form-control param-value" placeholder="new-value" title="Value to set">
-                                                        <button class="remove-param-btn pf-v6-c-button pf-m-plain" type="button" title="Remove">X</button>
+                                                        <button class="remove-param-btn pf-v6-c-button pf-m-plain pf-m-small" type="button" title="Remove" aria-label="Remove override">
+                                                            <span class="pf-v6-c-button__icon">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                                    <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
+                                                                </svg>
+                                                            </span>
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <button id="add-param-btn" class="pf-v6-c-button pf-m-link" type="button">+ Add Parameter Override</button>
@@ -266,9 +272,9 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill">
+                    <div class="pf-v6-l-stack__item pf-m-fill editor-main-panel">
                     <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden yaml-editor-container">
-                            <div class="pf-v6-c-card__header">
+                            <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                                 <div class="pf-v6-c-card__title">
                                     <span>YAML Editor</span>
                                 </div>
@@ -284,9 +290,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill">
+                    <div class="pf-v6-l-stack__item pf-m-fill editor-main-panel">
                         <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden template-output-pane" id="template-output-pane" style="display: none;">
-                            <div class="pf-v6-c-card__header">
+                            <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
                                 <div class="pf-v6-c-card__title">
                                     <span>Template Output</span>
                                 </div>
@@ -306,7 +312,7 @@
                             <div id="template-warnings" class="pf-v6-c-card__footer"></div>
                         </div>
                     </div>
-                    <div class="pf-v6-l-stack__item pf-m-fill">
+                    <div class="pf-v6-l-stack__item pf-m-fill editor-tabs-panel">
                         <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden tabs-container pf-v6-c-tabs">
                             <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
                                 <ul class="pf-v6-c-tabs__list" role="tablist">
