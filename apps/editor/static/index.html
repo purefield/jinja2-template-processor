@@ -1,66 +1,67 @@
 <!DOCTYPE html>
-<html lang="en" class="pf-u-h-100">
+<html lang="en" class="pf-v6-u-h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clusterfile Editor</title>
     <link rel="stylesheet" href="/static/vendor/patternfly.min.css">
+    <link rel="stylesheet" href="/static/vendor/patternfly-utilities.css">
     <link rel="stylesheet" href="/static/vendor/codemirror.min.css">
     <link rel="stylesheet" href="/static/vendor/codemirror-lint.min.css">
     <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body class="pf-c-page pf-u-h-100 pf-u-overflow-hidden">
-    <header class="pf-c-page__header">
-        <div class="pf-c-page__header-brand">
-            <a class="pf-c-page__header-brand-link" href="#">
-                <span class="pf-c-brand">Clusterfile Editor</span>
-                <span class="pf-c-label pf-m-blue pf-u-ml-sm" id="app-version" role="button" tabindex="0" title="View changelog">
-                    <span class="pf-c-label__content">v1.1.0</span>
+<body class="pf-v6-c-page pf-v6-u-h-100 pf-v6-u-overflow-hidden">
+    <header class="pf-v6-c-page__header">
+        <div class="pf-v6-c-page__header-brand">
+            <a class="pf-v6-c-page__header-brand-link" href="#">
+                <span class="pf-v6-c-brand">Clusterfile Editor</span>
+                <span class="pf-v6-c-label pf-m-blue pf-v6-u-ml-sm" id="app-version" role="button" tabindex="0" title="View changelog">
+                    <span class="pf-v6-c-label__content">v1.1.0</span>
                 </span>
             </a>
         </div>
-        <div class="pf-c-page__header-tools">
-            <div class="pf-c-toolbar">
-                <div class="pf-c-toolbar__content">
-                    <div class="pf-c-toolbar__content-section pf-m-align-items-center">
-                        <div class="pf-c-toolbar__item">
-                            <span id="header-filename" class="pf-u-text-truncate">untitled</span>
+        <div class="pf-v6-c-page__header-tools">
+            <div class="pf-v6-c-toolbar">
+                <div class="pf-v6-c-toolbar__content">
+                    <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center">
+                        <div class="pf-v6-c-toolbar__item">
+                            <span id="header-filename" class="pf-v6-u-text-truncate">untitled</span>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <span id="header-changes" class="pf-c-label pf-m-compact pf-m-blue" title="Pending changes">
-                                <span class="pf-c-label__content">
+                        <div class="pf-v6-c-toolbar__item">
+                            <span id="header-changes" class="pf-v6-c-label pf-m-compact pf-m-blue" title="Pending changes">
+                                <span class="pf-v6-c-label__content">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                                    <span class="pf-u-ml-xs" id="changes-count">0</span>
+                                    <span class="pf-v6-u-ml-xs" id="changes-count">0</span>
                                 </span>
                             </span>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <span id="header-errors" class="pf-c-label pf-m-compact pf-m-red" title="Validation errors">
-                                <span class="pf-c-label__content">
+                        <div class="pf-v6-c-toolbar__item">
+                            <span id="header-errors" class="pf-v6-c-label pf-m-compact pf-m-red" title="Validation errors">
+                                <span class="pf-v6-c-label__content">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                                    <span class="pf-u-ml-xs" id="errors-count">0</span>
+                                    <span class="pf-v6-u-ml-xs" id="errors-count">0</span>
                                 </span>
                             </span>
                         </div>
                     </div>
-                    <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-m-align-right pf-u-ml-auto">
-                        <div class="pf-c-toolbar__item">
-                            <select id="samples-select" class="pf-c-form-control" title="Load sample clusterfile">
+                    <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-m-align-right pf-v6-u-ml-auto">
+                        <div class="pf-v6-c-toolbar__item">
+                            <select id="samples-select" class="pf-v6-c-form-control" title="Load sample clusterfile">
                                 <option value="">Load Sample...</option>
                             </select>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <button id="btn-new" class="pf-c-button pf-m-secondary" type="button">New</button>
+                        <div class="pf-v6-c-toolbar__item">
+                            <button id="btn-new" class="pf-v6-c-button pf-m-secondary" type="button">New</button>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <button id="btn-load" class="pf-c-button pf-m-secondary" type="button">Load</button>
+                        <div class="pf-v6-c-toolbar__item">
+                            <button id="btn-load" class="pf-v6-c-button pf-m-secondary" type="button">Load</button>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <button id="btn-save" class="pf-c-button pf-m-primary" type="button">Save</button>
+                        <div class="pf-v6-c-toolbar__item">
+                            <button id="btn-save" class="pf-v6-c-button pf-m-primary" type="button">Save</button>
                         </div>
-                        <div class="pf-c-toolbar__item">
-                            <button id="btn-download" class="pf-c-button pf-m-secondary" type="button">Download</button>
+                        <div class="pf-v6-c-toolbar__item">
+                            <button id="btn-download" class="pf-v6-c-button pf-m-secondary" type="button">Download</button>
                         </div>
                         <input type="file" id="file-input" accept=".yaml,.yml,.clusterfile,text/yaml,application/x-yaml" hidden>
                     </div>
@@ -69,76 +70,76 @@
         </div>
     </header>
 
-    <div class="pf-c-page__sidebar">
-        <div class="pf-c-page__sidebar-body pf-u-display-flex pf-u-flex-direction-column pf-u-h-100">
-            <nav class="pf-c-nav pf-u-display-flex pf-u-flex-direction-column pf-u-h-100" aria-label="Global">
-                <ul class="pf-c-nav__list pf-u-flex-grow-1 pf-u-min-height-0">
-                    <li class="pf-c-nav__item pf-m-expandable pf-m-expanded" data-menu="clusterfile">
-                        <button class="pf-c-nav__link pf-m-current nav-group-toggle" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
+    <div class="pf-v6-c-page__sidebar">
+        <div class="pf-v6-c-page__sidebar-body pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
+            <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100" aria-label="Global">
+                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0">
+                    <li class="pf-v6-c-nav__item pf-m-expandable pf-m-expanded" data-menu="clusterfile">
+                        <button class="pf-v6-c-nav__link pf-m-current nav-group-toggle" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
                             Clusterfile
                         </button>
-                        <section class="pf-c-nav__subnav" aria-labelledby="nav-clusterfile-label">
-                            <ul class="pf-c-nav__list" data-menu-list="clusterfile" id="nav-clusterfile-list">
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-section="account">
-                                        Account <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="account"></span>
+                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-clusterfile-label">
+                            <ul class="pf-v6-c-nav__list" data-menu-list="clusterfile" id="nav-clusterfile-list">
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-section="account">
+                                        Account <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="account"></span>
                                     </a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-section="cluster">
-                                        Cluster <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="cluster"></span>
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-section="cluster">
+                                        Cluster <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="cluster"></span>
                                     </a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-section="network">
-                                        Network <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="network"></span>
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-section="network">
+                                        Network <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="network"></span>
                                     </a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-section="hosts">
-                                        Hosts <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="hosts"></span>
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-section="hosts">
+                                        Hosts <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="hosts"></span>
                                     </a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-section="plugins">
-                                        Plugins <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="plugins"></span>
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-section="plugins">
+                                        Plugins <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="plugins"></span>
                                     </a>
                                 </li>
                             </ul>
                         </section>
                     </li>
-                    <li class="pf-c-nav__item pf-m-expandable" data-menu="templates">
-                        <button class="pf-c-nav__link nav-group-toggle" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
+                    <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="templates">
+                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
                             Templates
                         </button>
-                        <section class="pf-c-nav__subnav" aria-labelledby="nav-templates-label" hidden>
-                            <ul class="pf-c-nav__list" data-menu-list="templates" id="nav-templates-list">
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-template-view="rendered">Rendered</a>
+                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-templates-label" hidden>
+                            <ul class="pf-v6-c-nav__list" data-menu-list="templates" id="nav-templates-list">
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="rendered">Rendered</a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-template-view="source">Template Source</a>
+                                <li class="pf-v6-c-nav__item">
+                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="source">Template Source</a>
                                 </li>
                             </ul>
                         </section>
                     </li>
                 </ul>
-                <ul class="pf-c-nav__list pf-u-mt-auto pf-u-pt-md pf-u-border-top">
-                    <li class="pf-c-nav__item pf-m-expandable" data-menu="about">
-                        <button class="pf-c-nav__link nav-group-toggle" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
+                <ul class="pf-v6-c-nav__list pf-v6-u-mt-auto pf-v6-u-pt-md pf-v6-u-border-top">
+                    <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="about">
+                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
                             About
-                            <span class="pf-c-badge pf-m-unread pf-u-ml-sm" data-badge="about-errors"></span>
+                            <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="about-errors"></span>
                         </button>
-                        <section class="pf-c-nav__subnav" aria-labelledby="nav-about-label" hidden>
-                            <ul class="pf-c-nav__list" data-menu-list="about" id="nav-about-list">
-                                <li class="pf-c-nav__item">
-                                <a href="#" class="pf-c-nav__link" data-section="about">Overview</a>
+                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-about-label" hidden>
+                            <ul class="pf-v6-c-nav__list" data-menu-list="about" id="nav-about-list">
+                                <li class="pf-v6-c-nav__item">
+                                <a href="#" class="pf-v6-c-nav__link" data-section="about">Overview</a>
                             </li>
-                            <li class="pf-c-nav__item">
-                                <a href="#" class="pf-c-nav__link" data-section="changelog">Changelog</a>
+                            <li class="pf-v6-c-nav__item">
+                                <a href="#" class="pf-v6-c-nav__link" data-section="changelog">Changelog</a>
                             </li>
-                            <li class="pf-c-nav__item">
-                                <button id="nav-replay-demo" class="pf-c-nav__link" type="button">Replay Demo</button>
+                            <li class="pf-v6-c-nav__item">
+                                <button id="nav-replay-demo" class="pf-v6-c-nav__link" type="button">Replay Demo</button>
                             </li>
                             </ul>
                         </section>
@@ -148,65 +149,65 @@
         </div>
     </div>
 
-    <main class="pf-c-page__main pf-u-h-100 pf-u-overflow-hidden">
-        <section class="pf-c-page__main-section pf-m-fill pf-u-h-100">
-            <div class="pf-l-stack pf-m-gutter pf-u-h-100">
-                <div class="pf-l-stack__item">
-                    <h1 class="pf-c-title pf-m-xl" id="content-filename">untitled</h1>
+    <main class="pf-v6-c-page__main pf-v6-u-h-100 pf-v6-u-overflow-hidden">
+        <section class="pf-v6-c-page__main-section pf-m-fill pf-v6-u-h-100">
+            <div class="pf-v6-l-stack pf-m-gutter pf-v6-u-h-100">
+                <div class="pf-v6-l-stack__item">
+                    <h1 class="pf-v6-c-title pf-m-xl" id="content-filename">untitled</h1>
                 </div>
-                <div class="pf-l-stack__item pf-m-fill pf-u-overflow-hidden">
-                    <div class="pf-l-split pf-m-gutter pf-u-h-100">
-                <div class="pf-l-split__item pf-m-fill pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column pf-u-overflow-hidden" id="form-pane">
-                    <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
-                        <div class="pf-c-card__title">
-                            <h2 class="pf-c-title pf-m-md" id="section-title">Account</h2>
+                <div class="pf-v6-l-stack__item pf-m-fill pf-v6-u-overflow-hidden">
+                    <div class="pf-v6-l-split pf-m-gutter pf-v6-u-h-100">
+                <div class="pf-v6-l-split__item pf-m-fill pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden" id="form-pane">
+                    <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
+                        <div class="pf-v6-c-card__title">
+                            <h2 class="pf-v6-c-title pf-m-md" id="section-title">Account</h2>
                         </div>
-                        <div class="form-actions pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
-                            <button id="btn-revert-section" class="pf-c-button pf-m-link pf-m-small" type="button" title="Revert section changes">Revert Section</button>
-                            <button id="btn-revert-all" class="pf-c-button pf-m-link pf-m-small" type="button" title="Revert all changes">Revert All</button>
+                        <div class="form-actions pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                            <button id="btn-revert-section" class="pf-v6-c-button pf-m-link pf-m-small" type="button" title="Revert section changes">Revert Section</button>
+                            <button id="btn-revert-all" class="pf-v6-c-button pf-m-link pf-m-small" type="button" title="Revert all changes">Revert All</button>
                         </div>
                     </div>
-                    <div id="form-container" class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-auto"></div>
-                    <div id="templates-container" class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-auto" style="display: none;">
+                    <div id="form-container" class="pf-v6-c-card__body pf-v6-u-flex-grow-1 pf-v6-u-overflow-auto"></div>
+                    <div id="templates-container" class="pf-v6-c-card__body pf-v6-u-flex-grow-1 pf-v6-u-overflow-auto" style="display: none;">
                         <div class="templates-section">
-                            <h3 class="pf-c-title pf-m-md">Template Rendering</h3>
-                            <p class="pf-u-color-200 pf-u-mb-lg">Render OpenShift manifests and other content from your clusterfile using Jinja2 templates.</p>
+                            <h3 class="pf-v6-c-title pf-m-md">Template Rendering</h3>
+                            <p class="pf-v6-u-color-200 pf-v6-u-mb-lg">Render OpenShift manifests and other content from your clusterfile using Jinja2 templates.</p>
                             
-                            <div class="pf-c-card template-form">
-                                <div class="pf-c-card__body">
-                                    <div class="pf-l-flex pf-m-wrap pf-m-space-items-lg pf-m-align-items-flex-end pf-u-mb-md">
-                                        <div class="pf-l-flex__item pf-u-flex-grow-1 pf-u-min-width-0">
-                                            <label class="pf-c-form__label" for="template-select">
-                                                <span class="pf-c-form__label-text">Template</span>
+                            <div class="pf-v6-c-card template-form">
+                                <div class="pf-v6-c-card__body">
+                                    <div class="pf-v6-l-flex pf-m-wrap pf-m-space-items-lg pf-m-align-items-flex-end pf-v6-u-mb-md">
+                                        <div class="pf-v6-l-flex__item pf-v6-u-flex-grow-1 pf-v6-u-min-width-0">
+                                            <label class="pf-v6-c-form__label" for="template-select">
+                                                <span class="pf-v6-c-form__label-text">Template</span>
                                             </label>
-                                            <select id="template-select" class="pf-c-form-control">
+                                            <select id="template-select" class="pf-v6-c-form-control">
                                                 <option value="">-- Select a template --</option>
                                             </select>
                                             <div id="template-description" class="field-description"></div>
                                         </div>
-                                        <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
-                                            <button id="btn-render" class="pf-c-button pf-m-primary" type="button">Render</button>
-                                            <button id="btn-preview-template" class="pf-c-button pf-m-secondary" type="button">Source</button>
+                                        <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                                            <button id="btn-render" class="pf-v6-c-button pf-m-primary" type="button">Render</button>
+                                            <button id="btn-preview-template" class="pf-v6-c-button pf-m-secondary" type="button">Source</button>
                                         </div>
                                     </div>
 
-                                    <div class="pf-u-mt-sm">
-                                        <button id="toggle-params" class="pf-c-button pf-m-link" type="button">Show JSONPath Overrides</button>
+                                    <div class="pf-v6-u-mt-sm">
+                                        <button id="toggle-params" class="pf-v6-c-button pf-m-link" type="button">Show JSONPath Overrides</button>
                                     </div>
-                                    <div id="params-panel" class="pf-c-panel pf-m-bordered pf-u-mt-md" style="display: none;">
-                                        <div class="pf-c-panel__main">
-                                            <div class="pf-c-panel__main-body">
-                                                <label class="pf-c-form__label">
-                                                    <span class="pf-c-form__label-text">JSONPath Parameter Overrides</span>
+                                    <div id="params-panel" class="pf-v6-c-panel pf-m-bordered pf-v6-u-mt-md" style="display: none;">
+                                        <div class="pf-v6-c-panel__main">
+                                            <div class="pf-v6-c-panel__main-body">
+                                                <label class="pf-v6-c-form__label">
+                                                    <span class="pf-v6-c-form__label-text">JSONPath Parameter Overrides</span>
                                                 </label>
-                                                <div id="params-container" class="params-container pf-u-mt-sm pf-u-mb-sm">
-                                                    <div class="param-row pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm">
-                                                        <input type="text" class="pf-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
-                                                        <input type="text" class="pf-c-form-control param-value" placeholder="new-value" title="Value to set">
-                                                        <button class="remove-param-btn pf-c-button pf-m-plain" type="button" title="Remove">X</button>
+                                                <div id="params-container" class="params-container pf-v6-u-mt-sm pf-v6-u-mb-sm">
+                                                    <div class="param-row pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-mb-sm">
+                                                        <input type="text" class="pf-v6-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
+                                                        <input type="text" class="pf-v6-c-form-control param-value" placeholder="new-value" title="Value to set">
+                                                        <button class="remove-param-btn pf-v6-c-button pf-m-plain" type="button" title="Remove">X</button>
                                                     </div>
                                                 </div>
-                                                <button id="add-param-btn" class="pf-c-button pf-m-link" type="button">+ Add Parameter Override</button>
+                                                <button id="add-param-btn" class="pf-v6-c-button pf-m-link" type="button">+ Add Parameter Override</button>
                                                 <div class="field-description">Use JSONPath expressions to override values in the clusterfile before rendering. Example: $.hosts[*].bmc.username=admin</div>
                                             </div>
                                         </div>
@@ -215,119 +216,119 @@
                             </div>
                         </div>
                     </div>
-                    <div id="about-container" class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-auto" style="display: none;">
-                        <h3 class="pf-c-title pf-m-md">About</h3>
-                        <p class="pf-u-color-100 pf-u-mb-md">Clusterfile Editor helps you build OpenShift cluster configuration files with guided forms and templates.</p>
-                        <div class="pf-l-flex pf-m-space-items-sm pf-m-wrap pf-u-mb-md">
-                            <button id="about-changelog" class="pf-c-button pf-m-secondary" type="button">View Changelog</button>
-                            <button id="about-replay" class="pf-c-button pf-m-secondary" type="button">Replay Demo</button>
+                    <div id="about-container" class="pf-v6-c-card__body pf-v6-u-flex-grow-1 pf-v6-u-overflow-auto" style="display: none;">
+                        <h3 class="pf-v6-c-title pf-m-md">About</h3>
+                        <p class="pf-v6-u-color-100 pf-v6-u-mb-md">Clusterfile Editor helps you build OpenShift cluster configuration files with guided forms and templates.</p>
+                        <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-wrap pf-v6-u-mb-md">
+                            <button id="about-changelog" class="pf-v6-c-button pf-m-secondary" type="button">View Changelog</button>
+                            <button id="about-replay" class="pf-v6-c-button pf-m-secondary" type="button">Replay Demo</button>
                         </div>
-                        <div class="pf-c-card pf-u-mb-md">
-                            <div class="pf-c-card__header">
-                                <div class="pf-c-card__title">
+                        <div class="pf-v6-c-card pf-v6-u-mb-md">
+                            <div class="pf-v6-c-card__header">
+                                <div class="pf-v6-c-card__title">
                                     <span>Appearance</span>
                                 </div>
                             </div>
-                            <div class="pf-c-card__body">
-                                <label class="pf-c-switch" for="theme-toggle">
-                                    <input class="pf-c-switch__input" type="checkbox" id="theme-toggle" aria-label="Dark theme">
-                                    <span class="pf-c-switch__toggle"></span>
-                                    <span class="pf-c-switch__label">Dark theme</span>
+                            <div class="pf-v6-c-card__body">
+                                <label class="pf-v6-c-switch" for="theme-toggle">
+                                    <input class="pf-v6-c-switch__input" type="checkbox" id="theme-toggle" aria-label="Dark theme">
+                                    <span class="pf-v6-c-switch__toggle"></span>
+                                    <span class="pf-v6-c-switch__label">Dark theme</span>
                                 </label>
                             </div>
                         </div>
                         <div class="about-errors">
-                            <h4 class="pf-c-title pf-m-sm">Errors</h4>
+                            <h4 class="pf-v6-c-title pf-m-sm">Errors</h4>
                             <div id="error-results"></div>
                         </div>
                     </div>
-                    <div id="changelog-container" class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-auto" style="display: none;">
-                        <h3 class="pf-c-title pf-m-md">Changelog</h3>
-                        <div class="pf-c-code-block pf-m-stack">
-                            <div class="pf-c-code-block__content">
-                                <pre id="changelog-content" class="pf-c-code-block__pre">Loading...</pre>
+                    <div id="changelog-container" class="pf-v6-c-card__body pf-v6-u-flex-grow-1 pf-v6-u-overflow-auto" style="display: none;">
+                        <h3 class="pf-v6-c-title pf-m-md">Changelog</h3>
+                        <div class="pf-v6-c-code-block pf-m-stack">
+                            <div class="pf-v6-c-code-block__content">
+                                <pre id="changelog-content" class="pf-v6-c-code-block__pre">Loading...</pre>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="pf-l-split__item pf-m-fill pf-l-stack pf-m-gutter pf-u-h-100 pf-u-overflow-hidden" id="editor-pane">
-                    <div class="pf-l-stack__item">
-                        <div class="pf-c-tabs" role="tablist" aria-label="Editor mode">
-                            <ul class="pf-c-tabs__list">
-                                <li class="pf-c-tabs__item pf-m-current" role="presentation">
-                                    <button class="pf-c-tabs__link editor-toggle-btn" data-editor-view="clusterfile" role="tab" aria-selected="true" type="button">Clusterfile</button>
+                <div class="pf-v6-l-split__item pf-m-fill pf-v6-l-stack pf-m-gutter pf-v6-u-h-100 pf-v6-u-overflow-hidden" id="editor-pane">
+                    <div class="pf-v6-l-stack__item">
+                        <div class="pf-v6-c-tabs" role="tablist" aria-label="Editor mode">
+                            <ul class="pf-v6-c-tabs__list">
+                                <li class="pf-v6-c-tabs__item pf-m-current" role="presentation">
+                                    <button class="pf-v6-c-tabs__link editor-toggle-btn" data-editor-view="clusterfile" role="tab" aria-selected="true" type="button">Clusterfile</button>
                                 </li>
-                                <li class="pf-c-tabs__item" role="presentation">
-                                    <button class="pf-c-tabs__link editor-toggle-btn" data-editor-view="templates" role="tab" aria-selected="false" type="button">Template Output</button>
+                                <li class="pf-v6-c-tabs__item" role="presentation">
+                                    <button class="pf-v6-c-tabs__link editor-toggle-btn" data-editor-view="templates" role="tab" aria-selected="false" type="button">Template Output</button>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column yaml-editor-container">
-                            <div class="pf-c-card__header">
-                                <div class="pf-c-card__title">
+                    <div class="pf-v6-l-stack__item pf-m-fill">
+                    <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden yaml-editor-container">
+                            <div class="pf-v6-c-card__header">
+                                <div class="pf-v6-c-card__title">
                                     <span>YAML Editor</span>
                                 </div>
-                                <div class="pf-c-card__actions pf-u-ml-md">
-                                    <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
-                                        <button id="btn-format" class="pf-c-button pf-m-secondary pf-m-small" type="button">Format</button>
-                                        <button id="btn-copy" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
+                                <div class="pf-v6-c-card__actions pf-v6-u-ml-md">
+                                    <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                                        <button id="btn-format" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Format</button>
+                                        <button id="btn-copy" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="pf-c-card__body pf-u-p-0 pf-u-flex-grow-1 pf-u-overflow-hidden">
+                            <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
                                 <div id="yaml-editor"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column template-output-pane" id="template-output-pane" style="display: none;">
-                            <div class="pf-c-card__header">
-                                <div class="pf-c-card__title">
+                    <div class="pf-v6-l-stack__item pf-m-fill">
+                        <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden template-output-pane" id="template-output-pane" style="display: none;">
+                            <div class="pf-v6-c-card__header">
+                                <div class="pf-v6-c-card__title">
                                     <span>Template Output</span>
                                 </div>
-                                <div class="pf-c-card__actions pf-u-ml-md">
-                                    <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-m-wrap">
-                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="rendered" type="button">Rendered</button>
-                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="source" type="button">Template Source</button>
-                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="clusterfile" type="button">Clusterfile</button>
-                                        <button id="btn-copy-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
-                                        <button id="btn-download-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Download</button>
+                                <div class="pf-v6-c-card__actions pf-v6-u-ml-md">
+                                    <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-m-wrap">
+                                        <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="rendered" type="button">Rendered</button>
+                                        <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="source" type="button">Template Source</button>
+                                        <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="clusterfile" type="button">Clusterfile</button>
+                                        <button id="btn-copy-output" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
+                                        <button id="btn-download-output" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Download</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="pf-c-card__body pf-u-p-0 pf-u-flex-grow-1 pf-u-overflow-hidden">
+                            <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
                                 <div id="template-output-editor"></div>
                             </div>
-                            <div id="template-warnings" class="pf-c-card__footer"></div>
+                            <div id="template-warnings" class="pf-v6-c-card__footer"></div>
                         </div>
                     </div>
-                    <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column tabs-container pf-c-tabs">
-                            <div class="pf-c-card__body pf-u-p-0 pf-u-display-flex pf-u-flex-direction-column pf-u-h-100">
-                                <ul class="pf-c-tabs__list" role="tablist">
-                                    <li class="pf-c-tabs__item pf-m-current" role="presentation">
-                                        <button class="pf-c-tabs__link" id="tab-validation" role="tab" aria-selected="true" data-tab="validation">Validation</button>
+                    <div class="pf-v6-l-stack__item pf-m-fill">
+                        <div class="pf-v6-c-card pf-v6-u-border-radius-lg pf-v6-u-h-100 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-overflow-hidden tabs-container pf-v6-c-tabs">
+                            <div class="pf-v6-c-card__body pf-v6-u-p-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
+                                <ul class="pf-v6-c-tabs__list" role="tablist">
+                                    <li class="pf-v6-c-tabs__item pf-m-current" role="presentation">
+                                        <button class="pf-v6-c-tabs__link" id="tab-validation" role="tab" aria-selected="true" data-tab="validation">Validation</button>
                                     </li>
-                                    <li class="pf-c-tabs__item" role="presentation">
-                                        <button class="pf-c-tabs__link" id="tab-changes" role="tab" aria-selected="false" data-tab="changes">Changes</button>
+                                    <li class="pf-v6-c-tabs__item" role="presentation">
+                                        <button class="pf-v6-c-tabs__link" id="tab-changes" role="tab" aria-selected="false" data-tab="changes">Changes</button>
                                     </li>
-                                    <li class="pf-c-tabs__item" role="presentation">
-                                        <button class="pf-c-tabs__link" id="tab-diff" role="tab" aria-selected="false" data-tab="diff">Diff Preview</button>
+                                    <li class="pf-v6-c-tabs__item" role="presentation">
+                                        <button class="pf-v6-c-tabs__link" id="tab-diff" role="tab" aria-selected="false" data-tab="diff">Diff Preview</button>
                                     </li>
                                 </ul>
-                                <div class="tab-content pf-u-flex-grow-1 pf-u-overflow-hidden">
-                                    <div id="panel-validation" class="tab-panel pf-u-h-100 pf-u-overflow-auto pf-u-p-md">
+                                <div class="tab-content pf-v6-u-flex-grow-1 pf-v6-u-overflow-hidden">
+                                    <div id="panel-validation" class="tab-panel pf-v6-u-h-100 pf-v6-u-overflow-auto pf-v6-u-p-md">
                                         <div id="validation-results"></div>
                                     </div>
-                                    <div id="panel-changes" class="tab-panel pf-u-h-100 pf-u-overflow-auto pf-u-p-md" hidden>
+                                    <div id="panel-changes" class="tab-panel pf-v6-u-h-100 pf-v6-u-overflow-auto pf-v6-u-p-md" hidden>
                                         <div id="changes-list"></div>
                                     </div>
-                                    <div id="panel-diff" class="tab-panel pf-u-h-100 pf-u-overflow-auto pf-u-p-md" hidden>
-                                        <div class="pf-c-code-block pf-m-stack">
-                                            <div class="pf-c-code-block__content">
-                                                <pre id="diff-preview" class="pf-c-code-block__pre"></pre>
+                                    <div id="panel-diff" class="tab-panel pf-v6-u-h-100 pf-v6-u-overflow-auto pf-v6-u-p-md" hidden>
+                                        <div class="pf-v6-c-code-block pf-m-stack">
+                                            <div class="pf-v6-c-code-block__content">
+                                                <pre id="diff-preview" class="pf-v6-c-code-block__pre"></pre>
                                             </div>
                                         </div>
                                     </div>
@@ -341,44 +342,44 @@
         </section>
     </main>
 
-    <div class="pf-c-alert-group pf-m-toast" aria-live="polite">
-        <div id="demo-banner" class="pf-c-alert pf-m-info" style="display: none;">
-            <div class="pf-c-alert__title">
+    <div class="pf-v6-c-alert-group pf-m-toast" aria-live="polite">
+        <div id="demo-banner" class="pf-v6-c-alert pf-m-info" style="display: none;">
+            <div class="pf-v6-c-alert__title">
                 <span id="demo-text">Demo</span>
             </div>
-            <div class="pf-c-alert__action">
-                <button id="demo-skip" class="pf-c-button pf-m-link pf-m-inline pf-m-small" type="button">Skip</button>
+            <div class="pf-v6-c-alert__action">
+                <button id="demo-skip" class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small" type="button">Skip</button>
             </div>
         </div>
-        <div id="toast" class="pf-c-alert pf-m-info" style="display: none;">
-            <div class="pf-c-alert__title" id="toast-text"></div>
+        <div id="toast" class="pf-v6-c-alert pf-m-info" style="display: none;">
+            <div class="pf-v6-c-alert__title" id="toast-text"></div>
         </div>
     </div>
 
-    <div id="help-bubble" class="pf-c-popover pf-m-right" role="dialog" aria-modal="false" aria-labelledby="help-bubble-title" style="display: none; position: fixed;">
-        <div class="pf-c-popover__arrow"></div>
-        <div class="pf-c-popover__content">
-            <div class="pf-c-popover__header">
-                <h3 class="pf-c-popover__title" id="help-bubble-title">Help</h3>
-                <div class="pf-c-popover__actions">
-                    <button type="button" class="pf-c-button pf-m-plain help-bubble-pin" title="Pin">
+    <div id="help-bubble" class="pf-v6-c-popover pf-m-right" role="dialog" aria-modal="false" aria-labelledby="help-bubble-title" style="display: none; position: fixed;">
+        <div class="pf-v6-c-popover__arrow"></div>
+        <div class="pf-v6-c-popover__content">
+            <div class="pf-v6-c-popover__header">
+                <h3 class="pf-v6-c-popover__title" id="help-bubble-title">Help</h3>
+                <div class="pf-v6-c-popover__actions">
+                    <button type="button" class="pf-v6-c-button pf-m-plain help-bubble-pin" title="Pin">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 4v5c0 1.12.37 2.16 1 3H9c.65-.86 1-1.9 1-3V4h4m3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
                     </button>
-                    <button type="button" class="pf-c-button pf-m-plain help-bubble-close" title="Close">
+                    <button type="button" class="pf-v6-c-button pf-m-plain help-bubble-close" title="Close">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                     </button>
                 </div>
             </div>
-            <div class="pf-c-popover__body">
+            <div class="pf-v6-c-popover__body">
                 <p id="help-description"></p>
                 <div id="help-links"></div>
             </div>
         </div>
     </div>
 
-    <div id="tour-modal" class="pf-c-backdrop" style="display: none;">
-        <div class="pf-c-modal-box" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-            <div class="pf-c-modal-box__body">
+    <div id="tour-modal" class="pf-v6-c-backdrop" style="display: none;">
+        <div class="pf-v6-c-modal-box" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+            <div class="pf-v6-c-modal-box__body">
                 <h2 id="tour-title">Welcome to Clusterfile Editor</h2>
             <p>This editor helps you create and manage OpenShift cluster configuration files.</p>
             <ul>
@@ -388,7 +389,7 @@
                 <li><strong>Validation:</strong> Real-time validation shows errors in the bottom panel</li>
                 <li><strong>Help:</strong> Hover over field labels for documentation</li>
             </ul>
-            <button id="tour-close" class="pf-c-button pf-m-primary">Get Started</button>
+            <button id="tour-close" class="pf-v6-c-button pf-m-primary">Get Started</button>
             <label><input type="checkbox" id="tour-dont-show"> Don't show again</label>
             </div>
         </div>

@@ -131,13 +131,13 @@
     }
 
     function initEventListeners() {
-        document.querySelectorAll('.pf-c-nav__link[data-section]').forEach(link => {
+        document.querySelectorAll('.pf-v6-c-nav__link[data-section]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 switchSection(link.dataset.section);
             });
         });
-        document.querySelectorAll('.pf-c-nav__link[data-template-view]').forEach(link => {
+        document.querySelectorAll('.pf-v6-c-nav__link[data-template-view]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 setEditorMode(EDITOR_VIEWS.TEMPLATES);
@@ -169,7 +169,7 @@
         document.getElementById('btn-revert-section').addEventListener('click', revertSection);
         document.getElementById('btn-revert-all').addEventListener('click', revertAll);
 
-        document.querySelectorAll('.pf-c-tabs__link').forEach(tab => {
+        document.querySelectorAll('.pf-v6-c-tabs__link').forEach(tab => {
             tab.addEventListener('click', () => switchTab(tab.dataset.tab));
         });
 
@@ -406,7 +406,7 @@ plugins: {}
         for (const section of sections) {
             if (demoState.canceled) return;
             showDemoBanner(`Browsing ${capitalizeFirst(section)} settings...`);
-            const link = document.querySelector(`.pf-c-nav__link[data-section="${section}"]`);
+            const link = document.querySelector(`.pf-v6-c-nav__link[data-section="${section}"]`);
             highlightElement(link);
             switchSection(section);
             highlightElement(document.getElementById('form-pane'));
@@ -497,7 +497,7 @@ plugins: {}
     function switchSection(section, options = {}) {
         const { fromEditor = false } = options;
         state.currentSection = section;
-        document.querySelectorAll('.pf-c-nav__link[data-section]').forEach(link => {
+        document.querySelectorAll('.pf-v6-c-nav__link[data-section]').forEach(link => {
             link.classList.toggle('pf-m-current', link.dataset.section === section);
         });
         document.getElementById('section-title').textContent = capitalizeFirst(section);
@@ -562,10 +562,10 @@ plugins: {}
 
     function switchTab(tab) {
         state.currentTab = tab;
-        document.querySelectorAll('.pf-c-tabs__item').forEach(item => {
-            const isCurrent = item.querySelector('.pf-c-tabs__link').dataset.tab === tab;
+        document.querySelectorAll('.pf-v6-c-tabs__item').forEach(item => {
+            const isCurrent = item.querySelector('.pf-v6-c-tabs__link').dataset.tab === tab;
             item.classList.toggle('pf-m-current', isCurrent);
-            item.querySelector('.pf-c-tabs__link').setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+            item.querySelector('.pf-v6-c-tabs__link').setAttribute('aria-selected', isCurrent ? 'true' : 'false');
         });
         document.querySelectorAll('.tab-panel').forEach(panel => {
             panel.hidden = panel.id !== 'panel-' + tab;
@@ -630,7 +630,7 @@ plugins: {}
     function renderCurrentSection() {
         const container = document.getElementById('form-container');
         container.innerHTML = '';
-        container.classList.add('pf-c-form', 'pf-m-horizontal');
+        container.classList.add('pf-v6-c-form', 'pf-m-horizontal');
 
         if (!state.schema || !state.schema.properties) return;
 
@@ -652,7 +652,7 @@ plugins: {}
             }
             return;
         }
-        container.classList.add('pf-c-form', 'pf-m-horizontal');
+        container.classList.add('pf-v6-c-form', 'pf-m-horizontal');
 
         Object.entries(schema.properties).forEach(([key, propSchema]) => {
             const fieldPath = path ? `${path}.${key}` : key;
@@ -663,28 +663,28 @@ plugins: {}
 
     function renderField(container, key, schema, value, path) {
         const group = document.createElement('div');
-        group.className = 'pf-c-form__group';
+        group.className = 'pf-v6-c-form__group';
         group.dataset.path = path;
 
         const fieldId = `field-${path.replace(/[^a-z0-9]/gi, '-')}`;
 
         const labelWrapper = document.createElement('div');
-        labelWrapper.className = 'pf-c-form__group-label pf-l-flex pf-m-align-items-center pf-m-space-items-sm';
+        labelWrapper.className = 'pf-v6-c-form__group-label pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
 
         const label = document.createElement('label');
-        label.className = 'pf-c-form__label';
+        label.className = 'pf-v6-c-form__label';
         label.htmlFor = fieldId;
         const labelText = document.createElement('span');
-        labelText.className = 'pf-c-form__label-text';
+        labelText.className = 'pf-v6-c-form__label-text';
         labelText.textContent = schema.title || capitalizeFirst(key);
         label.appendChild(labelText);
 
         const helpButton = document.createElement('button');
         helpButton.type = 'button';
-        helpButton.className = 'pf-c-button pf-m-plain pf-m-icon';
+        helpButton.className = 'pf-v6-c-button pf-m-plain pf-m-icon';
         helpButton.setAttribute('aria-label', 'Field information');
         helpButton.innerHTML = `
-            <span class="pf-c-button__icon">
+            <span class="pf-v6-c-button__icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                 </svg>
@@ -704,7 +704,7 @@ plugins: {}
 
         const revertBtn = document.createElement('button');
         revertBtn.type = 'button';
-        revertBtn.className = 'pf-c-button pf-m-plain pf-m-small revert-btn';
+        revertBtn.className = 'pf-v6-c-button pf-m-plain pf-m-small revert-btn';
         revertBtn.innerHTML = '&#x2715;';
         revertBtn.setAttribute('aria-label', 'Revert field');
         revertBtn.title = 'Revert to original value';
@@ -716,7 +716,7 @@ plugins: {}
         group.appendChild(labelWrapper);
 
         const control = document.createElement('div');
-        control.className = 'pf-c-form__group-control';
+        control.className = 'pf-v6-c-form__group-control';
         group.appendChild(control);
 
         const isComplex = schema['x-is-file'] ||
@@ -728,7 +728,7 @@ plugins: {}
             (value !== null && typeof value === 'object' && !Array.isArray(value));
 
         const controlRow = document.createElement('div');
-        controlRow.className = 'pf-l-flex pf-m-align-items-center pf-m-space-items-sm';
+        controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
         if (!isComplex) {
             control.appendChild(controlRow);
         }
@@ -753,7 +753,7 @@ plugins: {}
 
         if (schema.description) {
             const desc = document.createElement('div');
-            desc.className = 'pf-c-form__helper-text';
+            desc.className = 'pf-v6-c-form__helper-text';
             desc.textContent = schema.description.substring(0, 100) + (schema.description.length > 100 ? '...' : '');
             control.appendChild(desc);
         }
@@ -764,10 +764,10 @@ plugins: {}
     function createTrashButton(label) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'pf-c-button pf-m-plain pf-m-small';
+        btn.className = 'pf-v6-c-button pf-m-plain pf-m-small';
         btn.setAttribute('aria-label', label);
         btn.innerHTML = `
-            <span class="pf-c-button__icon">
+            <span class="pf-v6-c-button__icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
                 </svg>
@@ -791,7 +791,7 @@ plugins: {}
         input.placeholder = schema.default || '';
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-c-form-control pf-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value));
         group.appendChild(input);
     }
@@ -805,7 +805,7 @@ plugins: {}
         if (schema.maximum !== undefined) input.max = schema.maximum;
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-c-form-control pf-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
         input.addEventListener('input', (e) => {
             const val = e.target.value === '' ? undefined : Number(e.target.value);
             updateFieldValue(path, val);
@@ -817,7 +817,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-c-form-control pf-u-flex-grow-1';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
         select.innerHTML = `
             <option value="">-- Select --</option>
             <option value="true" ${value === true ? 'selected' : ''}>Yes</option>
@@ -834,7 +834,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-c-form-control pf-u-flex-grow-1';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
         select.innerHTML = `<option value="">-- Select --</option>`;
         schema.enum.forEach(opt => {
             const option = document.createElement('option');
@@ -857,11 +857,11 @@ plugins: {}
         const booleanTrueOption = options.find(o => o.type === 'boolean' && o.const === true);
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-l-flex pf-m-wrap pf-m-space-items-sm pf-m-align-items-center';
+        wrapper.className = 'pf-v6-l-flex pf-m-wrap pf-m-space-items-sm pf-m-align-items-center';
 
         if (numberOption && (booleanFalseOption || booleanTrueOption) && !enumOption && !objectOption && !stringOption) {
             const select = document.createElement('select');
-            select.className = 'pf-c-form-control';
+            select.className = 'pf-v6-c-form-control';
             const valueIsNumeric = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
             const currentMode = valueIsNumeric ? 'number' : (value === false ? 'false' : (value === true ? 'true' : ''));
 
@@ -880,7 +880,7 @@ plugins: {}
             numberInput.type = 'number';
             numberInput.value = valueIsNumeric ? Number(value) : '';
             numberInput.placeholder = numberOption.description ? numberOption.description.substring(0, 50) : '';
-            numberInput.className = 'pf-c-form-control';
+            numberInput.className = 'pf-v6-c-form-control';
             if (numberOption.minimum !== undefined) numberInput.min = numberOption.minimum;
             if (numberOption.maximum !== undefined) numberInput.max = numberOption.maximum;
             numberInput.hidden = currentMode !== 'number';
@@ -919,7 +919,7 @@ plugins: {}
             const isObject = value !== null && typeof value === 'object';
             
             const modeSelect = document.createElement('select');
-            modeSelect.className = 'pf-c-form-control';
+            modeSelect.className = 'pf-v6-c-form-control';
             modeSelect.innerHTML = `
                 <option value="structured" ${isObject ? 'selected' : ''}>Structured</option>
                 <option value="simple" ${!isObject ? 'selected' : ''}>Simple String</option>
@@ -927,10 +927,10 @@ plugins: {}
             wrapper.appendChild(modeSelect);
 
             const structuredContainer = document.createElement('div');
-            structuredContainer.className = 'pf-c-card pf-u-mt-sm pf-u-mb-sm pf-u-w-100';
+            structuredContainer.className = 'pf-v6-c-card pf-v6-u-mt-sm pf-v6-u-mb-sm pf-v6-u-w-100';
             structuredContainer.hidden = !isObject;
             const structuredBody = document.createElement('div');
-            structuredBody.className = 'pf-c-card__body pf-c-form pf-m-horizontal';
+            structuredBody.className = 'pf-v6-c-card__body pf-v6-c-form pf-m-horizontal';
             structuredContainer.appendChild(structuredBody);
             
             const propsToRender = objectOption.properties || {};
@@ -946,20 +946,20 @@ plugins: {}
                     const propPath = `${path}.${propKey}`;
                     const propValue = isObject && value ? value[propKey] : undefined;
                     const propGroup = document.createElement('div');
-                    propGroup.className = 'pf-c-form__group pf-u-mb-sm';
+                    propGroup.className = 'pf-v6-c-form__group pf-v6-u-mb-sm';
                     
                     const propLabelWrap = document.createElement('div');
-                    propLabelWrap.className = 'pf-c-form__group-label';
+                    propLabelWrap.className = 'pf-v6-c-form__group-label';
                     const propLabel = document.createElement('label');
-                    propLabel.className = 'pf-c-form__label';
+                    propLabel.className = 'pf-v6-c-form__label';
                     const propLabelText = document.createElement('span');
-                    propLabelText.className = 'pf-c-form__label-text';
+                    propLabelText.className = 'pf-v6-c-form__label-text';
                     propLabelText.textContent = propSchema.title || capitalizeFirst(propKey);
                     propLabel.appendChild(propLabelText);
                     propLabelWrap.appendChild(propLabel);
                     propGroup.appendChild(propLabelWrap);
                     const propControl = document.createElement('div');
-                    propControl.className = 'pf-c-form__group-control';
+                    propControl.className = 'pf-v6-c-form__group-control';
                     propGroup.appendChild(propControl);
                     
                     const propType = propSchema.type || (Array.isArray(propValue) ? 'array' : typeof propValue === 'boolean' ? 'boolean' : typeof propValue === 'number' ? 'number' : 'string');
@@ -967,7 +967,7 @@ plugins: {}
                     if (propType === 'boolean') {
                         const select = document.createElement('select');
                         select.dataset.path = propPath;
-                        select.className = 'pf-c-form-control';
+                        select.className = 'pf-v6-c-form-control';
                         select.innerHTML = `
                             <option value="">-- Select --</option>
                             <option value="true" ${propValue === true ? 'selected' : ''}>Yes</option>
@@ -996,7 +996,7 @@ plugins: {}
                         propInput.value = propValue !== undefined ? propValue : '';
                         propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
                         propInput.dataset.path = propPath;
-                        propInput.className = 'pf-c-form-control';
+                        propInput.className = 'pf-v6-c-form-control';
                         if (propSchema.minimum !== undefined) propInput.min = propSchema.minimum;
                         if (propSchema.maximum !== undefined) propInput.max = propSchema.maximum;
                         propInput.addEventListener('input', (e) => {
@@ -1018,15 +1018,15 @@ plugins: {}
                         propControl.appendChild(propInput);
                     } else if (propType === 'array') {
                         const arrayContainer = document.createElement('div');
-                        arrayContainer.className = 'pf-c-card pf-u-p-sm';
+                        arrayContainer.className = 'pf-v6-c-card pf-v6-u-p-sm';
                         const items = Array.isArray(propValue) ? propValue : [];
                         items.forEach((item, idx) => {
                             const itemRow = document.createElement('div');
-                            itemRow.className = 'pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm';
+                            itemRow.className = 'pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-mb-sm';
                             const itemInput = document.createElement('input');
                             itemInput.type = 'text';
                             itemInput.value = item || '';
-                            itemInput.className = 'pf-c-form-control pf-u-flex-grow-1';
+                            itemInput.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
                             itemInput.addEventListener('input', (e) => {
                                 let currentVal = getNestedValue(state.currentObject, path);
                                 if (typeof currentVal !== 'object' || currentVal === null) {
@@ -1060,7 +1060,7 @@ plugins: {}
                         });
                         const addBtn = document.createElement('button');
                         addBtn.type = 'button';
-                        addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
+                        addBtn.className = 'pf-v6-c-button pf-m-link pf-m-inline';
                         addBtn.textContent = 'Add item';
                         addBtn.addEventListener('click', () => {
                             let currentVal = getNestedValue(state.currentObject, path);
@@ -1082,7 +1082,7 @@ plugins: {}
                         propInput.value = propValue !== undefined ? propValue : '';
                         propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
                         propInput.dataset.path = propPath;
-                        propInput.className = 'pf-c-form-control';
+                        propInput.className = 'pf-v6-c-form-control';
                         propInput.addEventListener('input', (e) => {
                             let currentVal = getNestedValue(state.currentObject, path);
                             if (typeof currentVal !== 'object' || currentVal === null) {
@@ -1107,7 +1107,7 @@ plugins: {}
             wrapper.appendChild(structuredContainer);
 
             const simpleContainer = document.createElement('div');
-            simpleContainer.className = 'pf-u-mt-sm pf-u-w-100';
+            simpleContainer.className = 'pf-v6-u-mt-sm pf-v6-u-w-100';
             simpleContainer.hidden = isObject;
             
             const simpleInput = document.createElement('input');
@@ -1115,7 +1115,7 @@ plugins: {}
             simpleInput.value = !isObject && value ? value : '';
             simpleInput.placeholder = stringOption.description ? stringOption.description.substring(0, 50) : 'Enter value...';
             simpleInput.dataset.path = path;
-            simpleInput.className = 'pf-c-form-control';
+            simpleInput.className = 'pf-v6-c-form-control';
             simpleInput.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
             simpleContainer.appendChild(simpleInput);
             wrapper.appendChild(simpleContainer);
@@ -1133,7 +1133,7 @@ plugins: {}
         } else if (enumOption && enumOption.enum) {
             const select = document.createElement('select');
             select.dataset.path = path;
-            select.className = 'pf-c-form-control';
+            select.className = 'pf-v6-c-form-control';
             select.innerHTML = `<option value="">-- Select --</option>`;
             enumOption.enum.forEach(opt => {
                 const option = document.createElement('option');
@@ -1148,7 +1148,7 @@ plugins: {}
             customInput.type = 'text';
             customInput.placeholder = 'Enter custom value';
             customInput.hidden = !(value && !enumOption.enum.includes(value));
-            customInput.className = 'pf-c-form-control pf-u-mt-sm pf-u-w-100';
+            customInput.className = 'pf-v6-c-form-control pf-v6-u-mt-sm pf-v6-u-w-100';
             customInput.value = (value && !enumOption.enum.includes(value)) ? value : '';
 
             select.addEventListener('change', (e) => {
@@ -1176,7 +1176,7 @@ plugins: {}
 
     function renderFileField(group, key, schema, value, path, fieldId) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-c-input-group';
+        wrapper.className = 'pf-v6-c-input-group';
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -1184,11 +1184,11 @@ plugins: {}
         input.placeholder = 'Path to file...';
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-c-form-control';
+        input.className = 'pf-v6-c-form-control';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
 
         const indicator = document.createElement('span');
-        indicator.className = 'pf-c-input-group__text';
+        indicator.className = 'pf-v6-c-input-group__text';
         indicator.textContent = 'File Path';
 
         wrapper.appendChild(input);
@@ -1198,22 +1198,22 @@ plugins: {}
 
     function renderArrayField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-l-stack pf-m-gutter';
+        wrapper.className = 'pf-v6-l-stack pf-m-gutter';
         wrapper.dataset.path = path;
 
         const items = Array.isArray(value) ? value : [];
         const itemSchema = schema.items || {};
 
         const controls = document.createElement('div');
-        controls.className = 'pf-c-toolbar';
+        controls.className = 'pf-v6-c-toolbar';
         controls.innerHTML = `
-            <div class="pf-c-toolbar__content">
-                <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-u-ml-auto">
-                    <div class="pf-c-toolbar__item">
-                        <button class="pf-c-button pf-m-secondary array-add-btn" type="button">Add item</button>
+            <div class="pf-v6-c-toolbar__content">
+                <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-v6-u-ml-auto">
+                    <div class="pf-v6-c-toolbar__item">
+                        <button class="pf-v6-c-button pf-m-secondary array-add-btn" type="button">Add item</button>
                     </div>
-                    <div class="pf-c-toolbar__item">
-                        <button class="pf-c-button pf-m-danger array-delete-btn" type="button">Delete all</button>
+                    <div class="pf-v6-c-toolbar__item">
+                        <button class="pf-v6-c-button pf-m-danger array-delete-btn" type="button">Delete all</button>
                     </div>
                 </div>
             </div>
@@ -1239,13 +1239,13 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-l-stack__item pf-l-flex pf-m-space-items-sm pf-m-align-items-center';
+        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
         input.value = value !== undefined ? value : '';
         input.dataset.path = path;
-        input.className = 'pf-c-form-control pf-u-flex-grow-1';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1';
         input.addEventListener('input', (e) => {
             const val = schema.type === 'number' || schema.type === 'integer' 
                 ? (e.target.value === '' ? undefined : Number(e.target.value))
@@ -1263,18 +1263,18 @@ plugins: {}
 
     function renderArrayObjectItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-l-stack__item pf-c-card';
+        item.className = 'pf-v6-l-stack__item pf-v6-c-card';
 
         const header = document.createElement('div');
-        header.className = 'pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center';
-        header.innerHTML = `<div class="pf-c-card__title"><span>Item ${index + 1}</span></div>`;
+        header.className = 'pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center';
+        header.innerHTML = `<div class="pf-v6-c-card__title"><span>Item ${index + 1}</span></div>`;
 
         const removeBtn = createTrashButton('Remove item');
         removeBtn.addEventListener('click', () => removeArrayItem(path));
         header.appendChild(removeBtn);
 
         const body = document.createElement('div');
-        body.className = 'pf-c-card__body';
+        body.className = 'pf-v6-c-card__body';
         renderObjectFields(body, schema, value, path);
 
         item.appendChild(header);
@@ -1284,14 +1284,14 @@ plugins: {}
 
     function renderNestedObjectField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-c-card';
+        wrapper.className = 'pf-v6-c-card';
 
         const header = document.createElement('div');
-        header.className = 'pf-c-card__header';
-        header.innerHTML = `<div class="pf-c-card__title"><span>${schema.title || capitalizeFirst(key)}</span></div>`;
+        header.className = 'pf-v6-c-card__header';
+        header.innerHTML = `<div class="pf-v6-c-card__title"><span>${schema.title || capitalizeFirst(key)}</span></div>`;
 
         const body = document.createElement('div');
-        body.className = 'pf-c-card__body';
+        body.className = 'pf-v6-c-card__body';
         renderObjectFields(body, schema, value || {}, path);
 
         wrapper.appendChild(header);
@@ -1301,17 +1301,17 @@ plugins: {}
 
     function renderHostsSection(container, schema, data) {
         const toolbar = document.createElement('div');
-        toolbar.className = 'pf-c-toolbar pf-u-mb-md';
+        toolbar.className = 'pf-v6-c-toolbar pf-v6-u-mb-md';
         toolbar.innerHTML = `
-            <div class="pf-c-toolbar__content">
-                <div class="pf-c-toolbar__content-section pf-m-align-items-center">
-                    <div class="pf-c-toolbar__item">
-                        <h3 class="pf-c-title pf-m-md">Hosts (${Object.keys(data || {}).length})</h3>
+            <div class="pf-v6-c-toolbar__content">
+                <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center">
+                    <div class="pf-v6-c-toolbar__item">
+                        <h3 class="pf-v6-c-title pf-m-md">Hosts (${Object.keys(data || {}).length})</h3>
                     </div>
                 </div>
-                <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap">
-                    <div class="pf-c-toolbar__item">
-                        <button class="pf-c-button pf-m-primary add-host-btn">+ Add Host</button>
+                <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap">
+                    <div class="pf-v6-c-toolbar__item">
+                        <button class="pf-v6-c-button pf-m-primary add-host-btn">+ Add Host</button>
                     </div>
                 </div>
             </div>
@@ -1321,7 +1321,7 @@ plugins: {}
 
         const hostsContainer = document.createElement('div');
         hostsContainer.id = 'hosts-container';
-        hostsContainer.className = 'pf-l-stack pf-m-gutter';
+        hostsContainer.className = 'pf-v6-l-stack pf-m-gutter';
 
         Object.entries(data || {}).forEach(([hostname, hostData]) => {
             renderHostCard(hostsContainer, hostname, hostData, schema);
@@ -1332,28 +1332,28 @@ plugins: {}
 
     function renderHostCard(container, hostname, data, schema) {
         const card = document.createElement('div');
-        card.className = 'pf-l-stack__item pf-c-card host-card';
+        card.className = 'pf-v6-l-stack__item pf-v6-c-card host-card';
         card.dataset.hostname = hostname;
 
         const role = data.role || 'worker';
         const roleClass = role === 'control' ? 'pf-m-blue' : 'pf-m-green';
 
         card.innerHTML = `
-            <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
-                <div class="pf-c-card__title">
+            <div class="pf-v6-c-card__header pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center">
+                <div class="pf-v6-c-card__title">
                     <span>${hostname}</span>
-                    <span class="pf-c-label pf-m-compact ${roleClass} pf-u-ml-sm"><span class="pf-c-label__content">${role}</span></span>
+                    <span class="pf-v6-c-label pf-m-compact ${roleClass} pf-v6-u-ml-sm"><span class="pf-v6-c-label__content">${role}</span></span>
                 </div>
-                <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
-                    <button class="pf-c-button pf-m-secondary pf-m-small duplicate-btn" title="Duplicate host">Duplicate</button>
-                    <button class="pf-c-button pf-m-secondary pf-m-small remove-btn" title="Remove host">Remove</button>
-                    <button class="pf-c-button pf-m-link pf-m-inline pf-m-small toggle-btn">Expand</button>
+                <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                    <button class="pf-v6-c-button pf-m-secondary pf-m-small duplicate-btn" title="Duplicate host">Duplicate</button>
+                    <button class="pf-v6-c-button pf-m-secondary pf-m-small remove-btn" title="Remove host">Remove</button>
+                    <button class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small toggle-btn">Expand</button>
                 </div>
             </div>
-            <div class="pf-c-card__body host-card-body"></div>
+            <div class="pf-v6-c-card__body host-card-body"></div>
         `;
 
-        const header = card.querySelector('.pf-c-card__header');
+        const header = card.querySelector('.pf-v6-c-card__header');
         const body = card.querySelector('.host-card-body');
         body.hidden = true;
         const toggleBtn = card.querySelector('.toggle-btn');
@@ -1382,30 +1382,30 @@ plugins: {}
     }
 
     function renderHostFields(container, schema, data, path) {
-        container.classList.add('pf-c-form', 'pf-m-horizontal');
+        container.classList.add('pf-v6-c-form', 'pf-m-horizontal');
         const hostname = getHostnameFromPath(path);
         const hostnameGroup = document.createElement('div');
-        hostnameGroup.className = 'pf-c-form__group';
+        hostnameGroup.className = 'pf-v6-c-form__group';
 
         const labelWrap = document.createElement('div');
-        labelWrap.className = 'pf-c-form__group-label';
+        labelWrap.className = 'pf-v6-c-form__group-label';
         const label = document.createElement('label');
-        label.className = 'pf-c-form__label';
+        label.className = 'pf-v6-c-form__label';
         label.htmlFor = `host-${hostname}`;
         const labelText = document.createElement('span');
-        labelText.className = 'pf-c-form__label-text';
+        labelText.className = 'pf-v6-c-form__label-text';
         labelText.textContent = 'Hostname';
         label.appendChild(labelText);
         labelWrap.appendChild(label);
 
         const controlWrap = document.createElement('div');
-        controlWrap.className = 'pf-c-form__group-control';
+        controlWrap.className = 'pf-v6-c-form__group-control';
         const input = document.createElement('input');
         input.type = 'text';
         input.value = hostname;
         input.id = `host-${hostname}`;
         input.dataset.hostnameInput = 'true';
-        input.className = 'pf-c-form-control';
+        input.className = 'pf-v6-c-form-control';
         input.addEventListener('change', (e) => {
             renameHost(hostname, e.target.value);
         });
@@ -1480,7 +1480,7 @@ plugins: {}
         setNestedValue(state.currentObject, path, value);
         trackChange(path, value);
         syncObjectToYaml();
-        const group = document.querySelector(`.pf-c-form__group[data-path="${path}"]`);
+        const group = document.querySelector(`.pf-v6-c-form__group[data-path="${path}"]`);
         if (group) {
             const revertBtn = group.querySelector('.revert-btn');
             if (revertBtn) {
@@ -1649,8 +1649,8 @@ plugins: {}
         
         if (!state.schema || !state.currentObject) {
             resultsContainer.innerHTML = `
-                <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                    <div class="pf-c-alert__title">No data to validate</div>
+                <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                    <div class="pf-v6-c-alert__title">No data to validate</div>
                 </div>
             `;
             state.validationErrors = 0;
@@ -1672,16 +1672,16 @@ plugins: {}
 
             if (valid) {
                 resultsContainer.innerHTML = `
-                    <div class="pf-c-alert pf-m-inline pf-m-success" aria-live="polite">
-                        <div class="pf-c-alert__title">Validation passed</div>
+                    <div class="pf-v6-c-alert pf-m-inline pf-m-success" aria-live="polite">
+                        <div class="pf-v6-c-alert__title">Validation passed</div>
                     </div>
                 `;
                 state.validationErrors = 0;
             } else {
                 resultsContainer.innerHTML = validate.errors.map(error => `
-                    <div class="pf-c-alert pf-m-inline pf-m-danger pf-u-mb-sm" aria-live="polite">
-                        <div class="pf-c-alert__title">${error.instancePath || '/'}</div>
-                        <div class="pf-c-alert__description">${error.message}</div>
+                    <div class="pf-v6-c-alert pf-m-inline pf-m-danger pf-v6-u-mb-sm" aria-live="polite">
+                        <div class="pf-v6-c-alert__title">${error.instancePath || '/'}</div>
+                        <div class="pf-v6-c-alert__description">${error.message}</div>
                     </div>
                 `).join('');
                 state.validationErrors = validate.errors.length;
@@ -1690,9 +1690,9 @@ plugins: {}
             updateHeaderStatus();
         } catch (error) {
             resultsContainer.innerHTML = `
-                <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
-                    <div class="pf-c-alert__title">Validation error</div>
-                    <div class="pf-c-alert__description">${error.message}</div>
+                <div class="pf-v6-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                    <div class="pf-v6-c-alert__title">Validation error</div>
+                    <div class="pf-v6-c-alert__description">${error.message}</div>
                 </div>
             `;
             state.validationErrors = 1;
@@ -1727,8 +1727,8 @@ plugins: {}
         
         if (state.changes.length === 0) {
             container.innerHTML = `
-                <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                    <div class="pf-c-alert__title">No changes</div>
+                <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                    <div class="pf-v6-c-alert__title">No changes</div>
                 </div>
             `;
             updateHeaderStatus();
@@ -1737,9 +1737,9 @@ plugins: {}
         }
 
         container.innerHTML = state.changes.map(change => `
-            <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm">
-                <span class="pf-u-flex-grow-1">${change.path}</span>
-                <button class="pf-c-button pf-m-link pf-m-inline revert-change" data-path="${change.path}">Revert</button>
+            <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-mb-sm">
+                <span class="pf-v6-u-flex-grow-1">${change.path}</span>
+                <button class="pf-v6-c-button pf-m-link pf-m-inline revert-change" data-path="${change.path}">Revert</button>
             </div>
         `).join('');
 
@@ -1797,9 +1797,9 @@ plugins: {}
     function showParseError(error) {
         const container = document.getElementById('error-results');
         container.innerHTML = `
-            <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
-                <div class="pf-c-alert__title">YAML parse error</div>
-                <div class="pf-c-alert__description">${escapeHtml(error.message)}</div>
+            <div class="pf-v6-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                <div class="pf-v6-c-alert__title">YAML parse error</div>
+                <div class="pf-v6-c-alert__description">${escapeHtml(error.message)}</div>
             </div>
         `;
         state.validationErrors = 1;
@@ -1810,8 +1810,8 @@ plugins: {}
     function clearParseError() {
         const container = document.getElementById('error-results');
         container.innerHTML = `
-            <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                <div class="pf-c-alert__title">No errors</div>
+            <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                <div class="pf-v6-c-alert__title">No errors</div>
             </div>
         `;
         state.validationErrors = 0;
@@ -1821,9 +1821,9 @@ plugins: {}
     function showError(message) {
         const container = document.getElementById('error-results');
         container.innerHTML = `
-            <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
-                <div class="pf-c-alert__title">Error</div>
-                <div class="pf-c-alert__description">${escapeHtml(message)}</div>
+            <div class="pf-v6-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                <div class="pf-v6-c-alert__title">Error</div>
+                <div class="pf-v6-c-alert__description">${escapeHtml(message)}</div>
             </div>
         `;
         state.validationErrors = 1;
@@ -1997,13 +1997,13 @@ plugins: {}
     function toggleNavGroup(menu) {
         const list = document.querySelector(`[data-menu-list="${menu}"]`);
         const button = document.querySelector(`.nav-group-toggle[data-menu="${menu}"]`);
-        const item = button ? button.closest('.pf-c-nav__item') : null;
+        const item = button ? button.closest('.pf-v6-c-nav__item') : null;
         if (!list || !button || !item) return;
         const isExpanded = item.classList.contains('pf-m-expanded');
         item.classList.toggle('pf-m-expanded', !isExpanded);
         button.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
         const subnav = button.nextElementSibling;
-        if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+        if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
             if (!isExpanded) {
                 subnav.removeAttribute('hidden');
             } else {
@@ -2019,9 +2019,9 @@ plugins: {}
         const clusterList = document.querySelector('[data-menu-list="clusterfile"]');
         const templatesList = document.querySelector('[data-menu-list="templates"]');
         const aboutList = document.querySelector('[data-menu-list="about"]');
-        const clusterItem = clusterButton ? clusterButton.closest('.pf-c-nav__item') : null;
-        const templatesItem = templatesButton ? templatesButton.closest('.pf-c-nav__item') : null;
-        const aboutItem = aboutButton ? aboutButton.closest('.pf-c-nav__item') : null;
+        const clusterItem = clusterButton ? clusterButton.closest('.pf-v6-c-nav__item') : null;
+        const templatesItem = templatesButton ? templatesButton.closest('.pf-v6-c-nav__item') : null;
+        const aboutItem = aboutButton ? aboutButton.closest('.pf-v6-c-nav__item') : null;
 
         const clusterActive = FILE_SECTIONS.includes(section) || state.editorView === EDITOR_VIEWS.CLUSTERFILE;
         const templatesActive = section === 'templates' || state.editorView === EDITOR_VIEWS.TEMPLATES;
@@ -2034,7 +2034,7 @@ plugins: {}
             if (clusterItem) clusterItem.classList.add('pf-m-expanded');
             clusterButton.setAttribute('aria-expanded', 'true');
             const subnav = clusterButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
                 subnav.removeAttribute('hidden');
             }
         }
@@ -2043,7 +2043,7 @@ plugins: {}
             if (templatesItem) templatesItem.classList.add('pf-m-expanded');
             templatesButton.setAttribute('aria-expanded', 'true');
             const subnav = templatesButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
                 subnav.removeAttribute('hidden');
             }
         }
@@ -2052,7 +2052,7 @@ plugins: {}
             if (aboutItem) aboutItem.classList.add('pf-m-expanded');
             aboutButton.setAttribute('aria-expanded', 'true');
             const subnav = aboutButton.nextElementSibling;
-            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+            if (subnav && subnav.classList.contains('pf-v6-c-nav__subnav')) {
                 subnav.removeAttribute('hidden');
             }
         }
@@ -2098,7 +2098,7 @@ plugins: {}
         }
         document.querySelectorAll('.editor-toggle-btn').forEach(btn => {
             const isActive = btn.dataset.editorView === view;
-            const tabItem = btn.closest('.pf-c-tabs__item');
+            const tabItem = btn.closest('.pf-v6-c-tabs__item');
             if (tabItem) {
                 tabItem.classList.toggle('pf-m-current', isActive);
             }
@@ -2110,12 +2110,10 @@ plugins: {}
 
     function setTheme(theme) {
         const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('pf-theme-dark', isDark);
-        document.body.classList.toggle('pf-theme-dark', isDark);
-        const header = document.querySelector('.pf-c-page__header');
-        const sidebar = document.querySelector('.pf-c-page__sidebar');
-        if (header) header.classList.toggle('pf-m-dark', isDark);
-        if (sidebar) sidebar.classList.toggle('pf-m-dark', isDark);
+        document.documentElement.classList.toggle('pf-v6-theme-dark', isDark);
+        document.body.classList.toggle('pf-v6-theme-dark', isDark);
+        const header = document.querySelector('.pf-v6-c-page__header');
+        const sidebar = document.querySelector('.pf-v6-c-page__sidebar');
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) {
             themeToggle.checked = isDark;
@@ -2558,11 +2556,11 @@ plugins: {}
     function addParamRow() {
         const container = document.getElementById('params-container');
         const row = document.createElement('div');
-        row.className = 'param-row pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm';
+        row.className = 'param-row pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-mb-sm';
         row.innerHTML = `
-            <input type="text" class="pf-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
-            <input type="text" class="pf-c-form-control param-value" placeholder="new-value" title="Value to set">
-            <button class="remove-param-btn pf-c-button pf-m-plain" type="button" title="Remove">X</button>
+            <input type="text" class="pf-v6-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
+            <input type="text" class="pf-v6-c-form-control param-value" placeholder="new-value" title="Value to set">
+            <button class="remove-param-btn pf-v6-c-button pf-m-plain" type="button" title="Remove">X</button>
         `;
         container.appendChild(row);
     }
@@ -2646,15 +2644,15 @@ plugins: {}
                 const warningsEl = document.getElementById('template-warnings');
                 if (result.warnings && result.warnings.length > 0) {
                     warningsEl.innerHTML = `
-                        <div class="pf-c-alert pf-m-inline pf-m-warning" aria-live="polite">
-                            <div class="pf-c-alert__title">Warnings</div>
-                            <div class="pf-c-alert__description">${result.warnings.join('<br>')}</div>
+                        <div class="pf-v6-c-alert pf-m-inline pf-m-warning" aria-live="polite">
+                            <div class="pf-v6-c-alert__title">Warnings</div>
+                            <div class="pf-v6-c-alert__description">${result.warnings.join('<br>')}</div>
                         </div>
                     `;
                 } else {
                     warningsEl.innerHTML = `
-                        <div class="pf-c-helper-text">
-                            <div class="pf-c-helper-text__item">Rendered output</div>
+                        <div class="pf-v6-c-helper-text">
+                            <div class="pf-v6-c-helper-text__item">Rendered output</div>
                         </div>
                     `;
                 }
@@ -2691,9 +2689,9 @@ plugins: {}
                 const warningsEl = document.getElementById('template-warnings');
                 if (warningsEl) {
                     warningsEl.innerHTML = `
-                        <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                            <div class="pf-c-alert__title">Template source</div>
-                            <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
+                        <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                            <div class="pf-v6-c-alert__title">Template source</div>
+                            <div class="pf-v6-c-alert__description">Showing template source (not rendered output).</div>
                         </div>
                     `;
                 }
@@ -2720,8 +2718,8 @@ plugins: {}
         if (view === 'rendered') {
             if (warningsEl) {
                 warningsEl.innerHTML = `
-                    <div class="pf-c-helper-text">
-                        <div class="pf-c-helper-text__item">Rendered output</div>
+                    <div class="pf-v6-c-helper-text">
+                        <div class="pf-v6-c-helper-text__item">Rendered output</div>
                     </div>
                 `;
             }
@@ -2740,9 +2738,9 @@ plugins: {}
                 templateState.outputEditor.setValue(templateState.lastTemplateSource);
                 if (warningsEl) {
                     warningsEl.innerHTML = `
-                        <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                            <div class="pf-c-alert__title">Template source</div>
-                            <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
+                        <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                            <div class="pf-v6-c-alert__title">Template source</div>
+                            <div class="pf-v6-c-alert__description">Showing template source (not rendered output).</div>
                         </div>
                     `;
                 }
@@ -2753,9 +2751,9 @@ plugins: {}
             templateState.outputEditor.setValue(buildNormalizedYaml({ preserveCurrentText: true }));
             if (warningsEl) {
                 warningsEl.innerHTML = `
-                    <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                        <div class="pf-c-alert__title">Clusterfile input</div>
-                        <div class="pf-c-alert__description">Showing current clusterfile input.</div>
+                    <div class="pf-v6-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                        <div class="pf-v6-c-alert__title">Clusterfile input</div>
+                        <div class="pf-v6-c-alert__description">Showing current clusterfile input.</div>
                     </div>
                 `;
             }
@@ -2772,15 +2770,15 @@ plugins: {}
         let errorEl = document.querySelector('.template-error');
         if (!errorEl) {
             errorEl = document.createElement('div');
-            errorEl.className = 'template-error pf-c-alert pf-m-inline pf-m-danger pf-u-mb-md';
+            errorEl.className = 'template-error pf-v6-c-alert pf-m-inline pf-m-danger pf-v6-u-mb-md';
             errorEl.innerHTML = `
-                <div class="pf-c-alert__title">Template error</div>
-                <div class="pf-c-alert__description"></div>
+                <div class="pf-v6-c-alert__title">Template error</div>
+                <div class="pf-v6-c-alert__description"></div>
             `;
             const form = document.querySelector('.template-form');
             form.parentNode.insertBefore(errorEl, form);
         }
-        const description = errorEl.querySelector('.pf-c-alert__description');
+        const description = errorEl.querySelector('.pf-v6-c-alert__description');
         if (description) {
             description.textContent = message;
         }
