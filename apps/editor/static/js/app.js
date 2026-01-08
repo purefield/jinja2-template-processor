@@ -721,7 +721,7 @@ plugins: {}
         revertBtn.className = 'pf-v6-c-button pf-m-plain pf-m-small revert-btn';
         revertBtn.innerHTML = `
             <span class="pf-v6-c-button__icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 5a7 7 0 1 1-6.32 4H3l3.5-3.5L10 9H7.68A5.5 5.5 0 1 0 12 6.5V5z"/>
                 </svg>
             </span>
@@ -796,7 +796,7 @@ plugins: {}
         btn.setAttribute('aria-label', label);
         btn.innerHTML = `
             <span class="pf-v6-c-button__icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm2 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
                 </svg>
             </span>

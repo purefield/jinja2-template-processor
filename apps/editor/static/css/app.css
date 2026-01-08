@@ -156,6 +156,12 @@
     align-items: center;
 }
 
+.trash-btn svg,
+.revert-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
 .revert-btn .pf-v6-c-button__icon {
     color: var(--pf-v6-global--Color--200, #6a6e73);
 }
