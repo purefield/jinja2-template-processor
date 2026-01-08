@@ -5,16 +5,38 @@
         LAST_YAML: 'CLUSTERFILE_LAST_YAML',
         UPLOADED_SCHEMA: 'CLUSTERFILE_UPLOADED_SCHEMA',
         TOUR_SHOWN: 'CLUSTERFILE_TOUR_SHOWN',
-        MODE: 'CLUSTERFILE_MODE'
+        MODE: 'CLUSTERFILE_MODE',
+        LAST_SECTION_BY_FILE: 'CLUSTERFILE_LAST_SECTION_BY_FILE',
+        LAST_FILENAME: 'CLUSTERFILE_LAST_FILENAME',
+        LAST_EDITOR_VIEW: 'CLUSTERFILE_LAST_EDITOR_VIEW',
+        DEMO_SHOWN: 'CLUSTERFILE_DEMO_SHOWN',
+        THEME: 'CLUSTERFILE_THEME'
     };
 
     let templateState = {
         templates: [],
         outputEditor: null,
-        lastRenderedOutput: ''
+        lastRenderedOutput: '',
+        lastTemplateSource: '',
+        lastTemplateName: '',
+        outputView: 'rendered',
+        lastRenderedInput: '',
+        rendering: false
+    };
+
+    let demoState = {
+        active: false,
+        canceled: false,
+        highlights: [],
+        outputMarks: []
     };
 
     const SENSITIVE_FIELDS = ['pullSecret', 'password', 'secret'];
+    const FILE_SECTIONS = ['account', 'cluster', 'network', 'hosts', 'plugins'];
+    const EDITOR_VIEWS = {
+        CLUSTERFILE: 'clusterfile',
+        TEMPLATES: 'templates'
+    };
 
     function getApiBase() {
         return window.location.protocol + '//' + window.location.host;
@@ -33,7 +55,9 @@
         pinnedHelp: false,
         currentFilename: 'untitled',
         validationErrors: 0,
-        samples: []
+        samples: [],
+        lastSavedYaml: null,
+        editorView: EDITOR_VIEWS.CLUSTERFILE
     };
 
     async function init() {
@@ -48,6 +72,7 @@
         showTourIfNeeded();
         renderCurrentSection();
         updateValidation();
+        startDemoIfNeeded();
     }
 
     async function loadSchema() {
@@ -111,6 +136,17 @@
                 switchSection(link.dataset.section);
             });
         });
+        document.querySelectorAll('.pf-c-nav__link[data-template-view]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                setEditorMode(EDITOR_VIEWS.TEMPLATES);
+                setTemplateOutputView(link.dataset.templateView);
+            });
+        });
+
+        document.querySelectorAll('.nav-group-toggle[data-menu]').forEach(btn => {
+            btn.addEventListener('click', () => toggleNavGroup(btn.dataset.menu));
+        });
 
         const samplesSelect = document.getElementById('samples-select');
         if (samplesSelect) {
@@ -148,6 +184,24 @@
                 }
             });
         }
+        const navReplay = document.getElementById('nav-replay-demo');
+        if (navReplay) navReplay.addEventListener('click', replayDemo);
+        const aboutChangelog = document.getElementById('about-changelog');
+        if (aboutChangelog) aboutChangelog.addEventListener('click', () => switchSection('changelog'));
+        const aboutReplay = document.getElementById('about-replay');
+        if (aboutReplay) aboutReplay.addEventListener('click', replayDemo);
+        const paramsToggle = document.getElementById('toggle-params');
+        if (paramsToggle) paramsToggle.addEventListener('click', toggleParamsPanel);
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('change', (e) => {
+                setTheme(e.target.checked ? 'dark' : 'light');
+            });
+        }
+
+        document.querySelectorAll('.editor-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => handleEditorToggle(btn.dataset.editorView));
+        });
         
         const helpBubble = document.getElementById('help-bubble');
         const helpClose = document.querySelector('.help-bubble-close');
@@ -164,18 +218,34 @@
     }
 
     function loadSavedState() {
+        const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+        setTheme(savedTheme);
         const savedMode = localStorage.getItem(STORAGE_KEYS.MODE);
         if (savedMode) {
             setMode(savedMode);
             document.getElementById('mode-toggle').value = savedMode;
         }
 
+        const savedFilename = localStorage.getItem(STORAGE_KEYS.LAST_FILENAME);
+        if (savedFilename) {
+            state.currentFilename = savedFilename;
+        }
+
         const savedYaml = localStorage.getItem(STORAGE_KEYS.LAST_YAML);
         if (savedYaml) {
             setYamlText(savedYaml, true);
+            state.lastSavedYaml = savedYaml;
         } else {
             setYamlText(getDefaultYaml(), true);
+            state.lastSavedYaml = null;
         }
+        const savedEditorView = localStorage.getItem(STORAGE_KEYS.LAST_EDITOR_VIEW);
+        if (savedEditorView && Object.values(EDITOR_VIEWS).includes(savedEditorView)) {
+            setEditorView(savedEditorView);
+        } else {
+            setEditorView(EDITOR_VIEWS.CLUSTERFILE);
+        }
+        restoreSectionForFile();
     }
 
     function getDefaultYaml() {
@@ -208,6 +278,7 @@ plugins: {}
         if (document.getElementById('tour-dont-show').checked) {
             localStorage.setItem(STORAGE_KEYS.TOUR_SHOWN, 'true');
         }
+        startDemoIfNeeded();
     }
 
     function showChangelog() {
@@ -227,6 +298,194 @@ plugins: {}
         }
     }
 
+    function startDemoIfNeeded() {
+        if (demoState.active) return;
+        if (localStorage.getItem(STORAGE_KEYS.DEMO_SHOWN)) return;
+        const tourModal = document.getElementById('tour-modal');
+        if (tourModal && tourModal.style.display === 'block') return;
+        runDemoSequence().catch(() => {
+            stopDemo();
+        });
+    }
+
+    function replayDemo() {
+        if (demoState.active) {
+            stopDemo();
+        }
+        localStorage.removeItem(STORAGE_KEYS.DEMO_SHOWN);
+        runDemoSequence().catch(() => {
+            stopDemo();
+        });
+    }
+
+    function stopDemo() {
+        demoState.canceled = true;
+        demoState.active = false;
+        clearHighlights();
+        clearOutputHighlights();
+        hideDemoBanner();
+        localStorage.setItem(STORAGE_KEYS.DEMO_SHOWN, 'true');
+    }
+
+    function showDemoBanner(text) {
+        const banner = document.getElementById('demo-banner');
+        const textEl = document.getElementById('demo-text');
+        if (!banner || !textEl) return;
+        textEl.textContent = text;
+        banner.style.display = 'flex';
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastText = document.getElementById('toast-text');
+        if (!toast) return;
+        if (toastText) {
+            toastText.textContent = message;
+        } else {
+            toast.textContent = message;
+        }
+        toast.classList.remove('pf-m-info', 'pf-m-danger');
+        toast.classList.add(type === 'error' ? 'pf-m-danger' : 'pf-m-info');
+        toast.style.display = 'block';
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    function hideDemoBanner() {
+        const banner = document.getElementById('demo-banner');
+        if (banner) banner.style.display = 'none';
+    }
+
+    function highlightElement(el) {
+        if (!el) return;
+        el.classList.add('demo-highlight');
+        demoState.highlights.push(el);
+        if (el.scrollIntoView) {
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    }
+
+    function clearHighlights() {
+        demoState.highlights.forEach(el => el.classList.remove('demo-highlight'));
+        demoState.highlights = [];
+    }
+
+    function clearOutputHighlights() {
+        demoState.outputMarks.forEach(mark => mark.clear());
+        demoState.outputMarks = [];
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function stepDelay(multiplier = 1) {
+        return sleep(2000 * multiplier);
+    }
+
+    async function runDemoSequence() {
+        demoState.active = true;
+        demoState.canceled = false;
+
+        const skipBtn = document.getElementById('demo-skip');
+        if (skipBtn) skipBtn.addEventListener('click', stopDemo, { once: true });
+
+        showDemoBanner('Loading a sample clusterfile...');
+        const samplesSelect = document.getElementById('samples-select');
+        highlightElement(samplesSelect);
+        if (state.samples.length > 0) {
+            await loadSample(state.samples[0].filename);
+        }
+        await stepDelay(1.2);
+        clearHighlights();
+
+        const sections = ['account', 'cluster', 'network', 'hosts', 'plugins'];
+        for (const section of sections) {
+            if (demoState.canceled) return;
+            showDemoBanner(`Browsing ${capitalizeFirst(section)} settings...`);
+            const link = document.querySelector(`.pf-c-nav__link[data-section="${section}"]`);
+            highlightElement(link);
+            switchSection(section);
+            highlightElement(document.getElementById('form-pane'));
+            await stepDelay(1.1);
+            clearHighlights();
+        }
+
+        if (demoState.canceled) return;
+        showDemoBanner('Rendering a template...');
+        switchSection('templates');
+        const templateSelect = document.getElementById('template-select');
+        const renderBtn = document.getElementById('btn-render');
+        if (templateSelect && templateState.templates.length > 0) {
+            templateSelect.value = templateState.templates[0].name;
+            handleTemplateSelect({ target: templateSelect });
+            highlightElement(templateSelect);
+            highlightElement(renderBtn);
+            await renderTemplate();
+            highlightElement(document.getElementById('template-output-pane'));
+            await stepDelay(1.1);
+        }
+        clearHighlights();
+
+        if (demoState.canceled) return;
+        const originalName = getNestedValue(state.currentObject, 'cluster.name');
+        const demoName = originalName ? `${originalName}-demo` : 'demo-cluster';
+        showDemoBanner('Making a change...');
+        switchSection('cluster');
+        updateFieldValue('cluster.name', demoName);
+        const changesBadge = document.getElementById('header-changes');
+        highlightElement(changesBadge);
+        switchTab('changes');
+        highlightElement(document.getElementById('changes-list'));
+        await stepDelay(1.3);
+        clearHighlights();
+
+        if (demoState.canceled) return;
+        showDemoBanner('Re-rendering with the change...');
+        switchSection('templates');
+        await renderTemplate();
+        highlightElement(document.getElementById('template-output-pane'));
+        highlightTemplateOutput(demoName);
+        await stepDelay(1.6);
+        clearOutputHighlights();
+
+        showDemoBanner('Demo complete. Ready to edit your own clusterfile.');
+        await stepDelay(1.0);
+
+        resetToBaseline();
+        hideDemoBanner();
+        demoState.active = false;
+        localStorage.setItem(STORAGE_KEYS.DEMO_SHOWN, 'true');
+    }
+
+    function highlightTemplateOutput(value) {
+        if (!templateState.outputEditor || !value) return;
+        clearOutputHighlights();
+        const doc = templateState.outputEditor.getDoc();
+        const text = doc.getValue();
+        let index = 0;
+        while (index !== -1) {
+            index = text.indexOf(value, index);
+            if (index === -1) break;
+            const from = doc.posFromIndex(index);
+            const to = doc.posFromIndex(index + value.length);
+            const mark = doc.markText(from, to, { className: 'demo-output-highlight' });
+            demoState.outputMarks.push(mark);
+            index += value.length;
+        }
+    }
+
+    function resetToBaseline() {
+        const baselineObject = jsyaml.load(state.baselineYamlText) || {};
+        state.currentObject = JSON.parse(JSON.stringify(baselineObject));
+        state.changes = [];
+        syncObjectToYaml();
+        renderCurrentSection();
+        updateChanges();
+    }
+
     function setMode(mode) {
         state.mode = mode;
         localStorage.setItem(STORAGE_KEYS.MODE, mode);
@@ -234,37 +493,67 @@ plugins: {}
         document.body.classList.add(mode + '-mode');
     }
 
-    function switchSection(section) {
+    function switchSection(section, options = {}) {
+        const { fromEditor = false } = options;
         state.currentSection = section;
         document.querySelectorAll('.pf-c-nav__link[data-section]').forEach(link => {
             link.classList.toggle('pf-m-current', link.dataset.section === section);
         });
         document.getElementById('section-title').textContent = capitalizeFirst(section);
+        updateNavGroupCurrent(section);
+        if (FILE_SECTIONS.includes(section)) {
+            rememberSectionForFile(section);
+        }
         
         const formContainer = document.getElementById('form-container');
         const templatesContainer = document.getElementById('templates-container');
         const changelogContainer = document.getElementById('changelog-container');
+        const aboutContainer = document.getElementById('about-container');
         const editorPane = document.getElementById('editor-pane');
+        const yamlEditorContainer = document.querySelector('.yaml-editor-container');
+        const templateOutputPane = document.getElementById('template-output-pane');
+        const tabsContainer = document.querySelector('.tabs-container');
         const formActions = document.querySelector('.form-actions');
-        
+
         if (section === 'templates') {
             formContainer.style.display = 'none';
             templatesContainer.style.display = 'block';
             if (changelogContainer) changelogContainer.style.display = 'none';
-            editorPane.style.display = 'none';
+            if (aboutContainer) aboutContainer.style.display = 'none';
+            editorPane.style.display = 'flex';
+            const templateSelect = document.getElementById('template-select');
+            if (templateSelect && !templateSelect.value && templateState.templates.length > 0) {
+                templateSelect.value = templateState.templates[0].name;
+                handleTemplateSelect({ target: templateSelect });
+            }
+            if (!fromEditor) {
+                setEditorMode(EDITOR_VIEWS.TEMPLATES, { fromSection: true });
+            }
             if (formActions) formActions.style.display = 'none';
         } else if (section === 'changelog') {
             formContainer.style.display = 'none';
             templatesContainer.style.display = 'none';
             if (changelogContainer) changelogContainer.style.display = 'block';
+            if (aboutContainer) aboutContainer.style.display = 'none';
             editorPane.style.display = 'none';
             if (formActions) formActions.style.display = 'none';
             loadChangelog();
+        } else if (section === 'about') {
+            formContainer.style.display = 'none';
+            templatesContainer.style.display = 'none';
+            if (changelogContainer) changelogContainer.style.display = 'none';
+            if (aboutContainer) aboutContainer.style.display = 'block';
+            editorPane.style.display = 'none';
+            if (formActions) formActions.style.display = 'none';
         } else {
             formContainer.style.display = 'block';
             templatesContainer.style.display = 'none';
             if (changelogContainer) changelogContainer.style.display = 'none';
+            if (aboutContainer) aboutContainer.style.display = 'none';
             editorPane.style.display = 'flex';
+            if (!fromEditor) {
+                setEditorMode(EDITOR_VIEWS.CLUSTERFILE, { fromSection: true });
+            }
             if (formActions) formActions.style.display = 'flex';
             renderCurrentSection();
         }
@@ -272,10 +561,12 @@ plugins: {}
 
     function switchTab(tab) {
         document.querySelectorAll('.pf-c-tabs__item').forEach(item => {
-            item.classList.toggle('pf-m-current', item.querySelector('.pf-c-tabs__link').dataset.tab === tab);
+            const isCurrent = item.querySelector('.pf-c-tabs__link').dataset.tab === tab;
+            item.classList.toggle('pf-m-current', isCurrent);
+            item.querySelector('.pf-c-tabs__link').setAttribute('aria-selected', isCurrent ? 'true' : 'false');
         });
         document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === 'panel-' + tab);
+            panel.hidden = panel.id !== 'panel-' + tab;
         });
     }
 
@@ -284,8 +575,9 @@ plugins: {}
             const response = await fetch(getApiBase() + `/api/samples/${filename}`);
             const data = await response.json();
             setYamlText(data.content, true);
-            state.currentFilename = filename;
-            updateHeaderStatus();
+            setCurrentFilename(filename);
+            markUnsaved();
+            restoreSectionForFile();
         } catch (error) {
             console.error('Failed to load sample:', error);
             showError('Failed to load sample');
@@ -336,6 +628,7 @@ plugins: {}
     function renderCurrentSection() {
         const container = document.getElementById('form-container');
         container.innerHTML = '';
+        container.classList.add('pf-c-form', 'pf-m-horizontal');
 
         if (!state.schema || !state.schema.properties) return;
 
@@ -357,6 +650,7 @@ plugins: {}
             }
             return;
         }
+        container.classList.add('pf-c-form', 'pf-m-horizontal');
 
         Object.entries(schema.properties).forEach(([key, propSchema]) => {
             const fieldPath = path ? `${path}.${key}` : key;
@@ -367,77 +661,97 @@ plugins: {}
 
     function renderField(container, key, schema, value, path) {
         const group = document.createElement('div');
-        group.className = 'form-group';
+        group.className = 'pf-c-form__group';
         group.dataset.path = path;
 
-        const isChanged = hasChanged(path);
-        if (isChanged) {
-            group.classList.add('has-changes');
+        const fieldId = `field-${path.replace(/[^a-z0-9]/gi, '-')}`;
+
+        const labelWrapper = document.createElement('div');
+        labelWrapper.className = 'pf-c-form__group-label pf-l-flex pf-m-align-items-center pf-m-space-items-sm';
+
+        const label = document.createElement('label');
+        label.className = 'pf-c-form__label';
+        label.htmlFor = fieldId;
+        const labelText = document.createElement('span');
+        labelText.className = 'pf-c-form__label-text';
+        labelText.textContent = schema.title || capitalizeFirst(key);
+        label.appendChild(labelText);
+
+        const helpButton = document.createElement('button');
+        helpButton.type = 'button';
+        helpButton.className = 'pf-c-button pf-m-plain pf-m-small';
+        helpButton.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>';
+        helpButton.dataset.description = schema.description || '';
+        helpButton.dataset.docUrl = getDocUrl(schema);
+        if (!helpButton.dataset.description && !helpButton.dataset.docUrl) {
+            helpButton.hidden = true;
         }
-
-        const fieldRow = document.createElement('div');
-        fieldRow.className = 'field-row';
-
-        const labelSpan = document.createElement('span');
-        labelSpan.className = 'field-label';
-        labelSpan.textContent = schema.title || capitalizeFirst(key);
-        fieldRow.appendChild(labelSpan);
-
-        const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'field-input-wrapper';
-
-        if (schema['x-is-file']) {
-            renderFileField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'array' || Array.isArray(value)) {
-            renderArrayField(inputWrapper, key, schema, value, path);
-        } else if (schema.anyOf || schema.oneOf) {
-            renderAnyOfField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'object' || (value !== null && typeof value === 'object' && !Array.isArray(value))) {
-            renderNestedObjectField(inputWrapper, key, schema, value, path);
-        } else if (schema.enum) {
-            renderEnumField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'boolean') {
-            renderBooleanField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'integer' || schema.type === 'number') {
-            renderNumberField(inputWrapper, key, schema, value, path);
-        } else {
-            renderTextField(inputWrapper, key, schema, value, path);
-        }
-
-        fieldRow.appendChild(inputWrapper);
-
-        const helpIcon = document.createElement('span');
-        helpIcon.className = 'help-icon';
-        helpIcon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>';
-        helpIcon.dataset.description = schema.description || '';
-        helpIcon.dataset.docUrl = getDocUrl(schema);
-        helpIcon.addEventListener('mouseenter', handleHelpHover);
-        helpIcon.addEventListener('mouseleave', handleHelpLeave);
-        helpIcon.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
-        helpIcon.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); });
-        fieldRow.appendChild(helpIcon);
+        helpButton.addEventListener('mouseenter', handleHelpHover);
+        helpButton.addEventListener('mouseleave', handleHelpLeave);
+        helpButton.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
+        helpButton.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); });
+        labelWrapper.appendChild(label);
+        labelWrapper.appendChild(helpButton);
 
         const revertBtn = document.createElement('button');
-        revertBtn.className = 'revert-btn';
-        revertBtn.innerHTML = '&#x21BA;';
+        revertBtn.type = 'button';
+        revertBtn.className = 'pf-c-button pf-m-link pf-m-inline pf-m-small revert-btn';
+        revertBtn.textContent = 'Revert';
         revertBtn.title = 'Revert to original value';
         revertBtn.dataset.path = path;
+        revertBtn.disabled = !hasChanged(path);
         revertBtn.addEventListener('click', (e) => { e.stopPropagation(); revertField(e.target.dataset.path); });
-        fieldRow.appendChild(revertBtn);
+        labelWrapper.appendChild(revertBtn);
 
-        group.appendChild(fieldRow);
+        group.appendChild(labelWrapper);
+
+        const control = document.createElement('div');
+        control.className = 'pf-c-form__group-control';
+        group.appendChild(control);
+
+        const isComplex = schema['x-is-file'] ||
+            schema.type === 'array' ||
+            Array.isArray(value) ||
+            schema.anyOf ||
+            schema.oneOf ||
+            schema.type === 'object' ||
+            (value !== null && typeof value === 'object' && !Array.isArray(value));
+
+        const controlRow = document.createElement('div');
+        controlRow.className = 'pf-l-flex pf-m-align-items-center pf-m-space-items-sm';
+        if (!isComplex) {
+            control.appendChild(controlRow);
+        }
+
+        if (schema['x-is-file']) {
+            renderFileField(control, key, schema, value, path, fieldId);
+        } else if (schema.type === 'array' || Array.isArray(value)) {
+            renderArrayField(control, key, schema, value, path);
+        } else if (schema.anyOf || schema.oneOf) {
+            renderAnyOfField(control, key, schema, value, path);
+        } else if (schema.type === 'object' || (value !== null && typeof value === 'object' && !Array.isArray(value))) {
+            renderNestedObjectField(control, key, schema, value, path);
+        } else if (schema.enum) {
+            renderEnumField(controlRow, key, schema, value, path, fieldId);
+        } else if (schema.type === 'boolean') {
+            renderBooleanField(controlRow, key, schema, value, path, fieldId);
+        } else if (schema.type === 'integer' || schema.type === 'number') {
+            renderNumberField(controlRow, key, schema, value, path, fieldId);
+        } else {
+            renderTextField(controlRow, key, schema, value, path, fieldId);
+        }
 
         if (schema.description) {
             const desc = document.createElement('div');
-            desc.className = 'field-description';
+            desc.className = 'pf-c-form__helper-text';
             desc.textContent = schema.description.substring(0, 100) + (schema.description.length > 100 ? '...' : '');
-            group.appendChild(desc);
+            control.appendChild(desc);
         }
 
         container.appendChild(group);
     }
 
-    function renderTextField(group, key, schema, value, path) {
+    function renderTextField(group, key, schema, value, path, fieldId) {
         if (Array.isArray(value)) {
             renderArrayField(group, key, schema.items ? schema : { type: 'array', items: { type: 'string' } }, value, path);
             return;
@@ -451,12 +765,13 @@ plugins: {}
         input.value = value !== undefined ? String(value) : '';
         input.placeholder = schema.default || '';
         input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
+        input.id = fieldId;
+        input.className = 'pf-c-form-control pf-u-flex-grow-1';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value));
         group.appendChild(input);
     }
 
-    function renderNumberField(group, key, schema, value, path) {
+    function renderNumberField(group, key, schema, value, path, fieldId) {
         const input = document.createElement('input');
         input.type = 'number';
         input.value = value !== undefined ? value : '';
@@ -464,7 +779,8 @@ plugins: {}
         if (schema.minimum !== undefined) input.min = schema.minimum;
         if (schema.maximum !== undefined) input.max = schema.maximum;
         input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
+        input.id = fieldId;
+        input.className = 'pf-c-form-control pf-u-flex-grow-1';
         input.addEventListener('input', (e) => {
             const val = e.target.value === '' ? undefined : Number(e.target.value);
             updateFieldValue(path, val);
@@ -472,15 +788,16 @@ plugins: {}
         group.appendChild(input);
     }
 
-    function renderBooleanField(group, key, schema, value, path) {
+    function renderBooleanField(group, key, schema, value, path, fieldId) {
         const select = document.createElement('select');
         select.dataset.path = path;
+        select.id = fieldId;
+        select.className = 'pf-c-form-control pf-u-flex-grow-1';
         select.innerHTML = `
             <option value="">-- Select --</option>
             <option value="true" ${value === true ? 'selected' : ''}>Yes</option>
             <option value="false" ${value === false ? 'selected' : ''}>No</option>
         `;
-        if (hasChanged(path)) select.classList.add('changed');
         select.addEventListener('change', (e) => {
             const val = e.target.value === '' ? undefined : e.target.value === 'true';
             updateFieldValue(path, val);
@@ -488,9 +805,11 @@ plugins: {}
         group.appendChild(select);
     }
 
-    function renderEnumField(group, key, schema, value, path) {
+    function renderEnumField(group, key, schema, value, path, fieldId) {
         const select = document.createElement('select');
         select.dataset.path = path;
+        select.id = fieldId;
+        select.className = 'pf-c-form-control pf-u-flex-grow-1';
         select.innerHTML = `<option value="">-- Select --</option>`;
         schema.enum.forEach(opt => {
             const option = document.createElement('option');
@@ -499,7 +818,6 @@ plugins: {}
             option.selected = value === opt;
             select.appendChild(option);
         });
-        if (hasChanged(path)) select.classList.add('changed');
         select.addEventListener('change', (e) => updateFieldValue(path, e.target.value || undefined));
         group.appendChild(select);
     }
@@ -514,11 +832,11 @@ plugins: {}
         const booleanTrueOption = options.find(o => o.type === 'boolean' && o.const === true);
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'anyof-field';
+        wrapper.className = 'pf-l-flex pf-m-wrap pf-m-space-items-sm pf-m-align-items-center';
 
         if (numberOption && (booleanFalseOption || booleanTrueOption) && !enumOption && !objectOption && !stringOption) {
             const select = document.createElement('select');
-            select.className = 'anyof-mode-select';
+            select.className = 'pf-c-form-control';
             const valueIsNumeric = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
             const currentMode = valueIsNumeric ? 'number' : (value === false ? 'false' : (value === true ? 'true' : ''));
 
@@ -537,9 +855,10 @@ plugins: {}
             numberInput.type = 'number';
             numberInput.value = valueIsNumeric ? Number(value) : '';
             numberInput.placeholder = numberOption.description ? numberOption.description.substring(0, 50) : '';
+            numberInput.className = 'pf-c-form-control';
             if (numberOption.minimum !== undefined) numberInput.min = numberOption.minimum;
             if (numberOption.maximum !== undefined) numberInput.max = numberOption.maximum;
-            numberInput.style.display = currentMode === 'number' ? 'block' : 'none';
+            numberInput.hidden = currentMode !== 'number';
             numberInput.addEventListener('input', (e) => {
                 if (e.target.value === '') {
                     updateFieldValue(path, undefined);
@@ -553,7 +872,7 @@ plugins: {}
             select.addEventListener('change', (e) => {
                 const mode = e.target.value;
                 if (mode === 'number') {
-                    numberInput.style.display = 'block';
+                    numberInput.hidden = false;
                     if (numberInput.value === '') {
                         updateFieldValue(path, undefined);
                     } else {
@@ -561,7 +880,7 @@ plugins: {}
                         updateFieldValue(path, parsed);
                     }
                 } else {
-                    numberInput.style.display = 'none';
+                    numberInput.hidden = true;
                     if (mode === 'false') {
                         updateFieldValue(path, false);
                     } else if (mode === 'true') {
@@ -575,7 +894,7 @@ plugins: {}
             const isObject = value !== null && typeof value === 'object';
             
             const modeSelect = document.createElement('select');
-            modeSelect.className = 'anyof-mode-select';
+            modeSelect.className = 'pf-c-form-control';
             modeSelect.innerHTML = `
                 <option value="structured" ${isObject ? 'selected' : ''}>Structured</option>
                 <option value="simple" ${!isObject ? 'selected' : ''}>Simple String</option>
@@ -583,8 +902,11 @@ plugins: {}
             wrapper.appendChild(modeSelect);
 
             const structuredContainer = document.createElement('div');
-            structuredContainer.className = 'anyof-structured';
-            structuredContainer.style.display = isObject ? 'block' : 'none';
+            structuredContainer.className = 'pf-c-card pf-u-mt-sm pf-u-mb-sm pf-u-w-100';
+            structuredContainer.hidden = !isObject;
+            const structuredBody = document.createElement('div');
+            structuredBody.className = 'pf-c-card__body pf-c-form pf-m-horizontal';
+            structuredContainer.appendChild(structuredBody);
             
             const propsToRender = objectOption.properties || {};
             const valueKeys = isObject && value ? Object.keys(value) : [];
@@ -599,18 +921,28 @@ plugins: {}
                     const propPath = `${path}.${propKey}`;
                     const propValue = isObject && value ? value[propKey] : undefined;
                     const propGroup = document.createElement('div');
-                    propGroup.className = 'nested-field';
+                    propGroup.className = 'pf-c-form__group pf-u-mb-sm';
                     
-                    const propLabel = document.createElement('span');
-                    propLabel.className = 'nested-field-label';
-                    propLabel.textContent = propSchema.title || capitalizeFirst(propKey);
-                    propGroup.appendChild(propLabel);
+                    const propLabelWrap = document.createElement('div');
+                    propLabelWrap.className = 'pf-c-form__group-label';
+                    const propLabel = document.createElement('label');
+                    propLabel.className = 'pf-c-form__label';
+                    const propLabelText = document.createElement('span');
+                    propLabelText.className = 'pf-c-form__label-text';
+                    propLabelText.textContent = propSchema.title || capitalizeFirst(propKey);
+                    propLabel.appendChild(propLabelText);
+                    propLabelWrap.appendChild(propLabel);
+                    propGroup.appendChild(propLabelWrap);
+                    const propControl = document.createElement('div');
+                    propControl.className = 'pf-c-form__group-control';
+                    propGroup.appendChild(propControl);
                     
                     const propType = propSchema.type || (Array.isArray(propValue) ? 'array' : typeof propValue === 'boolean' ? 'boolean' : typeof propValue === 'number' ? 'number' : 'string');
                     
                     if (propType === 'boolean') {
                         const select = document.createElement('select');
                         select.dataset.path = propPath;
+                        select.className = 'pf-c-form-control';
                         select.innerHTML = `
                             <option value="">-- Select --</option>
                             <option value="true" ${propValue === true ? 'selected' : ''}>Yes</option>
@@ -632,13 +964,14 @@ plugins: {}
                                 updateFieldValue(path, currentVal);
                             }
                         });
-                        propGroup.appendChild(select);
+                        propControl.appendChild(select);
                     } else if (propType === 'number' || propType === 'integer') {
                         const propInput = document.createElement('input');
                         propInput.type = 'number';
                         propInput.value = propValue !== undefined ? propValue : '';
                         propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
                         propInput.dataset.path = propPath;
+                        propInput.className = 'pf-c-form-control';
                         if (propSchema.minimum !== undefined) propInput.min = propSchema.minimum;
                         if (propSchema.maximum !== undefined) propInput.max = propSchema.maximum;
                         propInput.addEventListener('input', (e) => {
@@ -657,17 +990,18 @@ plugins: {}
                                 updateFieldValue(path, currentVal);
                             }
                         });
-                        propGroup.appendChild(propInput);
+                        propControl.appendChild(propInput);
                     } else if (propType === 'array') {
                         const arrayContainer = document.createElement('div');
-                        arrayContainer.className = 'nested-array-field';
+                        arrayContainer.className = 'pf-c-card pf-u-p-sm';
                         const items = Array.isArray(propValue) ? propValue : [];
                         items.forEach((item, idx) => {
                             const itemRow = document.createElement('div');
-                            itemRow.className = 'nested-array-item';
+                            itemRow.className = 'pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm';
                             const itemInput = document.createElement('input');
                             itemInput.type = 'text';
                             itemInput.value = item || '';
+                            itemInput.className = 'pf-c-form-control pf-u-flex-grow-1';
                             itemInput.addEventListener('input', (e) => {
                                 let currentVal = getNestedValue(state.currentObject, path);
                                 if (typeof currentVal !== 'object' || currentVal === null) {
@@ -682,7 +1016,7 @@ plugins: {}
                             itemRow.appendChild(itemInput);
                             const removeBtn = document.createElement('button');
                             removeBtn.type = 'button';
-                            removeBtn.className = 'nested-array-remove';
+                            removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
                             removeBtn.textContent = 'X';
                             removeBtn.addEventListener('click', () => {
                                 let currentVal = getNestedValue(state.currentObject, path);
@@ -704,7 +1038,7 @@ plugins: {}
                         });
                         const addBtn = document.createElement('button');
                         addBtn.type = 'button';
-                        addBtn.className = 'nested-array-add';
+                        addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
                         addBtn.textContent = '+ Add';
                         addBtn.addEventListener('click', () => {
                             let currentVal = getNestedValue(state.currentObject, path);
@@ -719,13 +1053,14 @@ plugins: {}
                             renderCurrentSection();
                         });
                         arrayContainer.appendChild(addBtn);
-                        propGroup.appendChild(arrayContainer);
+                        propControl.appendChild(arrayContainer);
                     } else {
                         const propInput = document.createElement('input');
                         propInput.type = 'text';
                         propInput.value = propValue !== undefined ? propValue : '';
                         propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
                         propInput.dataset.path = propPath;
+                        propInput.className = 'pf-c-form-control';
                         propInput.addEventListener('input', (e) => {
                             let currentVal = getNestedValue(state.currentObject, path);
                             if (typeof currentVal !== 'object' || currentVal === null) {
@@ -742,31 +1077,31 @@ plugins: {}
                                 updateFieldValue(path, currentVal);
                             }
                         });
-                        propGroup.appendChild(propInput);
+                        propControl.appendChild(propInput);
                     }
-                    structuredContainer.appendChild(propGroup);
+                    structuredBody.appendChild(propGroup);
                 });
             }
             wrapper.appendChild(structuredContainer);
 
             const simpleContainer = document.createElement('div');
-            simpleContainer.className = 'anyof-simple';
-            simpleContainer.style.display = isObject ? 'none' : 'block';
+            simpleContainer.className = 'pf-u-mt-sm pf-u-w-100';
+            simpleContainer.hidden = isObject;
             
             const simpleInput = document.createElement('input');
             simpleInput.type = 'text';
             simpleInput.value = !isObject && value ? value : '';
             simpleInput.placeholder = stringOption.description ? stringOption.description.substring(0, 50) : 'Enter value...';
             simpleInput.dataset.path = path;
-            if (hasChanged(path)) simpleInput.classList.add('changed');
+            simpleInput.className = 'pf-c-form-control';
             simpleInput.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
             simpleContainer.appendChild(simpleInput);
             wrapper.appendChild(simpleContainer);
 
             modeSelect.addEventListener('change', (e) => {
                 const isStructured = e.target.value === 'structured';
-                structuredContainer.style.display = isStructured ? 'block' : 'none';
-                simpleContainer.style.display = isStructured ? 'none' : 'block';
+                structuredContainer.hidden = !isStructured;
+                simpleContainer.hidden = isStructured;
                 if (isStructured) {
                     updateFieldValue(path, {});
                 } else {
@@ -776,6 +1111,7 @@ plugins: {}
         } else if (enumOption && enumOption.enum) {
             const select = document.createElement('select');
             select.dataset.path = path;
+            select.className = 'pf-c-form-control';
             select.innerHTML = `<option value="">-- Select --</option>`;
             enumOption.enum.forEach(opt => {
                 const option = document.createElement('option');
@@ -789,16 +1125,16 @@ plugins: {}
             const customInput = document.createElement('input');
             customInput.type = 'text';
             customInput.placeholder = 'Enter custom value';
-            customInput.style.display = (value && !enumOption.enum.includes(value)) ? 'block' : 'none';
-            customInput.style.marginTop = '8px';
+            customInput.hidden = !(value && !enumOption.enum.includes(value));
+            customInput.className = 'pf-c-form-control pf-u-mt-sm pf-u-w-100';
             customInput.value = (value && !enumOption.enum.includes(value)) ? value : '';
 
             select.addEventListener('change', (e) => {
                 if (e.target.value === '__custom__') {
-                    customInput.style.display = 'block';
+                    customInput.hidden = false;
                     customInput.focus();
                 } else {
-                    customInput.style.display = 'none';
+                    customInput.hidden = true;
                     updateFieldValue(path, e.target.value || undefined);
                 }
             });
@@ -816,20 +1152,21 @@ plugins: {}
         group.appendChild(wrapper);
     }
 
-    function renderFileField(group, key, schema, value, path) {
+    function renderFileField(group, key, schema, value, path, fieldId) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'file-field';
+        wrapper.className = 'pf-c-input-group';
 
         const input = document.createElement('input');
         input.type = 'text';
         input.value = value || '';
         input.placeholder = 'Path to file...';
         input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
+        input.id = fieldId;
+        input.className = 'pf-c-form-control';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
 
         const indicator = document.createElement('span');
-        indicator.className = 'file-indicator';
+        indicator.className = 'pf-c-input-group__text';
         indicator.textContent = 'File Path';
 
         wrapper.appendChild(input);
@@ -839,7 +1176,7 @@ plugins: {}
 
     function renderArrayField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'array-field';
+        wrapper.className = 'pf-l-stack pf-m-gutter';
         wrapper.dataset.path = path;
 
         const items = Array.isArray(value) ? value : [];
@@ -855,7 +1192,7 @@ plugins: {}
         });
 
         const addBtn = document.createElement('button');
-        addBtn.className = 'array-add-btn';
+        addBtn.className = 'pf-c-button pf-m-link pf-m-inline';
         addBtn.textContent = '+ Add Item';
         addBtn.addEventListener('click', () => addArrayItem(path, itemSchema));
         wrapper.appendChild(addBtn);
@@ -865,12 +1202,13 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'array-item';
+        item.className = 'pf-l-stack__item pf-l-flex pf-m-space-items-sm pf-m-align-items-center';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
         input.value = value !== undefined ? value : '';
         input.dataset.path = path;
+        input.className = 'pf-c-form-control pf-u-flex-grow-1';
         input.addEventListener('input', (e) => {
             const val = schema.type === 'number' || schema.type === 'integer' 
                 ? (e.target.value === '' ? undefined : Number(e.target.value))
@@ -879,7 +1217,7 @@ plugins: {}
         });
 
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
+        removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
         removeBtn.textContent = 'Remove';
         removeBtn.addEventListener('click', () => removeArrayItem(path));
 
@@ -890,50 +1228,67 @@ plugins: {}
 
     function renderArrayObjectItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'array-item object-item';
-        
-        const content = document.createElement('div');
-        content.className = 'object-field';
-        content.style.flex = '1';
-        
-        renderObjectFields(content, schema, value, path);
+        item.className = 'pf-l-stack__item pf-c-card';
+
+        const header = document.createElement('div');
+        header.className = 'pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center';
+        header.innerHTML = `<div class="pf-c-card__title"><span>Item ${index + 1}</span></div>`;
 
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
+        removeBtn.className = 'pf-c-button pf-m-secondary pf-m-small';
         removeBtn.textContent = 'Remove';
-        removeBtn.style.alignSelf = 'flex-start';
         removeBtn.addEventListener('click', () => removeArrayItem(path));
+        header.appendChild(removeBtn);
 
-        item.appendChild(content);
-        item.appendChild(removeBtn);
+        const body = document.createElement('div');
+        body.className = 'pf-c-card__body';
+        renderObjectFields(body, schema, value, path);
+
+        item.appendChild(header);
+        item.appendChild(body);
         wrapper.appendChild(item);
     }
 
     function renderNestedObjectField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'object-field';
-        
-        const header = document.createElement('div');
-        header.className = 'object-field-header';
-        header.innerHTML = `<h4>${schema.title || capitalizeFirst(key)}</h4>`;
-        wrapper.appendChild(header);
+        wrapper.className = 'pf-c-card';
 
-        renderObjectFields(wrapper, schema, value || {}, path);
+        const header = document.createElement('div');
+        header.className = 'pf-c-card__header';
+        header.innerHTML = `<div class="pf-c-card__title"><span>${schema.title || capitalizeFirst(key)}</span></div>`;
+
+        const body = document.createElement('div');
+        body.className = 'pf-c-card__body';
+        renderObjectFields(body, schema, value || {}, path);
+
+        wrapper.appendChild(header);
+        wrapper.appendChild(body);
         group.appendChild(wrapper);
     }
 
     function renderHostsSection(container, schema, data) {
         const toolbar = document.createElement('div');
-        toolbar.className = 'hosts-toolbar';
+        toolbar.className = 'pf-c-toolbar pf-u-mb-md';
         toolbar.innerHTML = `
-            <h3>Hosts (${Object.keys(data || {}).length})</h3>
-            <button class="add-host-btn">+ Add Host</button>
+            <div class="pf-c-toolbar__content">
+                <div class="pf-c-toolbar__content-section pf-m-align-items-center">
+                    <div class="pf-c-toolbar__item">
+                        <h3 class="pf-c-title pf-m-md">Hosts (${Object.keys(data || {}).length})</h3>
+                    </div>
+                </div>
+                <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap">
+                    <div class="pf-c-toolbar__item">
+                        <button class="pf-c-button pf-m-primary add-host-btn">+ Add Host</button>
+                    </div>
+                </div>
+            </div>
         `;
         toolbar.querySelector('.add-host-btn').addEventListener('click', addHost);
         container.appendChild(toolbar);
 
         const hostsContainer = document.createElement('div');
         hostsContainer.id = 'hosts-container';
+        hostsContainer.className = 'pf-l-stack pf-m-gutter';
 
         Object.entries(data || {}).forEach(([hostname, hostData]) => {
             renderHostCard(hostsContainer, hostname, hostData, schema);
@@ -944,29 +1299,30 @@ plugins: {}
 
     function renderHostCard(container, hostname, data, schema) {
         const card = document.createElement('div');
-        card.className = 'host-card collapsed';
+        card.className = 'pf-l-stack__item pf-c-card host-card';
         card.dataset.hostname = hostname;
 
         const role = data.role || 'worker';
-        const roleClass = role === 'control' ? 'control' : '';
+        const roleClass = role === 'control' ? 'pf-m-blue' : 'pf-m-green';
 
         card.innerHTML = `
-            <div class="host-card-header">
-                <h4>
-                    <span class="hostname">${hostname}</span>
-                    <span class="role-badge ${roleClass}">${role}</span>
-                </h4>
-                <div class="host-card-actions">
-                    <button class="duplicate-btn" title="Duplicate host">Duplicate</button>
-                    <button class="remove-btn" title="Remove host">Remove</button>
-                    <button class="toggle-btn">Expand</button>
+            <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
+                <div class="pf-c-card__title">
+                    <span>${hostname}</span>
+                    <span class="pf-c-label pf-m-compact ${roleClass} pf-u-ml-sm"><span class="pf-c-label__content">${role}</span></span>
+                </div>
+                <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                    <button class="pf-c-button pf-m-secondary pf-m-small duplicate-btn" title="Duplicate host">Duplicate</button>
+                    <button class="pf-c-button pf-m-secondary pf-m-small remove-btn" title="Remove host">Remove</button>
+                    <button class="pf-c-button pf-m-link pf-m-inline pf-m-small toggle-btn">Expand</button>
                 </div>
             </div>
-            <div class="host-card-body"></div>
+            <div class="pf-c-card__body host-card-body"></div>
         `;
 
-        const header = card.querySelector('.host-card-header');
+        const header = card.querySelector('.pf-c-card__header');
         const body = card.querySelector('.host-card-body');
+        body.hidden = true;
         const toggleBtn = card.querySelector('.toggle-btn');
 
         header.addEventListener('click', (e) => {
@@ -993,26 +1349,48 @@ plugins: {}
     }
 
     function renderHostFields(container, schema, data, path) {
+        container.classList.add('pf-c-form', 'pf-m-horizontal');
         const hostname = getHostnameFromPath(path);
         const hostnameGroup = document.createElement('div');
-        hostnameGroup.className = 'form-group';
-        hostnameGroup.innerHTML = `
-            <label>Hostname</label>
-            <input type="text" value="${escapeHtml(hostname)}" data-hostname-input="true" />
-        `;
-        hostnameGroup.querySelector('input').addEventListener('change', (e) => {
+        hostnameGroup.className = 'pf-c-form__group';
+
+        const labelWrap = document.createElement('div');
+        labelWrap.className = 'pf-c-form__group-label';
+        const label = document.createElement('label');
+        label.className = 'pf-c-form__label';
+        label.htmlFor = `host-${hostname}`;
+        const labelText = document.createElement('span');
+        labelText.className = 'pf-c-form__label-text';
+        labelText.textContent = 'Hostname';
+        label.appendChild(labelText);
+        labelWrap.appendChild(label);
+
+        const controlWrap = document.createElement('div');
+        controlWrap.className = 'pf-c-form__group-control';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = hostname;
+        input.id = `host-${hostname}`;
+        input.dataset.hostnameInput = 'true';
+        input.className = 'pf-c-form-control';
+        input.addEventListener('change', (e) => {
             renameHost(hostname, e.target.value);
         });
+        controlWrap.appendChild(input);
+
+        hostnameGroup.appendChild(labelWrap);
+        hostnameGroup.appendChild(controlWrap);
         container.appendChild(hostnameGroup);
 
         renderObjectFields(container, schema, data, path);
     }
 
     function toggleHostCard(card) {
-        card.classList.toggle('collapsed');
-        card.classList.toggle('expanded');
+        const body = card.querySelector('.host-card-body');
         const btn = card.querySelector('.toggle-btn');
-        btn.textContent = card.classList.contains('expanded') ? 'Collapse' : 'Expand';
+        if (!body || !btn) return;
+        body.hidden = !body.hidden;
+        btn.textContent = body.hidden ? 'Expand' : 'Collapse';
     }
 
     function addHost() {
@@ -1069,6 +1447,13 @@ plugins: {}
         setNestedValue(state.currentObject, path, value);
         trackChange(path, value);
         syncObjectToYaml();
+        const group = document.querySelector(`.pf-c-form__group[data-path="${path}"]`);
+        if (group) {
+            const revertBtn = group.querySelector('.revert-btn');
+            if (revertBtn) {
+                revertBtn.disabled = !hasChanged(path);
+            }
+        }
     }
 
     function updateArrayItemValue(path, value) {
@@ -1221,7 +1606,11 @@ plugins: {}
         const resultsContainer = document.getElementById('validation-results');
         
         if (!state.schema || !state.currentObject) {
-            resultsContainer.innerHTML = '<div class="validation-success">No data to validate</div>';
+            resultsContainer.innerHTML = `
+                <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                    <div class="pf-c-alert__title">No data to validate</div>
+                </div>
+            `;
             state.validationErrors = 0;
             updateHeaderStatus();
             return;
@@ -1240,21 +1629,32 @@ plugins: {}
             const valid = validate(state.currentObject);
 
             if (valid) {
-                resultsContainer.innerHTML = '<div class="validation-success">Validation passed</div>';
+                resultsContainer.innerHTML = `
+                    <div class="pf-c-alert pf-m-inline pf-m-success" aria-live="polite">
+                        <div class="pf-c-alert__title">Validation passed</div>
+                    </div>
+                `;
                 state.validationErrors = 0;
             } else {
                 resultsContainer.innerHTML = validate.errors.map(error => `
-                    <div class="validation-item">
-                        <div class="path">${error.instancePath || '/'}</div>
-                        <div class="message">${error.message}</div>
+                    <div class="pf-c-alert pf-m-inline pf-m-danger pf-u-mb-sm" aria-live="polite">
+                        <div class="pf-c-alert__title">${error.instancePath || '/'}</div>
+                        <div class="pf-c-alert__description">${error.message}</div>
                     </div>
                 `).join('');
                 state.validationErrors = validate.errors.length;
             }
+            updateAboutErrorBadge();
             updateHeaderStatus();
         } catch (error) {
-            resultsContainer.innerHTML = `<div class="validation-item"><div class="message">Validation error: ${error.message}</div></div>`;
+            resultsContainer.innerHTML = `
+                <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                    <div class="pf-c-alert__title">Validation error</div>
+                    <div class="pf-c-alert__description">${error.message}</div>
+                </div>
+            `;
             state.validationErrors = 1;
+            updateAboutErrorBadge();
             updateHeaderStatus();
         }
     }
@@ -1284,15 +1684,20 @@ plugins: {}
         const container = document.getElementById('changes-list');
         
         if (state.changes.length === 0) {
-            container.innerHTML = '<div class="validation-success">No changes</div>';
+            container.innerHTML = `
+                <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                    <div class="pf-c-alert__title">No changes</div>
+                </div>
+            `;
             updateHeaderStatus();
+            updateNavChangeBadges();
             return;
         }
 
         container.innerHTML = state.changes.map(change => `
-            <div class="change-item">
-                <span class="path">${change.path}</span>
-                <button class="revert-change" data-path="${change.path}">Revert</button>
+            <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm">
+                <span class="pf-u-flex-grow-1">${change.path}</span>
+                <button class="pf-c-button pf-m-link pf-m-inline revert-change" data-path="${change.path}">Revert</button>
             </div>
         `).join('');
 
@@ -1301,18 +1706,23 @@ plugins: {}
         });
         
         updateHeaderStatus();
+        updateNavChangeBadges();
     }
 
     function updateHeaderStatus() {
         const filenameEl = document.getElementById('header-filename');
+        const contentFilenameEl = document.getElementById('content-filename');
         const changesCountEl = document.getElementById('changes-count');
         const errorsCountEl = document.getElementById('errors-count');
         const changesEl = document.getElementById('header-changes');
         const errorsEl = document.getElementById('header-errors');
         
-        if (filenameEl) filenameEl.textContent = state.currentFilename;
+        if (filenameEl) filenameEl.textContent = '';
+        if (contentFilenameEl) contentFilenameEl.textContent = state.currentFilename;
         if (changesCountEl) changesCountEl.textContent = state.changes.length;
         if (errorsCountEl) errorsCountEl.textContent = state.validationErrors;
+        updateSaveButton();
+        updateAboutErrorBadge();
         
         if (changesEl) {
             changesEl.style.display = state.changes.length > 0 ? 'inline-flex' : 'none';
@@ -1326,53 +1736,57 @@ plugins: {}
         const container = document.getElementById('diff-preview');
         
         if (state.currentYamlText === state.baselineYamlText) {
-            container.innerHTML = '<span style="color: #6a6e73;">No changes from baseline</span>';
+            container.textContent = 'No changes from baseline';
             return;
         }
 
         try {
             const diff = Diff.createTwoFilesPatch('baseline.yaml', 'current.yaml', state.baselineYamlText, state.currentYamlText);
-            container.innerHTML = formatDiff(diff);
+            container.textContent = diff;
         } catch (error) {
             container.textContent = 'Failed to generate diff';
         }
     }
 
     function formatDiff(diff) {
-        return diff.split('\n').map(line => {
-            if (line.startsWith('+') && !line.startsWith('+++')) {
-                return `<span class="diff-add">${escapeHtml(line)}</span>`;
-            } else if (line.startsWith('-') && !line.startsWith('---')) {
-                return `<span class="diff-remove">${escapeHtml(line)}</span>`;
-            } else if (line.startsWith('@@')) {
-                return `<span class="diff-header">${escapeHtml(line)}</span>`;
-            }
-            return escapeHtml(line);
-        }).join('\n');
+        return diff;
     }
 
     function showParseError(error) {
         const container = document.getElementById('error-results');
         container.innerHTML = `
-            <div class="validation-item">
-                <div class="path">YAML Parse Error</div>
-                <div class="message">${escapeHtml(error.message)}</div>
+            <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                <div class="pf-c-alert__title">YAML parse error</div>
+                <div class="pf-c-alert__description">${escapeHtml(error.message)}</div>
             </div>
         `;
+        state.validationErrors = 1;
+        updateAboutErrorBadge();
+        showToast(`YAML parse error: ${error.message}`, 'error');
     }
 
     function clearParseError() {
         const container = document.getElementById('error-results');
-        container.innerHTML = '<div class="validation-success">No errors</div>';
+        container.innerHTML = `
+            <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                <div class="pf-c-alert__title">No errors</div>
+            </div>
+        `;
+        state.validationErrors = 0;
+        updateAboutErrorBadge();
     }
 
     function showError(message) {
         const container = document.getElementById('error-results');
         container.innerHTML = `
-            <div class="validation-item">
-                <div class="message">${escapeHtml(message)}</div>
+            <div class="pf-c-alert pf-m-inline pf-m-danger" aria-live="polite">
+                <div class="pf-c-alert__title">Error</div>
+                <div class="pf-c-alert__description">${escapeHtml(message)}</div>
             </div>
         `;
+        state.validationErrors = 1;
+        updateAboutErrorBadge();
+        showToast(message, 'error');
     }
 
     function handleHelpHover(e) {
@@ -1508,6 +1922,9 @@ plugins: {}
     function newDocument() {
         if (!confirm('Create new document? Unsaved changes will be lost.')) return;
         setYamlText(getDefaultYaml(), true);
+        setCurrentFilename('untitled');
+        markUnsaved();
+        restoreSectionForFile();
     }
 
     function handleFileLoad(e) {
@@ -1527,17 +1944,232 @@ plugins: {}
         const reader = new FileReader();
         reader.onload = (event) => {
             setYamlText(event.target.result, true);
-            state.currentFilename = file.name;
-            updateHeaderStatus();
+            setCurrentFilename(file.name);
+            markUnsaved();
+            restoreSectionForFile();
         };
         reader.readAsText(file);
         e.target.value = '';
     }
 
+    function toggleNavGroup(menu) {
+        const list = document.querySelector(`[data-menu-list="${menu}"]`);
+        const button = document.querySelector(`.nav-group-toggle[data-menu="${menu}"]`);
+        const item = button ? button.closest('.pf-c-nav__item') : null;
+        if (!list || !button || !item) return;
+        const isExpanded = item.classList.contains('pf-m-expanded');
+        item.classList.toggle('pf-m-expanded', !isExpanded);
+        button.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
+        const subnav = button.nextElementSibling;
+        if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+            if (!isExpanded) {
+                subnav.removeAttribute('hidden');
+            } else {
+                subnav.setAttribute('hidden', '');
+            }
+        }
+    }
+
+    function updateNavGroupCurrent(section) {
+        const clusterButton = document.querySelector('.nav-group-toggle[data-menu="clusterfile"]');
+        const templatesButton = document.querySelector('.nav-group-toggle[data-menu="templates"]');
+        const aboutButton = document.querySelector('.nav-group-toggle[data-menu="about"]');
+        const clusterList = document.querySelector('[data-menu-list="clusterfile"]');
+        const templatesList = document.querySelector('[data-menu-list="templates"]');
+        const aboutList = document.querySelector('[data-menu-list="about"]');
+        const clusterItem = clusterButton ? clusterButton.closest('.pf-c-nav__item') : null;
+        const templatesItem = templatesButton ? templatesButton.closest('.pf-c-nav__item') : null;
+        const aboutItem = aboutButton ? aboutButton.closest('.pf-c-nav__item') : null;
+
+        const clusterActive = FILE_SECTIONS.includes(section) || state.editorView === EDITOR_VIEWS.CLUSTERFILE;
+        const templatesActive = section === 'templates' || state.editorView === EDITOR_VIEWS.TEMPLATES;
+
+        if (clusterButton) clusterButton.classList.toggle('pf-m-current', clusterActive);
+        if (templatesButton) templatesButton.classList.toggle('pf-m-current', templatesActive);
+        if (aboutButton) aboutButton.classList.toggle('pf-m-current', section === 'about' || section === 'changelog');
+
+        if (clusterActive && clusterList && clusterButton) {
+            if (clusterItem) clusterItem.classList.add('pf-m-expanded');
+            clusterButton.setAttribute('aria-expanded', 'true');
+            const subnav = clusterButton.nextElementSibling;
+            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+                subnav.removeAttribute('hidden');
+            }
+        }
+
+        if (templatesActive && templatesList && templatesButton) {
+            if (templatesItem) templatesItem.classList.add('pf-m-expanded');
+            templatesButton.setAttribute('aria-expanded', 'true');
+            const subnav = templatesButton.nextElementSibling;
+            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+                subnav.removeAttribute('hidden');
+            }
+        }
+
+        if ((section === 'about' || section === 'changelog') && aboutList && aboutButton) {
+            if (aboutItem) aboutItem.classList.add('pf-m-expanded');
+            aboutButton.setAttribute('aria-expanded', 'true');
+            const subnav = aboutButton.nextElementSibling;
+            if (subnav && subnav.classList.contains('pf-c-nav__subnav')) {
+                subnav.removeAttribute('hidden');
+            }
+        }
+    }
+
+    function handleEditorToggle(view) {
+        setEditorMode(view);
+    }
+
+    function setEditorMode(view, options = {}) {
+        const { fromSection = false } = options;
+        if (!fromSection) {
+            if (view === EDITOR_VIEWS.TEMPLATES) {
+                if (state.currentSection !== 'templates') {
+                    switchSection('templates', { fromEditor: true });
+                }
+            } else if (state.currentSection === 'templates') {
+                restoreSectionForFile();
+            }
+        }
+        setEditorView(view);
+    }
+
+    function setEditorView(view) {
+        state.editorView = view;
+        const yamlEditorContainer = document.querySelector('.yaml-editor-container');
+        const templateOutputPane = document.getElementById('template-output-pane');
+        const tabsContainer = document.querySelector('.tabs-container');
+        if (!yamlEditorContainer || !templateOutputPane || !tabsContainer) return;
+        if (view === EDITOR_VIEWS.TEMPLATES) {
+            yamlEditorContainer.style.display = 'none';
+            templateOutputPane.style.display = 'flex';
+            tabsContainer.style.display = 'none';
+            refreshTemplateOutputEditor();
+        } else {
+            yamlEditorContainer.style.display = 'flex';
+            templateOutputPane.style.display = 'none';
+            tabsContainer.style.display = 'flex';
+        }
+        document.querySelectorAll('.editor-toggle-btn').forEach(btn => {
+            const isActive = btn.dataset.editorView === view;
+            const tabItem = btn.closest('.pf-c-tabs__item');
+            if (tabItem) {
+                tabItem.classList.toggle('pf-m-current', isActive);
+            }
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        updateNavGroupCurrent(state.currentSection);
+        localStorage.setItem(STORAGE_KEYS.LAST_EDITOR_VIEW, view);
+    }
+
+    function setTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('pf-theme-dark', isDark);
+        document.body.classList.toggle('pf-theme-dark', isDark);
+        const header = document.querySelector('.pf-c-page__header');
+        const sidebar = document.querySelector('.pf-c-page__sidebar');
+        if (header) header.classList.toggle('pf-m-dark', isDark);
+        if (sidebar) sidebar.classList.toggle('pf-m-dark', isDark);
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.checked = isDark;
+        }
+        localStorage.setItem(STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
+    }
+
+    function toggleParamsPanel() {
+        const panel = document.getElementById('params-panel');
+        const toggle = document.getElementById('toggle-params');
+        if (!panel || !toggle) return;
+        const isOpen = panel.style.display === 'block';
+        panel.style.display = isOpen ? 'none' : 'block';
+        toggle.textContent = isOpen ? 'Show JSONPath Overrides' : 'Hide JSONPath Overrides';
+    }
+
+    function rememberSectionForFile(section) {
+        const map = getSectionMap();
+        map[state.currentFilename || 'untitled'] = section;
+        localStorage.setItem(STORAGE_KEYS.LAST_SECTION_BY_FILE, JSON.stringify(map));
+    }
+
+    function restoreSectionForFile() {
+        const map = getSectionMap();
+        const key = state.currentFilename || 'untitled';
+        const section = map[key] || FILE_SECTIONS[0];
+        if (section !== state.currentSection) {
+            switchSection(section);
+        }
+    }
+
+    function getSectionMap() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.LAST_SECTION_BY_FILE)) || {};
+        } catch {
+            return {};
+        }
+    }
+
+    function updateNavChangeBadges() {
+        FILE_SECTIONS.forEach(section => {
+            const badge = document.querySelector(`[data-badge="${section}"]`);
+            if (!badge) return;
+            const count = state.changes.filter(change =>
+                change.path === section ||
+                change.path.startsWith(`${section}.`) ||
+                change.path.startsWith(`${section}[`)
+            ).length;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.textContent = '';
+                badge.style.display = 'none';
+            }
+        });
+    }
+
+    function updateAboutErrorBadge() {
+        const badge = document.querySelector('[data-badge="about-errors"]');
+        if (!badge) return;
+        if (state.validationErrors > 0) {
+            badge.textContent = state.validationErrors;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+        }
+    }
+
+    function setCurrentFilename(name) {
+        state.currentFilename = name || 'untitled';
+        localStorage.setItem(STORAGE_KEYS.LAST_FILENAME, state.currentFilename);
+        updateHeaderStatus();
+    }
+
+    function markUnsaved() {
+        updateSaveButton();
+    }
+
+    function updateSaveButton() {
+        const saveBtn = document.getElementById('btn-save');
+        if (!saveBtn) return;
+        let normalized = '';
+        try {
+            normalized = buildNormalizedYaml();
+        } catch {
+            normalized = state.currentYamlText;
+        }
+        const isSaved = state.lastSavedYaml && state.lastSavedYaml === normalized && state.changes.length === 0;
+        saveBtn.classList.toggle('pf-m-primary', !isSaved);
+        saveBtn.classList.toggle('pf-m-secondary', isSaved);
+        saveBtn.textContent = isSaved ? 'Saved' : 'Save';
+    }
+
     function saveToLocalStorage() {
         const yamlToSave = redactSecrets(buildNormalizedYaml());
         localStorage.setItem(STORAGE_KEYS.LAST_YAML, yamlToSave);
-        alert('Saved to browser storage');
+        state.lastSavedYaml = yamlToSave;
+        updateSaveButton();
     }
 
     function redactSecrets(yaml) {
@@ -1569,7 +2201,7 @@ plugins: {}
     function copyYaml() {
         const normalizedYaml = buildNormalizedYaml();
         navigator.clipboard.writeText(normalizedYaml).then(() => {
-            alert('Copied to clipboard');
+            showToast('Copied to clipboard');
         }).catch(() => {
             showError('Failed to copy to clipboard');
         });
@@ -1814,6 +2446,7 @@ plugins: {}
             readOnly: true,
             tabSize: 2
         });
+        setTemplateOutputView('rendered');
     }
 
     function initTemplateEventListeners() {
@@ -1846,6 +2479,10 @@ plugins: {}
             previewBtn.addEventListener('click', previewTemplateSource);
         }
 
+        document.querySelectorAll('.output-view-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTemplateOutputView(btn.dataset.outputView));
+        });
+
         const copyOutputBtn = document.getElementById('btn-copy-output');
         if (copyOutputBtn) {
             copyOutputBtn.addEventListener('click', copyTemplateOutput);
@@ -1865,15 +2502,18 @@ plugins: {}
         } else {
             descriptionEl.textContent = '';
         }
+        if (selectedOption && selectedOption.value !== templateState.lastTemplateName) {
+            templateState.lastTemplateSource = '';
+        }
     }
 
     function addParamRow() {
         const container = document.getElementById('params-container');
         const row = document.createElement('div');
-        row.className = 'param-row';
+        row.className = 'param-row pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-u-mb-sm';
         row.innerHTML = `
-            <input type="text" class="param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
-            <input type="text" class="param-value" placeholder="new-value" title="Value to set">
+            <input type="text" class="pf-c-form-control param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
+            <input type="text" class="pf-c-form-control param-value" placeholder="new-value" title="Value to set">
             <button class="remove-param-btn pf-c-button pf-m-plain" type="button" title="Remove">X</button>
         `;
         container.appendChild(row);
@@ -1904,21 +2544,30 @@ plugins: {}
     }
 
     async function renderTemplate() {
-        const templateName = document.getElementById('template-select').value;
+        if (templateState.rendering) return;
+        const templateSelect = document.getElementById('template-select');
+        let templateName = templateSelect ? templateSelect.value : '';
         if (!templateName) {
-            alert('Please select a template');
-            return;
+            if (templateState.templates.length > 0 && templateSelect) {
+                templateName = templateState.templates[0].name;
+                templateSelect.value = templateName;
+                handleTemplateSelect({ target: templateSelect });
+            } else {
+                showToast('Please select a template', 'error');
+                return;
+            }
         }
 
         const yamlText = state.currentYamlText;
         if (!yamlText || yamlText.trim() === '') {
-            alert('Please load or create a clusterfile first');
+            showToast('Please load or create a clusterfile first', 'error');
             return;
         }
 
         const params = getParams();
 
         try {
+            templateState.rendering = true;
             const response = await fetch(getApiBase() + '/api/render', {
                 method: 'POST',
                 headers: {
@@ -1940,14 +2589,20 @@ plugins: {}
 
             if (result.success) {
                 templateState.lastRenderedOutput = result.output;
+                templateState.lastTemplateName = templateName;
+                templateState.lastRenderedInput = buildNormalizedYaml({ preserveCurrentText: true });
                 templateState.outputEditor.setValue(result.output);
-                
-                const outputContainer = document.querySelector('.template-output');
-                outputContainer.style.display = 'block';
+                setTemplateOutputView('rendered');
+                refreshTemplateOutputEditor();
                 
                 const warningsEl = document.getElementById('template-warnings');
                 if (result.warnings && result.warnings.length > 0) {
-                    warningsEl.innerHTML = '<strong>Warnings:</strong><br>' + result.warnings.join('<br>');
+                    warningsEl.innerHTML = `
+                        <div class="pf-c-alert pf-m-inline pf-m-warning" aria-live="polite">
+                            <div class="pf-c-alert__title">Warnings</div>
+                            <div class="pf-c-alert__description">${result.warnings.join('<br>')}</div>
+                        </div>
+                    `;
                 } else {
                     warningsEl.innerHTML = '';
                 }
@@ -1959,13 +2614,15 @@ plugins: {}
         } catch (error) {
             console.error('Failed to render template:', error);
             showTemplateError('Failed to render template: ' + error.message);
+        } finally {
+            templateState.rendering = false;
         }
     }
 
     async function previewTemplateSource() {
         const templateName = document.getElementById('template-select').value;
         if (!templateName) {
-            alert('Please select a template');
+            showToast('Please select a template', 'error');
             return;
         }
 
@@ -1974,13 +2631,17 @@ plugins: {}
             const result = await response.json();
 
             if (response.ok) {
-                templateState.lastRenderedOutput = result.content;
+                templateState.lastTemplateSource = result.content;
+                templateState.lastTemplateName = templateName;
                 templateState.outputEditor.setValue(result.content);
-                
-                const outputContainer = document.querySelector('.template-output');
-                outputContainer.style.display = 'block';
-                
-                document.getElementById('template-warnings').innerHTML = '<em>Showing template source (not rendered output)</em>';
+                setTemplateOutputView('source');
+                refreshTemplateOutputEditor();
+                document.getElementById('template-warnings').innerHTML = `
+                    <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                        <div class="pf-c-alert__title">Template source</div>
+                        <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
+                    </div>
+                `;
             } else {
                 showTemplateError(result.detail || 'Failed to load template');
             }
@@ -1990,15 +2651,78 @@ plugins: {}
         }
     }
 
+    function setTemplateOutputView(view) {
+        templateState.outputView = view;
+        document.querySelectorAll('.output-view-btn').forEach(btn => {
+            btn.classList.toggle('pf-m-primary', btn.dataset.outputView === view);
+            btn.classList.toggle('pf-m-secondary', btn.dataset.outputView !== view);
+        });
+        document.querySelectorAll('[data-template-view]').forEach(link => {
+            link.classList.toggle('pf-m-current', link.dataset.templateView === view);
+        });
+        if (!templateState.outputEditor) return;
+        const warningsEl = document.getElementById('template-warnings');
+        if (view === 'rendered') {
+            if (warningsEl) warningsEl.innerHTML = '';
+            const currentInput = buildNormalizedYaml({ preserveCurrentText: true });
+            const selectedTemplate = document.getElementById('template-select')?.value || templateState.lastTemplateName;
+            const needsRender = !templateState.lastRenderedOutput ||
+                templateState.lastRenderedInput !== currentInput ||
+                (selectedTemplate && selectedTemplate !== templateState.lastTemplateName);
+            if (needsRender) {
+                renderTemplate();
+            } else {
+                templateState.outputEditor.setValue(templateState.lastRenderedOutput || '');
+            }
+        } else if (view === 'source') {
+            if (templateState.lastTemplateSource) {
+                templateState.outputEditor.setValue(templateState.lastTemplateSource);
+                if (warningsEl) {
+                    warningsEl.innerHTML = `
+                        <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                            <div class="pf-c-alert__title">Template source</div>
+                            <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
+                        </div>
+                    `;
+                }
+            } else {
+                previewTemplateSource();
+            }
+        } else if (view === 'clusterfile') {
+            templateState.outputEditor.setValue(buildNormalizedYaml({ preserveCurrentText: true }));
+            if (warningsEl) {
+                warningsEl.innerHTML = `
+                    <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                        <div class="pf-c-alert__title">Clusterfile input</div>
+                        <div class="pf-c-alert__description">Showing current clusterfile input.</div>
+                    </div>
+                `;
+            }
+        }
+        refreshTemplateOutputEditor();
+    }
+
+    function refreshTemplateOutputEditor() {
+        if (!templateState.outputEditor) return;
+        requestAnimationFrame(() => templateState.outputEditor.refresh());
+    }
+
     function showTemplateError(message) {
         let errorEl = document.querySelector('.template-error');
         if (!errorEl) {
             errorEl = document.createElement('div');
-            errorEl.className = 'template-error';
+            errorEl.className = 'template-error pf-c-alert pf-m-inline pf-m-danger pf-u-mb-md';
+            errorEl.innerHTML = `
+                <div class="pf-c-alert__title">Template error</div>
+                <div class="pf-c-alert__description"></div>
+            `;
             const form = document.querySelector('.template-form');
             form.parentNode.insertBefore(errorEl, form);
         }
-        errorEl.textContent = message;
+        const description = errorEl.querySelector('.pf-c-alert__description');
+        if (description) {
+            description.textContent = message;
+        }
         errorEl.style.display = 'block';
     }
 
@@ -2010,24 +2734,27 @@ plugins: {}
     }
 
     function copyTemplateOutput() {
-        const output = templateState.lastRenderedOutput;
+        const output = templateState.outputEditor ? templateState.outputEditor.getValue() : '';
         if (output) {
             navigator.clipboard.writeText(output).then(() => {
-                const btn = document.getElementById('btn-copy-output');
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = originalText, 1500);
+                showToast('Output copied');
             });
         }
     }
 
     function downloadTemplateOutput() {
-        const output = templateState.lastRenderedOutput;
+        const output = templateState.outputEditor ? templateState.outputEditor.getValue() : '';
         if (!output) return;
 
         const templateName = document.getElementById('template-select').value;
         let filename = templateName.replace('.tpl', '').replace('.tmpl', '');
-        if (!filename.endsWith('.yaml') && !filename.endsWith('.yml') && !filename.endsWith('.sh')) {
+        if (templateState.outputView === 'clusterfile') {
+            filename = 'clusterfile';
+        } else if (templateState.outputView === 'source') {
+            filename = `${filename}.tpl`;
+        }
+        if (templateState.outputView !== 'source' &&
+            !filename.endsWith('.yaml') && !filename.endsWith('.yml') && !filename.endsWith('.sh')) {
             filename += '.yaml';
         }
 
