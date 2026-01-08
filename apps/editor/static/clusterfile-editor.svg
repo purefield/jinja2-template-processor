@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .red { stroke: #D30A0A; fill: none; stroke-width: 28; stroke-linecap: round; stroke-linejoin: round; }
+      .redFill { fill: #D30A0A; }
+      .blueFill { fill: #2F6FED; }
+      .text { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill: #1B2A3A; }
+    </style>
+  </defs>
+
+  <!-- Icon group -->
+  <g transform="translate(0,0)">
+    <!-- Parallelogram frame (slightly pulled to top-right) -->
+    <path class="red" d="M 266 290 L 758 250 L 806 632 L 314 672 Z"/>
+
+    <!-- Connectors (straight segments along the frame) -->
+    <path class="red" d="M 266 290 L 758 250"/>
+    <path class="red" d="M 758 250 L 806 632"/>
+    <path class="red" d="M 806 632 L 314 672"/>
+    <path class="red" d="M 314 672 L 266 290"/>
+
+    <!-- Nodes (small isometric cubes) -->
+    <!-- Cube function replicated manually via polygons -->
+    <!-- Top-left -->
+    <g transform="translate(250,260)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Top-mid -->
+    <g transform="translate(475,242)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Top-right -->
+    <g transform="translate(718,222)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Right-mid -->
+    <g transform="translate(782,435)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Bottom-right -->
+    <g transform="translate(720,618)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Bottom-mid -->
+    <g transform="translate(495,634)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Bottom-left -->
+    <g transform="translate(300,652)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+    <!-- Left-mid -->
+    <g transform="translate(235,438)">
+      <polygon points="0,18 34,0 68,18 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="0,18 0,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+      <polygon points="68,18 68,60 34,78 34,36" fill="#FFFFFF" stroke="#D30A0A" stroke-width="10" />
+    </g>
+
+    <!-- Center hexagon -->
+    <g>
+      <polygon class="blueFill" points="512,334 606,388 606,500 512,554 418,500 418,388"/>
+      <!-- simplified wheel -->
+      <circle cx="512" cy="444" r="56" fill="none" stroke="#FFFFFF" stroke-width="16"/>
+      <circle cx="512" cy="444" r="10" fill="#FFFFFF"/>
+      <!-- spokes -->
+      <g stroke="#FFFFFF" stroke-width="14" stroke-linecap="round">
+        <line x1="512" y1="444" x2="512" y2="388"/>
+        <line x1="512" y1="444" x2="560" y2="412"/>
+        <line x1="512" y1="444" x2="568" y2="444"/>
+        <line x1="512" y1="444" x2="560" y2="476"/>
+        <line x1="512" y1="444" x2="512" y2="500"/>
+        <line x1="512" y1="444" x2="464" y2="476"/>
+        <line x1="512" y1="444" x2="456" y2="444"/>
+        <line x1="512" y1="444" x2="464" y2="412"/>
+      </g>
+      <!-- small top knob -->
+      <circle cx="512" cy="360" r="10" fill="#FFFFFF"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="512" y="860" text-anchor="middle" class="text" font-size="120" font-weight="700">Editor</text>
+</svg>
