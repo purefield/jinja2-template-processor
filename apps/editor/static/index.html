@@ -79,94 +79,60 @@
     <div class="pf-v6-c-page__sidebar">
         <div class="pf-v6-c-page__sidebar-body pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
             <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100" aria-label="Global">
-                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0">
-                    <li class="pf-v6-c-nav__item pf-m-expandable pf-m-expanded" data-menu="clusterfile">
-                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
-                            Clusterfile
-                            <span class="pf-v6-c-nav__toggle" aria-hidden="true">
-                                <span class="pf-v6-c-nav__toggle-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M9 6l6 6-6 6"/>
-                                    </svg>
-                                </span>
-                            </span>
-                        </button>
-                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-clusterfile-label">
-                            <ul class="pf-v6-c-nav__list" data-menu-list="clusterfile" id="nav-clusterfile-list">
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="account">
-                                        Account <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="account"></span>
-                                    </a>
-                                </li>
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="cluster">
-                                        Cluster <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="cluster"></span>
-                                    </a>
-                                </li>
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="network">
-                                        Network <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="network"></span>
-                                    </a>
-                                </li>
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="hosts">
-                                        Hosts <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="hosts"></span>
-                                    </a>
-                                </li>
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="plugins">
-                                        Plugins <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="plugins"></span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </section>
-                    </li>
-                    <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="templates">
-                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
-                            Templates
-                            <span class="pf-v6-c-nav__toggle" aria-hidden="true">
-                                <span class="pf-v6-c-nav__toggle-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M9 6l6 6-6 6"/>
-                                    </svg>
-                                </span>
-                            </span>
-                        </button>
-                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-templates-label" hidden>
-                            <ul class="pf-v6-c-nav__list" data-menu-list="templates" id="nav-templates-list">
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="rendered">Rendered</a>
-                                </li>
-                                <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="source">Template Source</a>
-                                </li>
-                            </ul>
-                        </section>
-                    </li>
-                    <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="about">
-                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
-                            About
-                            <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="about-errors"></span>
-                            <span class="pf-v6-c-nav__toggle" aria-hidden="true">
-                                <span class="pf-v6-c-nav__toggle-icon">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M9 6l6 6-6 6"/>
-                                    </svg>
-                                </span>
-                            </span>
-                        </button>
-                        <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-about-label" hidden>
-                            <ul class="pf-v6-c-nav__list" data-menu-list="about" id="nav-about-list">
-                                <li class="pf-v6-c-nav__item">
-                                <a href="#" class="pf-v6-c-nav__link" data-section="about">Overview</a>
-                            </li>
-                            <li class="pf-v6-c-nav__item">
-                                <a href="#" class="pf-v6-c-nav__link" data-section="changelog">Changelog</a>
-                            </li>
-                            </ul>
-                        </section>
-                    </li>
-                </ul>
+                <section class="pf-v6-c-nav__section" aria-labelledby="nav-clusterfile-title">
+                    <h2 class="pf-v6-c-nav__section-title" id="nav-clusterfile-title">Clusterfile</h2>
+                    <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0" data-menu-list="clusterfile" id="nav-clusterfile-list">
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="account">
+                                Account <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="account"></span>
+                            </a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="cluster">
+                                Cluster <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="cluster"></span>
+                            </a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="network">
+                                Network <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="network"></span>
+                            </a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="hosts">
+                                Hosts <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="hosts"></span>
+                            </a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="plugins">
+                                Plugins <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="plugins"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                <section class="pf-v6-c-nav__section" aria-labelledby="nav-templates-title">
+                    <h2 class="pf-v6-c-nav__section-title" id="nav-templates-title">Templates</h2>
+                    <ul class="pf-v6-c-nav__list" data-menu-list="templates" id="nav-templates-list">
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-template-view="rendered">Rendered</a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-template-view="source">Template Source</a>
+                        </li>
+                    </ul>
+                </section>
+                <section class="pf-v6-c-nav__section" aria-labelledby="nav-about-title">
+                    <h2 class="pf-v6-c-nav__section-title" id="nav-about-title">
+                        About <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="about-errors"></span>
+                    </h2>
+                    <ul class="pf-v6-c-nav__list" data-menu-list="about" id="nav-about-list">
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="about">Overview</a>
+                        </li>
+                        <li class="pf-v6-c-nav__item">
+                            <a href="#" class="pf-v6-c-nav__link" data-section="changelog">Changelog</a>
+                        </li>
+                    </ul>
+                </section>
             </nav>
         </div>
     </div>
