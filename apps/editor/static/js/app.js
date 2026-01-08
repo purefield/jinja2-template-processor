@@ -745,6 +745,8 @@ plugins: {}
         controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
         if (!isComplex) {
             control.appendChild(controlRow);
+        } else {
+            labelWrapper.classList.add('form-label-top');
         }
 
         if (schema['x-is-file']) {
@@ -1212,14 +1214,14 @@ plugins: {}
 
     function renderArrayField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-v6-l-stack pf-m-gutter';
+        wrapper.className = 'pf-v6-l-stack pf-m-gutter array-section';
         wrapper.dataset.path = path;
 
         const items = Array.isArray(value) ? value : [];
         const itemSchema = schema.items || {};
 
         const controls = document.createElement('div');
-        controls.className = 'pf-v6-c-toolbar array-controls action-cluster';
+        controls.className = 'pf-v6-c-toolbar array-controls';
         controls.innerHTML = `
             <div class="pf-v6-c-toolbar__content">
                 <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-v6-u-ml-auto">

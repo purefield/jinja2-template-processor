@@ -99,9 +99,28 @@
     gap: 4px;
 }
 
+.form-label-top {
+    align-items: flex-start;
+}
+
+.form-label-top .pf-v6-c-form__label {
+    padding-top: 2px;
+}
+
 .array-controls {
     border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
-    padding: 4px;
+    padding: 0;
+}
+
+.array-controls .pf-v6-c-toolbar__content {
+    padding: 0;
+}
+
+.array-section {
+    background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
+    border: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
+    border-radius: var(--pf-v6-global--BorderRadius--lg, 6px);
+    padding: var(--pf-v6-global--spacer--md, 16px);
 }
 
 .array-item-row {
