@@ -150,6 +150,20 @@
     color: var(--pf-v6-global--Color--100, #151515);
 }
 
+.trash-btn .pf-v6-c-button__icon,
+.revert-btn .pf-v6-c-button__icon {
+    display: inline-flex;
+    align-items: center;
+}
+
+.revert-btn .pf-v6-c-button__icon {
+    color: var(--pf-v6-global--Color--200, #6a6e73);
+}
+
+.revert-btn:hover .pf-v6-c-button__icon {
+    color: var(--pf-v6-global--Color--100, #151515);
+}
+
 .array-section {
     background: var(--pf-v6-global--BackgroundColor--100, #f0f0f0);
     border: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
