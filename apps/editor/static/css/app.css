@@ -1,3 +1,11 @@
+.pf-u-border-radius-lg {
+    border-radius: var(--pf-global--BorderRadius--lg, 8px);
+}
+
+.pf-u-border-radius-lg.pf-c-card {
+    overflow: hidden;
+}
+
 .demo-highlight {
     position: relative;
     z-index: 150;
