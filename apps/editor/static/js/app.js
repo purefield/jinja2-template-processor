@@ -1973,16 +1973,22 @@ plugins: {}
 
     function setEditorView(view) {
         state.editorView = view;
+        const yamlEditorItem = document.getElementById('yaml-editor-item');
+        const templateOutputItem = document.getElementById('template-output-item');
         const yamlEditorContainer = document.querySelector('.yaml-editor-container');
         const templateOutputPane = document.getElementById('template-output-pane');
         const tabsContainer = document.querySelector('.tabs-container');
-        if (!yamlEditorContainer || !templateOutputPane || !tabsContainer) return;
+        if (!yamlEditorContainer || !templateOutputPane || !tabsContainer || !yamlEditorItem || !templateOutputItem) return;
         if (view === EDITOR_VIEWS.TEMPLATES) {
+            setVisibility(yamlEditorItem, false);
+            setVisibility(templateOutputItem, true);
             setVisibility(yamlEditorContainer, false);
             setVisibility(templateOutputPane, true);
             setVisibility(tabsContainer, false);
             refreshTemplateOutputEditor();
         } else {
+            setVisibility(yamlEditorItem, true);
+            setVisibility(templateOutputItem, false);
             setVisibility(yamlEditorContainer, true);
             setVisibility(templateOutputPane, false);
             setVisibility(tabsContainer, true);
