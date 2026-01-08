@@ -1,5 +1,5 @@
 .pf-u-border-radius-lg {
-    border-radius: var(--pf-global--BorderRadius--lg, 8px);
+    border-radius: var(--pf-global--BorderRadius--lg, 6px);
 }
 
 .pf-u-border-radius-lg.pf-c-card {
