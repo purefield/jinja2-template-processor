@@ -2141,29 +2141,19 @@ plugins: {}
 
     function setEditorView(view) {
         state.editorView = view;
-        const editorPane = document.getElementById('editor-pane');
         const yamlEditorContainer = document.querySelector('.yaml-editor-container');
         const templateOutputPane = document.getElementById('template-output-pane');
         const tabsContainer = document.querySelector('.tabs-container');
         if (!yamlEditorContainer || !templateOutputPane || !tabsContainer) return;
-        if (editorPane) {
-            editorPane.dataset.view = view;
-        }
         if (view === EDITOR_VIEWS.TEMPLATES) {
-            yamlEditorContainer.hidden = true;
-            templateOutputPane.hidden = false;
-            tabsContainer.hidden = true;
-            yamlEditorContainer.style.display = 'none';
-            templateOutputPane.style.display = 'flex';
-            tabsContainer.style.display = 'none';
+            setVisibility(yamlEditorContainer, false);
+            setVisibility(templateOutputPane, true);
+            setVisibility(tabsContainer, false);
             refreshTemplateOutputEditor();
         } else {
-            yamlEditorContainer.hidden = false;
-            templateOutputPane.hidden = true;
-            tabsContainer.hidden = false;
-            yamlEditorContainer.style.display = 'flex';
-            templateOutputPane.style.display = 'none';
-            tabsContainer.style.display = 'flex';
+            setVisibility(yamlEditorContainer, true);
+            setVisibility(templateOutputPane, false);
+            setVisibility(tabsContainer, true);
             if (!state.currentTab) {
                 state.currentTab = 'validation';
             }
@@ -2179,6 +2169,16 @@ plugins: {}
         });
         updateNavGroupCurrent(state.currentSection);
         localStorage.setItem(STORAGE_KEYS.LAST_EDITOR_VIEW, view);
+    }
+
+    function setVisibility(element, shouldShow) {
+        element.hidden = !shouldShow;
+        element.classList.toggle('is-hidden', !shouldShow);
+        if (shouldShow) {
+            element.style.display = '';
+        } else {
+            element.style.display = 'none';
+        }
     }
 
     function setTheme(theme) {

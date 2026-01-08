@@ -118,29 +118,15 @@
     min-height: 0;
 }
 
-#editor-pane[data-view="clusterfile"] #template-output-pane {
-    display: none !important;
-}
-
-#editor-pane[data-view="clusterfile"] .yaml-editor-container,
-#editor-pane[data-view="clusterfile"] .editor-tabs-panel {
-    display: flex !important;
-}
-
-#editor-pane[data-view="templates"] .yaml-editor-container,
-#editor-pane[data-view="templates"] .editor-tabs-panel {
-    display: none !important;
-}
-
-#editor-pane[data-view="templates"] #template-output-pane {
-    display: flex !important;
-}
-
 #editor-pane .editor-main-panel {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+.is-hidden {
+    display: none !important;
 }
 
 #editor-pane .editor-main-panel > .pf-v6-c-card {
