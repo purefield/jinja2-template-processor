@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body class="pf-c-page pf-u-h-100">
+<body class="pf-c-page pf-u-h-100 pf-u-overflow-hidden">
     <header class="pf-c-page__header">
         <div class="pf-c-page__header-brand">
             <a class="pf-c-page__header-brand-link" href="#">
                 <span class="pf-c-brand">Clusterfile Editor</span>
-                <span class="pf-c-label pf-m-compact pf-m-blue pf-u-ml-sm" id="app-version" role="button" tabindex="0" title="View changelog">
+                <span class="pf-c-label pf-m-blue pf-u-ml-sm" id="app-version" role="button" tabindex="0" title="View changelog">
                     <span class="pf-c-label__content">v1.1.0</span>
                 </span>
             </a>
@@ -44,7 +44,7 @@
                             </span>
                         </div>
                     </div>
-                    <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-m-align-right">
+                    <div class="pf-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-m-align-right pf-u-ml-auto">
                         <div class="pf-c-toolbar__item">
                             <select id="samples-select" class="pf-c-form-control" title="Load sample clusterfile">
                                 <option value="">Load Sample...</option>
@@ -119,14 +119,11 @@
                                 <li class="pf-c-nav__item">
                                     <a href="#" class="pf-c-nav__link" data-template-view="source">Template Source</a>
                                 </li>
-                                <li class="pf-c-nav__item">
-                                    <a href="#" class="pf-c-nav__link" data-template-view="clusterfile">Clusterfile Input</a>
-                                </li>
                             </ul>
                         </section>
                     </li>
                 </ul>
-                <ul class="pf-c-nav__list pf-u-mt-auto">
+                <ul class="pf-c-nav__list pf-u-mt-auto pf-u-pt-md pf-u-border-top">
                     <li class="pf-c-nav__item pf-m-expandable" data-menu="about">
                         <button class="pf-c-nav__link nav-group-toggle" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
                             About
@@ -159,7 +156,7 @@
                 </div>
                 <div class="pf-l-stack__item pf-m-fill pf-u-overflow-hidden">
                     <div class="pf-l-split pf-m-gutter pf-u-h-100">
-                <div class="pf-l-split__item pf-m-fill pf-c-card pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column" id="form-pane">
+                <div class="pf-l-split__item pf-m-fill pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column pf-u-overflow-hidden" id="form-pane">
                     <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
                         <div class="pf-c-card__title">
                             <h2 class="pf-c-title pf-m-md" id="section-title">Account</h2>
@@ -253,7 +250,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="pf-l-split__item pf-m-fill pf-l-stack pf-m-gutter pf-u-h-100" id="editor-pane">
+                <div class="pf-l-split__item pf-m-fill pf-l-stack pf-m-gutter pf-u-h-100 pf-u-overflow-hidden" id="editor-pane">
                     <div class="pf-l-stack__item">
                         <div class="pf-c-tabs" role="tablist" aria-label="Editor mode">
                             <ul class="pf-c-tabs__list">
@@ -267,41 +264,47 @@
                         </div>
                     </div>
                     <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column yaml-editor-container">
-                            <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
+                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column yaml-editor-container">
+                            <div class="pf-c-card__header">
                                 <div class="pf-c-card__title">
                                     <span>YAML Editor</span>
                                 </div>
-                                <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
-                                    <button id="btn-format" class="pf-c-button pf-m-secondary pf-m-small" type="button">Format</button>
-                                    <button id="btn-copy" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
+                                <div class="pf-c-card__actions pf-u-ml-md">
+                                    <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center">
+                                        <button id="btn-format" class="pf-c-button pf-m-secondary pf-m-small" type="button">Format</button>
+                                        <button id="btn-copy" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-hidden">
+                            <div class="pf-c-card__body pf-u-p-0 pf-u-flex-grow-1 pf-u-overflow-hidden">
                                 <div id="yaml-editor"></div>
                             </div>
                         </div>
                     </div>
                     <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column template-output-pane" id="template-output-pane" style="display: none;">
-                            <div class="pf-c-card__header pf-u-display-flex pf-u-justify-content-space-between pf-u-align-items-center">
-                                <span>Template Output</span>
-                                <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-m-wrap">
-                                    <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="rendered" type="button">Rendered</button>
-                                    <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="source" type="button">Template Source</button>
-                                    <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="clusterfile" type="button">Clusterfile</button>
-                                    <button id="btn-copy-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
-                                    <button id="btn-download-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Download</button>
+                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column template-output-pane" id="template-output-pane" style="display: none;">
+                            <div class="pf-c-card__header">
+                                <div class="pf-c-card__title">
+                                    <span>Template Output</span>
+                                </div>
+                                <div class="pf-c-card__actions pf-u-ml-md">
+                                    <div class="pf-l-flex pf-m-space-items-sm pf-m-align-items-center pf-m-wrap">
+                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="rendered" type="button">Rendered</button>
+                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="source" type="button">Template Source</button>
+                                        <button class="pf-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="clusterfile" type="button">Clusterfile</button>
+                                        <button id="btn-copy-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
+                                        <button id="btn-download-output" class="pf-c-button pf-m-secondary pf-m-small" type="button">Download</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="pf-c-card__body pf-u-flex-grow-1 pf-u-overflow-hidden">
+                            <div class="pf-c-card__body pf-u-p-0 pf-u-flex-grow-1 pf-u-overflow-hidden">
                                 <div id="template-output-editor"></div>
-                                <div id="template-warnings" class="template-warnings pf-u-mt-md"></div>
                             </div>
+                            <div id="template-warnings" class="pf-c-card__footer"></div>
                         </div>
                     </div>
                     <div class="pf-l-stack__item pf-m-fill">
-                        <div class="pf-c-card pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column tabs-container pf-c-tabs">
+                        <div class="pf-c-card pf-u-border-radius-md pf-u-h-100 pf-u-display-flex pf-u-flex-direction-column tabs-container pf-c-tabs">
                             <div class="pf-c-card__body pf-u-p-0 pf-u-display-flex pf-u-flex-direction-column pf-u-h-100">
                                 <ul class="pf-c-tabs__list" role="tablist">
                                     <li class="pf-c-tabs__item pf-m-current" role="presentation">

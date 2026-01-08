@@ -2444,7 +2444,9 @@ plugins: {}
             lineNumbers: true,
             lineWrapping: true,
             readOnly: true,
-            tabSize: 2
+            tabSize: 2,
+            foldGutter: true,
+            gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
         });
         setTemplateOutputView('rendered');
     }
@@ -2604,7 +2606,11 @@ plugins: {}
                         </div>
                     `;
                 } else {
-                    warningsEl.innerHTML = '';
+                    warningsEl.innerHTML = `
+                        <div class="pf-c-helper-text">
+                            <div class="pf-c-helper-text__item">Rendered output</div>
+                        </div>
+                    `;
                 }
                 
                 clearTemplateError();
@@ -2636,12 +2642,15 @@ plugins: {}
                 templateState.outputEditor.setValue(result.content);
                 setTemplateOutputView('source');
                 refreshTemplateOutputEditor();
-                document.getElementById('template-warnings').innerHTML = `
-                    <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
-                        <div class="pf-c-alert__title">Template source</div>
-                        <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
-                    </div>
-                `;
+                const warningsEl = document.getElementById('template-warnings');
+                if (warningsEl) {
+                    warningsEl.innerHTML = `
+                        <div class="pf-c-alert pf-m-inline pf-m-info" aria-live="polite">
+                            <div class="pf-c-alert__title">Template source</div>
+                            <div class="pf-c-alert__description">Showing template source (not rendered output).</div>
+                        </div>
+                    `;
+                }
             } else {
                 showTemplateError(result.detail || 'Failed to load template');
             }
@@ -2663,7 +2672,13 @@ plugins: {}
         if (!templateState.outputEditor) return;
         const warningsEl = document.getElementById('template-warnings');
         if (view === 'rendered') {
-            if (warningsEl) warningsEl.innerHTML = '';
+            if (warningsEl) {
+                warningsEl.innerHTML = `
+                    <div class="pf-c-helper-text">
+                        <div class="pf-c-helper-text__item">Rendered output</div>
+                    </div>
+                `;
+            }
             const currentInput = buildNormalizedYaml({ preserveCurrentText: true });
             const selectedTemplate = document.getElementById('template-select')?.value || templateState.lastTemplateName;
             const needsRender = !templateState.lastRenderedOutput ||
