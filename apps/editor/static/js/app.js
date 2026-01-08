@@ -4,7 +4,6 @@
     const STORAGE_KEYS = {
         LAST_YAML: 'CLUSTERFILE_LAST_YAML',
         UPLOADED_SCHEMA: 'CLUSTERFILE_UPLOADED_SCHEMA',
-        TOUR_SHOWN: 'CLUSTERFILE_TOUR_SHOWN',
         MODE: 'CLUSTERFILE_MODE',
         LAST_SECTION_BY_FILE: 'CLUSTERFILE_LAST_SECTION_BY_FILE',
         LAST_FILENAME: 'CLUSTERFILE_LAST_FILENAME',
@@ -71,7 +70,6 @@
         initEventListeners();
         initTemplateEventListeners();
         loadSavedState();
-        showTourIfNeeded();
         renderCurrentSection();
         updateValidation();
         startDemoIfNeeded();
@@ -176,8 +174,6 @@
             tab.addEventListener('click', () => switchTab(tab.dataset.tab));
         });
 
-        document.getElementById('tour-close').addEventListener('click', closeTour);
-
         const versionBadge = document.getElementById('app-version');
         if (versionBadge) {
             versionBadge.addEventListener('click', showChangelog);
@@ -275,21 +271,6 @@ plugins: {}
 `;
     }
 
-    function showTourIfNeeded() {
-        const tourShown = localStorage.getItem(STORAGE_KEYS.TOUR_SHOWN);
-        if (!tourShown) {
-            document.getElementById('tour-modal').style.display = 'block';
-        }
-    }
-
-    function closeTour() {
-        document.getElementById('tour-modal').style.display = 'none';
-        if (document.getElementById('tour-dont-show').checked) {
-            localStorage.setItem(STORAGE_KEYS.TOUR_SHOWN, 'true');
-        }
-        startDemoIfNeeded();
-    }
-
     function showChangelog() {
         switchSection('changelog');
     }
@@ -310,8 +291,6 @@ plugins: {}
     function startDemoIfNeeded() {
         if (demoState.active) return;
         if (localStorage.getItem(STORAGE_KEYS.DEMO_SHOWN)) return;
-        const tourModal = document.getElementById('tour-modal');
-        if (tourModal && tourModal.style.display === 'block') return;
         runDemoSequence().catch(() => {
             stopDemo();
         });
@@ -2556,16 +2535,10 @@ plugins: {}
         const section = params.get('section');
         const template = params.get('template');
         const editorView = params.get('editor');
-        const tour = params.get('tour');
 
         if (!sample && !section && !template && !editorView) return;
 
         try {
-            if (tour === '0') {
-                localStorage.setItem(STORAGE_KEYS.TOUR_SHOWN, 'true');
-                const tourModal = document.getElementById('tour-modal');
-                if (tourModal) tourModal.style.display = 'none';
-            }
             if (sample) {
                 await loadSample(sample);
             }
