@@ -165,10 +165,19 @@
     align-items: center;
 }
 
+.trash-btn,
+.revert-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    line-height: 1;
+}
+
 .trash-btn svg,
 .revert-btn svg {
     width: 16px;
     height: 16px;
+    display: block;
 }
 
 .revert-btn .pf-v6-c-button__icon {
@@ -303,8 +312,11 @@
 }
 .pf-v6-c-form__group-control .pf-v6-l-flex {
     flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--pf-v6-global--spacer--sm, 8px);
 }
 
 .pf-v6-c-form__group-control .pf-v6-c-form-control {
     min-width: 0;
+    flex: 1 1 auto;
 }
