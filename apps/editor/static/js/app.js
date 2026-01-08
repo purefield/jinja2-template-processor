@@ -510,7 +510,7 @@ plugins: {}
         helpButton.setAttribute('aria-label', 'Field information');
         helpButton.innerHTML = `
             <span class="pf-v6-c-button__icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                 </svg>
             </span>
@@ -533,7 +533,7 @@ plugins: {}
         revertBtn.className = 'pf-v6-c-button pf-m-plain';
         revertBtn.innerHTML = `
             <span class="pf-v6-c-button__icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 5a7 7 0 1 1-6.32 4H3l3.5-3.5L10 9H7.68A5.5 5.5 0 1 0 12 6.5V5z"/>
                 </svg>
             </span>
@@ -605,7 +605,7 @@ plugins: {}
         btn.setAttribute('aria-label', label);
         btn.innerHTML = `
             <span class="pf-v6-c-button__icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm2 6h2v8h-2V9zm4 0h2v8h-2V9zM7 9h2v8H7V9z"/>
                 </svg>
             </span>
@@ -628,7 +628,7 @@ plugins: {}
         input.placeholder = schema.default || '';
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0';
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value));
         group.appendChild(input);
     }
@@ -642,7 +642,7 @@ plugins: {}
         if (schema.maximum !== undefined) input.max = schema.maximum;
         input.dataset.path = path;
         input.id = fieldId;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0';
         input.addEventListener('input', (e) => {
             const val = e.target.value === '' ? undefined : Number(e.target.value);
             updateFieldValue(path, val);
@@ -654,7 +654,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0';
         select.innerHTML = `
             <option value="">-- Select --</option>
             <option value="true" ${value === true ? 'selected' : ''}>Yes</option>
@@ -671,7 +671,7 @@ plugins: {}
         const select = document.createElement('select');
         select.dataset.path = path;
         select.id = fieldId;
-        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
+        select.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0';
         select.innerHTML = `<option value="">-- Select --</option>`;
         schema.enum.forEach(opt => {
             const option = document.createElement('option');
@@ -1090,7 +1090,7 @@ plugins: {}
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
         input.value = value !== undefined ? value : '';
         input.dataset.path = path;
-        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0 pf-v6-u-w-100';
+        input.className = 'pf-v6-c-form-control pf-v6-u-flex-grow-1 pf-v6-u-min-width-0';
         input.addEventListener('input', (e) => {
             const val = schema.type === 'number' || schema.type === 'integer' 
                 ? (e.target.value === '' ? undefined : Number(e.target.value))
