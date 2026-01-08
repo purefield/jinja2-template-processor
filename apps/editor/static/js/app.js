@@ -97,11 +97,11 @@
         try {
             const response = await fetch(getApiBase() + '/api/samples');
             const data = await response.json();
-            state.samples = data.samples;
+            state.samples = (data.samples || []).slice().sort((a, b) => a.name.localeCompare(b.name));
             const samplesSelect = document.getElementById('samples-select');
             if (samplesSelect) {
                 samplesSelect.innerHTML = '<option value="">Load Sample...</option>';
-                data.samples.forEach(sample => {
+                state.samples.forEach(sample => {
                     const option = document.createElement('option');
                     option.value = sample.filename;
                     option.textContent = sample.name;
@@ -2563,7 +2563,7 @@ plugins: {}
         try {
             const response = await fetch(getApiBase() + '/api/templates');
             const data = await response.json();
-            templateState.templates = data.templates || [];
+            templateState.templates = (data.templates || []).slice().sort((a, b) => a.name.localeCompare(b.name));
             
             const select = document.getElementById('template-select');
             select.innerHTML = '<option value="">-- Select a template --</option>';
