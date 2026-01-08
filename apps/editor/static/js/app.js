@@ -715,7 +715,6 @@ plugins: {}
         helpButton.addEventListener('click', handleHelpClick);
         helpButton.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
         labelWrapper.appendChild(label);
-        labelWrapper.appendChild(helpButton);
 
         const revertBtn = document.createElement('button');
         revertBtn.type = 'button';
@@ -746,8 +745,14 @@ plugins: {}
         controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
         if (!isComplex) {
             control.appendChild(controlRow);
+            controlRow.appendChild(helpButton);
+            helpButton.classList.add('field-help-inline');
         } else {
             labelWrapper.classList.add('form-label-top');
+            const helpRow = document.createElement('div');
+            helpRow.className = 'field-help-row';
+            helpRow.appendChild(helpButton);
+            control.appendChild(helpRow);
         }
 
         if (schema['x-is-file']) {
@@ -1205,8 +1210,14 @@ plugins: {}
         input.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
 
         const indicator = document.createElement('span');
-        indicator.className = 'pf-v6-c-input-group__text';
-        indicator.textContent = 'File Path';
+        indicator.className = 'pf-v6-c-input-group__text file-path-indicator';
+        indicator.innerHTML = `
+            <span class="pf-v6-c-input-group__icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/>
+                </svg>
+            </span>
+        `;
 
         wrapper.appendChild(input);
         wrapper.appendChild(indicator);

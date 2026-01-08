@@ -107,6 +107,26 @@
     padding-top: 2px;
 }
 
+.field-help-inline {
+    margin-left: auto;
+}
+
+.field-help-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--pf-v6-global--spacer--xs, 4px);
+}
+
+.file-path-indicator {
+    color: #004080;
+    background: #e7f1ff;
+}
+
+.file-path-indicator .pf-v6-c-input-group__icon {
+    display: inline-flex;
+    align-items: center;
+}
+
 .array-controls {
     border-radius: var(--pf-v6-global--BorderRadius--sm, 4px);
     padding: 0;
