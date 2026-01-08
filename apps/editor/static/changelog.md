@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 1.1.0
+- Add editor view toggle for clusterfile vs template output and full-height template pane.
+- Move errors into About with a badge indicator in the footer nav.
+- Add section change badges and remember last section per file.
+- Compact template controls with JSONPath overrides toggle.
+- Improve save button state feedback and demo pacing.
+
 ## 1.0.3
 - Add changelog page linked from version badge and navigation footer.
 - Improve changelog readability with a scrollable page layout.
