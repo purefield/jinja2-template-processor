@@ -80,14 +80,14 @@
 
     <div class="pf-v6-c-page__sidebar">
         <div class="pf-v6-c-page__sidebar-body pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
-            <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100" aria-label="Global">
-                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0">
+            <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100 app-nav" aria-label="Global">
+                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0 nav-primary-list">
                     <li class="pf-v6-c-nav__item pf-m-expandable pf-m-expanded" data-menu="clusterfile">
-                        <button class="pf-v6-c-nav__link pf-m-current nav-group-toggle" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
+                        <button class="pf-v6-c-nav__link pf-m-current nav-group-toggle nav-group-title" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
                             Clusterfile
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-clusterfile-label">
-                            <ul class="pf-v6-c-nav__list" data-menu-list="clusterfile" id="nav-clusterfile-list">
+                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="clusterfile" id="nav-clusterfile-list">
                                 <li class="pf-v6-c-nav__item">
                                     <a href="#" class="pf-v6-c-nav__link" data-section="account">
                                         Account <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="account"></span>
@@ -117,11 +117,11 @@
                         </section>
                     </li>
                     <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="templates">
-                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
+                        <button class="pf-v6-c-nav__link nav-group-toggle nav-group-title" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
                             Templates
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-templates-label" hidden>
-                            <ul class="pf-v6-c-nav__list" data-menu-list="templates" id="nav-templates-list">
+                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="templates" id="nav-templates-list">
                                 <li class="pf-v6-c-nav__item">
                                     <a href="#" class="pf-v6-c-nav__link" data-template-view="rendered">Rendered</a>
                                 </li>
@@ -132,14 +132,14 @@
                         </section>
                     </li>
                 </ul>
-                <ul class="pf-v6-c-nav__list pf-v6-u-mt-auto pf-v6-u-pt-md pf-v6-u-border-top">
+                <ul class="pf-v6-c-nav__list pf-v6-u-mt-auto pf-v6-u-pt-md pf-v6-u-border-top nav-footer-list">
                     <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="about">
-                        <button class="pf-v6-c-nav__link nav-group-toggle" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
+                        <button class="pf-v6-c-nav__link nav-group-toggle nav-group-title" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
                             About
                             <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="about-errors"></span>
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-about-label" hidden>
-                            <ul class="pf-v6-c-nav__list" data-menu-list="about" id="nav-about-list">
+                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="about" id="nav-about-list">
                                 <li class="pf-v6-c-nav__item">
                                 <a href="#" class="pf-v6-c-nav__link" data-section="about">Overview</a>
                             </li>

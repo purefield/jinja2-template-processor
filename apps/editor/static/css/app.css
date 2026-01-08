@@ -142,26 +142,43 @@
     padding-top: var(--pf-v6-global--spacer--md, 16px);
 }
 
-.pf-v6-c-page__sidebar-body .pf-v6-c-nav__list {
+.app-nav .pf-v6-c-nav__list {
     gap: var(--pf-v6-global--spacer--sm, 8px);
 }
 
-.pf-v6-c-page__sidebar-body .pf-v6-c-nav__item {
+.app-nav .pf-v6-c-nav__item {
     margin-top: 0;
 }
 
-.pf-v6-c-page__sidebar-body .pf-v6-c-nav__link {
+.app-nav .pf-v6-c-nav__link {
     padding-top: var(--pf-v6-global--spacer--sm, 8px);
     padding-bottom: var(--pf-v6-global--spacer--sm, 8px);
 }
 
-.pf-v6-c-page__sidebar-body .pf-v6-c-nav__subnav {
+.app-nav .pf-v6-c-nav__subnav {
     margin-top: var(--pf-v6-global--spacer--xs, 4px);
 }
 
-.pf-v6-c-page__sidebar-body .pf-v6-u-border-top {
+.app-nav .pf-v6-u-border-top {
     margin-top: var(--pf-v6-global--spacer--md, 16px);
     padding-top: var(--pf-v6-global--spacer--sm, 8px);
+}
+
+.nav-group-title {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.nav-sublist {
+    margin-left: var(--pf-v6-global--spacer--md, 16px);
+    padding-left: var(--pf-v6-global--spacer--sm, 8px);
+    border-left: 1px solid var(--pf-v6-global--BorderColor--100, #d2d2d2);
+}
+
+.nav-sublist .pf-v6-c-nav__link {
+    font-size: var(--pf-v6-global--FontSize--sm, 0.875rem);
+    padding-top: var(--pf-v6-global--spacer--xs, 4px);
+    padding-bottom: var(--pf-v6-global--spacer--xs, 4px);
 }
 
 .pf-v6-c-page__main-section {
