@@ -76,6 +76,7 @@
         updateValidation();
         startDemoIfNeeded();
         initDevReload();
+        handleDevHook();
     }
 
     async function loadSchema() {
@@ -2531,6 +2532,39 @@ plugins: {}
             clearTimeout(timeout);
             timeout = setTimeout(() => fn.apply(this, args), delay);
         };
+    }
+
+    async function handleDevHook() {
+        const params = new URLSearchParams(window.location.search);
+        const sample = params.get('sample');
+        const section = params.get('section');
+        const template = params.get('template');
+        const editorView = params.get('editor');
+
+        if (!sample && !section && !template && !editorView) return;
+
+        try {
+            if (sample) {
+                await loadSample(sample);
+            }
+            if (section) {
+                switchSection(section);
+            }
+            if (editorView && Object.values(EDITOR_VIEWS).includes(editorView)) {
+                setEditorView(editorView);
+            }
+            if (template) {
+                const templateSelect = document.getElementById('template-select');
+                if (templateSelect) {
+                    templateSelect.value = template;
+                    handleTemplateSelect({ target: templateSelect });
+                    setEditorView(EDITOR_VIEWS.TEMPLATES);
+                    await renderTemplate();
+                }
+            }
+        } catch (error) {
+            console.error('Dev hook failed:', error);
+        }
     }
 
     function initDevReload() {
