@@ -116,6 +116,7 @@
 }
 
 .field-help-inline {
+    flex: 0 0 auto;
     margin-left: auto;
 }
 
@@ -299,4 +300,11 @@
     #editor-pane .editor-tabs-panel {
         flex-basis: 200px;
     }
+}
+.pf-v6-c-form__group-control .pf-v6-l-flex {
+    flex-wrap: nowrap;
+}
+
+.pf-v6-c-form__group-control .pf-v6-c-form-control {
+    min-width: 0;
 }
