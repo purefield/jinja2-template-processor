@@ -120,10 +120,18 @@
     margin-left: auto;
 }
 
-.field-help-row {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: var(--pf-v6-global--spacer--xs, 4px);
+.field-control {
+    position: relative;
+}
+
+.field-control-complex {
+    padding-right: 28px;
+}
+
+.field-help-floating {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 .file-path-indicator {
@@ -167,16 +175,16 @@
 
 .trash-btn,
 .revert-btn {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     line-height: 1;
 }
 
 .trash-btn svg,
 .revert-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: block;
 }
 

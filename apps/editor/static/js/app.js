@@ -736,7 +736,7 @@ plugins: {}
         group.appendChild(labelWrapper);
 
         const control = document.createElement('div');
-        control.className = 'pf-v6-c-form__group-control';
+        control.className = 'pf-v6-c-form__group-control field-control';
         group.appendChild(control);
 
         const isComplex = schema['x-is-file'] ||
@@ -755,10 +755,9 @@ plugins: {}
             helpButton.classList.add('field-help-inline');
         } else {
             labelWrapper.classList.add('form-label-top');
-            const helpRow = document.createElement('div');
-            helpRow.className = 'field-help-row';
-            helpRow.appendChild(helpButton);
-            control.appendChild(helpRow);
+            control.classList.add('field-control-complex');
+            helpButton.classList.add('field-help-floating');
+            control.appendChild(helpButton);
         }
 
         if (schema['x-is-file']) {
