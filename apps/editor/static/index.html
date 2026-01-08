@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clusterfile Editor</title>
-    <link rel="icon" href="/static/clusterfile-editor.png" type="image/png">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/vendor/patternfly.min.css">
     <link rel="stylesheet" href="/static/vendor/patternfly-utilities.css">
     <link rel="stylesheet" href="/static/vendor/codemirror.min.css">
@@ -78,36 +78,36 @@
 
     <div class="pf-v6-c-page__sidebar">
         <div class="pf-v6-c-page__sidebar-body pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
-            <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100 app-nav" aria-label="Global">
-                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0 nav-primary-list">
+            <nav class="pf-v6-c-nav pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100" aria-label="Global">
+                <ul class="pf-v6-c-nav__list pf-v6-u-flex-grow-1 pf-v6-u-min-height-0 pf-v6-u-pt-sm">
                     <li class="pf-v6-c-nav__item pf-m-expandable pf-m-expanded" data-menu="clusterfile">
-                        <button class="pf-v6-c-nav__link nav-group-toggle nav-group-title" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
+                        <button class="pf-v6-c-nav__link nav-group-toggle pf-v6-u-pl-sm pf-v6-u-py-sm" type="button" data-menu="clusterfile" aria-expanded="true" id="nav-clusterfile-label">
                             Clusterfile
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-clusterfile-label">
-                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="clusterfile" id="nav-clusterfile-list">
+                            <ul class="pf-v6-c-nav__list pf-v6-u-pl-md pf-v6-u-pt-xs" data-menu-list="clusterfile" id="nav-clusterfile-list">
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="account">
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="account">
                                         Account <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="account"></span>
                                     </a>
                                 </li>
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="cluster">
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="cluster">
                                         Cluster <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="cluster"></span>
                                     </a>
                                 </li>
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="network">
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="network">
                                         Network <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="network"></span>
                                     </a>
                                 </li>
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="hosts">
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="hosts">
                                         Hosts <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="hosts"></span>
                                     </a>
                                 </li>
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-section="plugins">
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="plugins">
                                         Plugins <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="plugins"></span>
                                     </a>
                                 </li>
@@ -115,34 +115,34 @@
                         </section>
                     </li>
                     <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="templates">
-                        <button class="pf-v6-c-nav__link nav-group-toggle nav-group-title" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
+                        <button class="pf-v6-c-nav__link nav-group-toggle pf-v6-u-pl-sm pf-v6-u-py-sm" type="button" data-menu="templates" aria-expanded="false" id="nav-templates-label">
                             Templates
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-templates-label" hidden>
-                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="templates" id="nav-templates-list">
+                            <ul class="pf-v6-c-nav__list pf-v6-u-pl-md pf-v6-u-pt-xs" data-menu-list="templates" id="nav-templates-list">
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="rendered">Rendered</a>
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-template-view="rendered">Rendered</a>
                                 </li>
                                 <li class="pf-v6-c-nav__item">
-                                    <a href="#" class="pf-v6-c-nav__link" data-template-view="source">Template Source</a>
+                                    <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-template-view="source">Template Source</a>
                                 </li>
                             </ul>
                         </section>
                     </li>
                 </ul>
-                <ul class="pf-v6-c-nav__list pf-v6-u-mt-auto pf-v6-u-pt-md pf-v6-u-border-top nav-footer-list">
+                <ul class="pf-v6-c-nav__list pf-v6-u-mt-auto pf-v6-u-pt-md pf-v6-u-border-top pf-v6-u-pl-sm">
                     <li class="pf-v6-c-nav__item pf-m-expandable" data-menu="about">
-                        <button class="pf-v6-c-nav__link nav-group-toggle nav-group-title" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
+                        <button class="pf-v6-c-nav__link nav-group-toggle pf-v6-u-py-sm" type="button" data-menu="about" aria-expanded="false" id="nav-about-label">
                             About
                             <span class="pf-v6-c-badge pf-m-unread pf-v6-u-ml-sm" data-badge="about-errors"></span>
                         </button>
                         <section class="pf-v6-c-nav__subnav" aria-labelledby="nav-about-label" hidden>
-                            <ul class="pf-v6-c-nav__list nav-sublist" data-menu-list="about" id="nav-about-list">
+                            <ul class="pf-v6-c-nav__list pf-v6-u-pl-md pf-v6-u-pt-xs" data-menu-list="about" id="nav-about-list">
                                 <li class="pf-v6-c-nav__item">
-                                <a href="#" class="pf-v6-c-nav__link" data-section="about">Overview</a>
+                                <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="about">Overview</a>
                             </li>
                             <li class="pf-v6-c-nav__item">
-                                <a href="#" class="pf-v6-c-nav__link" data-section="changelog">Changelog</a>
+                                <a href="#" class="pf-v6-c-nav__link pf-v6-u-py-sm" data-section="changelog">Changelog</a>
                             </li>
                             </ul>
                         </section>
@@ -307,7 +307,6 @@
                                     <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-m-wrap">
                                         <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="rendered" type="button">Rendered</button>
                                         <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="source" type="button">Template Source</button>
-                                        <button class="pf-v6-c-button pf-m-secondary pf-m-small output-view-btn" data-output-view="clusterfile" type="button">Clusterfile</button>
                                         <button id="btn-copy-output" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Copy</button>
                                         <button id="btn-download-output" class="pf-v6-c-button pf-m-secondary pf-m-small" type="button">Download</button>
                                     </div>

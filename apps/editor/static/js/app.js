@@ -530,7 +530,7 @@ plugins: {}
 
         const revertBtn = document.createElement('button');
         revertBtn.type = 'button';
-        revertBtn.className = 'pf-v6-c-button pf-m-plain pf-m-small revert-btn';
+        revertBtn.className = 'pf-v6-c-button pf-m-plain pf-m-small';
         revertBtn.innerHTML = `
             <span class="pf-v6-c-button__icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -560,14 +560,12 @@ plugins: {}
         const controlRow = document.createElement('div');
         controlRow.className = 'pf-v6-l-flex pf-m-align-items-center pf-m-space-items-sm';
         const labelActions = document.createElement('div');
-        labelActions.className = 'field-label-actions';
+        labelActions.className = 'pf-v6-l-flex pf-m-space-items-xs pf-m-align-items-center pf-v6-u-ml-sm';
         labelActions.appendChild(helpButton);
         labelActions.appendChild(revertBtn);
 
         if (!isComplex) {
             control.appendChild(controlRow);
-        } else {
-            labelWrapper.classList.add('form-label-top');
         }
 
         labelWrapper.appendChild(labelActions);
@@ -1043,24 +1041,24 @@ plugins: {}
 
     function renderArrayField(group, key, schema, value, path) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'pf-v6-l-stack pf-m-gutter array-section';
+        wrapper.className = 'pf-v6-c-panel pf-m-bordered pf-v6-u-p-md';
         wrapper.dataset.path = path;
+
+        const panelMain = document.createElement('div');
+        panelMain.className = 'pf-v6-c-panel__main';
+        const panelBody = document.createElement('div');
+        panelBody.className = 'pf-v6-c-panel__main-body pf-v6-l-stack pf-m-gutter';
+        panelMain.appendChild(panelBody);
 
         const items = Array.isArray(value) ? value : [];
         const itemSchema = schema.items || {};
 
         const controls = document.createElement('div');
-        controls.className = 'pf-v6-c-toolbar array-controls';
+        controls.className = 'pf-v6-c-panel__footer';
         controls.innerHTML = `
-            <div class="pf-v6-c-toolbar__content">
-                <div class="pf-v6-c-toolbar__content-section pf-m-align-items-center pf-m-nowrap pf-v6-u-ml-auto">
-                    <div class="pf-v6-c-toolbar__item">
-                        <button class="pf-v6-c-button pf-m-secondary pf-m-small array-add-btn" type="button">Add item</button>
-                    </div>
-                    <div class="pf-v6-c-toolbar__item">
-                        <button class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small array-delete-btn" type="button">Delete all</button>
-                    </div>
-                </div>
+            <div class="pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center pf-v6-u-justify-content-flex-end">
+                <button class="pf-v6-c-button pf-m-secondary pf-m-small array-add-btn" type="button">Add item</button>
+                <button class="pf-v6-c-button pf-m-link pf-m-inline pf-m-small array-delete-btn" type="button">Delete all</button>
             </div>
         `;
         const addBtn = controls.querySelector('.array-add-btn');
@@ -1072,12 +1070,13 @@ plugins: {}
         items.forEach((item, index) => {
             const itemPath = `${path}[${index}]`;
             if (itemSchema.type === 'object') {
-                renderArrayObjectItem(wrapper, itemSchema, item, itemPath, index);
+                renderArrayObjectItem(panelBody, itemSchema, item, itemPath, index);
             } else {
-                renderArrayPrimitiveItem(wrapper, itemSchema, item, itemPath, index);
+                renderArrayPrimitiveItem(panelBody, itemSchema, item, itemPath, index);
             }
         });
 
+        wrapper.appendChild(panelMain);
         wrapper.appendChild(controls);
 
         group.appendChild(wrapper);
@@ -1085,7 +1084,7 @@ plugins: {}
 
     function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
         const item = document.createElement('div');
-        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center array-item-row';
+        item.className = 'pf-v6-l-stack__item pf-v6-l-flex pf-m-space-items-sm pf-m-align-items-center';
 
         const input = document.createElement('input');
         input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
