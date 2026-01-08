@@ -119,12 +119,21 @@
 .field-label-actions {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    margin-left: 8px;
+    gap: 2px;
+    margin-left: 6px;
+    line-height: 1;
 }
 
 .field-label-actions .pf-v6-c-button {
     flex: 0 0 auto;
+}
+
+.pf-v6-c-form__group-label {
+    align-items: baseline;
+}
+
+.pf-v6-c-form__group-label .pf-v6-c-form__label-text {
+    line-height: 1.2;
 }
 
 
