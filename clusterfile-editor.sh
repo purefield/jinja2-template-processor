@@ -77,9 +77,9 @@ release_image() {
 run_image() {
     echo "Running image: ${IMAGE_REF}"
     podman run -p 8000:8000 \
-        -v "${SCRIPT_DIR}/templates:/app/templates" \
-        -v "${SCRIPT_DIR}/data:/app/samples" \
-        -v "${SCRIPT_DIR}/schema:/app/schema" \
+        -v "${SCRIPT_DIR}/templates:/app/templates:Z" \
+        -v "${SCRIPT_DIR}/data:/app/samples:Z" \
+        -v "${SCRIPT_DIR}/schema:/app/schema:Z" \
         "${IMAGE_REF}"
 }
 
