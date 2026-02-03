@@ -141,9 +141,9 @@ run_image() {
     echo ""
 
     ${CONTAINER_RUNTIME} run --rm -p 8080:8000 \
-        -v "${SCRIPT_DIR}/templates:/app/templates:ro" \
-        -v "${SCRIPT_DIR}/data:/app/samples:ro" \
-        -v "${SCRIPT_DIR}/schema:/app/schema:ro" \
+        -v "${SCRIPT_DIR}/templates:/app/templates:ro,z" \
+        -v "${SCRIPT_DIR}/data:/app/samples:ro,z" \
+        -v "${SCRIPT_DIR}/schema:/app/schema:ro,z" \
         "${IMAGE_REF}"
 }
 
