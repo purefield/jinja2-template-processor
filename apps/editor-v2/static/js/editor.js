@@ -8,6 +8,8 @@
 
 let yamlEditor = null;
 let outputEditor = null;
+let templateEditor = null;
+let renderedEditor = null;
 let syncTimeout = null;
 const SYNC_DELAY = 300;
 
@@ -57,7 +59,7 @@ function initYamlEditor(container, initialValue = '') {
 }
 
 /**
- * Initialize the output editor (read-only)
+ * Initialize the output editor (read-only) - legacy, kept for compatibility
  */
 function initOutputEditor(container, initialValue = '') {
   if (!window.CodeMirror) {
@@ -82,6 +84,57 @@ function initOutputEditor(container, initialValue = '') {
   }
 
   return outputEditor;
+}
+
+/**
+ * Initialize the template source editor (read-only)
+ */
+function initTemplateEditor(container, initialValue = '') {
+  if (!window.CodeMirror) {
+    console.error('CodeMirror not loaded');
+    return null;
+  }
+
+  templateEditor = window.CodeMirror(container, {
+    value: initialValue,
+    mode: 'jinja2',  // Use jinja2 mode if available, fallback to yaml
+    theme: 'default',
+    lineNumbers: true,
+    lineWrapping: true,
+    foldGutter: true,
+    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+    readOnly: true
+  });
+
+  // Fallback to yaml mode if jinja2 not available
+  if (!window.CodeMirror.modes.jinja2) {
+    templateEditor.setOption('mode', 'yaml');
+  }
+
+  return templateEditor;
+}
+
+/**
+ * Initialize the rendered output editor (read-only)
+ */
+function initRenderedEditor(container, initialValue = '') {
+  if (!window.CodeMirror) {
+    console.error('CodeMirror not loaded');
+    return null;
+  }
+
+  renderedEditor = window.CodeMirror(container, {
+    value: initialValue,
+    mode: 'yaml',
+    theme: 'default',
+    lineNumbers: true,
+    lineWrapping: true,
+    foldGutter: true,
+    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+    readOnly: true
+  });
+
+  return renderedEditor;
 }
 
 /**
@@ -152,6 +205,104 @@ function setOutputValue(value) {
  */
 function getOutputValue() {
   return outputEditor ? outputEditor.getValue() : '';
+}
+
+/**
+ * Set template editor content
+ */
+function setTemplateValue(value) {
+  if (templateEditor) {
+    templateEditor.setValue(value);
+  }
+}
+
+/**
+ * Get template editor content
+ */
+function getTemplateValue() {
+  return templateEditor ? templateEditor.getValue() : '';
+}
+
+/**
+ * Set rendered editor content
+ */
+function setRenderedValue(value) {
+  if (renderedEditor) {
+    clearRenderedHighlights();
+    renderedEditor.setValue(value);
+  }
+}
+
+/**
+ * Get rendered editor content
+ */
+function getRenderedValue() {
+  return renderedEditor ? renderedEditor.getValue() : '';
+}
+
+/**
+ * Set rendered editor content with diff highlighting
+ * Compares against baseline and highlights changed lines
+ */
+function setRenderedValueWithHighlights(value, baselineValue) {
+  if (!renderedEditor) return;
+
+  clearRenderedHighlights();
+  renderedEditor.setValue(value);
+
+  if (!baselineValue || value === baselineValue) return;
+
+  // Compare line by line and highlight differences
+  const valueLines = value.split('\n');
+  const baselineLines = baselineValue.split('\n');
+
+  // Use a simple diff algorithm to find changed lines
+  const changes = findChangedLines(baselineLines, valueLines);
+
+  // Apply highlights to changed lines
+  changes.forEach(lineNum => {
+    if (lineNum < renderedEditor.lineCount()) {
+      renderedEditor.addLineClass(lineNum, 'background', 'cm-param-changed');
+      renderedEditor.addLineClass(lineNum, 'gutter', 'cm-param-changed-gutter');
+    }
+  });
+
+  // Scroll to first change if any
+  if (changes.length > 0) {
+    renderedEditor.scrollIntoView({ line: changes[0], ch: 0 }, 100);
+  }
+}
+
+/**
+ * Find lines that changed between baseline and current
+ */
+function findChangedLines(baselineLines, currentLines) {
+  const changes = [];
+  const maxLen = Math.max(baselineLines.length, currentLines.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const baseLine = baselineLines[i] || '';
+    const currLine = currentLines[i] || '';
+
+    if (baseLine !== currLine) {
+      changes.push(i);
+    }
+  }
+
+  return changes;
+}
+
+/**
+ * Clear all highlights from rendered editor
+ */
+function clearRenderedHighlights() {
+  if (!renderedEditor) return;
+
+  const lineCount = renderedEditor.lineCount();
+  for (let i = 0; i < lineCount; i++) {
+    renderedEditor.removeLineClass(i, 'background', 'cm-param-changed');
+    renderedEditor.removeLineClass(i, 'gutter', 'cm-param-changed-gutter');
+  }
 }
 
 /**
@@ -258,6 +409,24 @@ function refreshEditor() {
 }
 
 /**
+ * Refresh template editor display
+ */
+function refreshTemplateEditor() {
+  if (templateEditor) {
+    templateEditor.refresh();
+  }
+}
+
+/**
+ * Refresh rendered editor display
+ */
+function refreshRenderedEditor() {
+  if (renderedEditor) {
+    renderedEditor.refresh();
+  }
+}
+
+/**
  * Focus the YAML editor
  */
 function focusEditor() {
@@ -285,17 +454,27 @@ function hasFocus() {
 window.EditorCodeMirror = {
   initYamlEditor,
   initOutputEditor,
+  initTemplateEditor,
+  initRenderedEditor,
   setupEditorSync,
   setEditorValue,
   getEditorValue,
   setOutputValue,
   getOutputValue,
+  setTemplateValue,
+  getTemplateValue,
+  setRenderedValue,
+  getRenderedValue,
+  setRenderedValueWithHighlights,
+  clearRenderedHighlights,
   highlightLine,
   clearLineHighlights,
   goToLine,
   goToPath,
   findLineForPath,
   refreshEditor,
+  refreshTemplateEditor,
+  refreshRenderedEditor,
   focusEditor,
   getCursorPosition,
   hasFocus
