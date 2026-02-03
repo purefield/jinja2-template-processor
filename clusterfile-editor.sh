@@ -137,10 +137,10 @@ run_image() {
 
     echo ""
     echo "Starting Clusterfile Editor v${IMAGE_TAG}"
-    echo "Open http://localhost:8080 in your browser"
+    echo "Open http://localhost:8000 in your browser"
     echo ""
 
-    ${CONTAINER_RUNTIME} run --rm -p 8080:8000 \
+    ${CONTAINER_RUNTIME} run --rm --network=host \
         -v "${SCRIPT_DIR}/templates:/app/templates:ro,z" \
         -v "${SCRIPT_DIR}/data:/app/samples:ro,z" \
         -v "${SCRIPT_DIR}/schema:/app/schema:ro,z" \
