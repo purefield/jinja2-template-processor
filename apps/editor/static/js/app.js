@@ -314,6 +314,9 @@ function setupHeaderActions() {
   // Download button
   document.getElementById('btn-download')?.addEventListener('click', downloadDocument);
 
+  // Feedback button
+  document.getElementById('btn-feedback')?.addEventListener('click', openFeedback);
+
   // Samples dropdown
   document.getElementById('btn-samples')?.addEventListener('click', (e) => {
     const dropdown = e.target.closest('.dropdown');
@@ -1162,6 +1165,49 @@ function downloadFile(content, filename) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Open feedback form via secure mailto
+ */
+function openFeedback() {
+  const version = State.state.version || '2.1.0';
+  const userAgent = navigator.userAgent;
+  const currentUrl = window.location.href;
+
+  // Collect non-sensitive system info for debugging
+  const systemInfo = [
+    `Version: ${version}`,
+    `URL: ${currentUrl}`,
+    `Browser: ${userAgent}`,
+    `Viewport: ${window.innerWidth}x${window.innerHeight}`,
+    `Timestamp: ${new Date().toISOString()}`
+  ].join('\n');
+
+  const subject = encodeURIComponent(`[Clusterfile Editor v${version}] Feedback`);
+  const body = encodeURIComponent(
+`--- Please describe your feedback or bug report below ---
+
+
+
+--- System Information (for debugging) ---
+${systemInfo}
+
+--- Steps to reproduce (if bug) ---
+1.
+2.
+3.
+
+--- Expected behavior ---
+
+
+--- Actual behavior ---
+
+`);
+
+  // Open mailto link
+  const mailto = `mailto:dds+clusterfile-editor@redhat.com?subject=${subject}&body=${body}`;
+  window.location.href = mailto;
 }
 
 /**
