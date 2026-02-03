@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clusterfile Editor v2.0</title>
+
+  <!-- PatternFly CSS -->
+  <link rel="stylesheet" href="/static/vendor/patternfly.min.css">
+  <link rel="stylesheet" href="/static/vendor/patternfly-addons.css">
+
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="/static/vendor/codemirror.min.css">
+  <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/static/css/app.css?v=2.0.6">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="app-header__brand">
+        <h1 class="app-header__title">Clusterfile Editor</h1>
+        <span class="app-header__version" title="Click for changelog">v2.0.0</span>
+      </div>
+      <div class="app-header__actions">
+        <span class="app-header__filename">untitled.clusterfile</span>
+        <button class="btn btn--secondary btn--sm" id="btn-new" title="New (Ctrl+N)">New</button>
+        <button class="btn btn--secondary btn--sm" id="btn-load" title="Load (Ctrl+O)">Load</button>
+        <div class="dropdown">
+          <button class="btn btn--secondary btn--sm" id="btn-samples">Samples ▾</button>
+          <div class="dropdown__menu" id="samples-menu">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <button class="btn btn--secondary btn--sm" id="btn-save" title="Save (Ctrl+S)">Save</button>
+        <button class="btn btn--primary btn--sm" id="btn-download">Download</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+      <!-- Sidebar -->
+      <aside class="app-sidebar">
+        <nav class="sidebar-nav">
+          <a class="sidebar-nav__item sidebar-nav__item--active" data-section="account">
+            <span class="sidebar-nav__item-icon">👤</span>
+            <span>Account</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="cluster">
+            <span class="sidebar-nav__item-icon">🏗️</span>
+            <span>Cluster</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="network">
+            <span class="sidebar-nav__item-icon">🌐</span>
+            <span>Network</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="hosts">
+            <span class="sidebar-nav__item-icon">🖥️</span>
+            <span>Hosts</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="plugins">
+            <span class="sidebar-nav__item-icon">🔌</span>
+            <span>Plugins</span>
+          </a>
+
+          <div class="sidebar-nav__divider"></div>
+
+          <a class="sidebar-nav__item" data-section="templates">
+            <span class="sidebar-nav__item-icon">📄</span>
+            <span>Templates</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="validation">
+            <span class="sidebar-nav__item-icon">✓</span>
+            <span>Validation</span>
+            <span class="sidebar-nav__item-badge" style="display: none;">0</span>
+          </a>
+          <a class="sidebar-nav__item" data-section="changes">
+            <span class="sidebar-nav__item-icon">📝</span>
+            <span>Changes</span>
+            <span class="sidebar-nav__item-badge sidebar-nav__item-badge--warning" style="display: none;">0</span>
+          </a>
+        </nav>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+          <div class="mode-toggle__label">Editor Mode</div>
+          <div class="mode-toggle__buttons">
+            <button class="mode-toggle__btn mode-toggle__btn--active" id="mode-guided">Guided</button>
+            <button class="mode-toggle__btn" id="mode-advanced">Advanced</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Content -->
+      <div class="app-content">
+        <div class="split-view">
+          <!-- Form Pane -->
+          <div class="split-view__pane split-view__pane--form">
+            <div class="split-view__header">
+              <span class="split-view__title">Form Editor</span>
+            </div>
+            <div class="split-view__body" id="form-content">
+              <div class="loading">
+                <div class="loading__spinner"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- YAML Editor Pane -->
+          <div class="split-view__pane split-view__pane--editor editor-pane">
+            <div class="tabs" data-tab-group="editor">
+              <button class="tab tab--active" data-tab="yaml">YAML</button>
+              <button class="tab" data-tab="diff">Diff</button>
+            </div>
+
+            <div class="tab-content tab-content--active" data-tab-group="editor" data-tab="yaml">
+              <div id="yaml-editor" style="height: 100%;"></div>
+            </div>
+
+            <div class="tab-content" data-tab-group="editor" data-tab="diff">
+              <div class="diff-view" id="diff-view">
+                <div class="empty-state">
+                  <div class="empty-state__title">No changes</div>
+                  <div class="empty-state__description">Make changes to see the diff.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="file-input" class="file-input" accept=".yaml,.yml,.clusterfile">
+
+  <!-- Vendor Scripts -->
+  <script src="/static/vendor/js-yaml.min.js"></script>
+  <script src="/static/vendor/ajv.min.js"></script>
+  <script src="/static/vendor/codemirror.min.js"></script>
+  <script src="/static/vendor/codemirror-yaml.min.js"></script>
+  <script src="/static/vendor/codemirror-foldcode.min.js"></script>
+  <script src="/static/vendor/codemirror-foldgutter.min.js"></script>
+  <script src="/static/vendor/codemirror-indent-fold.min.js"></script>
+  <script src="/static/vendor/diff.min.js"></script>
+
+  <!-- App Scripts (cache-bust: v2.0.1) -->
+  <script src="/static/js/state.js?v=2.0.6"></script>
+  <script src="/static/js/validator.js?v=2.0.6"></script>
+  <script src="/static/js/help.js?v=2.0.6"></script>
+  <script src="/static/js/editor.js?v=2.0.6"></script>
+  <script src="/static/js/form.js?v=2.0.6"></script>
+  <script src="/static/js/app.js?v=2.0.6"></script>
+</body>
+</html>
