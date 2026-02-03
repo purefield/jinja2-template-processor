@@ -1,0 +1,73 @@
+# AWS IPI Clusterfile Example
+# For use with install-config-aws.yaml.tpl template
+account:
+  pullSecret: secrets/pull-secret.json
+
+cluster:
+  version: "4.18.0"
+  name: aws-cluster
+  platform: aws
+  arch: x86_64
+  location: us-east-1
+  sshKeys:
+    - secrets/id_rsa.pub
+
+plugins:
+  aws:
+    region: us-east-1
+    credentials: secrets/aws-credentials
+    # Optional: Use existing subnets (BYO VPC)
+    # subnets:
+    #   - subnet-0123456789abcdef0
+    #   - subnet-0123456789abcdef1
+    #   - subnet-0123456789abcdef2
+    # hostedZone: Z0123456789ABCDEFGHIJ
+    controlPlane:
+      type: m6i.xlarge
+      zones:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+      rootVolume:
+        size: 120
+        type: gp3
+        iops: 4000
+    compute:
+      type: m6i.xlarge
+      zones:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+      rootVolume:
+        size: 120
+        type: gp3
+
+network:
+  domain: example.com
+  # trustBundle: /path/to/ca-bundle.pem
+  # proxy:
+  #   httpProxy: http://proxy.example.com:8080
+  #   httpsProxy: http://proxy.example.com:8080
+  #   noProxy: .cluster.local,.svc,127.0.0.1,localhost,169.254.169.254,.ec2.internal
+  primary:
+    subnet: 10.0.0.0/16
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+
+# Hosts section defines node counts for IPI
+hosts:
+  control-0.aws-cluster.example.com:
+    role: control
+  control-1.aws-cluster.example.com:
+    role: control
+  control-2.aws-cluster.example.com:
+    role: control
+  worker-0.aws-cluster.example.com:
+    role: worker
+  worker-1.aws-cluster.example.com:
+    role: worker
+  worker-2.aws-cluster.example.com:
+    role: worker

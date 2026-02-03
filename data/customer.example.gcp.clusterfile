@@ -1,0 +1,70 @@
+# GCP IPI Clusterfile Example
+# For use with install-config-gcp.yaml.tpl template
+account:
+  pullSecret: secrets/pull-secret.json
+
+cluster:
+  version: "4.18.0"
+  name: gcp-cluster
+  platform: gcp
+  arch: x86_64
+  location: us-central1
+  sshKeys:
+    - secrets/id_rsa.pub
+
+plugins:
+  gcp:
+    projectID: my-gcp-project
+    region: us-central1
+    credentials: secrets/gcp-credentials.json
+    # Optional: Use existing VPC (shared VPC or BYO network)
+    # network: openshift-vpc
+    # controlPlaneSubnet: control-plane-subnet
+    # computeSubnet: compute-subnet
+    controlPlane:
+      type: n2-standard-4
+      zones:
+        - us-central1-a
+        - us-central1-b
+        - us-central1-c
+      osDisk:
+        diskSizeGB: 128
+        diskType: pd-ssd
+    compute:
+      type: n2-standard-4
+      zones:
+        - us-central1-a
+        - us-central1-b
+        - us-central1-c
+      osDisk:
+        diskSizeGB: 128
+        diskType: pd-ssd
+
+network:
+  domain: example.com
+  # trustBundle: /path/to/ca-bundle.pem
+  # proxy:
+  #   httpProxy: http://proxy.example.com:8080
+  #   httpsProxy: http://proxy.example.com:8080
+  #   noProxy: .cluster.local,.svc,127.0.0.1,localhost,169.254.169.254,metadata.google.internal
+  primary:
+    subnet: 10.0.0.0/16
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+
+hosts:
+  control-0.gcp-cluster.example.com:
+    role: control
+  control-1.gcp-cluster.example.com:
+    role: control
+  control-2.gcp-cluster.example.com:
+    role: control
+  worker-0.gcp-cluster.example.com:
+    role: worker
+  worker-1.gcp-cluster.example.com:
+    role: worker
+  worker-2.gcp-cluster.example.com:
+    role: worker
