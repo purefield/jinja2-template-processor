@@ -1,32 +1,173 @@
+#!/bin/bash
+# Clusterfile Editor - Standalone HTML Builder
+# Creates a single self-contained HTML file that works from file:// protocol
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+OUTPUT_DIR="${REPO_ROOT}/dist"
+VERSION=$(cat "${SCRIPT_DIR}/APP_VERSION" 2>/dev/null || echo "2.1.0")
+OUTPUT_FILE="${OUTPUT_DIR}/clusterfile-editor-${VERSION}-standalone.html"
+
+echo "Building standalone HTML file..."
+echo "Version: ${VERSION}"
+
+mkdir -p "${OUTPUT_DIR}"
+
+# Helper function to minify CSS (simple removal of comments and extra whitespace)
+minify_css() {
+    # Remove CSS comments, collapse whitespace
+    sed 's|/\*[^*]*\*\+\([^/*][^*]*\*\+\)*/||g' | tr '\n' ' ' | sed 's/  */ /g'
+}
+
+# Helper function to escape content for embedding in script tags
+escape_for_json() {
+    python3 -c "import sys, json; print(json.dumps(sys.stdin.read()))"
+}
+
+# Collect all CSS
+echo "Collecting CSS..."
+CSS_CONTENT=""
+for css_file in \
+    "${SCRIPT_DIR}/static/vendor/patternfly.min.css" \
+    "${SCRIPT_DIR}/static/vendor/patternfly-addons.css" \
+    "${SCRIPT_DIR}/static/vendor/codemirror.min.css" \
+    "${SCRIPT_DIR}/static/vendor/codemirror-foldgutter.css" \
+    "${SCRIPT_DIR}/static/css/app.css"; do
+    if [ -f "${css_file}" ]; then
+        CSS_CONTENT="${CSS_CONTENT}
+/* $(basename "${css_file}") */
+$(cat "${css_file}")"
+    else
+        echo "Warning: CSS file not found: ${css_file}"
+    fi
+done
+
+# Collect all JavaScript
+echo "Collecting JavaScript..."
+JS_CONTENT=""
+for js_file in \
+    "${SCRIPT_DIR}/static/vendor/js-yaml.min.js" \
+    "${SCRIPT_DIR}/static/vendor/ajv.min.js" \
+    "${SCRIPT_DIR}/static/vendor/codemirror.min.js" \
+    "${SCRIPT_DIR}/static/vendor/codemirror-yaml.min.js" \
+    "${SCRIPT_DIR}/static/vendor/codemirror-foldcode.min.js" \
+    "${SCRIPT_DIR}/static/vendor/codemirror-foldgutter.min.js" \
+    "${SCRIPT_DIR}/static/vendor/codemirror-indent-fold.min.js" \
+    "${SCRIPT_DIR}/static/vendor/diff.min.js" \
+    "${SCRIPT_DIR}/static/vendor/nunjucks.min.js" \
+    "${SCRIPT_DIR}/static/js/state.js" \
+    "${SCRIPT_DIR}/static/js/validator.js" \
+    "${SCRIPT_DIR}/static/js/help.js" \
+    "${SCRIPT_DIR}/static/js/editor.js" \
+    "${SCRIPT_DIR}/static/js/form.js" \
+    "${SCRIPT_DIR}/static/js/template-renderer.js" \
+    "${SCRIPT_DIR}/static/js/app.js"; do
+    if [ -f "${js_file}" ]; then
+        JS_CONTENT="${JS_CONTENT}
+// === $(basename "${js_file}") ===
+$(cat "${js_file}")"
+    else
+        echo "Warning: JS file not found: ${js_file}"
+    fi
+done
+
+# Collect schema
+echo "Collecting schema..."
+SCHEMA_JSON=$(cat "${REPO_ROOT}/schema/clusterfile.schema.json")
+
+# Collect samples with content
+echo "Collecting samples..."
+SAMPLES_JSON="["
+first_sample=true
+for sample_file in "${REPO_ROOT}/data/"*.clusterfile; do
+    if [ -f "${sample_file}" ]; then
+        filename=$(basename "${sample_file}")
+        name="${filename%.clusterfile}"
+        name="${name//./ }"  # Replace dots with spaces
+        name="${name#customer.example.}"  # Remove prefix
+        name="${name:-Basic}"  # Default name
+        content=$(cat "${sample_file}" | escape_for_json)
+
+        if [ "${first_sample}" = "true" ]; then
+            first_sample=false
+        else
+            SAMPLES_JSON="${SAMPLES_JSON},"
+        fi
+        SAMPLES_JSON="${SAMPLES_JSON}
+    {\"filename\": \"${filename}\", \"name\": \"${name}\", \"content\": ${content}}"
+    fi
+done
+SAMPLES_JSON="${SAMPLES_JSON}
+]"
+
+# Collect templates with content
+echo "Collecting templates..."
+TEMPLATES_JSON="["
+first_template=true
+shopt -s nullglob
+for template_file in "${REPO_ROOT}/templates/"*.tpl "${REPO_ROOT}/templates/"*.yaml.tpl; do
+    if [ -f "${template_file}" ]; then
+        filename=$(basename "${template_file}")
+        # Extract description from first comment line if present
+        description=$(head -1 "${template_file}" | grep -oP '(?<={#\s).*(?=\s#})' || echo "${filename}")
+        content=$(cat "${template_file}" | escape_for_json)
+
+        if [ "${first_template}" = "true" ]; then
+            first_template=false
+        else
+            TEMPLATES_JSON="${TEMPLATES_JSON},"
+        fi
+        TEMPLATES_JSON="${TEMPLATES_JSON}
+    {\"name\": \"${filename}\", \"description\": \"${description}\", \"content\": ${content}}"
+    fi
+done
+shopt -u nullglob
+TEMPLATES_JSON="${TEMPLATES_JSON}
+]"
+
+# Read the SVG logo
+echo "Embedding logo..."
+LOGO_SVG=""
+if [ -f "${SCRIPT_DIR}/static/editor.svg" ]; then
+    LOGO_SVG=$(cat "${SCRIPT_DIR}/static/editor.svg" | tr '\n' ' ')
+fi
+
+# Generate the standalone HTML
+echo "Generating HTML..."
+cat > "${OUTPUT_FILE}" << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clusterfile Editor v2.1</title>
+  <title>Clusterfile Editor (Standalone)</title>
+  <style>
+HTMLEOF
 
-  <!-- PatternFly CSS -->
-  <link rel="stylesheet" href="/static/vendor/patternfly.min.css">
-  <link rel="stylesheet" href="/static/vendor/patternfly-addons.css">
+echo "${CSS_CONTENT}" >> "${OUTPUT_FILE}"
 
-  <!-- CodeMirror CSS -->
-  <link rel="stylesheet" href="/static/vendor/codemirror.min.css">
-  <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
-
-  <!-- App CSS -->
-  <link rel="stylesheet" href="/static/css/app.css?v=2.1.4">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/static/editor.svg">
+cat >> "${OUTPUT_FILE}" << 'HTMLEOF'
+  </style>
 </head>
 <body>
   <div class="app-container">
     <!-- Header -->
     <header class="app-header">
       <div class="app-header__brand">
-        <img class="app-header__logo" src="/static/editor.svg" alt="Clusterfile Editor" width="40" height="40">
+HTMLEOF
+
+# Embed the logo SVG inline
+if [ -n "${LOGO_SVG}" ]; then
+    echo "        ${LOGO_SVG}" >> "${OUTPUT_FILE}"
+else
+    echo '        <span style="font-size: 24px;">📄</span>' >> "${OUTPUT_FILE}"
+fi
+
+cat >> "${OUTPUT_FILE}" << HTMLEOF
         <h1 class="app-header__title">Clusterfile Editor</h1>
-        <span class="app-header__version" title="Click for changelog">v2.1.5</span>
+        <span class="app-header__version" title="Click for changelog">v${VERSION}</span>
       </div>
       <div class="app-header__filename-area">
         <svg class="app-header__file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
@@ -47,12 +188,6 @@
         </div>
         <button class="btn btn--secondary btn--sm" id="btn-save" title="Save (Ctrl+S)">Save</button>
         <button class="btn btn--primary btn--sm" id="btn-download">Download</button>
-        <button class="btn btn--link btn--sm" id="btn-feedback" title="Report bug or send feedback">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align: middle; margin-right: 2px;">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          Feedback
-        </button>
       </div>
     </header>
 
@@ -206,24 +341,66 @@
   <!-- Hidden file input -->
   <input type="file" id="file-input" class="file-input" accept=".yaml,.yml,.clusterfile">
 
-  <!-- Vendor Scripts -->
-  <script src="/static/vendor/js-yaml.min.js"></script>
-  <script src="/static/vendor/ajv.min.js"></script>
-  <script src="/static/vendor/codemirror.min.js"></script>
-  <script src="/static/vendor/codemirror-yaml.min.js"></script>
-  <script src="/static/vendor/codemirror-foldcode.min.js"></script>
-  <script src="/static/vendor/codemirror-foldgutter.min.js"></script>
-  <script src="/static/vendor/codemirror-indent-fold.min.js"></script>
-  <script src="/static/vendor/diff.min.js"></script>
-  <script src="/static/vendor/nunjucks.min.js"></script>
+  <!-- Embedded Data for Standalone Mode -->
+  <script type="application/json" id="embedded-schema">
+HTMLEOF
 
-  <!-- App Scripts (cache-bust: v2.1.5) -->
-  <script src="/static/js/state.js?v=2.1.5"></script>
-  <script src="/static/js/validator.js?v=2.1.5"></script>
-  <script src="/static/js/help.js?v=2.1.5"></script>
-  <script src="/static/js/editor.js?v=2.1.5"></script>
-  <script src="/static/js/form.js?v=2.1.5"></script>
-  <script src="/static/js/template-renderer.js?v=2.1.5"></script>
-  <script src="/static/js/app.js?v=2.1.5"></script>
+echo "${SCHEMA_JSON}" >> "${OUTPUT_FILE}"
+
+cat >> "${OUTPUT_FILE}" << 'HTMLEOF'
+  </script>
+
+  <script type="application/json" id="embedded-samples">
+{"samples":
+HTMLEOF
+
+echo "${SAMPLES_JSON}" >> "${OUTPUT_FILE}"
+
+cat >> "${OUTPUT_FILE}" << 'HTMLEOF'
+}
+  </script>
+
+  <script type="application/json" id="embedded-templates">
+{"templates":
+HTMLEOF
+
+echo "${TEMPLATES_JSON}" >> "${OUTPUT_FILE}"
+
+cat >> "${OUTPUT_FILE}" << HTMLEOF
+}
+  </script>
+
+  <script type="application/json" id="embedded-version">
+{"version": "${VERSION}", "mode": "standalone"}
+  </script>
+
+  <!-- Application Scripts -->
+  <script>
+HTMLEOF
+
+echo "${JS_CONTENT}" >> "${OUTPUT_FILE}"
+
+cat >> "${OUTPUT_FILE}" << 'HTMLEOF'
+  </script>
 </body>
 </html>
+HTMLEOF
+
+# Get file size
+FILE_SIZE=$(du -h "${OUTPUT_FILE}" | cut -f1)
+
+echo ""
+echo "Standalone HTML file created: ${OUTPUT_FILE}"
+echo "File size: ${FILE_SIZE}"
+echo ""
+echo "To use:"
+echo "  1. Open ${OUTPUT_FILE} directly in a browser"
+echo "  2. Or serve via HTTP: python3 -m http.server 8080"
+echo ""
+echo "Features in standalone mode:"
+echo "  - Schema validation (full)"
+echo "  - Form editing (full)"
+echo "  - YAML editor (full)"
+echo "  - Diff view (full)"
+echo "  - Template rendering (Nunjucks - load_file returns placeholders)"
+echo "  - Load/save files (full)"

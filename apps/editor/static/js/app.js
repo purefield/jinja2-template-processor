@@ -2,6 +2,7 @@
  * Clusterfile Editor v2.1 - Main Application
  *
  * Entry point that orchestrates all modules.
+ * Supports both server mode (with backend API) and standalone mode (browser-only).
  */
 
 // Module references
@@ -11,11 +12,25 @@ const Help = window.EditorHelp;
 const CodeMirror = window.EditorCodeMirror;
 const Form = window.EditorForm;
 
-// API base URL
+// Standalone mode detection
+// Standalone mode is active when:
+// 1. Running from file:// protocol, OR
+// 2. Embedded data is present in the page (for pre-built standalone HTML)
+const isStandaloneMode = (
+  window.location.protocol === 'file:' ||
+  !!document.getElementById('embedded-schema')
+);
+
+// API base URL (only used in server mode)
 const API_BASE = window.location.origin;
 
-// Application version (fetched from backend)
+// Application version (fetched from backend or embedded)
 let APP_VERSION = '2.1.0';
+
+// Embedded data for standalone mode (populated by build-standalone.sh)
+let EMBEDDED_SCHEMA = null;
+let EMBEDDED_SAMPLES = [];
+let EMBEDDED_TEMPLATES = [];
 
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
@@ -588,13 +603,27 @@ function setupTemplateButtons() {
  */
 async function loadTemplateSource(templateName) {
   try {
-    const response = await fetch(`${API_BASE}/api/templates/${templateName}`);
-    if (!response.ok) throw new Error('Failed to load template');
+    let content;
 
-    const result = await response.json();
+    if (isStandaloneMode) {
+      // Standalone mode: get from embedded data
+      const template = EMBEDDED_TEMPLATES.find(t => t.name === templateName);
+      if (!template || !template.content) {
+        throw new Error('Template not found in embedded data');
+      }
+      content = template.content;
+    } else {
+      // Server mode: fetch from API
+      const response = await fetch(`${API_BASE}/api/templates/${templateName}`);
+      if (!response.ok) throw new Error('Failed to load template');
+      const result = await response.json();
+      content = result.content;
+    }
+
     document.getElementById('template-name-display').textContent = templateName;
-    CodeMirror.setTemplateValue(result.content);
+    CodeMirror.setTemplateValue(content);
     State.state.selectedTemplate = templateName;
+    State.state.selectedTemplateContent = content;
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
   }
@@ -623,6 +652,13 @@ async function autoRenderTemplate() {
   });
 
   try {
+    // Standalone mode: use client-side rendering with Nunjucks
+    if (isStandaloneMode) {
+      await renderTemplateStandalone(templateName, params);
+      return;
+    }
+
+    // Server mode: use API
     // If we have params, render both with and without to show diff
     let baselineOutput = null;
 
@@ -675,6 +711,63 @@ async function autoRenderTemplate() {
     }
   } catch (e) {
     CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
+  }
+}
+
+/**
+ * Render template in standalone mode using Nunjucks
+ */
+async function renderTemplateStandalone(templateName, params) {
+  const TemplateRenderer = window.TemplateRenderer;
+
+  if (!TemplateRenderer) {
+    CodeMirror.setRenderedValue('# Error: Template renderer not available\n# Nunjucks library not loaded');
+    return;
+  }
+
+  // Get template content
+  let templateContent = State.state.selectedTemplateContent;
+  if (!templateContent) {
+    const template = EMBEDDED_TEMPLATES.find(t => t.name === templateName);
+    if (!template || !template.content) {
+      CodeMirror.setRenderedValue('# Error: Template not found');
+      return;
+    }
+    templateContent = template.content;
+  }
+
+  // Parse current YAML data
+  let data;
+  try {
+    data = jsyaml.load(State.state.currentYamlText) || {};
+  } catch (e) {
+    CodeMirror.setRenderedValue(`# Error parsing YAML data\n# ${e.message}`);
+    return;
+  }
+
+  // Render without params for baseline (if params provided)
+  let baselineOutput = null;
+  if (params.length > 0) {
+    const baselineResult = TemplateRenderer.render(templateContent, data, []);
+    if (baselineResult.success) {
+      baselineOutput = baselineResult.output;
+    }
+  }
+
+  // Render with params
+  const result = TemplateRenderer.render(templateContent, data, params);
+
+  if (!result.success) {
+    CodeMirror.setRenderedValue(`# Error rendering template\n# ${result.error}`);
+    return;
+  }
+
+  // Show with highlights if we have params and baseline
+  if (params.length > 0 && baselineOutput) {
+    CodeMirror.setRenderedValueWithHighlights(result.output, baselineOutput);
+    showToast(`Rendered with ${params.length} parameter override(s) highlighted (standalone mode)`, 'success');
+  } else {
+    CodeMirror.setRenderedValue(result.output);
   }
 }
 
@@ -1245,10 +1338,24 @@ function populateSamplesDropdown() {
     item.addEventListener('click', async () => {
       const filename = item.dataset.filename;
       try {
-        const response = await fetch(`${API_BASE}/api/samples/${filename}`);
-        if (!response.ok) throw new Error('Failed to load sample');
-        const result = await response.json();
-        loadDocument(result.content, filename, true);
+        let content;
+
+        if (isStandaloneMode) {
+          // Standalone mode: get from embedded data
+          const sample = EMBEDDED_SAMPLES.find(s => s.filename === filename);
+          if (!sample || !sample.content) {
+            throw new Error('Sample not found in embedded data');
+          }
+          content = sample.content;
+        } else {
+          // Server mode: fetch from API
+          const response = await fetch(`${API_BASE}/api/samples/${filename}`);
+          if (!response.ok) throw new Error('Failed to load sample');
+          const result = await response.json();
+          content = result.content;
+        }
+
+        loadDocument(content, filename, true);
         showToast(`Loaded sample: ${filename}`, 'success');
       } catch (e) {
         showToast(`Error: ${e.message}`, 'error');
@@ -1341,7 +1448,11 @@ function showWelcomeTour() {
 function updateVersionDisplay() {
   const versionEl = document.querySelector('.app-header__version');
   if (versionEl) {
-    versionEl.textContent = `v${APP_VERSION}`;
+    const modeIndicator = isStandaloneMode ? ' (standalone)' : '';
+    versionEl.textContent = `v${APP_VERSION}${modeIndicator}`;
+    versionEl.title = isStandaloneMode
+      ? 'Standalone mode - running without backend server. Click for changelog.'
+      : 'Click for changelog';
     versionEl.addEventListener('click', showChangelog);
   }
 }
@@ -1429,18 +1540,41 @@ function formatTime(timestamp) {
 }
 
 /**
- * Fetch schema from API
+ * Fetch schema from API or embedded data
  */
 async function fetchSchema() {
+  // Standalone mode: use embedded schema
+  if (isStandaloneMode) {
+    const embeddedEl = document.getElementById('embedded-schema');
+    if (embeddedEl) {
+      EMBEDDED_SCHEMA = JSON.parse(embeddedEl.textContent);
+      return EMBEDDED_SCHEMA;
+    }
+    throw new Error('No embedded schema found in standalone mode');
+  }
+
+  // Server mode: fetch from API
   const response = await fetch(`${API_BASE}/api/schema`);
   if (!response.ok) throw new Error('Failed to fetch schema');
   return response.json();
 }
 
 /**
- * Fetch samples from API
+ * Fetch samples from API or embedded data
  */
 async function fetchSamples() {
+  // Standalone mode: use embedded samples
+  if (isStandaloneMode) {
+    const embeddedEl = document.getElementById('embedded-samples');
+    if (embeddedEl) {
+      const data = JSON.parse(embeddedEl.textContent);
+      EMBEDDED_SAMPLES = data.samples || [];
+      return EMBEDDED_SAMPLES;
+    }
+    return [];
+  }
+
+  // Server mode: fetch from API
   const response = await fetch(`${API_BASE}/api/samples`);
   if (!response.ok) throw new Error('Failed to fetch samples');
   const data = await response.json();
@@ -1448,9 +1582,21 @@ async function fetchSamples() {
 }
 
 /**
- * Fetch templates from API
+ * Fetch templates from API or embedded data
  */
 async function fetchTemplates() {
+  // Standalone mode: use embedded templates
+  if (isStandaloneMode) {
+    const embeddedEl = document.getElementById('embedded-templates');
+    if (embeddedEl) {
+      const data = JSON.parse(embeddedEl.textContent);
+      EMBEDDED_TEMPLATES = data.templates || [];
+      return EMBEDDED_TEMPLATES;
+    }
+    return [];
+  }
+
+  // Server mode: fetch from API
   const response = await fetch(`${API_BASE}/api/templates`);
   if (!response.ok) throw new Error('Failed to fetch templates');
   const data = await response.json();
@@ -1458,9 +1604,19 @@ async function fetchTemplates() {
 }
 
 /**
- * Fetch version from API
+ * Fetch version from API or return embedded version
  */
 async function fetchVersion() {
+  // Standalone mode: use embedded version
+  if (isStandaloneMode) {
+    const embeddedEl = document.getElementById('embedded-version');
+    if (embeddedEl) {
+      return JSON.parse(embeddedEl.textContent);
+    }
+    return { version: APP_VERSION, mode: 'standalone' };
+  }
+
+  // Server mode: fetch from API
   const response = await fetch(`${API_BASE}/healthz`);
   if (!response.ok) throw new Error('Failed to fetch version');
   return response.json();
