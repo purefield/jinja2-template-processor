@@ -37,6 +37,8 @@ Commands:
   build     Build container image locally
   push      Push built image to registry
   release   Release new version (bump, build, push, tag)
+  package   Create offline distribution tarball for air-gapped deployment
+  standalone Build standalone HTML file (browser-only, no backend)
   all       Build and push
 
 Default: run (pulls and runs image from ${IMAGE_REGISTRY})
@@ -140,11 +142,9 @@ run_image() {
     echo "Open http://localhost:8000 in your browser"
     echo ""
 
-    ${CONTAINER_RUNTIME} run --rm --network=host \
-        -v "${SCRIPT_DIR}/templates:/app/templates:ro,z" \
-        -v "${SCRIPT_DIR}/data:/app/samples:ro,z" \
-        -v "${SCRIPT_DIR}/schema:/app/schema:ro,z" \
-        "${IMAGE_REF}"
+    # Image is self-contained - no volume mounts needed
+    # Templates, samples, and schema are embedded at build time
+    ${CONTAINER_RUNTIME} run --rm --network=host "${IMAGE_REF}"
 }
 
 sync_version() {
@@ -221,12 +221,61 @@ tag_release() {
     git -C "${SCRIPT_DIR}" tag -a "${tag}" -m "Release ${tag}"
 }
 
+package_offline() {
+    echo "Creating offline distribution package..."
+
+    # Build the image first
+    build_image
+
+    # Create dist directory
+    local dist_dir="${SCRIPT_DIR}/dist"
+    local pkg_name="clusterfile-editor-${APP_VERSION}-offline"
+    local pkg_dir="${dist_dir}/${pkg_name}"
+
+    rm -rf "${pkg_dir}"
+    mkdir -p "${pkg_dir}/images"
+
+    # Save container image
+    echo "Saving container image..."
+    ${CONTAINER_RUNTIME} save -o "${pkg_dir}/images/clusterfile-editor-${APP_VERSION}.tar" "${IMAGE_REF}"
+
+    # Copy scripts
+    echo "Copying scripts..."
+    cp "${SCRIPT_DIR}/scripts/load.sh" "${pkg_dir}/"
+    cp "${SCRIPT_DIR}/scripts/run.sh" "${pkg_dir}/"
+    cp "${SCRIPT_DIR}/scripts/README.txt" "${pkg_dir}/"
+    chmod +x "${pkg_dir}/load.sh" "${pkg_dir}/run.sh"
+
+    # Create tarball
+    echo "Creating tarball..."
+    tar -czvf "${dist_dir}/${pkg_name}.tar.gz" -C "${dist_dir}" "${pkg_name}"
+
+    # Cleanup
+    rm -rf "${pkg_dir}"
+
+    echo ""
+    echo "Offline package created: ${dist_dir}/${pkg_name}.tar.gz"
+    echo ""
+    echo "To use on an air-gapped system:"
+    echo "  1. Copy ${pkg_name}.tar.gz to the target system"
+    echo "  2. Extract: tar -xzf ${pkg_name}.tar.gz"
+    echo "  3. Load image: cd ${pkg_name} && ./load.sh"
+    echo "  4. Run: ./run.sh"
+}
+
+build_standalone() {
+    echo "Building standalone HTML file..."
+    bash "${EDITOR_DIR}/build-standalone.sh"
+}
+
 case "${1:-run}" in
     build) build_image ;;
     push) push_image ;;
     run) run_image ;;
     all) build_image; push_image ;;
     release) release_image "${2:-}" ;;
+    package) package_offline ;;
+    standalone) build_standalone ;;
     -h|--help|help) usage ;;
     *) echo "Unknown command: $1"; usage; exit 1 ;;
 esac
