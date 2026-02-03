@@ -1,0 +1,63 @@
+# OpenStack IPI Clusterfile Example
+# For use with install-config-openstack.yaml.tpl template
+account:
+  pullSecret: secrets/pull-secret.json
+
+cluster:
+  version: "4.18.0"
+  name: osp-cluster
+  platform: openstack
+  arch: x86_64
+  location: datacenter1
+  sshKeys:
+    - secrets/id_rsa.pub
+
+plugins:
+  openstack:
+    cloud: openstack
+    credentials: secrets/clouds.yaml
+    externalNetwork: external-network
+    computeFlavor: m1.xlarge
+    controlPlaneFlavor: m1.xlarge
+    # Pre-allocated floating IPs (optional)
+    # apiFloatingIP: 192.168.100.10
+    # ingressFloatingIP: 192.168.100.11
+    # Use existing subnet (optional)
+    # machinesSubnet: 12345678-1234-1234-1234-123456789abc
+    trunkSupport: false
+    octaviaSupport: true
+
+network:
+  domain: example.com
+  trustBundle: /etc/pki/ca-trust/source/anchors/internal-ca.pem
+  proxy:
+    httpProxy: http://proxy.example.com:8080
+    httpsProxy: http://proxy.example.com:8080
+    noProxy: .cluster.local,.svc,127.0.0.1,localhost,169.254.169.254,.example.com
+  primary:
+    subnet: 192.168.1.0/24
+    gateway: 192.168.1.1
+    vips:
+      api:
+        - 192.168.1.100
+      apps:
+        - 192.168.1.101
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+
+hosts:
+  control-0.osp-cluster.example.com:
+    role: control
+  control-1.osp-cluster.example.com:
+    role: control
+  control-2.osp-cluster.example.com:
+    role: control
+  worker-0.osp-cluster.example.com:
+    role: worker
+  worker-1.osp-cluster.example.com:
+    role: worker
+  worker-2.osp-cluster.example.com:
+    role: worker

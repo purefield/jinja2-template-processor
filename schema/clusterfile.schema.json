@@ -201,7 +201,7 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["baremetal", "nutanix", "vsphere", "none"],
+              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "none"],
               "description": "Supported infrastructure platform."
             },
             {
@@ -211,7 +211,7 @@
             }
           ],
           "description": "Target infrastructure platform for the cluster.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/index.html"
         },
         "arch": {
           "title": "Architecture",
@@ -987,6 +987,410 @@
           "additionalProperties": true,
           "description": "vSphere IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html"
+        },
+        "aws": {
+          "title": "AWS",
+          "type": "object",
+          "properties": {
+            "region": {
+              "title": "Region",
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z]+-[0-9]+$",
+              "description": "AWS region (e.g., us-east-1, eu-west-2)."
+            },
+            "credentials": {
+              "title": "Credentials File",
+              "type": "string",
+              "description": "Path to AWS credentials file (~/.aws/credentials format).",
+              "x-is-file": true
+            },
+            "subnets": {
+              "title": "Subnets",
+              "type": "array",
+              "items": { "type": "string", "pattern": "^subnet-[a-f0-9]+$" },
+              "description": "Existing subnet IDs for cluster deployment."
+            },
+            "hostedZone": {
+              "title": "Hosted Zone",
+              "type": "string",
+              "description": "Route53 hosted zone ID for DNS records."
+            },
+            "serviceEndpoints": {
+              "title": "Service Endpoints",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "AWS service name." },
+                  "url": { "type": "string", "format": "uri", "description": "Custom endpoint URL." }
+                },
+                "required": ["name", "url"]
+              },
+              "description": "Custom AWS service endpoints for private deployments."
+            },
+            "controlPlane": {
+              "title": "Control Plane",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "title": "Instance Type",
+                  "type": "string",
+                  "default": "m6i.xlarge",
+                  "description": "EC2 instance type for control plane nodes."
+                },
+                "zones": {
+                  "title": "Availability Zones",
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Availability zones for control plane (e.g., us-east-1a)."
+                },
+                "rootVolume": {
+                  "title": "Root Volume",
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": "integer", "minimum": 120, "default": 120, "description": "Volume size in GiB." },
+                    "type": { "type": "string", "enum": ["gp3", "gp2", "io1", "io2"], "default": "gp3", "description": "EBS volume type." },
+                    "iops": { "type": "integer", "minimum": 3000, "description": "IOPS (for io1/io2/gp3)." }
+                  }
+                }
+              },
+              "description": "Control plane instance configuration."
+            },
+            "compute": {
+              "title": "Compute",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "title": "Instance Type",
+                  "type": "string",
+                  "default": "m6i.xlarge",
+                  "description": "EC2 instance type for worker nodes."
+                },
+                "zones": {
+                  "title": "Availability Zones",
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Availability zones for workers."
+                },
+                "rootVolume": {
+                  "title": "Root Volume",
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": "integer", "minimum": 120, "default": 120 },
+                    "type": { "type": "string", "enum": ["gp3", "gp2", "io1", "io2"], "default": "gp3" }
+                  }
+                }
+              },
+              "description": "Worker instance configuration."
+            }
+          },
+          "required": ["region"],
+          "additionalProperties": true,
+          "description": "AWS IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_aws/ipi/installing-aws-customizations.html"
+        },
+        "azure": {
+          "title": "Azure",
+          "type": "object",
+          "properties": {
+            "region": {
+              "title": "Region",
+              "type": "string",
+              "description": "Azure region (e.g., eastus, westeurope)."
+            },
+            "credentials": {
+              "title": "Credentials File",
+              "type": "string",
+              "description": "Path to Azure service principal credentials JSON file.",
+              "x-is-file": true
+            },
+            "baseDomainResourceGroupName": {
+              "title": "Base Domain Resource Group",
+              "type": "string",
+              "description": "Resource group containing the base domain DNS zone."
+            },
+            "networkResourceGroupName": {
+              "title": "Network Resource Group",
+              "type": "string",
+              "description": "Resource group containing the VNet (if using existing)."
+            },
+            "virtualNetwork": {
+              "title": "Virtual Network",
+              "type": "string",
+              "description": "Name of existing VNet to deploy into."
+            },
+            "controlPlaneSubnet": {
+              "title": "Control Plane Subnet",
+              "type": "string",
+              "description": "Name of existing subnet for control plane nodes."
+            },
+            "computeSubnet": {
+              "title": "Compute Subnet",
+              "type": "string",
+              "description": "Name of existing subnet for worker nodes."
+            },
+            "outboundType": {
+              "title": "Outbound Type",
+              "type": "string",
+              "enum": ["Loadbalancer", "UserDefinedRouting"],
+              "default": "Loadbalancer",
+              "description": "Outbound routing type for cluster egress."
+            },
+            "cloudName": {
+              "title": "Cloud Name",
+              "type": "string",
+              "enum": ["AzurePublicCloud", "AzureUSGovernmentCloud", "AzureChinaCloud", "AzureGermanCloud"],
+              "default": "AzurePublicCloud",
+              "description": "Azure cloud environment."
+            },
+            "controlPlane": {
+              "title": "Control Plane",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "Standard_D8s_v3", "description": "VM size for control plane." },
+                "zones": { "type": "array", "items": { "type": "string" }, "description": "Availability zones." },
+                "osDisk": {
+                  "type": "object",
+                  "properties": {
+                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 1024 },
+                    "diskType": { "type": "string", "enum": ["Premium_LRS", "StandardSSD_LRS", "Standard_LRS"], "default": "Premium_LRS" }
+                  }
+                }
+              }
+            },
+            "compute": {
+              "title": "Compute",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "Standard_D4s_v3", "description": "VM size for workers." },
+                "zones": { "type": "array", "items": { "type": "string" } },
+                "osDisk": {
+                  "type": "object",
+                  "properties": {
+                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
+                    "diskType": { "type": "string", "enum": ["Premium_LRS", "StandardSSD_LRS", "Standard_LRS"], "default": "Premium_LRS" }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["region", "baseDomainResourceGroupName"],
+          "additionalProperties": true,
+          "description": "Azure IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_azure/ipi/installing-azure-customizations.html"
+        },
+        "gcp": {
+          "title": "GCP",
+          "type": "object",
+          "properties": {
+            "projectID": {
+              "title": "Project ID",
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{4,28}[a-z0-9]$",
+              "description": "GCP project ID for resource deployment."
+            },
+            "region": {
+              "title": "Region",
+              "type": "string",
+              "description": "GCP region (e.g., us-central1, europe-west1)."
+            },
+            "credentials": {
+              "title": "Credentials File",
+              "type": "string",
+              "description": "Path to GCP service account key JSON file.",
+              "x-is-file": true
+            },
+            "network": {
+              "title": "Network",
+              "type": "string",
+              "description": "Name of existing VPC network."
+            },
+            "controlPlaneSubnet": {
+              "title": "Control Plane Subnet",
+              "type": "string",
+              "description": "Name of existing subnet for control plane."
+            },
+            "computeSubnet": {
+              "title": "Compute Subnet",
+              "type": "string",
+              "description": "Name of existing subnet for workers."
+            },
+            "controlPlane": {
+              "title": "Control Plane",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "n2-standard-4", "description": "Machine type for control plane." },
+                "zones": { "type": "array", "items": { "type": "string" }, "description": "Zones (e.g., us-central1-a)." },
+                "osDisk": {
+                  "type": "object",
+                  "properties": {
+                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
+                    "diskType": { "type": "string", "enum": ["pd-ssd", "pd-standard", "pd-balanced"], "default": "pd-ssd" }
+                  }
+                }
+              }
+            },
+            "compute": {
+              "title": "Compute",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "n2-standard-4" },
+                "zones": { "type": "array", "items": { "type": "string" } },
+                "osDisk": {
+                  "type": "object",
+                  "properties": {
+                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
+                    "diskType": { "type": "string", "enum": ["pd-ssd", "pd-standard", "pd-balanced"], "default": "pd-ssd" }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["projectID", "region"],
+          "additionalProperties": true,
+          "description": "GCP IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_gcp/ipi/installing-gcp-customizations.html"
+        },
+        "openstack": {
+          "title": "OpenStack",
+          "type": "object",
+          "properties": {
+            "cloud": {
+              "title": "Cloud Name",
+              "type": "string",
+              "description": "Cloud name from clouds.yaml configuration."
+            },
+            "credentials": {
+              "title": "Clouds YAML",
+              "type": "string",
+              "description": "Path to clouds.yaml file with OpenStack credentials.",
+              "x-is-file": true
+            },
+            "externalNetwork": {
+              "title": "External Network",
+              "type": "string",
+              "description": "Name of external network for floating IPs."
+            },
+            "computeFlavor": {
+              "title": "Compute Flavor",
+              "type": "string",
+              "default": "m1.xlarge",
+              "description": "OpenStack flavor for all nodes."
+            },
+            "controlPlaneFlavor": {
+              "title": "Control Plane Flavor",
+              "type": "string",
+              "description": "Flavor for control plane (overrides computeFlavor)."
+            },
+            "apiFloatingIP": {
+              "title": "API Floating IP",
+              "anyOf": [
+                { "$ref": "#/$defs/ipv4" },
+                { "type": "string", "const": "" }
+              ],
+              "description": "Pre-allocated floating IP for API endpoint."
+            },
+            "ingressFloatingIP": {
+              "title": "Ingress Floating IP",
+              "anyOf": [
+                { "$ref": "#/$defs/ipv4" },
+                { "type": "string", "const": "" }
+              ],
+              "description": "Pre-allocated floating IP for ingress."
+            },
+            "trunkSupport": {
+              "title": "Trunk Support",
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Neutron trunk ports for SR-IOV."
+            },
+            "octaviaSupport": {
+              "title": "Octavia Support",
+              "type": "boolean",
+              "default": true,
+              "description": "Use Octavia load balancer (recommended)."
+            },
+            "machinesSubnet": {
+              "title": "Machines Subnet",
+              "type": "string",
+              "description": "UUID of existing subnet for nodes."
+            }
+          },
+          "required": ["cloud", "externalNetwork"],
+          "additionalProperties": true,
+          "description": "OpenStack IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_openstack/installing-openstack-installer-custom.html"
+        },
+        "ibmcloud": {
+          "title": "IBM Cloud",
+          "type": "object",
+          "properties": {
+            "region": {
+              "title": "Region",
+              "type": "string",
+              "description": "IBM Cloud region (e.g., us-south, eu-de)."
+            },
+            "credentials": {
+              "title": "API Key File",
+              "type": "string",
+              "description": "Path to file containing IBM Cloud API key.",
+              "x-is-file": true
+            },
+            "resourceGroupName": {
+              "title": "Resource Group",
+              "type": "string",
+              "description": "IBM Cloud resource group name."
+            },
+            "vpcName": {
+              "title": "VPC Name",
+              "type": "string",
+              "description": "Name of existing VPC."
+            },
+            "controlPlaneSubnets": {
+              "title": "Control Plane Subnets",
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Existing subnet names for control plane."
+            },
+            "computeSubnets": {
+              "title": "Compute Subnets",
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Existing subnet names for workers."
+            },
+            "controlPlane": {
+              "title": "Control Plane",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "bx2-4x16", "description": "Instance profile for control plane." },
+                "zones": { "type": "array", "items": { "type": "string" }, "description": "Zones (e.g., us-south-1)." },
+                "bootVolume": {
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": "integer", "minimum": 120, "default": 120 }
+                  }
+                }
+              }
+            },
+            "compute": {
+              "title": "Compute",
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "default": "bx2-4x16" },
+                "zones": { "type": "array", "items": { "type": "string" } },
+                "bootVolume": {
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": "integer", "minimum": 120, "default": 120 }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["region", "resourceGroupName"],
+          "additionalProperties": true,
+          "description": "IBM Cloud IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_ibm_cloud/ipi/installing-ibm-cloud-customizations.html"
         }
       },
       "additionalProperties": true,

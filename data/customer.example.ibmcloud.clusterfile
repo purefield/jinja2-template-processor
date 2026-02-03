@@ -1,0 +1,74 @@
+# IBM Cloud IPI Clusterfile Example
+# For use with install-config-ibmcloud.yaml.tpl template
+account:
+  pullSecret: secrets/pull-secret.json
+
+cluster:
+  version: "4.18.0"
+  name: ibm-cluster
+  platform: ibmcloud
+  arch: x86_64
+  location: us-south
+  sshKeys:
+    - secrets/id_rsa.pub
+
+plugins:
+  ibmcloud:
+    region: us-south
+    credentials: secrets/ibmcloud-api-key.txt
+    resourceGroupName: openshift-rg
+    # Optional: Use existing VPC
+    # vpcName: openshift-vpc
+    # controlPlaneSubnets:
+    #   - control-subnet-1
+    #   - control-subnet-2
+    #   - control-subnet-3
+    # computeSubnets:
+    #   - compute-subnet-1
+    #   - compute-subnet-2
+    #   - compute-subnet-3
+    controlPlane:
+      type: bx2-8x32
+      zones:
+        - us-south-1
+        - us-south-2
+        - us-south-3
+      bootVolume:
+        size: 120
+    compute:
+      type: bx2-4x16
+      zones:
+        - us-south-1
+        - us-south-2
+        - us-south-3
+      bootVolume:
+        size: 120
+
+network:
+  domain: example.com
+  # trustBundle: /path/to/ca-bundle.pem
+  # proxy:
+  #   httpProxy: http://proxy.example.com:8080
+  #   httpsProxy: http://proxy.example.com:8080
+  #   noProxy: .cluster.local,.svc,127.0.0.1,localhost,s3.direct.us-south.cloud-object-storage.appdomain.cloud
+  primary:
+    subnet: 10.0.0.0/16
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+
+hosts:
+  control-0.ibm-cluster.example.com:
+    role: control
+  control-1.ibm-cluster.example.com:
+    role: control
+  control-2.ibm-cluster.example.com:
+    role: control
+  worker-0.ibm-cluster.example.com:
+    role: worker
+  worker-1.ibm-cluster.example.com:
+    role: worker
+  worker-2.ibm-cluster.example.com:
+    role: worker
