@@ -1,5 +1,5 @@
 /**
- * Clusterfile Editor v2.0 - Main Application
+ * Clusterfile Editor v2.1 - Main Application
  *
  * Entry point that orchestrates all modules.
  */
@@ -14,17 +14,49 @@ const Form = window.EditorForm;
 // API base URL
 const API_BASE = window.location.origin;
 
-// Application version (set by backend)
-let APP_VERSION = '2.0.0';
+// Application version (fetched from backend)
+let APP_VERSION = '2.1.0';
 
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
+
+// Changelog data
+const CHANGELOG = [
+  {
+    version: '2.1.0',
+    date: '2026-02-03',
+    changes: [
+      'Added Template and Rendered tabs for full-page template viewing',
+      'Auto-load template source when selecting from dropdown',
+      'Auto-render with parameter highlighting showing changed lines',
+      'Improved Changes section with grouped changes and clickable links',
+      'Fixed form focus loss when editing YAML',
+      'Enhanced filename display with modification indicator',
+      'Real-time validation and change badge updates'
+    ]
+  },
+  {
+    version: '2.0.0',
+    date: '2026-02-03',
+    changes: [
+      'Complete rewrite with modern OpenShift 4.20 UI styling',
+      'Schema-driven form generation from JSON Schema',
+      'Two-way YAML ↔ Form synchronization',
+      'Client-side AJV validation with custom formats',
+      'Change tracking with baseline/current/diff comparison',
+      'Browser localStorage persistence for session state',
+      'Jinja2 template rendering with parameter overrides',
+      'Help system with documentation links',
+      'SVG icons replacing emoji for modern appearance'
+    ]
+  }
+];
 
 /**
  * Initialize the application
  */
 async function init() {
-  console.log('Initializing Clusterfile Editor v2.0');
+  console.log('Initializing Clusterfile Editor v2.1');
 
   // Load saved state
   const saved = State.loadFromLocalStorage();
@@ -46,20 +78,27 @@ async function init() {
     showToast('Failed to load schema', 'error');
   }
 
-  // Fetch samples and templates
+  // Fetch samples, templates, and version
   try {
-    const [samples, templates] = await Promise.all([
+    const [samples, templates, versionInfo] = await Promise.all([
       fetchSamples(),
-      fetchTemplates()
+      fetchTemplates(),
+      fetchVersion()
     ]);
     State.state.samples = samples;
     State.state.templates = templates;
+    if (versionInfo?.version) {
+      APP_VERSION = versionInfo.version;
+    }
   } catch (e) {
     console.error('Failed to load samples/templates:', e);
   }
 
   // Initialize UI
   initUI();
+
+  // Update version display in header
+  updateVersionDisplay();
 
   // Restore saved document with preserved baseline and changes
   if (saved.yaml) {
@@ -123,10 +162,16 @@ function initUI() {
     CodeMirror.setupEditorSync(onYamlChange);
   }
 
-  // Initialize output editor for templates
-  const outputContainer = document.getElementById('template-output-editor');
-  if (outputContainer) {
-    CodeMirror.initOutputEditor(outputContainer);
+  // Initialize template source editor (read-only)
+  const templateSourceContainer = document.getElementById('template-source-editor');
+  if (templateSourceContainer) {
+    CodeMirror.initTemplateEditor(templateSourceContainer);
+  }
+
+  // Initialize rendered output editor (read-only)
+  const renderedContainer = document.getElementById('rendered-output-editor');
+  if (renderedContainer) {
+    CodeMirror.initRenderedEditor(renderedContainer);
   }
 
   // Set up form change callback
@@ -143,6 +188,9 @@ function initUI() {
 
   // Set up tab navigation
   setupTabs();
+
+  // Set up template buttons (they're in static HTML)
+  setupTemplateButtons();
 
   // Populate dropdowns
   populateSamplesDropdown();
@@ -321,9 +369,23 @@ function setupTabs() {
           c.classList.toggle('tab-content--active', c.dataset.tab === tabId);
         });
 
-        // Refresh editor if needed
-        if (tabId === 'yaml' || tabId === 'output') {
+        // Refresh appropriate editor when switching tabs
+        if (tabId === 'yaml') {
           setTimeout(() => CodeMirror.refreshEditor(), 100);
+        } else if (tabId === 'template') {
+          setTimeout(() => CodeMirror.refreshTemplateEditor(), 100);
+          // Switch to templates section if not already there
+          if (State.state.currentSection !== 'templates') {
+            navigateToSection('templates');
+          }
+        } else if (tabId === 'rendered') {
+          setTimeout(() => CodeMirror.refreshRenderedEditor(), 100);
+          // Switch to templates section if not already there
+          if (State.state.currentSection !== 'templates') {
+            navigateToSection('templates');
+          }
+          // Auto-render if template is selected
+          autoRenderTemplate();
         }
 
         // Update diff view when switching to diff tab
@@ -348,7 +410,12 @@ function updateDiffView() {
   if (baseline === current) {
     diffContainer.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state__icon">✓</div>
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
         <div class="empty-state__title">No changes</div>
         <div class="empty-state__description">Your document matches the baseline.</div>
       </div>
@@ -458,20 +525,15 @@ function renderTemplatesSection(container) {
           <button class="btn btn--secondary btn--sm" id="add-param-btn">+ Add Parameter</button>
         </div>
 
-        <div class="form-group">
-          <button class="btn btn--primary" id="render-btn">Render Template</button>
-          <button class="btn btn--secondary" id="view-template-btn">View Template Source</button>
-        </div>
-
-        <div class="template-output" id="template-output-container" style="display: none;">
-          <div class="template-output__header">
-            <span>Output</span>
-            <div class="split-view__actions">
-              <button class="btn btn--secondary btn--sm" id="copy-output-btn">Copy</button>
-              <button class="btn btn--secondary btn--sm" id="download-output-btn">Download</button>
-            </div>
+        <div class="template-info" style="margin-top: 16px;">
+          <div class="alert alert--info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span>Select a template to view its source. Switch to "Rendered" tab to see output.</span>
           </div>
-          <div class="template-output__body" id="template-output-editor"></div>
         </div>
       </div>
     </div>
@@ -481,55 +543,68 @@ function renderTemplatesSection(container) {
   const templateSelect = document.getElementById('template-select');
   const paramsContainer = document.getElementById('template-params-list');
 
-  templateSelect?.addEventListener('change', () => {
-    const template = State.state.templates.find(t => t.name === templateSelect.value);
+  templateSelect?.addEventListener('change', async () => {
+    const templateName = templateSelect.value;
+    const template = State.state.templates.find(t => t.name === templateName);
     document.getElementById('template-description').textContent = template?.description || '';
+
+    // Auto-load template source when selected
+    if (templateName) {
+      await loadTemplateSource(templateName);
+      // Switch to template tab to show source
+      const templateTab = document.querySelector('.tab[data-tab="template"]');
+      if (templateTab) templateTab.click();
+    }
   });
 
   document.getElementById('add-param-btn')?.addEventListener('click', () => {
     addParamInput(paramsContainer);
   });
 
-  document.getElementById('render-btn')?.addEventListener('click', renderTemplate);
-  document.getElementById('view-template-btn')?.addEventListener('click', viewTemplateSource);
-  document.getElementById('copy-output-btn')?.addEventListener('click', copyOutput);
-  document.getElementById('download-output-btn')?.addEventListener('click', downloadOutput);
+  // Set up copy/download buttons in pane header
+  setupTemplateButtons();
+}
 
-  // Re-initialize output editor
-  const outputContainer = document.getElementById('template-output-editor');
-  if (outputContainer) {
-    outputContainer.innerHTML = '';
-    CodeMirror.initOutputEditor(outputContainer);
+/**
+ * Set up template copy/download buttons
+ */
+function setupTemplateButtons() {
+  document.getElementById('copy-template-btn')?.addEventListener('click', () => {
+    const content = CodeMirror.getTemplateValue();
+    navigator.clipboard.writeText(content).then(() => showToast('Copied', 'success'));
+  });
+  document.getElementById('copy-rendered-btn')?.addEventListener('click', () => {
+    const content = CodeMirror.getRenderedValue();
+    navigator.clipboard.writeText(content).then(() => showToast('Copied', 'success'));
+  });
+  document.getElementById('download-rendered-btn')?.addEventListener('click', downloadRenderedOutput);
+}
+
+/**
+ * Load template source
+ */
+async function loadTemplateSource(templateName) {
+  try {
+    const response = await fetch(`${API_BASE}/api/templates/${templateName}`);
+    if (!response.ok) throw new Error('Failed to load template');
+
+    const result = await response.json();
+    document.getElementById('template-name-display').textContent = templateName;
+    CodeMirror.setTemplateValue(result.content);
+    State.state.selectedTemplate = templateName;
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
   }
 }
 
 /**
- * Add a parameter input
+ * Auto-render template when switching to rendered tab
+ * Renders with and without params to highlight differences
  */
-function addParamInput(container) {
-  const param = document.createElement('div');
-  param.className = 'template-param';
-  param.innerHTML = `
-    <input type="text" class="form-input" placeholder="$.path.to.field" style="flex: 1;">
-    <span>=</span>
-    <input type="text" class="form-input" placeholder="value" style="flex: 1;">
-    <span class="array-field__item-remove" title="Remove">×</span>
-  `;
-
-  param.querySelector('.array-field__item-remove').addEventListener('click', () => {
-    param.remove();
-  });
-
-  container.appendChild(param);
-}
-
-/**
- * Render template
- */
-async function renderTemplate() {
-  const templateName = document.getElementById('template-select')?.value;
+async function autoRenderTemplate() {
+  const templateName = document.getElementById('template-select')?.value || State.state.selectedTemplate;
   if (!templateName) {
-    showToast('Please select a template', 'warning');
+    CodeMirror.setRenderedValue('// Select a template to render');
     return;
   }
 
@@ -545,6 +620,28 @@ async function renderTemplate() {
   });
 
   try {
+    // If we have params, render both with and without to show diff
+    let baselineOutput = null;
+
+    if (params.length > 0) {
+      // First render without params (baseline)
+      const baselineResponse = await fetch(`${API_BASE}/api/render`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          yaml_text: State.state.currentYamlText,
+          template_name: templateName,
+          params: []
+        })
+      });
+
+      if (baselineResponse.ok) {
+        const baselineResult = await baselineResponse.json();
+        baselineOutput = baselineResult.output;
+      }
+    }
+
+    // Render with params
     const response = await fetch(`${API_BASE}/api/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -562,62 +659,78 @@ async function renderTemplate() {
 
     const result = await response.json();
 
-    // Show output
-    document.getElementById('template-output-container').style.display = 'block';
-    CodeMirror.setOutputValue(result.output);
+    // Show with highlights if we have params and baseline
+    if (params.length > 0 && baselineOutput) {
+      CodeMirror.setRenderedValueWithHighlights(result.output, baselineOutput);
+      showToast(`Rendered with ${params.length} parameter override(s) highlighted`, 'success');
+    } else {
+      CodeMirror.setRenderedValue(result.output);
+    }
 
     if (result.warnings?.length > 0) {
       showToast(`Rendered with ${result.warnings.length} warning(s)`, 'warning');
-    } else {
-      showToast('Template rendered successfully', 'success');
     }
   } catch (e) {
-    showToast(`Render error: ${e.message}`, 'error');
+    CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
   }
 }
 
+// Debounce timeout for parameter changes
+let paramRenderTimeout = null;
+
 /**
- * View template source
+ * Add a parameter input
  */
-async function viewTemplateSource() {
-  const templateName = document.getElementById('template-select')?.value;
-  if (!templateName) {
-    showToast('Please select a template', 'warning');
+function addParamInput(container) {
+  const param = document.createElement('div');
+  param.className = 'template-param';
+  param.innerHTML = `
+    <input type="text" class="form-input param-path" placeholder="cluster.name" style="flex: 1;">
+    <span>=</span>
+    <input type="text" class="form-input param-value" placeholder="value" style="flex: 1;">
+    <span class="array-field__item-remove" title="Remove">&times;</span>
+  `;
+
+  // Add change listeners for real-time rendering
+  const inputs = param.querySelectorAll('input');
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      triggerParamRender();
+    });
+  });
+
+  param.querySelector('.array-field__item-remove').addEventListener('click', () => {
+    param.remove();
+    triggerParamRender();
+  });
+
+  container.appendChild(param);
+}
+
+/**
+ * Trigger parameter-based re-render with debounce
+ */
+function triggerParamRender() {
+  // Only auto-render if Rendered tab is active
+  const renderedTab = document.querySelector('.tab[data-tab="rendered"]');
+  if (!renderedTab?.classList.contains('tab--active')) {
     return;
   }
 
-  try {
-    const response = await fetch(`${API_BASE}/api/templates/${templateName}`);
-    if (!response.ok) throw new Error('Failed to load template');
-
-    const result = await response.json();
-    document.getElementById('template-output-container').style.display = 'block';
-    CodeMirror.setOutputValue(result.content);
-  } catch (e) {
-    showToast(`Error: ${e.message}`, 'error');
-  }
+  // Debounce the render
+  clearTimeout(paramRenderTimeout);
+  paramRenderTimeout = setTimeout(() => {
+    autoRenderTemplate();
+  }, 500);
 }
 
 /**
- * Copy output to clipboard
+ * Download rendered output
  */
-async function copyOutput() {
-  const output = CodeMirror.getOutputValue();
-  try {
-    await navigator.clipboard.writeText(output);
-    showToast('Copied to clipboard', 'success');
-  } catch (e) {
-    showToast('Failed to copy', 'error');
-  }
-}
-
-/**
- * Download output
- */
-function downloadOutput() {
-  const output = CodeMirror.getOutputValue();
-  const templateName = document.getElementById('template-select')?.value || 'output';
-  const filename = templateName.replace('.tpl', '').replace('.tmpl', '');
+function downloadRenderedOutput() {
+  const output = CodeMirror.getRenderedValue();
+  const templateName = document.getElementById('template-select')?.value || State.state.selectedTemplate || 'output';
+  const filename = templateName.replace('.tpl', '').replace('.tmpl', '').replace('.yaml', '') + '.yaml';
   downloadFile(output, filename);
 }
 
@@ -630,7 +743,12 @@ function renderChangesSection(container) {
   if (changes.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state__icon">✓</div>
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
         <div class="empty-state__title">No changes</div>
         <div class="empty-state__description">Your document matches the baseline.</div>
       </div>
@@ -638,41 +756,155 @@ function renderChangesSection(container) {
     return;
   }
 
+  // Group changes by section
+  const groupedChanges = {};
+  changes.forEach(c => {
+    const section = State.parsePath(c.path)[0] || 'other';
+    if (!groupedChanges[section]) {
+      groupedChanges[section] = [];
+    }
+    groupedChanges[section].push(c);
+  });
+
   container.innerHTML = `
     <div class="changes-list">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="margin: 0;">${changes.length} Change${changes.length !== 1 ? 's' : ''}</h3>
         <button class="btn btn--danger btn--sm" id="revert-all-btn">Revert All</button>
       </div>
-      ${changes.map(c => `
-        <div class="change-item">
-          <span class="change-item__path">${Help.escapeHtml(c.path)}</span>
-          <span class="change-item__value" title="${Help.escapeHtml(JSON.stringify(c.value))}">${Help.escapeHtml(JSON.stringify(c.value).substring(0, 50))}</span>
-          <span class="change-item__time">${formatTime(c.timestamp)}</span>
-          <button class="btn btn--link btn--sm" data-path="${Help.escapeHtml(c.path)}">Revert</button>
+      ${Object.entries(groupedChanges).map(([section, sectionChanges]) => `
+        <div class="changes-section">
+          <div class="changes-section__header">
+            <a class="changes-section__link" data-section="${Help.escapeHtml(section)}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+              ${Help.escapeHtml(section)}
+            </a>
+            <span class="changes-section__count">${sectionChanges.length}</span>
+          </div>
+          ${sectionChanges.map(c => `
+            <div class="change-item">
+              <a class="change-item__path" data-nav-path="${Help.escapeHtml(c.path)}">${Help.escapeHtml(c.path)}</a>
+              <span class="change-item__values">
+                <span class="change-item__old" title="Old: ${Help.escapeHtml(JSON.stringify(c.oldValue))}">${formatChangeValue(c.oldValue)}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                <span class="change-item__new" title="New: ${Help.escapeHtml(JSON.stringify(c.value))}">${formatChangeValue(c.value)}</span>
+              </span>
+              <button class="btn btn--link btn--sm" data-revert-path="${Help.escapeHtml(c.path)}">Revert</button>
+            </div>
+          `).join('')}
         </div>
       `).join('')}
     </div>
   `;
 
-  // Set up revert handlers
+  // Set up revert all handler
   document.getElementById('revert-all-btn')?.addEventListener('click', () => {
     if (confirm('Revert all changes?')) {
       State.revertAll();
       syncEditorFromState();
       renderCurrentSection();
+      updateHeader();
       showToast('All changes reverted', 'success');
     }
   });
 
-  container.querySelectorAll('[data-path]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const path = btn.dataset.path;
-      State.revertPath(path);
-      syncEditorFromState();
-      renderCurrentSection();
+  // Set up section link handlers
+  container.querySelectorAll('[data-section]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const section = link.dataset.section;
+      navigateToSection(section);
     });
   });
+
+  // Set up path navigation handlers
+  container.querySelectorAll('[data-nav-path]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const path = link.dataset.navPath;
+      const parts = State.parsePath(path);
+      if (parts.length > 0) {
+        navigateToSection(parts[0]);
+        // Scroll to field in form and highlight in YAML editor
+        setTimeout(() => {
+          scrollToField(path);
+          CodeMirror.goToPath(path);
+        }, 150);
+      }
+    });
+  });
+
+  // Set up revert handlers
+  container.querySelectorAll('[data-revert-path]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const path = btn.dataset.revertPath;
+      console.log('Reverting path:', path);
+
+      // Get baseline value and set it
+      const baselineVal = State.getNestedValue(State.state.baselineObject, path);
+      State.setNestedValue(State.state.currentObject, path,
+        baselineVal === undefined ? undefined : JSON.parse(JSON.stringify(baselineVal)));
+
+      // Sync to YAML and update UI
+      syncEditorFromState();
+      updateValidationBadge();
+      updateChangesBadge();
+      updateHeader();
+      renderCurrentSection();
+
+      showToast('Change reverted', 'success');
+    });
+  });
+}
+
+/**
+ * Scroll to a field in the form by path
+ */
+function scrollToField(path) {
+  const formContent = document.getElementById('form-content');
+  if (!formContent) return;
+
+  // Try to find the field by data-path attribute
+  const field = formContent.querySelector(`[data-path="${path}"]`);
+  if (field) {
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Add a brief highlight effect
+    field.classList.add('field-highlight');
+    setTimeout(() => field.classList.remove('field-highlight'), 2000);
+    return;
+  }
+
+  // Try to find by partial path match (for nested fields)
+  const parts = State.parsePath(path);
+  for (let i = parts.length; i > 0; i--) {
+    const partialPath = parts.slice(0, i).join('.');
+    const partialField = formContent.querySelector(`[data-path="${partialPath}"]`);
+    if (partialField) {
+      partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      partialField.classList.add('field-highlight');
+      setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
+      return;
+    }
+  }
+}
+
+/**
+ * Format a change value for display
+ */
+function formatChangeValue(value) {
+  if (value === undefined) return '<empty>';
+  if (value === null) return 'null';
+  if (typeof value === 'string') {
+    return value.length > 20 ? value.substring(0, 20) + '...' : value;
+  }
+  const str = JSON.stringify(value);
+  return str.length > 20 ? str.substring(0, 20) + '...' : str;
 }
 
 /**
@@ -685,7 +917,12 @@ function renderValidationSection(container) {
   if (result.valid) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state__icon" style="color: var(--pf-global--success-color--100);">✓</div>
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
         <div class="empty-state__title">Valid Document</div>
         <div class="empty-state__description">Your clusterfile passes all schema validations.</div>
       </div>
@@ -698,7 +935,13 @@ function renderValidationSection(container) {
       <h3 style="margin: 0 0 16px 0;">${result.errors.length} Validation Error${result.errors.length !== 1 ? 's' : ''}</h3>
       ${result.errors.map(e => `
         <div class="validation-item">
-          <span class="validation-item__icon validation-item__icon--error">⚠</span>
+          <span class="validation-item__icon validation-item__icon--error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
           <div class="validation-item__content">
             <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
             <div class="validation-item__message">${Help.escapeHtml(e.message)}</div>
@@ -745,13 +988,17 @@ function onYamlChange(yamlText) {
 
   State.updateCurrent(yamlText, 'editor');
 
-  // Re-render form if in guided mode (only for direct editor changes)
-  if (State.state.mode === 'guided') {
-    renderCurrentSection();
-  }
-
+  // Update badges immediately - don't re-render form to avoid losing focus
   updateValidationBadge();
   updateChangesBadge();
+  updateHeader();
+
+  // Only re-render validation/changes sections if they're active (they show dynamic content)
+  const currentSection = State.state.currentSection;
+  if (currentSection === 'validation' || currentSection === 'changes') {
+    renderCurrentSection();
+  }
+  // Note: Form sections are NOT re-rendered to preserve user's input focus
 }
 
 /**
@@ -773,6 +1020,7 @@ function onFormChange() {
 
   updateValidationBadge();
   updateChangesBadge();
+  updateHeader();
 
   // Note: Don't re-render the section here - it would destroy active form inputs
   // Change indicators are updated inline by updateFieldValue in form.js
@@ -814,12 +1062,20 @@ function updateChangesBadge() {
 }
 
 /**
- * Update header
+ * Update header with filename and modification indicator
  */
 function updateHeader() {
   const filenameEl = document.querySelector('.app-header__filename');
+  const modifiedEl = document.getElementById('modified-indicator');
+
   if (filenameEl) {
-    filenameEl.textContent = State.state.currentFilename;
+    filenameEl.textContent = State.state.currentFilename || 'untitled.clusterfile';
+  }
+
+  // Show modification indicator if there are changes
+  if (modifiedEl) {
+    const hasChanges = State.getChanges().length > 0;
+    modifiedEl.style.display = hasChanges ? 'inline' : 'none';
   }
 }
 
@@ -1016,6 +1272,61 @@ function showWelcomeTour() {
 }
 
 /**
+ * Update version display in header
+ */
+function updateVersionDisplay() {
+  const versionEl = document.querySelector('.app-header__version');
+  if (versionEl) {
+    versionEl.textContent = `v${APP_VERSION}`;
+    versionEl.addEventListener('click', showChangelog);
+  }
+}
+
+/**
+ * Show changelog modal
+ */
+function showChangelog() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal modal--changelog">
+      <div class="modal__header">
+        <h2 class="modal__title">Changelog</h2>
+        <span class="modal__close">&times;</span>
+      </div>
+      <div class="modal__body">
+        ${CHANGELOG.map(release => `
+          <div class="changelog-release">
+            <div class="changelog-release__header">
+              <span class="changelog-release__version">v${Help.escapeHtml(release.version)}</span>
+              <span class="changelog-release__date">${Help.escapeHtml(release.date)}</span>
+            </div>
+            <ul class="changelog-release__changes">
+              ${release.changes.map(change => `
+                <li>${Help.escapeHtml(change)}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--primary" id="changelog-close">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+
+  overlay.querySelector('.modal__close').addEventListener('click', closeModal);
+  overlay.querySelector('#changelog-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+}
+
+/**
  * Show toast notification
  */
 function showToast(message, type = 'info') {
@@ -1080,6 +1391,15 @@ async function fetchTemplates() {
   if (!response.ok) throw new Error('Failed to fetch templates');
   const data = await response.json();
   return data.templates || [];
+}
+
+/**
+ * Fetch version from API
+ */
+async function fetchVersion() {
+  const response = await fetch(`${API_BASE}/healthz`);
+  if (!response.ok) throw new Error('Failed to fetch version');
+  return response.json();
 }
 
 // Initialize on DOM ready

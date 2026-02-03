@@ -251,12 +251,46 @@ function setBaseline(yamlText) {
  * Update current document
  */
 function updateCurrent(yamlText, source = 'unknown') {
+  const previousObject = JSON.parse(JSON.stringify(state.currentObject || {}));
   state.currentYamlText = yamlText;
   try {
     state.currentObject = jsyaml.load(yamlText) || {};
+    // Record changes by comparing with baseline
+    if (source === 'editor') {
+      detectAndRecordChanges(previousObject, state.currentObject);
+    }
   } catch (e) {
     // Keep previous object if parse fails
     console.warn('Failed to parse YAML:', e);
+  }
+}
+
+/**
+ * Detect changes between previous and current state, and record them
+ */
+function detectAndRecordChanges(previous, current, path = '') {
+  const allKeys = new Set([
+    ...Object.keys(previous || {}),
+    ...Object.keys(current || {})
+  ]);
+
+  for (const key of allKeys) {
+    const newPath = path ? `${path}.${key}` : key;
+    const prevVal = previous?.[key];
+    const currVal = current?.[key];
+
+    if (prevVal === currVal) continue;
+
+    if (typeof currVal === 'object' && currVal !== null && !Array.isArray(currVal) &&
+        typeof prevVal === 'object' && prevVal !== null && !Array.isArray(prevVal)) {
+      // Recurse into nested objects
+      detectAndRecordChanges(prevVal, currVal, newPath);
+    } else if (JSON.stringify(prevVal) !== JSON.stringify(currVal)) {
+      // Record the change if different from baseline
+      if (hasChanged(newPath)) {
+        recordChange(newPath, currVal);
+      }
+    }
   }
 }
 
@@ -427,10 +461,44 @@ function recordChange(path, value) {
 }
 
 /**
- * Get all changes
+ * Get all changes by comparing baseline to current
  */
 function getChanges() {
-  return state.changes.filter(c => hasChanged(c.path));
+  const changes = [];
+  computeChanges(state.baselineObject, state.currentObject, '', changes);
+  return changes;
+}
+
+/**
+ * Recursively compute all changed paths between baseline and current
+ */
+function computeChanges(baseline, current, path, changes) {
+  const baselineKeys = Object.keys(baseline || {});
+  const currentKeys = Object.keys(current || {});
+  const allKeys = new Set([...baselineKeys, ...currentKeys]);
+
+  for (const key of allKeys) {
+    const newPath = path ? `${path}.${key}` : key;
+    const baseVal = baseline?.[key];
+    const currVal = current?.[key];
+
+    // Skip if identical
+    if (JSON.stringify(baseVal) === JSON.stringify(currVal)) continue;
+
+    // If both are objects (not arrays), recurse
+    if (typeof baseVal === 'object' && baseVal !== null && !Array.isArray(baseVal) &&
+        typeof currVal === 'object' && currVal !== null && !Array.isArray(currVal)) {
+      computeChanges(baseVal, currVal, newPath, changes);
+    } else {
+      // Record as change
+      changes.push({
+        path: newPath,
+        oldValue: baseVal,
+        value: currVal,
+        timestamp: Date.now()
+      });
+    }
+  }
 }
 
 /**

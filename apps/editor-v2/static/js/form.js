@@ -85,7 +85,13 @@ function renderHostsSection(container, schema) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
     empty.innerHTML = `
-      <div class="empty-state__icon">🖥️</div>
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
       <div class="empty-state__title">No hosts configured</div>
       <div class="empty-state__description">Add hosts to configure your cluster nodes.</div>
     `;
@@ -134,13 +140,21 @@ function renderHostCard(hostname, hostData, hostSchema) {
 
   card.innerHTML = `
     <div class="host-card__header">
-      <span class="host-card__toggle">▼</span>
+      <span class="host-card__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6,9 12,15 18,9"/></svg>
+      </span>
       <span class="host-card__hostname">${Help.escapeHtml(hostname)}</span>
       <span class="host-card__role ${roleClass}">${Help.escapeHtml(role)}</span>
       <div class="host-card__actions">
-        <button class="btn btn--secondary btn--icon btn--sm" title="Duplicate" data-action="duplicate">📋</button>
-        <button class="btn btn--secondary btn--icon btn--sm" title="Rename" data-action="rename">✏️</button>
-        <button class="btn btn--danger btn--icon btn--sm" title="Remove" data-action="remove">🗑️</button>
+        <button class="btn btn--secondary btn--icon btn--sm" title="Duplicate" data-action="duplicate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="btn btn--secondary btn--icon btn--sm" title="Rename" data-action="rename">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn btn--danger btn--icon btn--sm" title="Remove" data-action="remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
       </div>
     </div>
     <div class="host-card__body"></div>
@@ -241,10 +255,10 @@ function renderStringField(path, key, schema, value) {
     fileContainer.style.alignItems = 'center';
     fileContainer.style.gap = '8px';
 
-    // File icon
+    // File icon (modern SVG)
     const fileIcon = document.createElement('span');
     fileIcon.className = 'file-path-icon';
-    fileIcon.innerHTML = '📁';
+    fileIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
     fileIcon.title = 'File path - will be read when processing locally';
     fileContainer.appendChild(fileIcon);
 
@@ -262,10 +276,10 @@ function renderStringField(path, key, schema, value) {
 
     fileContainer.appendChild(input);
 
-    // Info tooltip
+    // Info tooltip (modern SVG)
     const infoIcon = document.createElement('span');
     infoIcon.className = 'file-path-info';
-    infoIcon.innerHTML = 'ℹ️';
+    infoIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
     infoIcon.title = 'This path will be read by the template processor when run locally. The file contents are never stored in the browser.';
     infoIcon.style.cursor = 'help';
     fileContainer.appendChild(infoIcon);
@@ -450,6 +464,7 @@ function renderBooleanField(path, key, schema, value) {
 function renderArrayField(path, key, schema, value) {
   const group = document.createElement('div');
   group.className = 'form-group';
+  group.dataset.path = path;
   if (State.hasChanged(path)) {
     group.classList.add('form-group--changed');
   }
@@ -462,7 +477,7 @@ function renderArrayField(path, key, schema, value) {
 
   // Check if items are file paths
   const isFileArray = schema['x-is-file'] || schema.items?.['x-is-file'];
-  const titleIcon = isFileArray ? '📁 ' : '';
+  const titleIcon = isFileArray ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align: middle; margin-right: 4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' : '';
 
   header.innerHTML = `
     <span class="array-field__title">${titleIcon}${Help.escapeHtml(schema.title || key)}</span>
@@ -573,7 +588,7 @@ function renderArrayItem(path, idx, schema, value, container) {
   if (isFilePath) {
     const fileIcon = document.createElement('span');
     fileIcon.className = 'file-path-icon';
-    fileIcon.innerHTML = '📁';
+    fileIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
     fileIcon.title = 'File path - will be read when processing locally';
     fileIcon.style.marginRight = '8px';
     item.appendChild(fileIcon);
@@ -1051,8 +1066,27 @@ function createFormGroup(path, key, schema) {
     revertBtn.title = 'Revert to original value';
     revertBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      window.EditorState.revertPath(path);
-      triggerFormChange();
+      e.preventDefault();
+
+      // Get baseline value and set it directly
+      const baselineVal = State.getNestedValue(State.state.baselineObject, path);
+      State.setNestedValue(State.state.currentObject, path,
+        baselineVal === undefined ? undefined : JSON.parse(JSON.stringify(baselineVal)));
+
+      // Trigger form change to sync YAML
+      if (onFormChange) {
+        onFormChange();
+      }
+
+      // Re-render the section to show the reverted value
+      // Use a small delay to allow the YAML sync to complete
+      setTimeout(() => {
+        const container = document.getElementById('form-content');
+        if (container && window.ClusterfileEditor) {
+          window.ClusterfileEditor.State.state.currentSection &&
+            renderSection(window.ClusterfileEditor.State.state.currentSection, container);
+        }
+      }, 100);
     });
     label.appendChild(revertBtn);
   }
