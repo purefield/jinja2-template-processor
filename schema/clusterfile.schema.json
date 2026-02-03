@@ -571,7 +571,7 @@
                         "wwn": {
                           "title": "WWN",
                           "type": "string",
-                          "pattern": "^[0-9a-fA-Fx]+$",
+                          "pattern": "^[0-9a-fA-Fwx_-]+$",
                           "description": "World Wide Name identifier.",
                           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
                         },
