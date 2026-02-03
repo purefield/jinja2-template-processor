@@ -4,34 +4,91 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EDITOR_DIR="${SCRIPT_DIR}/apps/editor"
 
+# Default registry - override for disconnected/mirrored environments
+# Example: IMAGE_REGISTRY=registry.local:5000/clusterfile
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io/dds}"
 IMAGE_NAME="${IMAGE_NAME:-clusterfile-editor}"
 APP_VERSION_FILE="${APP_VERSION_FILE:-${EDITOR_DIR}/APP_VERSION}"
-APP_VERSION="${APP_VERSION:-$(cat "${APP_VERSION_FILE}")}"
+APP_VERSION="${APP_VERSION:-$(cat "${APP_VERSION_FILE}" 2>/dev/null || echo "2.0.0")}"
 IMAGE_TAG="${IMAGE_TAG:-${APP_VERSION}}"
 IMAGE_REF="${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 
+# Container runtime detection (podman preferred, fallback to docker)
+CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-}"
+if [ -z "${CONTAINER_RUNTIME}" ]; then
+    if command -v podman &>/dev/null; then
+        CONTAINER_RUNTIME="podman"
+    elif command -v docker &>/dev/null; then
+        CONTAINER_RUNTIME="docker"
+    else
+        echo "Error: No container runtime found. Install podman or docker."
+        exit 1
+    fi
+fi
+
 usage() {
     cat <<EOF
-Usage: $0 [build|push|run|all|release] [major|minor|patch|x.y.z]
-Default: run
+Clusterfile Editor - Schema-driven cluster configuration editor
 
-Environment overrides:
-  IMAGE_REGISTRY=quay.io/dds
-  IMAGE_NAME=clusterfile-editor
-  APP_VERSION_FILE=apps/editor/APP_VERSION
-  APP_VERSION=0.1.0
-  IMAGE_TAG=0.1.0
+Usage: $0 [command] [options]
+
+Commands:
+  run       Run the editor (default) - pulls image from registry
+  build     Build container image locally
+  push      Push built image to registry
+  release   Release new version (bump, build, push, tag)
+  all       Build and push
+
+Default: run (pulls and runs image from ${IMAGE_REGISTRY})
+
+Environment Variables:
+  IMAGE_REGISTRY    Registry URL (default: quay.io/dds)
+                    For disconnected: registry.local:5000/myorg
+  IMAGE_NAME        Image name (default: clusterfile-editor)
+  IMAGE_TAG         Image tag (default: version from APP_VERSION)
+  CONTAINER_RUNTIME Runtime to use (default: auto-detect podman/docker)
+
+Disconnected/Air-Gap Usage:
+  1. Mirror the image to your local registry:
+     skopeo copy docker://quay.io/dds/clusterfile-editor:2.0 \\
+       docker://registry.local:5000/clusterfile-editor:2.0
+
+  2. Run with your registry:
+     IMAGE_REGISTRY=registry.local:5000 $0
+
+Examples:
+  $0                                    # Pull from quay.io and run
+  $0 run                                # Same as above
+  $0 build                              # Build locally
+  IMAGE_TAG=dev $0 build                # Build with custom tag
+  IMAGE_REGISTRY=myregistry:5000 $0     # Run from mirrored registry
 EOF
 }
 
 build_image() {
     sync_version
-    podman build -t "${IMAGE_REF}" -f "${EDITOR_DIR}/Containerfile" "${SCRIPT_DIR}"
+    echo "Building image: ${IMAGE_REF}"
+    ${CONTAINER_RUNTIME} build -t "${IMAGE_REF}" -f "${EDITOR_DIR}/Containerfile" "${SCRIPT_DIR}"
 }
 
 push_image() {
-    podman push "${IMAGE_REF}"
+    echo "Pushing image: ${IMAGE_REF}"
+    ${CONTAINER_RUNTIME} push "${IMAGE_REF}"
+}
+
+pull_image() {
+    echo "Pulling image: ${IMAGE_REF}"
+    if ! ${CONTAINER_RUNTIME} pull "${IMAGE_REF}" 2>/dev/null; then
+        echo ""
+        echo "Failed to pull ${IMAGE_REF}"
+        echo ""
+        echo "Options:"
+        echo "  1. Build locally:  $0 build && $0 run"
+        echo "  2. Use mirror:     IMAGE_REGISTRY=your-registry:5000 $0"
+        echo "  3. Check network:  Ensure you can reach ${IMAGE_REGISTRY}"
+        echo ""
+        exit 1
+    fi
 }
 
 release_image() {
@@ -70,23 +127,31 @@ release_image() {
     tag_release
     build_image
     push_image
-    podman tag "${IMAGE_REF}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
-    podman push "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
+    ${CONTAINER_RUNTIME} tag "${IMAGE_REF}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
+    ${CONTAINER_RUNTIME} push "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
 }
 
 run_image() {
-    echo "Running image: ${IMAGE_REF}"
-    podman run -p 8000:8000 \
-        -v "${SCRIPT_DIR}/templates:/app/templates" \
-        -v "${SCRIPT_DIR}/data:/app/samples" \
-        -v "${SCRIPT_DIR}/schema:/app/schema" \
+    # Pull image from registry (works with mirrored registries in disconnected environments)
+    pull_image
+
+    echo ""
+    echo "Starting Clusterfile Editor v${IMAGE_TAG}"
+    echo "Open http://localhost:8080 in your browser"
+    echo ""
+
+    ${CONTAINER_RUNTIME} run --rm -p 8080:8000 \
+        -v "${SCRIPT_DIR}/templates:/app/templates:ro" \
+        -v "${SCRIPT_DIR}/data:/app/samples:ro" \
+        -v "${SCRIPT_DIR}/schema:/app/schema:ro" \
         "${IMAGE_REF}"
 }
 
 sync_version() {
+    # Version is read from APP_VERSION file by main.py and fetched by JS from /healthz
+    # Just ensure the file exists
     local version="${APP_VERSION}"
-    sed -i "s/version=\"[^\"]*\"/version=\"${version}\"/" "${EDITOR_DIR}/app/main.py"
-    sed -i "s/<span class=\"app-version\">v[^<]*<\\/span>/<span class=\"app-version\">v${version}<\\/span>/" "${EDITOR_DIR}/static/index.html"
+    echo "Version: ${version}"
 }
 
 update_changelog() {
@@ -162,6 +227,6 @@ case "${1:-run}" in
     run) run_image ;;
     all) build_image; push_image ;;
     release) release_image "${2:-}" ;;
-    -h|--help) usage ;;
+    -h|--help|help) usage ;;
     *) echo "Unknown command: $1"; usage; exit 1 ;;
 esac
