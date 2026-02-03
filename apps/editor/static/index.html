@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clusterfile Editor v2.0</title>
+  <title>Clusterfile Editor v2.1</title>
 
   <!-- PatternFly CSS -->
   <link rel="stylesheet" href="/static/vendor/patternfly.min.css">
@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="/static/css/app.css?v=2.1.2">
+  <link rel="stylesheet" href="/static/css/app.css?v=2.1.1">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
@@ -51,6 +51,12 @@
         </div>
         <button class="btn btn--secondary btn--sm" id="btn-save" title="Save (Ctrl+S)">Save</button>
         <button class="btn btn--primary btn--sm" id="btn-download">Download</button>
+        <button class="btn btn--link btn--sm" id="btn-feedback" title="Report bug or send feedback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align: middle; margin-right: 2px;">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Feedback
+        </button>
       </div>
     </header>
 
@@ -214,12 +220,12 @@
   <script src="/static/vendor/codemirror-indent-fold.min.js"></script>
   <script src="/static/vendor/diff.min.js"></script>
 
-  <!-- App Scripts (cache-bust: v2.0.7) -->
-  <script src="/static/js/state.js?v=2.1.2"></script>
-  <script src="/static/js/validator.js?v=2.1.2"></script>
-  <script src="/static/js/help.js?v=2.1.2"></script>
-  <script src="/static/js/editor.js?v=2.1.2"></script>
-  <script src="/static/js/form.js?v=2.1.2"></script>
-  <script src="/static/js/app.js?v=2.1.2"></script>
+  <!-- App Scripts (cache-bust: v2.1.1) -->
+  <script src="/static/js/state.js?v=2.1.1"></script>
+  <script src="/static/js/validator.js?v=2.1.1"></script>
+  <script src="/static/js/help.js?v=2.1.1"></script>
+  <script src="/static/js/editor.js?v=2.1.1"></script>
+  <script src="/static/js/form.js?v=2.1.1"></script>
+  <script src="/static/js/app.js?v=2.1.1"></script>
 </body>
 </html>

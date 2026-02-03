@@ -16,6 +16,44 @@ let onFormChange = null;
 const FORM_SYNC_DELAY = 300;
 
 /**
+ * Resolve $ref in schema
+ * @param {object} schema - Schema that might contain $ref
+ * @param {object} rootSchema - Root schema containing $defs
+ * @returns {object} - Resolved schema with $ref replaced
+ */
+function resolveRef(schema, rootSchema) {
+  if (!schema) return schema;
+
+  // If schema has $ref, resolve it
+  if (schema.$ref) {
+    const refPath = schema.$ref;
+    // Handle local refs like "#/$defs/ipv4"
+    if (refPath.startsWith('#/')) {
+      const parts = refPath.substring(2).split('/');
+      let resolved = rootSchema;
+      for (const part of parts) {
+        resolved = resolved?.[part];
+      }
+      if (resolved) {
+        // Merge the resolved ref with any other properties (like title, description)
+        const { $ref, ...rest } = schema;
+        return { ...resolved, ...rest };
+      }
+    }
+  }
+
+  return schema;
+}
+
+/**
+ * Get the effective type of a schema (resolving $ref if needed)
+ */
+function getSchemaType(schema, rootSchema) {
+  const resolved = resolveRef(schema, rootSchema);
+  return resolved?.type;
+}
+
+/**
  * Set form change callback
  */
 function setFormChangeCallback(callback) {
@@ -811,8 +849,12 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
 
       const objValue = (currentValue !== null && typeof currentValue === 'object') ? currentValue : {};
       const properties = objectSchema.properties || {};
+      const rootSchema = State.state?.schema;
 
-      for (const [propKey, propSchema] of Object.entries(properties)) {
+      for (const [propKey, rawPropSchema] of Object.entries(properties)) {
+        // Resolve $ref if present
+        const propSchema = resolveRef(rawPropSchema, rootSchema);
+        const propType = propSchema.type || 'string';
         const propValue = objValue[propKey];
 
         const fieldWrapper = document.createElement('div');
@@ -820,7 +862,7 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
 
         const label = document.createElement('label');
         label.className = 'compact-field__label';
-        label.textContent = propSchema.title || propKey;
+        label.textContent = propSchema.title || rawPropSchema.title || propKey;
         label.style.fontSize = '0.75rem';
         label.style.color = 'var(--pf-global--Color--200)';
         label.style.display = 'block';
@@ -828,7 +870,7 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
         fieldWrapper.appendChild(label);
 
         let input;
-        if (propSchema.type === 'boolean') {
+        if (propType === 'boolean') {
           input = document.createElement('select');
           input.className = 'form-select form-select--compact';
           input.innerHTML = `
@@ -840,17 +882,18 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
             const boolVal = input.value === 'true' ? true : input.value === 'false' ? false : undefined;
             updateCompactObjectField(path, propKey, boolVal, objectSchema);
           });
-        } else if (propSchema.type === 'number' || propSchema.type === 'integer') {
+        } else if (propType === 'number' || propType === 'integer') {
           input = document.createElement('input');
           input.type = 'number';
           input.className = 'form-input form-input--compact';
           input.value = propValue !== undefined ? propValue : '';
           if (propSchema.minimum !== undefined) input.min = propSchema.minimum;
+          if (propSchema.maximum !== undefined) input.max = propSchema.maximum;
           input.addEventListener('input', () => {
-            const numVal = propSchema.type === 'integer' ? parseInt(input.value, 10) : parseFloat(input.value);
+            const numVal = propType === 'integer' ? parseInt(input.value, 10) : parseFloat(input.value);
             updateCompactObjectField(path, propKey, isNaN(numVal) ? undefined : numVal, objectSchema);
           });
-        } else if (propSchema.type === 'array') {
+        } else if (propType === 'array') {
           input = document.createElement('input');
           input.type = 'text';
           input.className = 'form-input form-input--compact';
