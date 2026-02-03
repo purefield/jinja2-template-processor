@@ -314,6 +314,9 @@ function setupHeaderActions() {
   // Download button
   document.getElementById('btn-download')?.addEventListener('click', downloadDocument);
 
+  // Feedback button
+  document.getElementById('btn-feedback')?.addEventListener('click', openFeedback);
+
   // Samples dropdown
   document.getElementById('btn-samples')?.addEventListener('click', (e) => {
     const dropdown = e.target.closest('.dropdown');
@@ -786,13 +789,13 @@ function renderChangesSection(container) {
           ${sectionChanges.map(c => `
             <div class="change-item">
               <a class="change-item__path" data-nav-path="${Help.escapeHtml(c.path)}">${Help.escapeHtml(c.path)}</a>
-              <span class="change-item__values">
+              <a class="change-item__values" data-show-diff title="Click to view full diff">
                 <span class="change-item__old" title="Old: ${Help.escapeHtml(JSON.stringify(c.oldValue))}">${formatChangeValue(c.oldValue)}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
                 <span class="change-item__new" title="New: ${Help.escapeHtml(JSON.stringify(c.value))}">${formatChangeValue(c.value)}</span>
-              </span>
+              </a>
               <button class="btn btn--link btn--sm" data-revert-path="${Help.escapeHtml(c.path)}">Revert</button>
             </div>
           `).join('')}
@@ -838,6 +841,16 @@ function renderChangesSection(container) {
     });
   });
 
+  // Set up diff link handlers
+  container.querySelectorAll('[data-show-diff]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Switch to diff tab
+      const diffTab = document.querySelector('.tab[data-tab="diff"]');
+      if (diffTab) diffTab.click();
+    });
+  });
+
   // Set up revert handlers
   container.querySelectorAll('[data-revert-path]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -870,26 +883,34 @@ function scrollToField(path) {
   const formContent = document.getElementById('form-content');
   if (!formContent) return;
 
-  // Try to find the field by data-path attribute
-  const field = formContent.querySelector(`[data-path="${path}"]`);
-  if (field) {
-    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Add a brief highlight effect
-    field.classList.add('field-highlight');
-    setTimeout(() => field.classList.remove('field-highlight'), 2000);
-    return;
+  // Try to find the field by data-path attribute (escape special chars)
+  try {
+    const field = formContent.querySelector(`[data-path="${CSS.escape(path)}"]`);
+    if (field) {
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief highlight effect
+      field.classList.add('field-highlight');
+      setTimeout(() => field.classList.remove('field-highlight'), 2000);
+      return;
+    }
+  } catch (e) {
+    console.warn('Could not find field for path:', path);
   }
 
   // Try to find by partial path match (for nested fields)
   const parts = State.parsePath(path);
   for (let i = parts.length; i > 0; i--) {
-    const partialPath = parts.slice(0, i).join('.');
-    const partialField = formContent.querySelector(`[data-path="${partialPath}"]`);
-    if (partialField) {
-      partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      partialField.classList.add('field-highlight');
-      setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
-      return;
+    const partialPath = State.buildPath(parts.slice(0, i));
+    try {
+      const partialField = formContent.querySelector(`[data-path="${CSS.escape(partialPath)}"]`);
+      if (partialField) {
+        partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        partialField.classList.add('field-highlight');
+        setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
+        return;
+      }
+    } catch (e) {
+      // Continue trying with shorter paths
     }
   }
 }
@@ -1162,6 +1183,49 @@ function downloadFile(content, filename) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Open feedback form via secure mailto
+ */
+function openFeedback() {
+  const version = State.state.version || '2.1.0';
+  const userAgent = navigator.userAgent;
+  const currentUrl = window.location.href;
+
+  // Collect non-sensitive system info for debugging
+  const systemInfo = [
+    `Version: ${version}`,
+    `URL: ${currentUrl}`,
+    `Browser: ${userAgent}`,
+    `Viewport: ${window.innerWidth}x${window.innerHeight}`,
+    `Timestamp: ${new Date().toISOString()}`
+  ].join('\n');
+
+  const subject = encodeURIComponent(`[Clusterfile Editor v${version}] Feedback`);
+  const body = encodeURIComponent(
+`--- Please describe your feedback or bug report below ---
+
+
+
+--- System Information (for debugging) ---
+${systemInfo}
+
+--- Steps to reproduce (if bug) ---
+1.
+2.
+3.
+
+--- Expected behavior ---
+
+
+--- Actual behavior ---
+
+`);
+
+  // Open mailto link
+  const mailto = `mailto:dds+clusterfile-editor@redhat.com?subject=${subject}&body=${body}`;
+  window.location.href = mailto;
 }
 
 /**
