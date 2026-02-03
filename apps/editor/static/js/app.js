@@ -883,26 +883,34 @@ function scrollToField(path) {
   const formContent = document.getElementById('form-content');
   if (!formContent) return;
 
-  // Try to find the field by data-path attribute
-  const field = formContent.querySelector(`[data-path="${path}"]`);
-  if (field) {
-    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Add a brief highlight effect
-    field.classList.add('field-highlight');
-    setTimeout(() => field.classList.remove('field-highlight'), 2000);
-    return;
+  // Try to find the field by data-path attribute (escape special chars)
+  try {
+    const field = formContent.querySelector(`[data-path="${CSS.escape(path)}"]`);
+    if (field) {
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief highlight effect
+      field.classList.add('field-highlight');
+      setTimeout(() => field.classList.remove('field-highlight'), 2000);
+      return;
+    }
+  } catch (e) {
+    console.warn('Could not find field for path:', path);
   }
 
   // Try to find by partial path match (for nested fields)
   const parts = State.parsePath(path);
   for (let i = parts.length; i > 0; i--) {
-    const partialPath = parts.slice(0, i).join('.');
-    const partialField = formContent.querySelector(`[data-path="${partialPath}"]`);
-    if (partialField) {
-      partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      partialField.classList.add('field-highlight');
-      setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
-      return;
+    const partialPath = State.buildPath(parts.slice(0, i));
+    try {
+      const partialField = formContent.querySelector(`[data-path="${CSS.escape(partialPath)}"]`);
+      if (partialField) {
+        partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        partialField.classList.add('field-highlight');
+        setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
+        return;
+      }
+    } catch (e) {
+      // Continue trying with shorter paths
     }
   }
 }

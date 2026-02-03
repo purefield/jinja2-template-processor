@@ -28,17 +28,23 @@ function resolveRef(schema, rootSchema) {
   if (schema.$ref) {
     const refPath = schema.$ref;
     // Handle local refs like "#/$defs/ipv4"
-    if (refPath.startsWith('#/')) {
+    if (refPath.startsWith('#/') && rootSchema) {
       const parts = refPath.substring(2).split('/');
       let resolved = rootSchema;
       for (const part of parts) {
         resolved = resolved?.[part];
+        if (!resolved) {
+          console.warn(`[resolveRef] Failed to resolve path part "${part}" in $ref "${refPath}"`);
+          break;
+        }
       }
       if (resolved) {
         // Merge the resolved ref with any other properties (like title, description)
         const { $ref, ...rest } = schema;
         return { ...resolved, ...rest };
       }
+    } else if (!rootSchema) {
+      console.warn(`[resolveRef] No rootSchema provided to resolve $ref "${refPath}"`);
     }
   }
 
@@ -730,6 +736,8 @@ function renderUnionField(path, key, schema, value) {
   const boolFalseOption = options.find(o => o.const === false);
   const intOrNumOption = options.find(o => o.type === 'integer' || o.type === 'number');
 
+  console.log('[DEBUG] renderUnionField:', { path, key, options, enumOption: !!enumOption, stringOption: !!stringOption, objectOption: !!objectOption });
+
   // Pattern: oneOf [enum/int, {const: false}] - Mode selector
   if (boolFalseOption && (enumOption || intOrNumOption)) {
     return renderModeField(path, key, schema, value, options);
@@ -737,6 +745,7 @@ function renderUnionField(path, key, schema, value) {
 
   // Pattern: anyOf [object, string] - Compact mode selector (like storage.os)
   if (objectOption && stringOption && !enumOption) {
+    console.log('[DEBUG] Matched object+string pattern, calling renderObjectOrStringField');
     return renderObjectOrStringField(path, key, schema, value, objectOption, stringOption);
   }
 
@@ -776,6 +785,7 @@ function renderUnionField(path, key, schema, value) {
  * Render a field that can be either an object or a string (compact mode)
  */
 function renderObjectOrStringField(path, key, schema, value, objectSchema, stringSchema) {
+  console.log('[DEBUG] renderObjectOrStringField called:', { path, key, value, objectSchema, stringSchema });
   const group = createFormGroup(path, key, schema);
 
   // Get current value from state (always fresh)
@@ -851,10 +861,24 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
       const properties = objectSchema.properties || {};
       const rootSchema = State.state?.schema;
 
+      console.log('[DEBUG] renderContent advanced mode:', { path, objectSchema, properties, rootSchema: !!rootSchema });
+
+      // Debug: show if no properties
+      if (Object.keys(properties).length === 0) {
+        console.error('[DEBUG] No properties found in objectSchema!', objectSchema);
+        const noProps = document.createElement('div');
+        noProps.style.color = 'red';
+        noProps.style.padding = '8px';
+        noProps.textContent = 'Error: No properties found in schema. Check console.';
+        contentContainer.appendChild(noProps);
+        return;
+      }
+
       for (const [propKey, rawPropSchema] of Object.entries(properties)) {
         // Resolve $ref if present
-        const propSchema = resolveRef(rawPropSchema, rootSchema);
+        const propSchema = resolveRef(rawPropSchema, rootSchema) || rawPropSchema || {};
         const propType = propSchema.type || 'string';
+        console.log('[DEBUG] Property:', { propKey, rawPropSchema, propSchema, propType });
         const propValue = objValue[propKey];
 
         const fieldWrapper = document.createElement('div');
@@ -933,6 +957,8 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
     const currentValue = getCurrentValue();
     const currentMode = getMode(currentValue);
 
+    console.log('[DEBUG] Mode change:', { path, newMode, currentMode, currentValue });
+
     // Only clear/convert if actually changing modes
     if (newMode !== currentMode) {
       if (newMode === 'simple') {
@@ -945,6 +971,7 @@ function renderObjectOrStringField(path, key, schema, value, objectSchema, strin
         updateFieldValue(path, simpleValue || undefined, stringSchema);
       } else {
         // Switching to advanced: start with empty object (don't guess field names)
+        console.log('[DEBUG] Switching to advanced, setting empty object');
         updateFieldValue(path, {}, objectSchema);
       }
     }
@@ -1169,14 +1196,19 @@ function updateFieldValue(path, value, schema) {
   State.recordChange(path, coercedValue);
   triggerFormChange();
 
-  // Update form group changed state
-  const group = document.querySelector(`[data-path="${path}"]`);
-  if (group) {
-    if (State.hasChanged(path)) {
-      group.classList.add('form-group--changed');
-    } else {
-      group.classList.remove('form-group--changed');
+  // Update form group changed state - use CSS.escape for paths with special chars
+  try {
+    const group = document.querySelector(`[data-path="${CSS.escape(path)}"]`);
+    if (group) {
+      if (State.hasChanged(path)) {
+        group.classList.add('form-group--changed');
+      } else {
+        group.classList.remove('form-group--changed');
+      }
     }
+  } catch (e) {
+    // Ignore selector errors for complex paths
+    console.warn('Could not update form group style for path:', path, e);
   }
 }
 
