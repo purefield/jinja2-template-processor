@@ -1,0 +1,170 @@
+# Clusterfile Editor v2.0 - Development Prompts Log
+# Session started: 2026-02-03
+
+## Historical Prompts (from conversation summary)
+
+### Prompt 1
+Implement the following plan: [detailed Clusterfile Editor v2.0 spec]
+
+### Prompt 2
+run the dev server and test it
+
+### Prompt 3
+where is it running?
+
+### Prompt 4
+podman ps does not list it
+
+### Prompt 5
+See JS errors: '/home/inference/tmp/Screenshot from 2026-02-03 08-12-29.png'
+
+### Prompt 6
+curl localhost:8080 - curl: (7) Failed to connect to localhost port 8080
+
+### Prompt 7
+[Screenshot showing more JS errors - AJV schema error and CodeMirror error]
+
+### Prompt 8
+[Screenshot showing CSP eval error]
+
+### Prompt 9
+You are behind a firewall, do not change ports on the server as I cannot reach them otherwise
+
+### Prompt 10
+the UI is quite colorful, the yaml is not readable - see latest screenshot in tmp folder
+
+### Prompt 11
+validation is not working, loading a document causes a 100% diff
+
+## Current Session Prompts
+
+### Prompt 12 (2026-02-03)
+loading a new document, the diff is showing the old document until I switch away and back. validation did not catch invalid input still
+
+### Prompt 13 (2026-02-03)
+capture all historical prompts and future prompts in a prompts.log file
+
+### Prompt 14 (2026-02-03)
+anytime we have one-of or a list with an optional input, we should show the list and "other" option in the form, in general, the form should reflect the schema closely. File path input should not be shown as "<redacted>" but show the path with an icon depicting it's a path that will need to be injected when processed locally
+
+### Prompt 15 (2026-02-03)
+see latest screenshot, still redacted
+
+### Prompt 16 (2026-02-03)
+There should be no secrets stored in the clusterfile
+
+### Prompt 17 (2026-02-03)
+os is a complex structure, right now it shows as object ref no a rich editor, add support for the options (string,object) in the ui, make it compact to not be too long. see latest screenshot
+
+### Prompt 18 (2026-02-03)
+the help dialog has links, trying to reach them is impossible as they close when leaving the (?), we need to allow for the dialog to be reached on mouse over
+
+### Prompt 19 (2026-02-03)
+found a bug, the os toggle changed the wwn to deviceName after toggling to string, should not be allowed see screenshot for errors caused
+
+### Prompt 20 (2026-02-03)
+when trying to use other version, the form field appears and disappears not allowing to enter data, likely due to the validation causing a refresh as it also shows an error
+
+### Prompt 21 (2026-02-03)
+Reloading the page should keep you in the same section, with the same scroll level and changes should be locally captured and not lost. allowing for revert and save at a later time. the goal is to use the browser as persistent layer
+
+### Prompt 22 (2026-02-03)
+The icons are very windows 98 like, can we have them be muted and modern. The overall look and feel should match that of openshift 4.20. The form should make a VMWare admin feel familiar. This is an editor to help VMWare admins provide input to transition to openshift and both themes should co-exist to help with the familarity. the advanced options and overall ui should be openshift, the form and guided input focus on vmware. capture the current work with a tag on the branch before making the changes.
+
+### Implementation Notes (Session Continuation)
+- Created git tag `v2.0.0-baseline` before UI changes
+- Updated CSS with PatternFly 4 / OpenShift 4.20 colors
+- Replaced all emoji icons with muted SVG icons
+- Added OpenShift logo to header with red accent border
+- Updated sidebar navigation, host cards, file path icons, validation items
+- Cache version bumped to v2.0.7
+- Container rebuilt and running on http://localhost:8080
+
+### Prompt 23 (2026-02-03)
+Changes made in the yaml editor are only reflected in the yaml diff not the changes. Incorporate the template feature in the advanced section (right content pane) with an additional tab to allow full page length view of the output template. keep the selection form on the left, show option for template and rendered template on the right. manage rendering when toggling to the rendered view and show the selected template when viewing that tab and toggle the form to template form
+
+### Implementation Notes (Prompt 23)
+- Fixed change tracking: YAML editor changes now properly recorded via detectAndRecordChanges()
+- Added Template and Rendered tabs to right pane (visible when in Templates section)
+- Template source displayed in "Template" tab (read-only)
+- Rendered output displayed in "Rendered" tab (read-only)
+- Template form on left side controls both tabs
+- Added copy/download buttons for template and rendered content
+- Cache version bumped to v2.0.8
+
+### Prompt 24 (2026-02-03)
+When reloading the diff only shows the changes, still, see latest screenshot. The file name we are editing is not updated/persisted. Keep the filename current and in clear view with better visibility. Automatically load the template when selected and render it on load/change. Show template tabs always and switch form view to template when toggled in nav or content tab
+
+### Implementation Notes (Prompt 24)
+- Rewrote change tracking to compute changes directly by comparing baseline vs current objects (computeChanges function)
+- Enhanced filename display with dedicated area, file icon, and modification indicator (*)
+- Template tabs now always visible in right pane
+- Auto-load template source when selecting from dropdown
+- Auto-render when switching to Rendered tab
+- Clicking Template/Rendered tabs switches left pane to Templates section
+- Header shows modification indicator when there are unsaved changes
+- Cache version bumped to v2.0.9
+
+### Prompt 25 (2026-02-03)
+While editing the template parameters condition section, highlight the match and change in the rendered view to help target the right content
+
+### Implementation Notes (Prompt 25)
+- Added parameter change highlighting in rendered output
+- Renders template twice: once without params (baseline), once with params
+- Compares outputs line-by-line and highlights differences
+- Changed lines get yellow background with orange left border
+- Gutter shows orange indicator for changed lines
+- Subtle pulse animation on initial highlight
+- Auto-scrolls to first changed line
+- Shows toast with count of parameter overrides highlighted
+- Cache version bumped to v2.0.10
+
+### Prompt 26 (2026-02-03)
+Changes is now broken. Validation and change are not updated when yaml editing but when clicking on the menu only. Entering version number with a pause loses focus on the form field. When viewing changes, make the section listed a link to the section.
+
+### Implementation Notes (Prompt 26)
+- Fixed: YAML editor changes no longer re-render form sections (prevents focus loss)
+- Fixed: Validation and changes badges update immediately on YAML edit
+- Fixed: Only validation/changes sections re-render when active (they show live data)
+- Improved Changes section UI:
+  - Changes grouped by section (account, cluster, network, hosts, plugins)
+  - Section headers are clickable links to navigate to that section
+  - Change paths are clickable links to navigate and highlight in YAML
+  - Shows old value → new value with color coding (red strikethrough → green)
+  - Cleaner card-based layout with section counts
+- Cache version bumped to v2.0.11
+
+### Prompt 27 (2026-02-03)
+Update app version in header and link to change log from version in the app.
+
+### Prompt 28 (2026-02-03)
+When changing the parameters, the rendered output does not refresh until I click on it. Make it real time
+
+### Implementation Notes (Prompts 27-28)
+- Updated APP_VERSION to 2.1.0
+- Version in header now fetched from backend /healthz endpoint
+- Clicking version opens changelog modal with release history
+- Added CHANGELOG array with version history and changes
+- Parameter changes now trigger real-time re-render (debounced 500ms)
+- Auto-render only triggers when Rendered tab is active
+- Cache version bumped to v2.1.0
+
+### Prompt 29 (2026-02-03)
+clicking on the change link takes you to the section but does not scroll to the change. the revert stopped working too. this is after reloading the page a few times and troubleshooting FWIW
+
+### Implementation Notes (Prompt 29)
+- Fixed revert: Now directly uses State.getNestedValue/setNestedValue instead of State.revertPath
+- Added scrollToField() function that scrolls to the changed field in the form
+- Field highlight animation (yellow pulse) when scrolling to a field
+- Added data-path attributes to form groups for scroll targeting
+- Console logging for revert debugging
+- Cache version bumped to v2.1.1
+
+### Prompt 30 (2026-02-03)
+revert in the form is still broken, rest works now
+
+### Implementation Notes (Prompt 30)
+- Fixed form revert button: Now directly sets baseline value using State.getNestedValue/setNestedValue
+- Triggers form change callback to sync YAML after revert
+- Re-renders the section after revert to show updated value
+- Cache version bumped to v2.1.2
