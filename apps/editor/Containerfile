@@ -1,20 +1,55 @@
+# Clusterfile Editor v2.0
+# Schema-driven, offline-first web editor for OpenShift cluster configuration files
+#
+# Build from repo root:
+#   podman build -t clusterfile-editor:v2 -f apps/editor-v2/Containerfile .
+
 FROM python:3.12-slim
 
+# Security: Create non-root user
+RUN groupadd -r editor && useradd -r -g editor editor
+
+# Install dependencies
 WORKDIR /app
 
-RUN pip install --no-cache-dir poetry
+# Install Python dependencies directly (no poetry in production)
+RUN pip install --no-cache-dir \
+    fastapi[standard] \
+    jinja2 \
+    yamllint \
+    jsonpath-ng \
+    jsonschema \
+    pyyaml \
+    uvicorn
 
-COPY apps/editor/pyproject.toml apps/editor/poetry.lock* ./
+# Copy application code from apps/editor-v2/
+COPY apps/editor-v2/app/ /app/app/
+COPY apps/editor-v2/static/ /app/static/
+COPY apps/editor-v2/APP_VERSION /app/
 
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --no-root --only main
+# Copy schema, samples, and templates from repo root
+COPY schema/ /app/schema/
+COPY data/ /app/samples/
+COPY templates/ /app/templates/
 
-COPY schema/              /app/schema/
-COPY templates            /app/templates/
-COPY data/*.clusterfile   /app/samples/
-COPY apps/editor/static/  /app/static/
-COPY apps/editor/app/     /app/app/
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV SAMPLES_DIR=/app/samples
+ENV TEMPLATES_DIR=/app/templates
+ENV SCHEMA_DIR=/app/schema
 
+# Change ownership to non-root user
+RUN chown -R editor:editor /app
+
+# Switch to non-root user
+USER editor
+
+# Expose port
 EXPOSE 8000
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')" || exit 1
+
+# Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

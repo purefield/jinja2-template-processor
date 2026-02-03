@@ -75,18 +75,23 @@ release_image() {
 }
 
 run_image() {
+    # Build fresh image before running
+    echo "Building image: ${IMAGE_REF}"
+    build_image
+
     echo "Running image: ${IMAGE_REF}"
-    podman run -p 8000:8000 \
-        -v "${SCRIPT_DIR}/templates:/app/templates" \
-        -v "${SCRIPT_DIR}/data:/app/samples" \
-        -v "${SCRIPT_DIR}/schema:/app/schema" \
+    podman run --rm -p 8080:8000 \
+        -v "${SCRIPT_DIR}/templates:/app/templates:ro" \
+        -v "${SCRIPT_DIR}/data:/app/samples:ro" \
+        -v "${SCRIPT_DIR}/schema:/app/schema:ro" \
         "${IMAGE_REF}"
 }
 
 sync_version() {
+    # Version is read from APP_VERSION file by main.py and fetched by JS from /healthz
+    # Just ensure the file exists
     local version="${APP_VERSION}"
-    sed -i "s/version=\"[^\"]*\"/version=\"${version}\"/" "${EDITOR_DIR}/app/main.py"
-    sed -i "s/<span class=\"app-version\">v[^<]*<\\/span>/<span class=\"app-version\">v${version}<\\/span>/" "${EDITOR_DIR}/static/index.html"
+    echo "Version: ${version}"
 }
 
 update_changelog() {
