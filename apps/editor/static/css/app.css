@@ -1183,6 +1183,16 @@ html, body {
   gap: var(--pf-global--spacer--xs);
   font-family: "Red Hat Mono", monospace;
   font-size: var(--pf-global--FontSize--sm);
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background-color 0.15s ease;
+}
+
+.change-item__values:hover {
+  background-color: var(--pf-global--BackgroundColor--200);
 }
 
 .change-item__old {

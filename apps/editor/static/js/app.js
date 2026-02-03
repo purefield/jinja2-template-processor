@@ -789,13 +789,13 @@ function renderChangesSection(container) {
           ${sectionChanges.map(c => `
             <div class="change-item">
               <a class="change-item__path" data-nav-path="${Help.escapeHtml(c.path)}">${Help.escapeHtml(c.path)}</a>
-              <span class="change-item__values">
+              <a class="change-item__values" data-show-diff title="Click to view full diff">
                 <span class="change-item__old" title="Old: ${Help.escapeHtml(JSON.stringify(c.oldValue))}">${formatChangeValue(c.oldValue)}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
                 <span class="change-item__new" title="New: ${Help.escapeHtml(JSON.stringify(c.value))}">${formatChangeValue(c.value)}</span>
-              </span>
+              </a>
               <button class="btn btn--link btn--sm" data-revert-path="${Help.escapeHtml(c.path)}">Revert</button>
             </div>
           `).join('')}
@@ -838,6 +838,16 @@ function renderChangesSection(container) {
           CodeMirror.goToPath(path);
         }, 150);
       }
+    });
+  });
+
+  // Set up diff link handlers
+  container.querySelectorAll('[data-show-diff]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Switch to diff tab
+      const diffTab = document.querySelector('.tab[data-tab="diff"]');
+      if (diffTab) diffTab.click();
     });
   });
 
