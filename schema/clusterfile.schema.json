@@ -818,6 +818,175 @@
           "additionalProperties": true,
           "description": "Nutanix platform integration settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_nutanix/installing-nutanix-installer-provisioned.html"
+        },
+        "vsphere": {
+          "title": "vSphere",
+          "type": "object",
+          "properties": {
+            "vcenter": {
+              "title": "vCenter Server",
+              "type": "object",
+              "properties": {
+                "server": {
+                  "title": "Server",
+                  "anyOf": [
+                    { "$ref": "#/$defs/ipAddress" },
+                    { "$ref": "#/$defs/fqdn" }
+                  ],
+                  "description": "vCenter Server hostname or IP address."
+                },
+                "username": {
+                  "title": "Username",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "vCenter username (e.g., administrator@vsphere.local)."
+                },
+                "password": {
+                  "title": "Password",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Path to file containing vCenter password.",
+                  "x-is-file": true
+                },
+                "datacenter": {
+                  "title": "Datacenter",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "vSphere datacenter name."
+                },
+                "defaultDatastore": {
+                  "title": "Default Datastore",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Default datastore for VM storage."
+                },
+                "cluster": {
+                  "title": "Cluster",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "vSphere compute cluster name."
+                },
+                "folder": {
+                  "title": "VM Folder",
+                  "type": "string",
+                  "description": "VM folder path (e.g., /datacenter/vm/folder)."
+                },
+                "resourcePool": {
+                  "title": "Resource Pool",
+                  "type": "string",
+                  "description": "Resource pool path (optional, defaults to cluster root)."
+                }
+              },
+              "required": ["server", "username", "password", "datacenter", "defaultDatastore", "cluster"],
+              "description": "vCenter Server connection and resource settings."
+            },
+            "network": {
+              "title": "Network",
+              "type": "string",
+              "minLength": 1,
+              "description": "vSphere network/port group name for VMs."
+            },
+            "diskGiB": {
+              "title": "Disk Size (GiB)",
+              "type": "integer",
+              "minimum": 120,
+              "default": 120,
+              "description": "VM disk size in GiB (minimum 120)."
+            },
+            "memoryMiB": {
+              "title": "Memory (MiB)",
+              "type": "integer",
+              "minimum": 16384,
+              "default": 16384,
+              "description": "VM memory in MiB (minimum 16384 for control plane)."
+            },
+            "cpus": {
+              "title": "CPUs",
+              "type": "integer",
+              "minimum": 4,
+              "default": 4,
+              "description": "Number of vCPUs per VM (minimum 4)."
+            },
+            "coresPerSocket": {
+              "title": "Cores Per Socket",
+              "type": "integer",
+              "minimum": 1,
+              "default": 4,
+              "description": "CPU cores per socket."
+            },
+            "failureDomains": {
+              "title": "Failure Domains",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Failure domain name."
+                  },
+                  "region": {
+                    "title": "Region",
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Region tag category value."
+                  },
+                  "zone": {
+                    "title": "Zone",
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Zone tag category value."
+                  },
+                  "server": {
+                    "title": "vCenter Server",
+                    "anyOf": [
+                      { "$ref": "#/$defs/ipAddress" },
+                      { "$ref": "#/$defs/fqdn" }
+                    ],
+                    "description": "vCenter for this failure domain (if different from primary)."
+                  },
+                  "datacenter": {
+                    "title": "Datacenter",
+                    "type": "string",
+                    "description": "Datacenter for this failure domain."
+                  },
+                  "cluster": {
+                    "title": "Compute Cluster",
+                    "type": "string",
+                    "description": "Compute cluster for this failure domain."
+                  },
+                  "datastore": {
+                    "title": "Datastore",
+                    "type": "string",
+                    "description": "Datastore for this failure domain."
+                  },
+                  "network": {
+                    "title": "Network",
+                    "type": "string",
+                    "description": "Network for this failure domain."
+                  },
+                  "resourcePool": {
+                    "title": "Resource Pool",
+                    "type": "string",
+                    "description": "Resource pool path."
+                  },
+                  "folder": {
+                    "title": "VM Folder",
+                    "type": "string",
+                    "description": "VM folder path."
+                  }
+                },
+                "required": ["name", "region", "zone"],
+                "additionalProperties": true
+              },
+              "description": "Failure domains for multi-zone deployments."
+            }
+          },
+          "required": ["vcenter", "network"],
+          "additionalProperties": true,
+          "description": "vSphere IPI platform settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html"
         }
       },
       "additionalProperties": true,
