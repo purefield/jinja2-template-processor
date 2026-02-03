@@ -1,0 +1,72 @@
+# Clusterfile Editor v2.0 - Development Prompts Log
+# Session started: 2026-02-03
+
+## Historical Prompts (from conversation summary)
+
+### Prompt 1
+Implement the following plan: [detailed Clusterfile Editor v2.0 spec]
+
+### Prompt 2
+run the dev server and test it
+
+### Prompt 3
+where is it running?
+
+### Prompt 4
+podman ps does not list it
+
+### Prompt 5
+See JS errors: '/home/inference/tmp/Screenshot from 2026-02-03 08-12-29.png'
+
+### Prompt 6
+curl localhost:8080 - curl: (7) Failed to connect to localhost port 8080
+
+### Prompt 7
+[Screenshot showing more JS errors - AJV schema error and CodeMirror error]
+
+### Prompt 8
+[Screenshot showing CSP eval error]
+
+### Prompt 9
+You are behind a firewall, do not change ports on the server as I cannot reach them otherwise
+
+### Prompt 10
+the UI is quite colorful, the yaml is not readable - see latest screenshot in tmp folder
+
+### Prompt 11
+validation is not working, loading a document causes a 100% diff
+
+## Current Session Prompts
+
+### Prompt 12 (2026-02-03)
+loading a new document, the diff is showing the old document until I switch away and back. validation did not catch invalid input still
+
+### Prompt 13 (2026-02-03)
+capture all historical prompts and future prompts in a prompts.log file
+
+### Prompt 14 (2026-02-03)
+anytime we have one-of or a list with an optional input, we should show the list and "other" option in the form, in general, the form should reflect the schema closely. File path input should not be shown as "<redacted>" but show the path with an icon depicting it's a path that will need to be injected when processed locally
+
+### Prompt 15 (2026-02-03)
+see latest screenshot, still redacted
+
+### Prompt 16 (2026-02-03)
+There should be no secrets stored in the clusterfile
+
+### Prompt 17 (2026-02-03)
+os is a complex structure, right now it shows as object ref no a rich editor, add support for the options (string,object) in the ui, make it compact to not be too long. see latest screenshot
+
+### Prompt 18 (2026-02-03)
+the help dialog has links, trying to reach them is impossible as they close when leaving the (?), we need to allow for the dialog to be reached on mouse over
+
+### Prompt 19 (2026-02-03)
+found a bug, the os toggle changed the wwn to deviceName after toggling to string, should not be allowed see screenshot for errors caused
+
+### Prompt 20 (2026-02-03)
+when trying to use other version, the form field appears and disappears not allowing to enter data, likely due to the validation causing a refresh as it also shows an error
+
+### Prompt 21 (2026-02-03)
+Reloading the page should keep you in the same section, with the same scroll level and changes should be locally captured and not lost. allowing for revert and save at a later time. the goal is to use the browser as persistent layer
+
+### Prompt 22 (2026-02-03)
+The icons are very windows 98 like, can we have them be muted and modern. The overall look and feel should match that of openshift 4.20. The form should make a VMWare admin feel familiar. This is an editor to help VMWare admins provide input to transition to openshift and both themes should co-exist to help with the familarity. the advanced options and overall ui should be openshift, the form and guided input focus on vmware. capture the current work with a tag on the branch before making the changes.

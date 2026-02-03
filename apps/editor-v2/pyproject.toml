@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "clusterfile-editor"
+version = "2.0.0"
+description = "Schema-driven, offline-first web editor for OpenShift cluster configuration files"
+authors = ["OpenShift Platform Team"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.127.0"}
+jinja2 = "^3.1.6"
+yamllint = "^1.37.1"
+jsonpath-ng = "^1.7.0"
+jsonschema = "^4.25.1"
+pyyaml = "^6.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+pytest-asyncio = "^0.24.0"
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
