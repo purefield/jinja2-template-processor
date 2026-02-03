@@ -109,14 +109,9 @@ html, body {
 }
 
 .app-header__logo {
-  display: flex;
-  align-items: center;
-  color: var(--pf-global--palette--red-100);
-}
-
-.app-header__logo svg {
   width: 32px;
   height: 32px;
+  object-fit: contain;
 }
 
 .app-header__title {
