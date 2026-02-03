@@ -1,2046 +1,1419 @@
-(function() {
-    'use strict';
+/**
+ * Clusterfile Editor v2.1 - Main Application
+ *
+ * Entry point that orchestrates all modules.
+ */
 
-    const STORAGE_KEYS = {
-        LAST_YAML: 'CLUSTERFILE_LAST_YAML',
-        UPLOADED_SCHEMA: 'CLUSTERFILE_UPLOADED_SCHEMA',
-        TOUR_SHOWN: 'CLUSTERFILE_TOUR_SHOWN',
-        MODE: 'CLUSTERFILE_MODE'
-    };
+// Module references
+const State = window.EditorState;
+const Validator = window.EditorValidator;
+const Help = window.EditorHelp;
+const CodeMirror = window.EditorCodeMirror;
+const Form = window.EditorForm;
 
-    let templateState = {
-        templates: [],
-        outputEditor: null,
-        lastRenderedOutput: ''
-    };
+// API base URL
+const API_BASE = window.location.origin;
 
-    const SENSITIVE_FIELDS = ['pullSecret', 'password', 'secret'];
+// Application version (fetched from backend)
+let APP_VERSION = '2.1.0';
 
-    function getApiBase() {
-        return window.location.protocol + '//' + window.location.host;
+// Flag to prevent form→editor→form sync loops
+let syncingFromForm = false;
+
+// Changelog data
+const CHANGELOG = [
+  {
+    version: '2.1.0',
+    date: '2026-02-03',
+    changes: [
+      'Added Template and Rendered tabs for full-page template viewing',
+      'Auto-load template source when selecting from dropdown',
+      'Auto-render with parameter highlighting showing changed lines',
+      'Improved Changes section with grouped changes and clickable links',
+      'Fixed form focus loss when editing YAML',
+      'Enhanced filename display with modification indicator',
+      'Real-time validation and change badge updates'
+    ]
+  },
+  {
+    version: '2.0.0',
+    date: '2026-02-03',
+    changes: [
+      'Complete rewrite with modern OpenShift 4.20 UI styling',
+      'Schema-driven form generation from JSON Schema',
+      'Two-way YAML ↔ Form synchronization',
+      'Client-side AJV validation with custom formats',
+      'Change tracking with baseline/current/diff comparison',
+      'Browser localStorage persistence for session state',
+      'Jinja2 template rendering with parameter overrides',
+      'Help system with documentation links',
+      'SVG icons replacing emoji for modern appearance'
+    ]
+  }
+];
+
+/**
+ * Initialize the application
+ */
+async function init() {
+  console.log('Initializing Clusterfile Editor v2.1');
+
+  // Load saved state
+  const saved = State.loadFromLocalStorage();
+  State.state.mode = saved.mode;
+  State.state.currentSection = saved.section;
+  State.state.currentFilename = saved.filename;
+
+  // Fetch schema
+  try {
+    const schema = await fetchSchema();
+    State.state.schema = schema;
+    const validatorInitialized = Validator.initValidator(schema);
+    console.log('Validator initialized:', validatorInitialized);
+    if (!validatorInitialized) {
+      console.warn('Validator failed to initialize - validation will be skipped');
     }
+  } catch (e) {
+    console.error('Failed to load schema:', e);
+    showToast('Failed to load schema', 'error');
+  }
 
-    let state = {
-        schema: null,
-        baselineYamlText: '',
-        currentYamlText: '',
-        currentObject: {},
-        changes: [],
-        currentSection: 'account',
-        mode: 'guided',
-        editor: null,
-        helpTimeout: null,
-        pinnedHelp: false,
-        currentFilename: 'untitled',
-        validationErrors: 0,
-        samples: []
-    };
-
-    async function init() {
-        await loadSchema();
-        await loadSamples();
-        await loadTemplates();
-        initEditor();
-        initTemplateOutputEditor();
-        initEventListeners();
-        initTemplateEventListeners();
-        loadSavedState();
-        showTourIfNeeded();
-        renderCurrentSection();
-        updateValidation();
+  // Fetch samples, templates, and version
+  try {
+    const [samples, templates, versionInfo] = await Promise.all([
+      fetchSamples(),
+      fetchTemplates(),
+      fetchVersion()
+    ]);
+    State.state.samples = samples;
+    State.state.templates = templates;
+    if (versionInfo?.version) {
+      APP_VERSION = versionInfo.version;
     }
+  } catch (e) {
+    console.error('Failed to load samples/templates:', e);
+  }
 
-    async function loadSchema() {
-        try {
-            const uploadedSchema = localStorage.getItem(STORAGE_KEYS.UPLOADED_SCHEMA);
-            if (uploadedSchema) {
-                state.schema = JSON.parse(uploadedSchema);
-            } else {
-                const response = await fetch(getApiBase() + '/api/schema');
-                state.schema = await response.json();
-            }
-        } catch (error) {
-            console.error('Failed to load schema:', error);
-            showError('Failed to load schema');
+  // Initialize UI
+  initUI();
+
+  // Update version display in header
+  updateVersionDisplay();
+
+  // Restore saved document with preserved baseline and changes
+  if (saved.yaml) {
+    // If we have a saved baseline, use it; otherwise use current as baseline
+    const baseline = saved.baseline || saved.yaml;
+    State.setBaseline(baseline);
+    State.updateCurrent(saved.yaml, 'restore');
+    State.state.currentFilename = saved.filename;
+    CodeMirror.setEditorValue(saved.yaml, false);
+    updateHeader();
+    renderCurrentSection();
+
+    // Restore scroll position after render
+    if (saved.scrollPosition && saved.scrollPosition.section === saved.section) {
+      setTimeout(() => {
+        const formContent = document.getElementById('form-content');
+        if (formContent) {
+          formContent.scrollTop = saved.scrollPosition.form || 0;
         }
+      }, 100);
+    }
+  } else {
+    newDocument();
+  }
+
+  // Show welcome tour on first visit
+  if (!State.isTourShown()) {
+    showWelcomeTour();
+  }
+
+  // Set up auto-save (every 5 seconds for better persistence)
+  setInterval(() => {
+    State.saveToLocalStorage();
+  }, 5000);
+
+  // Also save on page unload
+  window.addEventListener('beforeunload', () => {
+    State.saveToLocalStorage();
+  });
+
+  console.log('Initialization complete');
+}
+
+/**
+ * Initialize UI components
+ */
+function initUI() {
+  // Set up navigation
+  setupNavigation();
+
+  // Set up mode toggle
+  setupModeToggle();
+
+  // Set up header actions
+  setupHeaderActions();
+
+  // Initialize YAML editor
+  const editorContainer = document.getElementById('yaml-editor');
+  if (editorContainer) {
+    CodeMirror.initYamlEditor(editorContainer);
+    CodeMirror.setupEditorSync(onYamlChange);
+  }
+
+  // Initialize template source editor (read-only)
+  const templateSourceContainer = document.getElementById('template-source-editor');
+  if (templateSourceContainer) {
+    CodeMirror.initTemplateEditor(templateSourceContainer);
+  }
+
+  // Initialize rendered output editor (read-only)
+  const renderedContainer = document.getElementById('rendered-output-editor');
+  if (renderedContainer) {
+    CodeMirror.initRenderedEditor(renderedContainer);
+  }
+
+  // Set up form change callback
+  Form.setFormChangeCallback(onFormChange);
+
+  // Set up file input
+  const fileInput = document.getElementById('file-input');
+  if (fileInput) {
+    fileInput.addEventListener('change', handleFileLoad);
+  }
+
+  // Set up keyboard shortcuts
+  setupKeyboardShortcuts();
+
+  // Set up tab navigation
+  setupTabs();
+
+  // Set up template buttons (they're in static HTML)
+  setupTemplateButtons();
+
+  // Populate dropdowns
+  populateSamplesDropdown();
+  populateTemplatesDropdown();
+
+  // Update header
+  updateHeader();
+
+  // Initial render
+  updateModeUI();
+  renderCurrentSection();
+}
+
+/**
+ * Set up sidebar navigation
+ */
+function setupNavigation() {
+  const navItems = document.querySelectorAll('.sidebar-nav__item');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const section = item.dataset.section;
+      if (section) {
+        navigateToSection(section);
+      }
+    });
+
+    // Set active state based on current section
+    item.classList.toggle('sidebar-nav__item--active', item.dataset.section === State.state.currentSection);
+  });
+}
+
+/**
+ * Navigate to a section
+ */
+function navigateToSection(section) {
+  State.state.currentSection = section;
+
+  // Update nav active state
+  document.querySelectorAll('.sidebar-nav__item').forEach(item => {
+    item.classList.toggle('sidebar-nav__item--active', item.dataset.section === section);
+  });
+
+  // Render section
+  renderCurrentSection();
+
+  // Save section to localStorage immediately
+  localStorage.setItem(State.STORAGE_KEYS.CURRENT_SECTION, section);
+}
+
+/**
+ * Set up mode toggle
+ */
+function setupModeToggle() {
+  const guidedBtn = document.getElementById('mode-guided');
+  const advancedBtn = document.getElementById('mode-advanced');
+
+  if (guidedBtn) {
+    guidedBtn.addEventListener('click', () => setMode('guided'));
+  }
+  if (advancedBtn) {
+    advancedBtn.addEventListener('click', () => setMode('advanced'));
+  }
+}
+
+/**
+ * Set editor mode
+ */
+function setMode(mode) {
+  State.state.mode = mode;
+  updateModeUI();
+  localStorage.setItem(State.STORAGE_KEYS.MODE, mode);
+}
+
+/**
+ * Update UI based on mode
+ */
+function updateModeUI() {
+  const mode = State.state.mode;
+  const formPane = document.querySelector('.split-view__pane--form');
+  const editorPane = document.querySelector('.split-view__pane--editor');
+
+  document.getElementById('mode-guided')?.classList.toggle('mode-toggle__btn--active', mode === 'guided');
+  document.getElementById('mode-advanced')?.classList.toggle('mode-toggle__btn--active', mode === 'advanced');
+
+  if (formPane && editorPane) {
+    if (mode === 'guided') {
+      formPane.style.display = 'flex';
+      editorPane.style.flex = '1';
+    } else {
+      formPane.style.display = 'none';
+      editorPane.style.flex = '1';
+    }
+  }
+
+  // Refresh editor when becoming visible
+  setTimeout(() => CodeMirror.refreshEditor(), 100);
+}
+
+/**
+ * Set up header action buttons
+ */
+function setupHeaderActions() {
+  // New button
+  document.getElementById('btn-new')?.addEventListener('click', () => {
+    if (confirm('Create new document? Unsaved changes will be lost.')) {
+      newDocument();
+    }
+  });
+
+  // Load button
+  document.getElementById('btn-load')?.addEventListener('click', () => {
+    document.getElementById('file-input')?.click();
+  });
+
+  // Save button
+  document.getElementById('btn-save')?.addEventListener('click', () => {
+    State.saveToLocalStorage();
+    showToast('Saved to browser storage', 'success');
+  });
+
+  // Download button
+  document.getElementById('btn-download')?.addEventListener('click', downloadDocument);
+
+  // Samples dropdown
+  document.getElementById('btn-samples')?.addEventListener('click', (e) => {
+    const dropdown = e.target.closest('.dropdown');
+    dropdown?.classList.toggle('dropdown--open');
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown')) {
+      document.querySelectorAll('.dropdown--open').forEach(d => d.classList.remove('dropdown--open'));
+    }
+  });
+}
+
+/**
+ * Set up keyboard shortcuts
+ */
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + S to save
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      State.saveToLocalStorage();
+      showToast('Saved', 'success');
     }
 
-    async function loadSamples() {
-        try {
-            const response = await fetch(getApiBase() + '/api/samples');
-            const data = await response.json();
-            state.samples = data.samples;
-            const samplesSelect = document.getElementById('samples-select');
-            if (samplesSelect) {
-                samplesSelect.innerHTML = '<option value="">Load Sample...</option>';
-                data.samples.forEach(sample => {
-                    const option = document.createElement('option');
-                    option.value = sample.filename;
-                    option.textContent = sample.name;
-                    samplesSelect.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error('Failed to load samples:', error);
-        }
+    // Ctrl/Cmd + O to load
+    if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+      e.preventDefault();
+      document.getElementById('file-input')?.click();
     }
+  });
+}
 
-    function initEditor() {
-        const editorElement = document.getElementById('yaml-editor');
-        state.editor = CodeMirror(editorElement, {
-            mode: 'yaml',
-            theme: 'default',
-            lineNumbers: true,
-            lineWrapping: true,
-            tabSize: 2,
-            indentWithTabs: false,
-            foldGutter: true,
-            gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-            extraKeys: {
-                'Ctrl-Q': function(cm) { cm.foldCode(cm.getCursor()); }
-            }
+/**
+ * Set up tab navigation
+ */
+function setupTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabGroup = tab.closest('.tabs')?.dataset.tabGroup;
+      const tabId = tab.dataset.tab;
+
+      if (tabGroup && tabId) {
+        // Update active tab
+        document.querySelectorAll(`.tabs[data-tab-group="${tabGroup}"] .tab`).forEach(t => {
+          t.classList.toggle('tab--active', t.dataset.tab === tabId);
         });
 
-        state.editor.on('change', debounce(handleEditorChange, 300));
-    }
-
-    function initEventListeners() {
-        document.querySelectorAll('.pf-c-nav__link[data-section]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                switchSection(link.dataset.section);
-            });
+        // Update active content
+        document.querySelectorAll(`.tab-content[data-tab-group="${tabGroup}"]`).forEach(c => {
+          c.classList.toggle('tab-content--active', c.dataset.tab === tabId);
         });
 
-        const samplesSelect = document.getElementById('samples-select');
-        if (samplesSelect) {
-            samplesSelect.addEventListener('change', async (e) => {
-                if (e.target.value) {
-                    await loadSample(e.target.value);
-                    e.target.value = '';
-                }
-            });
+        // Refresh appropriate editor when switching tabs
+        if (tabId === 'yaml') {
+          setTimeout(() => CodeMirror.refreshEditor(), 100);
+        } else if (tabId === 'template') {
+          setTimeout(() => CodeMirror.refreshTemplateEditor(), 100);
+          // Switch to templates section if not already there
+          if (State.state.currentSection !== 'templates') {
+            navigateToSection('templates');
+          }
+        } else if (tabId === 'rendered') {
+          setTimeout(() => CodeMirror.refreshRenderedEditor(), 100);
+          // Switch to templates section if not already there
+          if (State.state.currentSection !== 'templates') {
+            navigateToSection('templates');
+          }
+          // Auto-render if template is selected
+          autoRenderTemplate();
         }
 
-        document.getElementById('btn-new').addEventListener('click', newDocument);
-        document.getElementById('btn-load').addEventListener('click', () => document.getElementById('file-input').click());
-        document.getElementById('file-input').addEventListener('change', handleFileLoad);
-        document.getElementById('btn-save').addEventListener('click', saveToLocalStorage);
-        document.getElementById('btn-download').addEventListener('click', downloadYaml);
-        document.getElementById('btn-format').addEventListener('click', formatYaml);
-        document.getElementById('btn-copy').addEventListener('click', copyYaml);
-        document.getElementById('btn-revert-section').addEventListener('click', revertSection);
-        document.getElementById('btn-revert-all').addEventListener('click', revertAll);
-
-        document.querySelectorAll('.pf-c-tabs__link').forEach(tab => {
-            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-        });
-
-        document.getElementById('tour-close').addEventListener('click', closeTour);
-
-        const versionBadge = document.getElementById('app-version');
-        if (versionBadge) {
-            versionBadge.addEventListener('click', showChangelog);
-            versionBadge.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    showChangelog();
-                }
-            });
+        // Update diff view when switching to diff tab
+        if (tabId === 'diff') {
+          updateDiffView();
         }
-        
-        const helpBubble = document.getElementById('help-bubble');
-        const helpClose = document.querySelector('.help-bubble-close');
-        const helpPin = document.querySelector('.help-bubble-pin');
-        
-        helpBubble.addEventListener('mousedown', (e) => { e.stopPropagation(); });
-        helpBubble.addEventListener('click', (e) => { e.stopPropagation(); });
-        helpBubble.addEventListener('mouseenter', handleBubbleEnter);
-        helpBubble.addEventListener('mouseleave', handleBubbleLeave);
-        helpClose.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); forceHideHelpBubble(); });
-        helpClose.addEventListener('mousedown', (e) => { e.stopPropagation(); });
-        helpPin.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); togglePinHelp(); });
-        helpPin.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+      }
+    });
+  });
+}
+
+/**
+ * Update the diff view
+ */
+function updateDiffView() {
+  const diffContainer = document.getElementById('diff-view');
+  if (!diffContainer) return;
+
+  const baseline = State.state.baselineYamlText;
+  const current = State.state.currentYamlText;
+
+  if (baseline === current) {
+    diffContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
+        <div class="empty-state__title">No changes</div>
+        <div class="empty-state__description">Your document matches the baseline.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Use diff library if available
+  if (window.Diff) {
+    const diff = Diff.createTwoFilesPatch(
+      'baseline',
+      'current',
+      baseline,
+      current,
+      'Original',
+      'Modified'
+    );
+
+    const lines = diff.split('\n');
+    const html = lines.map(line => {
+      if (line.startsWith('+') && !line.startsWith('+++')) {
+        return `<div class="diff-line diff-line--add">${Help.escapeHtml(line)}</div>`;
+      } else if (line.startsWith('-') && !line.startsWith('---')) {
+        return `<div class="diff-line diff-line--remove">${Help.escapeHtml(line)}</div>`;
+      } else if (line.startsWith('@@')) {
+        return `<div class="diff-line diff-line--header">${Help.escapeHtml(line)}</div>`;
+      } else {
+        return `<div class="diff-line">${Help.escapeHtml(line)}</div>`;
+      }
+    }).join('');
+
+    diffContainer.innerHTML = html;
+  } else {
+    // Fallback: simple line-by-line comparison
+    const baselineLines = baseline.split('\n');
+    const currentLines = current.split('\n');
+    let html = '';
+
+    const maxLen = Math.max(baselineLines.length, currentLines.length);
+    for (let i = 0; i < maxLen; i++) {
+      const baseLine = baselineLines[i] || '';
+      const currLine = currentLines[i] || '';
+
+      if (baseLine !== currLine) {
+        if (baseLine) {
+          html += `<div class="diff-line diff-line--remove">- ${Help.escapeHtml(baseLine)}</div>`;
+        }
+        if (currLine) {
+          html += `<div class="diff-line diff-line--add">+ ${Help.escapeHtml(currLine)}</div>`;
+        }
+      } else {
+        html += `<div class="diff-line">  ${Help.escapeHtml(baseLine)}</div>`;
+      }
     }
 
-    function loadSavedState() {
-        const savedMode = localStorage.getItem(STORAGE_KEYS.MODE);
-        if (savedMode) {
-            setMode(savedMode);
-            document.getElementById('mode-toggle').value = savedMode;
-        }
+    diffContainer.innerHTML = html;
+  }
+}
 
-        const savedYaml = localStorage.getItem(STORAGE_KEYS.LAST_YAML);
-        if (savedYaml) {
-            setYamlText(savedYaml, true);
-        } else {
-            setYamlText(getDefaultYaml(), true);
-        }
+/**
+ * Render the current section
+ */
+function renderCurrentSection() {
+  const section = State.state.currentSection;
+  const container = document.getElementById('form-content');
+
+  if (!container) return;
+
+  if (section === 'templates') {
+    renderTemplatesSection(container);
+  } else if (section === 'changes') {
+    renderChangesSection(container);
+  } else if (section === 'validation') {
+    renderValidationSection(container);
+  } else {
+    Form.renderSection(section, container);
+  }
+
+  // Update validation count
+  updateValidationBadge();
+  updateChangesBadge();
+}
+
+/**
+ * Render templates section
+ */
+function renderTemplatesSection(container) {
+  container.innerHTML = `
+    <div class="template-panel">
+      <div class="form-section">
+        <h2 class="form-section__title">Template Rendering</h2>
+
+        <div class="form-group template-select">
+          <label class="form-label">Template</label>
+          <select class="form-select" id="template-select">
+            <option value="">-- Select Template --</option>
+            ${State.state.templates.map(t => `
+              <option value="${Help.escapeHtml(t.name)}">${Help.escapeHtml(t.name)}</option>
+            `).join('')}
+          </select>
+          <div class="form-description" id="template-description"></div>
+        </div>
+
+        <div class="form-group template-params">
+          <label class="form-label">Parameter Overrides</label>
+          <div id="template-params-list"></div>
+          <button class="btn btn--secondary btn--sm" id="add-param-btn">+ Add Parameter</button>
+        </div>
+
+        <div class="template-info" style="margin-top: 16px;">
+          <div class="alert alert--info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span>Select a template to view its source. Switch to "Rendered" tab to see output.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Set up event listeners
+  const templateSelect = document.getElementById('template-select');
+  const paramsContainer = document.getElementById('template-params-list');
+
+  templateSelect?.addEventListener('change', async () => {
+    const templateName = templateSelect.value;
+    const template = State.state.templates.find(t => t.name === templateName);
+    document.getElementById('template-description').textContent = template?.description || '';
+
+    // Auto-load template source when selected
+    if (templateName) {
+      await loadTemplateSource(templateName);
+      // Switch to template tab to show source
+      const templateTab = document.querySelector('.tab[data-tab="template"]');
+      if (templateTab) templateTab.click();
+    }
+  });
+
+  document.getElementById('add-param-btn')?.addEventListener('click', () => {
+    addParamInput(paramsContainer);
+  });
+
+  // Set up copy/download buttons in pane header
+  setupTemplateButtons();
+}
+
+/**
+ * Set up template copy/download buttons
+ */
+function setupTemplateButtons() {
+  document.getElementById('copy-template-btn')?.addEventListener('click', () => {
+    const content = CodeMirror.getTemplateValue();
+    navigator.clipboard.writeText(content).then(() => showToast('Copied', 'success'));
+  });
+  document.getElementById('copy-rendered-btn')?.addEventListener('click', () => {
+    const content = CodeMirror.getRenderedValue();
+    navigator.clipboard.writeText(content).then(() => showToast('Copied', 'success'));
+  });
+  document.getElementById('download-rendered-btn')?.addEventListener('click', downloadRenderedOutput);
+}
+
+/**
+ * Load template source
+ */
+async function loadTemplateSource(templateName) {
+  try {
+    const response = await fetch(`${API_BASE}/api/templates/${templateName}`);
+    if (!response.ok) throw new Error('Failed to load template');
+
+    const result = await response.json();
+    document.getElementById('template-name-display').textContent = templateName;
+    CodeMirror.setTemplateValue(result.content);
+    State.state.selectedTemplate = templateName;
+  } catch (e) {
+    showToast(`Error: ${e.message}`, 'error');
+  }
+}
+
+/**
+ * Auto-render template when switching to rendered tab
+ * Renders with and without params to highlight differences
+ */
+async function autoRenderTemplate() {
+  const templateName = document.getElementById('template-select')?.value || State.state.selectedTemplate;
+  if (!templateName) {
+    CodeMirror.setRenderedValue('// Select a template to render');
+    return;
+  }
+
+  // Collect params
+  const params = [];
+  document.querySelectorAll('.template-param').forEach(param => {
+    const inputs = param.querySelectorAll('input');
+    const path = inputs[0]?.value;
+    const value = inputs[1]?.value;
+    if (path && value) {
+      params.push(`${path}=${value}`);
+    }
+  });
+
+  try {
+    // If we have params, render both with and without to show diff
+    let baselineOutput = null;
+
+    if (params.length > 0) {
+      // First render without params (baseline)
+      const baselineResponse = await fetch(`${API_BASE}/api/render`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          yaml_text: State.state.currentYamlText,
+          template_name: templateName,
+          params: []
+        })
+      });
+
+      if (baselineResponse.ok) {
+        const baselineResult = await baselineResponse.json();
+        baselineOutput = baselineResult.output;
+      }
     }
 
-    function getDefaultYaml() {
-        return `account:
-  pullSecret: ""
+    // Render with params
+    const response = await fetch(`${API_BASE}/api/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        yaml_text: State.state.currentYamlText,
+        template_name: templateName,
+        params
+      })
+    });
 
-cluster:
-  name: ""
-  version: "4.20.0"
-  platform: baremetal
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Render failed');
+    }
 
+    const result = await response.json();
+
+    // Show with highlights if we have params and baseline
+    if (params.length > 0 && baselineOutput) {
+      CodeMirror.setRenderedValueWithHighlights(result.output, baselineOutput);
+      showToast(`Rendered with ${params.length} parameter override(s) highlighted`, 'success');
+    } else {
+      CodeMirror.setRenderedValue(result.output);
+    }
+
+    if (result.warnings?.length > 0) {
+      showToast(`Rendered with ${result.warnings.length} warning(s)`, 'warning');
+    }
+  } catch (e) {
+    CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
+  }
+}
+
+// Debounce timeout for parameter changes
+let paramRenderTimeout = null;
+
+/**
+ * Add a parameter input
+ */
+function addParamInput(container) {
+  const param = document.createElement('div');
+  param.className = 'template-param';
+  param.innerHTML = `
+    <input type="text" class="form-input param-path" placeholder="cluster.name" style="flex: 1;">
+    <span>=</span>
+    <input type="text" class="form-input param-value" placeholder="value" style="flex: 1;">
+    <span class="array-field__item-remove" title="Remove">&times;</span>
+  `;
+
+  // Add change listeners for real-time rendering
+  const inputs = param.querySelectorAll('input');
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      triggerParamRender();
+    });
+  });
+
+  param.querySelector('.array-field__item-remove').addEventListener('click', () => {
+    param.remove();
+    triggerParamRender();
+  });
+
+  container.appendChild(param);
+}
+
+/**
+ * Trigger parameter-based re-render with debounce
+ */
+function triggerParamRender() {
+  // Only auto-render if Rendered tab is active
+  const renderedTab = document.querySelector('.tab[data-tab="rendered"]');
+  if (!renderedTab?.classList.contains('tab--active')) {
+    return;
+  }
+
+  // Debounce the render
+  clearTimeout(paramRenderTimeout);
+  paramRenderTimeout = setTimeout(() => {
+    autoRenderTemplate();
+  }, 500);
+}
+
+/**
+ * Download rendered output
+ */
+function downloadRenderedOutput() {
+  const output = CodeMirror.getRenderedValue();
+  const templateName = document.getElementById('template-select')?.value || State.state.selectedTemplate || 'output';
+  const filename = templateName.replace('.tpl', '').replace('.tmpl', '').replace('.yaml', '') + '.yaml';
+  downloadFile(output, filename);
+}
+
+/**
+ * Render changes section
+ */
+function renderChangesSection(container) {
+  const changes = State.getChanges();
+
+  if (changes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
+        <div class="empty-state__title">No changes</div>
+        <div class="empty-state__description">Your document matches the baseline.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Group changes by section
+  const groupedChanges = {};
+  changes.forEach(c => {
+    const section = State.parsePath(c.path)[0] || 'other';
+    if (!groupedChanges[section]) {
+      groupedChanges[section] = [];
+    }
+    groupedChanges[section].push(c);
+  });
+
+  container.innerHTML = `
+    <div class="changes-list">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0;">${changes.length} Change${changes.length !== 1 ? 's' : ''}</h3>
+        <button class="btn btn--danger btn--sm" id="revert-all-btn">Revert All</button>
+      </div>
+      ${Object.entries(groupedChanges).map(([section, sectionChanges]) => `
+        <div class="changes-section">
+          <div class="changes-section__header">
+            <a class="changes-section__link" data-section="${Help.escapeHtml(section)}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+              ${Help.escapeHtml(section)}
+            </a>
+            <span class="changes-section__count">${sectionChanges.length}</span>
+          </div>
+          ${sectionChanges.map(c => `
+            <div class="change-item">
+              <a class="change-item__path" data-nav-path="${Help.escapeHtml(c.path)}">${Help.escapeHtml(c.path)}</a>
+              <span class="change-item__values">
+                <span class="change-item__old" title="Old: ${Help.escapeHtml(JSON.stringify(c.oldValue))}">${formatChangeValue(c.oldValue)}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                <span class="change-item__new" title="New: ${Help.escapeHtml(JSON.stringify(c.value))}">${formatChangeValue(c.value)}</span>
+              </span>
+              <button class="btn btn--link btn--sm" data-revert-path="${Help.escapeHtml(c.path)}">Revert</button>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Set up revert all handler
+  document.getElementById('revert-all-btn')?.addEventListener('click', () => {
+    if (confirm('Revert all changes?')) {
+      State.revertAll();
+      syncEditorFromState();
+      renderCurrentSection();
+      updateHeader();
+      showToast('All changes reverted', 'success');
+    }
+  });
+
+  // Set up section link handlers
+  container.querySelectorAll('[data-section]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const section = link.dataset.section;
+      navigateToSection(section);
+    });
+  });
+
+  // Set up path navigation handlers
+  container.querySelectorAll('[data-nav-path]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const path = link.dataset.navPath;
+      const parts = State.parsePath(path);
+      if (parts.length > 0) {
+        navigateToSection(parts[0]);
+        // Scroll to field in form and highlight in YAML editor
+        setTimeout(() => {
+          scrollToField(path);
+          CodeMirror.goToPath(path);
+        }, 150);
+      }
+    });
+  });
+
+  // Set up revert handlers
+  container.querySelectorAll('[data-revert-path]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const path = btn.dataset.revertPath;
+      console.log('Reverting path:', path);
+
+      // Get baseline value and set it
+      const baselineVal = State.getNestedValue(State.state.baselineObject, path);
+      State.setNestedValue(State.state.currentObject, path,
+        baselineVal === undefined ? undefined : JSON.parse(JSON.stringify(baselineVal)));
+
+      // Sync to YAML and update UI
+      syncEditorFromState();
+      updateValidationBadge();
+      updateChangesBadge();
+      updateHeader();
+      renderCurrentSection();
+
+      showToast('Change reverted', 'success');
+    });
+  });
+}
+
+/**
+ * Scroll to a field in the form by path
+ */
+function scrollToField(path) {
+  const formContent = document.getElementById('form-content');
+  if (!formContent) return;
+
+  // Try to find the field by data-path attribute
+  const field = formContent.querySelector(`[data-path="${path}"]`);
+  if (field) {
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Add a brief highlight effect
+    field.classList.add('field-highlight');
+    setTimeout(() => field.classList.remove('field-highlight'), 2000);
+    return;
+  }
+
+  // Try to find by partial path match (for nested fields)
+  const parts = State.parsePath(path);
+  for (let i = parts.length; i > 0; i--) {
+    const partialPath = parts.slice(0, i).join('.');
+    const partialField = formContent.querySelector(`[data-path="${partialPath}"]`);
+    if (partialField) {
+      partialField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      partialField.classList.add('field-highlight');
+      setTimeout(() => partialField.classList.remove('field-highlight'), 2000);
+      return;
+    }
+  }
+}
+
+/**
+ * Format a change value for display
+ */
+function formatChangeValue(value) {
+  if (value === undefined) return '<empty>';
+  if (value === null) return 'null';
+  if (typeof value === 'string') {
+    return value.length > 20 ? value.substring(0, 20) + '...' : value;
+  }
+  const str = JSON.stringify(value);
+  return str.length > 20 ? str.substring(0, 20) + '...' : str;
+}
+
+/**
+ * Render validation section
+ */
+function renderValidationSection(container) {
+  const result = Validator.validateDocument(State.state.currentObject);
+  State.state.validationErrors = result.errors;
+
+  if (result.valid) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
+        <div class="empty-state__title">Valid Document</div>
+        <div class="empty-state__description">Your clusterfile passes all schema validations.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="validation-panel">
+      <h3 style="margin: 0 0 16px 0;">${result.errors.length} Validation Error${result.errors.length !== 1 ? 's' : ''}</h3>
+      ${result.errors.map(e => `
+        <div class="validation-item">
+          <span class="validation-item__icon validation-item__icon--error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+          <div class="validation-item__content">
+            <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
+            <div class="validation-item__message">${Help.escapeHtml(e.message)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Set up path click handlers
+  container.querySelectorAll('.validation-item__path').forEach(pathEl => {
+    pathEl.addEventListener('click', () => {
+      const path = pathEl.dataset.path;
+      if (path) {
+        // Navigate to the field
+        const parts = State.parsePath(path);
+        if (parts.length > 0) {
+          const section = parts[0];
+          navigateToSection(section);
+        }
+        // Also try to go to line in editor
+        CodeMirror.goToPath(path);
+      }
+    });
+  });
+}
+
+/**
+ * Handle YAML editor changes
+ */
+function onYamlChange(yamlText) {
+  // Skip if this change came from form sync (prevents loop)
+  if (syncingFromForm) {
+    return;
+  }
+
+  // Validate YAML syntax
+  try {
+    jsyaml.load(yamlText);
+  } catch (e) {
+    // Invalid YAML - don't sync
+    return;
+  }
+
+  State.updateCurrent(yamlText, 'editor');
+
+  // Update badges immediately - don't re-render form to avoid losing focus
+  updateValidationBadge();
+  updateChangesBadge();
+  updateHeader();
+
+  // Only re-render validation/changes sections if they're active (they show dynamic content)
+  const currentSection = State.state.currentSection;
+  if (currentSection === 'validation' || currentSection === 'changes') {
+    renderCurrentSection();
+  }
+  // Note: Form sections are NOT re-rendered to preserve user's input focus
+}
+
+/**
+ * Handle form changes
+ */
+function onFormChange() {
+  // Set flag to prevent editor change from triggering form re-render
+  syncingFromForm = true;
+
+  // Sync to YAML
+  const yaml = State.toYaml();
+  State.state.currentYamlText = yaml;
+  CodeMirror.setEditorValue(yaml, true);
+
+  // Clear flag after a short delay (after editor change event fires)
+  setTimeout(() => {
+    syncingFromForm = false;
+  }, 50);
+
+  updateValidationBadge();
+  updateChangesBadge();
+  updateHeader();
+
+  // Note: Don't re-render the section here - it would destroy active form inputs
+  // Change indicators are updated inline by updateFieldValue in form.js
+}
+
+/**
+ * Sync editor from state
+ */
+function syncEditorFromState() {
+  const yaml = State.toYaml();
+  State.state.currentYamlText = yaml;
+  CodeMirror.setEditorValue(yaml, false);
+}
+
+/**
+ * Update validation badge
+ */
+function updateValidationBadge() {
+  const result = Validator.validateDocument(State.state.currentObject);
+  State.state.validationErrors = result.errors;
+
+  const badge = document.querySelector('[data-section="validation"] .sidebar-nav__item-badge');
+  if (badge) {
+    badge.textContent = result.errors.length;
+    badge.style.display = result.errors.length > 0 ? 'inline' : 'none';
+  }
+}
+
+/**
+ * Update changes badge
+ */
+function updateChangesBadge() {
+  const changes = State.getChanges();
+  const badge = document.querySelector('[data-section="changes"] .sidebar-nav__item-badge');
+  if (badge) {
+    badge.textContent = changes.length;
+    badge.style.display = changes.length > 0 ? 'inline' : 'none';
+  }
+}
+
+/**
+ * Update header with filename and modification indicator
+ */
+function updateHeader() {
+  const filenameEl = document.querySelector('.app-header__filename');
+  const modifiedEl = document.getElementById('modified-indicator');
+
+  if (filenameEl) {
+    filenameEl.textContent = State.state.currentFilename || 'untitled.clusterfile';
+  }
+
+  // Show modification indicator if there are changes
+  if (modifiedEl) {
+    const hasChanges = State.getChanges().length > 0;
+    modifiedEl.style.display = hasChanges ? 'inline' : 'none';
+  }
+}
+
+/**
+ * Load a document
+ */
+function loadDocument(yamlText, filename = 'untitled.clusterfile', setAsBaseline = true) {
+  State.state.currentFilename = filename;
+
+  if (setAsBaseline) {
+    State.setBaseline(yamlText);
+  }
+  State.updateCurrent(yamlText, 'load');
+
+  CodeMirror.setEditorValue(yamlText, false);
+  updateHeader();
+  renderCurrentSection();
+
+  // Update diff view if currently visible
+  updateDiffView();
+
+  // Update validation
+  updateValidationBadge();
+}
+
+/**
+ * Create new document
+ */
+function newDocument() {
+  const emptyDoc = `# Clusterfile
+account: {}
+cluster: {}
 network:
   domain: ""
-
 hosts: {}
-
-plugins: {}
 `;
+  loadDocument(emptyDoc, 'untitled.clusterfile', true);
+}
+
+/**
+ * Handle file load
+ */
+function handleFileLoad(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target?.result;
+    if (typeof content === 'string') {
+      loadDocument(content, file.name, true);
+      showToast(`Loaded ${file.name}`, 'success');
     }
+  };
+  reader.onerror = () => {
+    showToast('Failed to read file', 'error');
+  };
+  reader.readAsText(file);
 
-    function showTourIfNeeded() {
-        const tourShown = localStorage.getItem(STORAGE_KEYS.TOUR_SHOWN);
-        if (!tourShown) {
-            document.getElementById('tour-modal').style.display = 'block';
-        }
+  // Reset input
+  event.target.value = '';
+}
+
+/**
+ * Download document
+ */
+function downloadDocument() {
+  const yaml = State.toYaml();
+  const filename = State.state.currentFilename || 'clusterfile.yaml';
+  downloadFile(yaml, filename);
+  showToast('Downloaded', 'success');
+}
+
+/**
+ * Download a file
+ */
+function downloadFile(content, filename) {
+  const blob = new Blob([content], { type: 'text/yaml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Populate samples dropdown
+ */
+function populateSamplesDropdown() {
+  const menu = document.getElementById('samples-menu');
+  if (!menu) return;
+
+  menu.innerHTML = State.state.samples.map(s => `
+    <button class="dropdown__item" data-filename="${Help.escapeHtml(s.filename)}">
+      ${Help.escapeHtml(s.name)}
+    </button>
+  `).join('');
+
+  menu.querySelectorAll('.dropdown__item').forEach(item => {
+    item.addEventListener('click', async () => {
+      const filename = item.dataset.filename;
+      try {
+        const response = await fetch(`${API_BASE}/api/samples/${filename}`);
+        if (!response.ok) throw new Error('Failed to load sample');
+        const result = await response.json();
+        loadDocument(result.content, filename, true);
+        showToast(`Loaded sample: ${filename}`, 'success');
+      } catch (e) {
+        showToast(`Error: ${e.message}`, 'error');
+      }
+
+      // Close dropdown
+      item.closest('.dropdown')?.classList.remove('dropdown--open');
+    });
+  });
+}
+
+/**
+ * Populate templates dropdown
+ */
+function populateTemplatesDropdown() {
+  // Templates are populated in renderTemplatesSection
+}
+
+/**
+ * Show welcome tour modal
+ */
+function showWelcomeTour() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title">Welcome to Clusterfile Editor</h2>
+        <span class="modal__close">×</span>
+      </div>
+      <div class="modal__body">
+        <div class="tour-step">
+          <span class="tour-step__number">1</span>
+          <div class="tour-step__title">Choose Your Mode</div>
+          <div class="tour-step__description">
+            Use <strong>Guided</strong> mode for form-based editing, or <strong>Advanced</strong> for direct YAML editing.
+          </div>
+        </div>
+        <div class="tour-step">
+          <span class="tour-step__number">2</span>
+          <div class="tour-step__title">Navigate Sections</div>
+          <div class="tour-step__description">
+            Use the sidebar to navigate between Account, Cluster, Network, Hosts, and Plugins sections.
+          </div>
+        </div>
+        <div class="tour-step">
+          <span class="tour-step__number">3</span>
+          <div class="tour-step__title">Get Help</div>
+          <div class="tour-step__description">
+            Click the <strong>?</strong> icon next to any field to see documentation and helpful links.
+          </div>
+        </div>
+        <div class="tour-step">
+          <span class="tour-step__number">4</span>
+          <div class="tour-step__title">Render Templates</div>
+          <div class="tour-step__description">
+            Go to <strong>Templates</strong> to render install-config.yaml and other manifests.
+          </div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <label style="flex: 1; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="tour-dont-show">
+          Don't show again
+        </label>
+        <button class="btn btn--primary" id="tour-close">Get Started</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeModal = () => {
+    if (document.getElementById('tour-dont-show')?.checked) {
+      State.setTourShown();
     }
-
-    function closeTour() {
-        document.getElementById('tour-modal').style.display = 'none';
-        if (document.getElementById('tour-dont-show').checked) {
-            localStorage.setItem(STORAGE_KEYS.TOUR_SHOWN, 'true');
-        }
-    }
-
-    function showChangelog() {
-        switchSection('changelog');
-    }
-
-    async function loadChangelog() {
-        const content = document.getElementById('changelog-content');
-        if (!content) return;
-        if (content.dataset.loaded) return;
-        try {
-            const response = await fetch('/static/changelog.md', { cache: 'no-cache' });
-            content.textContent = await response.text();
-            content.dataset.loaded = 'true';
-        } catch (error) {
-            content.textContent = 'Failed to load changelog.';
-        }
-    }
-
-    function setMode(mode) {
-        state.mode = mode;
-        localStorage.setItem(STORAGE_KEYS.MODE, mode);
-        document.body.classList.remove('guided-mode', 'advanced-mode');
-        document.body.classList.add(mode + '-mode');
-    }
-
-    function switchSection(section) {
-        state.currentSection = section;
-        document.querySelectorAll('.pf-c-nav__link[data-section]').forEach(link => {
-            link.classList.toggle('pf-m-current', link.dataset.section === section);
-        });
-        document.getElementById('section-title').textContent = capitalizeFirst(section);
-        
-        const formContainer = document.getElementById('form-container');
-        const templatesContainer = document.getElementById('templates-container');
-        const changelogContainer = document.getElementById('changelog-container');
-        const editorPane = document.getElementById('editor-pane');
-        const formActions = document.querySelector('.form-actions');
-        
-        if (section === 'templates') {
-            formContainer.style.display = 'none';
-            templatesContainer.style.display = 'block';
-            if (changelogContainer) changelogContainer.style.display = 'none';
-            editorPane.style.display = 'none';
-            if (formActions) formActions.style.display = 'none';
-        } else if (section === 'changelog') {
-            formContainer.style.display = 'none';
-            templatesContainer.style.display = 'none';
-            if (changelogContainer) changelogContainer.style.display = 'block';
-            editorPane.style.display = 'none';
-            if (formActions) formActions.style.display = 'none';
-            loadChangelog();
-        } else {
-            formContainer.style.display = 'block';
-            templatesContainer.style.display = 'none';
-            if (changelogContainer) changelogContainer.style.display = 'none';
-            editorPane.style.display = 'flex';
-            if (formActions) formActions.style.display = 'flex';
-            renderCurrentSection();
-        }
-    }
-
-    function switchTab(tab) {
-        document.querySelectorAll('.pf-c-tabs__item').forEach(item => {
-            item.classList.toggle('pf-m-current', item.querySelector('.pf-c-tabs__link').dataset.tab === tab);
-        });
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.id === 'panel-' + tab);
-        });
-    }
-
-    async function loadSample(filename) {
-        try {
-            const response = await fetch(getApiBase() + `/api/samples/${filename}`);
-            const data = await response.json();
-            setYamlText(data.content, true);
-            state.currentFilename = filename;
-            updateHeaderStatus();
-        } catch (error) {
-            console.error('Failed to load sample:', error);
-            showError('Failed to load sample');
-        }
-    }
-
-    function setYamlText(yamlText, isBaseline = false) {
-        try {
-            state.currentYamlText = yamlText;
-            const parsedObject = jsyaml.load(yamlText) || {};
-            state.currentObject = state.schema ? coerceValueBySchema(parsedObject, state.schema) : parsedObject;
-            
-            if (isBaseline) {
-                state.baselineYamlText = yamlText;
-                state.changes = [];
-            }
-            
-            state.editor.setValue(yamlText);
-            renderCurrentSection();
-            updateValidation();
-            updateChanges();
-            updateDiff();
-        } catch (error) {
-            console.error('Failed to parse YAML:', error);
-            showParseError(error);
-        }
-    }
-
-    function handleEditorChange() {
-        const newYaml = state.editor.getValue();
-        if (newYaml === state.currentYamlText) return;
-
-        try {
-            const newObject = jsyaml.load(newYaml);
-            state.currentYamlText = newYaml;
-            const parsedObject = newObject || {};
-            state.currentObject = state.schema ? coerceValueBySchema(parsedObject, state.schema) : parsedObject;
-            renderCurrentSection();
-            updateValidation();
-            updateChanges();
-            updateDiff();
-            clearParseError();
-        } catch (error) {
-            showParseError(error);
-        }
-    }
-
-    function renderCurrentSection() {
-        const container = document.getElementById('form-container');
-        container.innerHTML = '';
-
-        if (!state.schema || !state.schema.properties) return;
-
-        const section = state.currentSection;
-        const sectionSchema = state.schema.properties[section];
-        const sectionData = state.currentObject[section] || {};
-
-        if (section === 'hosts') {
-            renderHostsSection(container, sectionSchema, sectionData);
-        } else {
-            renderObjectFields(container, sectionSchema, sectionData, section);
-        }
-    }
-
-    function renderObjectFields(container, schema, data, path) {
-        if (!schema || !schema.properties) {
-            if (schema && schema.patternProperties) {
-                renderPatternProperties(container, schema, data, path);
-            }
-            return;
-        }
-
-        Object.entries(schema.properties).forEach(([key, propSchema]) => {
-            const fieldPath = path ? `${path}.${key}` : key;
-            const value = data ? data[key] : undefined;
-            renderField(container, key, propSchema, value, fieldPath);
-        });
-    }
-
-    function renderField(container, key, schema, value, path) {
-        const group = document.createElement('div');
-        group.className = 'form-group';
-        group.dataset.path = path;
-
-        const isChanged = hasChanged(path);
-        if (isChanged) {
-            group.classList.add('has-changes');
-        }
-
-        const fieldRow = document.createElement('div');
-        fieldRow.className = 'field-row';
-
-        const labelSpan = document.createElement('span');
-        labelSpan.className = 'field-label';
-        labelSpan.textContent = schema.title || capitalizeFirst(key);
-        fieldRow.appendChild(labelSpan);
-
-        const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'field-input-wrapper';
-
-        if (schema['x-is-file']) {
-            renderFileField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'array' || Array.isArray(value)) {
-            renderArrayField(inputWrapper, key, schema, value, path);
-        } else if (schema.anyOf || schema.oneOf) {
-            renderAnyOfField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'object' || (value !== null && typeof value === 'object' && !Array.isArray(value))) {
-            renderNestedObjectField(inputWrapper, key, schema, value, path);
-        } else if (schema.enum) {
-            renderEnumField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'boolean') {
-            renderBooleanField(inputWrapper, key, schema, value, path);
-        } else if (schema.type === 'integer' || schema.type === 'number') {
-            renderNumberField(inputWrapper, key, schema, value, path);
-        } else {
-            renderTextField(inputWrapper, key, schema, value, path);
-        }
-
-        fieldRow.appendChild(inputWrapper);
-
-        const helpIcon = document.createElement('span');
-        helpIcon.className = 'help-icon';
-        helpIcon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>';
-        helpIcon.dataset.description = schema.description || '';
-        helpIcon.dataset.docUrl = getDocUrl(schema);
-        helpIcon.addEventListener('mouseenter', handleHelpHover);
-        helpIcon.addEventListener('mouseleave', handleHelpLeave);
-        helpIcon.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
-        helpIcon.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); });
-        fieldRow.appendChild(helpIcon);
-
-        const revertBtn = document.createElement('button');
-        revertBtn.className = 'revert-btn';
-        revertBtn.innerHTML = '&#x21BA;';
-        revertBtn.title = 'Revert to original value';
-        revertBtn.dataset.path = path;
-        revertBtn.addEventListener('click', (e) => { e.stopPropagation(); revertField(e.target.dataset.path); });
-        fieldRow.appendChild(revertBtn);
-
-        group.appendChild(fieldRow);
-
-        if (schema.description) {
-            const desc = document.createElement('div');
-            desc.className = 'field-description';
-            desc.textContent = schema.description.substring(0, 100) + (schema.description.length > 100 ? '...' : '');
-            group.appendChild(desc);
-        }
-
-        container.appendChild(group);
-    }
-
-    function renderTextField(group, key, schema, value, path) {
-        if (Array.isArray(value)) {
-            renderArrayField(group, key, schema.items ? schema : { type: 'array', items: { type: 'string' } }, value, path);
-            return;
-        }
-        if (value !== null && typeof value === 'object') {
-            renderNestedObjectField(group, key, schema.properties ? schema : { type: 'object', properties: {} }, value, path);
-            return;
-        }
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = value !== undefined ? String(value) : '';
-        input.placeholder = schema.default || '';
-        input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
-        input.addEventListener('input', (e) => updateFieldValue(path, e.target.value));
-        group.appendChild(input);
-    }
-
-    function renderNumberField(group, key, schema, value, path) {
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.value = value !== undefined ? value : '';
-        input.placeholder = schema.default !== undefined ? schema.default : '';
-        if (schema.minimum !== undefined) input.min = schema.minimum;
-        if (schema.maximum !== undefined) input.max = schema.maximum;
-        input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
-        input.addEventListener('input', (e) => {
-            const val = e.target.value === '' ? undefined : Number(e.target.value);
-            updateFieldValue(path, val);
-        });
-        group.appendChild(input);
-    }
-
-    function renderBooleanField(group, key, schema, value, path) {
-        const select = document.createElement('select');
-        select.dataset.path = path;
-        select.innerHTML = `
-            <option value="">-- Select --</option>
-            <option value="true" ${value === true ? 'selected' : ''}>Yes</option>
-            <option value="false" ${value === false ? 'selected' : ''}>No</option>
-        `;
-        if (hasChanged(path)) select.classList.add('changed');
-        select.addEventListener('change', (e) => {
-            const val = e.target.value === '' ? undefined : e.target.value === 'true';
-            updateFieldValue(path, val);
-        });
-        group.appendChild(select);
-    }
-
-    function renderEnumField(group, key, schema, value, path) {
-        const select = document.createElement('select');
-        select.dataset.path = path;
-        select.innerHTML = `<option value="">-- Select --</option>`;
-        schema.enum.forEach(opt => {
-            const option = document.createElement('option');
-            option.value = opt;
-            option.textContent = opt;
-            option.selected = value === opt;
-            select.appendChild(option);
-        });
-        if (hasChanged(path)) select.classList.add('changed');
-        select.addEventListener('change', (e) => updateFieldValue(path, e.target.value || undefined));
-        group.appendChild(select);
-    }
-
-    function renderAnyOfField(group, key, schema, value, path) {
-        const options = schema.anyOf || schema.oneOf;
-        const enumOption = options.find(o => o.enum);
-        const objectOption = options.find(o => o.type === 'object');
-        const stringOption = options.find(o => o.type === 'string' && !o.enum);
-        const numberOption = options.find(o => o.type === 'number' || o.type === 'integer');
-        const booleanFalseOption = options.find(o => o.type === 'boolean' && o.const === false);
-        const booleanTrueOption = options.find(o => o.type === 'boolean' && o.const === true);
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'anyof-field';
-
-        if (numberOption && (booleanFalseOption || booleanTrueOption) && !enumOption && !objectOption && !stringOption) {
-            const select = document.createElement('select');
-            select.className = 'anyof-mode-select';
-            const valueIsNumeric = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
-            const currentMode = valueIsNumeric ? 'number' : (value === false ? 'false' : (value === true ? 'true' : ''));
-
-            const falseLabel = booleanFalseOption ? 'Disabled' : 'False';
-            const trueLabel = booleanTrueOption ? 'Enabled' : 'True';
-
-            select.innerHTML = `
-                <option value="">-- Select --</option>
-                <option value="number" ${currentMode === 'number' ? 'selected' : ''}>Value</option>
-                ${booleanFalseOption ? `<option value="false" ${currentMode === 'false' ? 'selected' : ''}>${falseLabel}</option>` : ''}
-                ${booleanTrueOption ? `<option value="true" ${currentMode === 'true' ? 'selected' : ''}>${trueLabel}</option>` : ''}
-            `;
-            wrapper.appendChild(select);
-
-            const numberInput = document.createElement('input');
-            numberInput.type = 'number';
-            numberInput.value = valueIsNumeric ? Number(value) : '';
-            numberInput.placeholder = numberOption.description ? numberOption.description.substring(0, 50) : '';
-            if (numberOption.minimum !== undefined) numberInput.min = numberOption.minimum;
-            if (numberOption.maximum !== undefined) numberInput.max = numberOption.maximum;
-            numberInput.style.display = currentMode === 'number' ? 'block' : 'none';
-            numberInput.addEventListener('input', (e) => {
-                if (e.target.value === '') {
-                    updateFieldValue(path, undefined);
-                } else {
-                    const parsed = numberOption.type === 'integer' ? parseInt(e.target.value, 10) : Number(e.target.value);
-                    updateFieldValue(path, parsed);
-                }
-            });
-            wrapper.appendChild(numberInput);
-
-            select.addEventListener('change', (e) => {
-                const mode = e.target.value;
-                if (mode === 'number') {
-                    numberInput.style.display = 'block';
-                    if (numberInput.value === '') {
-                        updateFieldValue(path, undefined);
-                    } else {
-                        const parsed = numberOption.type === 'integer' ? parseInt(numberInput.value, 10) : Number(numberInput.value);
-                        updateFieldValue(path, parsed);
-                    }
-                } else {
-                    numberInput.style.display = 'none';
-                    if (mode === 'false') {
-                        updateFieldValue(path, false);
-                    } else if (mode === 'true') {
-                        updateFieldValue(path, true);
-                    } else {
-                        updateFieldValue(path, undefined);
-                    }
-                }
-            });
-        } else if (objectOption && stringOption && !enumOption) {
-            const isObject = value !== null && typeof value === 'object';
-            
-            const modeSelect = document.createElement('select');
-            modeSelect.className = 'anyof-mode-select';
-            modeSelect.innerHTML = `
-                <option value="structured" ${isObject ? 'selected' : ''}>Structured</option>
-                <option value="simple" ${!isObject ? 'selected' : ''}>Simple String</option>
-            `;
-            wrapper.appendChild(modeSelect);
-
-            const structuredContainer = document.createElement('div');
-            structuredContainer.className = 'anyof-structured';
-            structuredContainer.style.display = isObject ? 'block' : 'none';
-            
-            const propsToRender = objectOption.properties || {};
-            const valueKeys = isObject && value ? Object.keys(value) : [];
-            valueKeys.forEach(k => {
-                if (!propsToRender[k]) {
-                    propsToRender[k] = { type: 'string', title: capitalizeFirst(k) };
-                }
-            });
-            
-            if (Object.keys(propsToRender).length > 0) {
-                Object.entries(propsToRender).forEach(([propKey, propSchema]) => {
-                    const propPath = `${path}.${propKey}`;
-                    const propValue = isObject && value ? value[propKey] : undefined;
-                    const propGroup = document.createElement('div');
-                    propGroup.className = 'nested-field';
-                    
-                    const propLabel = document.createElement('span');
-                    propLabel.className = 'nested-field-label';
-                    propLabel.textContent = propSchema.title || capitalizeFirst(propKey);
-                    propGroup.appendChild(propLabel);
-                    
-                    const propType = propSchema.type || (Array.isArray(propValue) ? 'array' : typeof propValue === 'boolean' ? 'boolean' : typeof propValue === 'number' ? 'number' : 'string');
-                    
-                    if (propType === 'boolean') {
-                        const select = document.createElement('select');
-                        select.dataset.path = propPath;
-                        select.innerHTML = `
-                            <option value="">-- Select --</option>
-                            <option value="true" ${propValue === true ? 'selected' : ''}>Yes</option>
-                            <option value="false" ${propValue === false ? 'selected' : ''}>No</option>
-                        `;
-                        select.addEventListener('change', (e) => {
-                            let currentVal = getNestedValue(state.currentObject, path);
-                            if (typeof currentVal !== 'object' || currentVal === null) {
-                                currentVal = {};
-                            }
-                            if (e.target.value !== '') {
-                                currentVal[propKey] = e.target.value === 'true';
-                            } else {
-                                delete currentVal[propKey];
-                            }
-                            if (Object.keys(currentVal).length === 0) {
-                                updateFieldValue(path, undefined);
-                            } else {
-                                updateFieldValue(path, currentVal);
-                            }
-                        });
-                        propGroup.appendChild(select);
-                    } else if (propType === 'number' || propType === 'integer') {
-                        const propInput = document.createElement('input');
-                        propInput.type = 'number';
-                        propInput.value = propValue !== undefined ? propValue : '';
-                        propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
-                        propInput.dataset.path = propPath;
-                        if (propSchema.minimum !== undefined) propInput.min = propSchema.minimum;
-                        if (propSchema.maximum !== undefined) propInput.max = propSchema.maximum;
-                        propInput.addEventListener('input', (e) => {
-                            let currentVal = getNestedValue(state.currentObject, path);
-                            if (typeof currentVal !== 'object' || currentVal === null) {
-                                currentVal = {};
-                            }
-                            if (e.target.value !== '') {
-                                currentVal[propKey] = parseFloat(e.target.value);
-                            } else {
-                                delete currentVal[propKey];
-                            }
-                            if (Object.keys(currentVal).length === 0) {
-                                updateFieldValue(path, undefined);
-                            } else {
-                                updateFieldValue(path, currentVal);
-                            }
-                        });
-                        propGroup.appendChild(propInput);
-                    } else if (propType === 'array') {
-                        const arrayContainer = document.createElement('div');
-                        arrayContainer.className = 'nested-array-field';
-                        const items = Array.isArray(propValue) ? propValue : [];
-                        items.forEach((item, idx) => {
-                            const itemRow = document.createElement('div');
-                            itemRow.className = 'nested-array-item';
-                            const itemInput = document.createElement('input');
-                            itemInput.type = 'text';
-                            itemInput.value = item || '';
-                            itemInput.addEventListener('input', (e) => {
-                                let currentVal = getNestedValue(state.currentObject, path);
-                                if (typeof currentVal !== 'object' || currentVal === null) {
-                                    currentVal = {};
-                                }
-                                if (!Array.isArray(currentVal[propKey])) {
-                                    currentVal[propKey] = [];
-                                }
-                                currentVal[propKey][idx] = e.target.value;
-                                updateFieldValue(path, currentVal);
-                            });
-                            itemRow.appendChild(itemInput);
-                            const removeBtn = document.createElement('button');
-                            removeBtn.type = 'button';
-                            removeBtn.className = 'nested-array-remove';
-                            removeBtn.textContent = 'X';
-                            removeBtn.addEventListener('click', () => {
-                                let currentVal = getNestedValue(state.currentObject, path);
-                                if (currentVal && Array.isArray(currentVal[propKey])) {
-                                    currentVal[propKey].splice(idx, 1);
-                                    if (currentVal[propKey].length === 0) {
-                                        delete currentVal[propKey];
-                                    }
-                                    if (Object.keys(currentVal).length === 0) {
-                                        updateFieldValue(path, undefined);
-                                    } else {
-                                        updateFieldValue(path, currentVal);
-                                    }
-                                    renderCurrentSection();
-                                }
-                            });
-                            itemRow.appendChild(removeBtn);
-                            arrayContainer.appendChild(itemRow);
-                        });
-                        const addBtn = document.createElement('button');
-                        addBtn.type = 'button';
-                        addBtn.className = 'nested-array-add';
-                        addBtn.textContent = '+ Add';
-                        addBtn.addEventListener('click', () => {
-                            let currentVal = getNestedValue(state.currentObject, path);
-                            if (typeof currentVal !== 'object' || currentVal === null) {
-                                currentVal = {};
-                            }
-                            if (!Array.isArray(currentVal[propKey])) {
-                                currentVal[propKey] = [];
-                            }
-                            currentVal[propKey].push('');
-                            updateFieldValue(path, currentVal);
-                            renderCurrentSection();
-                        });
-                        arrayContainer.appendChild(addBtn);
-                        propGroup.appendChild(arrayContainer);
-                    } else {
-                        const propInput = document.createElement('input');
-                        propInput.type = 'text';
-                        propInput.value = propValue !== undefined ? propValue : '';
-                        propInput.placeholder = propSchema.description ? propSchema.description.substring(0, 50) : '';
-                        propInput.dataset.path = propPath;
-                        propInput.addEventListener('input', (e) => {
-                            let currentVal = getNestedValue(state.currentObject, path);
-                            if (typeof currentVal !== 'object' || currentVal === null) {
-                                currentVal = {};
-                            }
-                            if (e.target.value) {
-                                currentVal[propKey] = e.target.value;
-                            } else {
-                                delete currentVal[propKey];
-                            }
-                            if (Object.keys(currentVal).length === 0) {
-                                updateFieldValue(path, undefined);
-                            } else {
-                                updateFieldValue(path, currentVal);
-                            }
-                        });
-                        propGroup.appendChild(propInput);
-                    }
-                    structuredContainer.appendChild(propGroup);
-                });
-            }
-            wrapper.appendChild(structuredContainer);
-
-            const simpleContainer = document.createElement('div');
-            simpleContainer.className = 'anyof-simple';
-            simpleContainer.style.display = isObject ? 'none' : 'block';
-            
-            const simpleInput = document.createElement('input');
-            simpleInput.type = 'text';
-            simpleInput.value = !isObject && value ? value : '';
-            simpleInput.placeholder = stringOption.description ? stringOption.description.substring(0, 50) : 'Enter value...';
-            simpleInput.dataset.path = path;
-            if (hasChanged(path)) simpleInput.classList.add('changed');
-            simpleInput.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
-            simpleContainer.appendChild(simpleInput);
-            wrapper.appendChild(simpleContainer);
-
-            modeSelect.addEventListener('change', (e) => {
-                const isStructured = e.target.value === 'structured';
-                structuredContainer.style.display = isStructured ? 'block' : 'none';
-                simpleContainer.style.display = isStructured ? 'none' : 'block';
-                if (isStructured) {
-                    updateFieldValue(path, {});
-                } else {
-                    updateFieldValue(path, '');
-                }
-            });
-        } else if (enumOption && enumOption.enum) {
-            const select = document.createElement('select');
-            select.dataset.path = path;
-            select.innerHTML = `<option value="">-- Select --</option>`;
-            enumOption.enum.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt;
-                option.textContent = opt;
-                option.selected = value === opt;
-                select.appendChild(option);
-            });
-            select.innerHTML += `<option value="__custom__" ${value && !enumOption.enum.includes(value) ? 'selected' : ''}>Custom...</option>`;
-            
-            const customInput = document.createElement('input');
-            customInput.type = 'text';
-            customInput.placeholder = 'Enter custom value';
-            customInput.style.display = (value && !enumOption.enum.includes(value)) ? 'block' : 'none';
-            customInput.style.marginTop = '8px';
-            customInput.value = (value && !enumOption.enum.includes(value)) ? value : '';
-
-            select.addEventListener('change', (e) => {
-                if (e.target.value === '__custom__') {
-                    customInput.style.display = 'block';
-                    customInput.focus();
-                } else {
-                    customInput.style.display = 'none';
-                    updateFieldValue(path, e.target.value || undefined);
-                }
-            });
-
-            customInput.addEventListener('input', (e) => {
-                updateFieldValue(path, e.target.value || undefined);
-            });
-
-            wrapper.appendChild(select);
-            wrapper.appendChild(customInput);
-        } else {
-            renderTextField(wrapper, key, schema, value, path);
-        }
-
-        group.appendChild(wrapper);
-    }
-
-    function renderFileField(group, key, schema, value, path) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'file-field';
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = value || '';
-        input.placeholder = 'Path to file...';
-        input.dataset.path = path;
-        if (hasChanged(path)) input.classList.add('changed');
-        input.addEventListener('input', (e) => updateFieldValue(path, e.target.value || undefined));
-
-        const indicator = document.createElement('span');
-        indicator.className = 'file-indicator';
-        indicator.textContent = 'File Path';
-
-        wrapper.appendChild(input);
-        wrapper.appendChild(indicator);
-        group.appendChild(wrapper);
-    }
-
-    function renderArrayField(group, key, schema, value, path) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'array-field';
-        wrapper.dataset.path = path;
-
-        const items = Array.isArray(value) ? value : [];
-        const itemSchema = schema.items || {};
-
-        items.forEach((item, index) => {
-            const itemPath = `${path}[${index}]`;
-            if (itemSchema.type === 'object') {
-                renderArrayObjectItem(wrapper, itemSchema, item, itemPath, index);
-            } else {
-                renderArrayPrimitiveItem(wrapper, itemSchema, item, itemPath, index);
-            }
-        });
-
-        const addBtn = document.createElement('button');
-        addBtn.className = 'array-add-btn';
-        addBtn.textContent = '+ Add Item';
-        addBtn.addEventListener('click', () => addArrayItem(path, itemSchema));
-        wrapper.appendChild(addBtn);
-
-        group.appendChild(wrapper);
-    }
-
-    function renderArrayPrimitiveItem(wrapper, schema, value, path, index) {
-        const item = document.createElement('div');
-        item.className = 'array-item';
-
-        const input = document.createElement('input');
-        input.type = schema.type === 'number' || schema.type === 'integer' ? 'number' : 'text';
-        input.value = value !== undefined ? value : '';
-        input.dataset.path = path;
-        input.addEventListener('input', (e) => {
-            const val = schema.type === 'number' || schema.type === 'integer' 
-                ? (e.target.value === '' ? undefined : Number(e.target.value))
-                : e.target.value;
-            updateArrayItemValue(path, val);
-        });
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.addEventListener('click', () => removeArrayItem(path));
-
-        item.appendChild(input);
-        item.appendChild(removeBtn);
-        wrapper.appendChild(item);
-    }
-
-    function renderArrayObjectItem(wrapper, schema, value, path, index) {
-        const item = document.createElement('div');
-        item.className = 'array-item object-item';
-        
-        const content = document.createElement('div');
-        content.className = 'object-field';
-        content.style.flex = '1';
-        
-        renderObjectFields(content, schema, value, path);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.alignSelf = 'flex-start';
-        removeBtn.addEventListener('click', () => removeArrayItem(path));
-
-        item.appendChild(content);
-        item.appendChild(removeBtn);
-        wrapper.appendChild(item);
-    }
-
-    function renderNestedObjectField(group, key, schema, value, path) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'object-field';
-        
-        const header = document.createElement('div');
-        header.className = 'object-field-header';
-        header.innerHTML = `<h4>${schema.title || capitalizeFirst(key)}</h4>`;
-        wrapper.appendChild(header);
-
-        renderObjectFields(wrapper, schema, value || {}, path);
-        group.appendChild(wrapper);
-    }
-
-    function renderHostsSection(container, schema, data) {
-        const toolbar = document.createElement('div');
-        toolbar.className = 'hosts-toolbar';
-        toolbar.innerHTML = `
-            <h3>Hosts (${Object.keys(data || {}).length})</h3>
-            <button class="add-host-btn">+ Add Host</button>
-        `;
-        toolbar.querySelector('.add-host-btn').addEventListener('click', addHost);
-        container.appendChild(toolbar);
-
-        const hostsContainer = document.createElement('div');
-        hostsContainer.id = 'hosts-container';
-
-        Object.entries(data || {}).forEach(([hostname, hostData]) => {
-            renderHostCard(hostsContainer, hostname, hostData, schema);
-        });
-
-        container.appendChild(hostsContainer);
-    }
-
-    function renderHostCard(container, hostname, data, schema) {
-        const card = document.createElement('div');
-        card.className = 'host-card collapsed';
-        card.dataset.hostname = hostname;
-
-        const role = data.role || 'worker';
-        const roleClass = role === 'control' ? 'control' : '';
-
-        card.innerHTML = `
-            <div class="host-card-header">
-                <h4>
-                    <span class="hostname">${hostname}</span>
-                    <span class="role-badge ${roleClass}">${role}</span>
-                </h4>
-                <div class="host-card-actions">
-                    <button class="duplicate-btn" title="Duplicate host">Duplicate</button>
-                    <button class="remove-btn" title="Remove host">Remove</button>
-                    <button class="toggle-btn">Expand</button>
-                </div>
+    overlay.remove();
+  };
+
+  overlay.querySelector('.modal__close').addEventListener('click', closeModal);
+  overlay.querySelector('#tour-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+}
+
+/**
+ * Update version display in header
+ */
+function updateVersionDisplay() {
+  const versionEl = document.querySelector('.app-header__version');
+  if (versionEl) {
+    versionEl.textContent = `v${APP_VERSION}`;
+    versionEl.addEventListener('click', showChangelog);
+  }
+}
+
+/**
+ * Show changelog modal
+ */
+function showChangelog() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal modal--changelog">
+      <div class="modal__header">
+        <h2 class="modal__title">Changelog</h2>
+        <span class="modal__close">&times;</span>
+      </div>
+      <div class="modal__body">
+        ${CHANGELOG.map(release => `
+          <div class="changelog-release">
+            <div class="changelog-release__header">
+              <span class="changelog-release__version">v${Help.escapeHtml(release.version)}</span>
+              <span class="changelog-release__date">${Help.escapeHtml(release.date)}</span>
             </div>
-            <div class="host-card-body"></div>
-        `;
-
-        const header = card.querySelector('.host-card-header');
-        const body = card.querySelector('.host-card-body');
-        const toggleBtn = card.querySelector('.toggle-btn');
-
-        header.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') return;
-            toggleHostCard(card);
-        });
-
-        toggleBtn.addEventListener('click', () => toggleHostCard(card));
-        card.querySelector('.duplicate-btn').addEventListener('click', () => duplicateHost(hostname));
-        card.querySelector('.remove-btn').addEventListener('click', () => removeHost(hostname));
-
-        const hostSchema = getHostSchema(schema);
-        renderHostFields(body, hostSchema, data, buildHostPath(hostname));
-
-        container.appendChild(card);
-    }
-
-    function getHostSchema(schema) {
-        if (schema.patternProperties) {
-            const patterns = Object.values(schema.patternProperties);
-            if (patterns.length > 0) return patterns[0];
-        }
-        return { type: 'object', properties: {} };
-    }
-
-    function renderHostFields(container, schema, data, path) {
-        const hostname = getHostnameFromPath(path);
-        const hostnameGroup = document.createElement('div');
-        hostnameGroup.className = 'form-group';
-        hostnameGroup.innerHTML = `
-            <label>Hostname</label>
-            <input type="text" value="${escapeHtml(hostname)}" data-hostname-input="true" />
-        `;
-        hostnameGroup.querySelector('input').addEventListener('change', (e) => {
-            renameHost(hostname, e.target.value);
-        });
-        container.appendChild(hostnameGroup);
-
-        renderObjectFields(container, schema, data, path);
-    }
-
-    function toggleHostCard(card) {
-        card.classList.toggle('collapsed');
-        card.classList.toggle('expanded');
-        const btn = card.querySelector('.toggle-btn');
-        btn.textContent = card.classList.contains('expanded') ? 'Collapse' : 'Expand';
-    }
-
-    function addHost() {
-        const hostname = prompt('Enter hostname:', `host-${Object.keys(state.currentObject.hosts || {}).length}`);
-        if (!hostname) return;
-
-        if (!state.currentObject.hosts) {
-            state.currentObject.hosts = {};
-        }
-
-        state.currentObject.hosts[hostname] = {
-            role: 'worker',
-            network: {
-                interfaces: [],
-                primary: {}
-            }
-        };
-
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function duplicateHost(hostname) {
-        const newHostname = prompt('Enter new hostname:', `${hostname}-copy`);
-        if (!newHostname || newHostname === hostname) return;
-
-        const hostData = JSON.parse(JSON.stringify(state.currentObject.hosts[hostname]));
-        state.currentObject.hosts[newHostname] = hostData;
-
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function removeHost(hostname) {
-        if (!confirm(`Remove host "${hostname}"?`)) return;
-
-        delete state.currentObject.hosts[hostname];
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function renameHost(oldName, newName) {
-        if (oldName === newName || !newName) return;
-
-        const hostData = state.currentObject.hosts[oldName];
-        delete state.currentObject.hosts[oldName];
-        state.currentObject.hosts[newName] = hostData;
-
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function updateFieldValue(path, value) {
-        setNestedValue(state.currentObject, path, value);
-        trackChange(path, value);
-        syncObjectToYaml();
-    }
-
-    function updateArrayItemValue(path, value) {
-        const match = path.match(/^(.+)\[(\d+)\]$/);
-        if (!match) return;
-
-        const arrayPath = match[1];
-        const index = parseInt(match[2]);
-        const array = getNestedValue(state.currentObject, arrayPath);
-        
-        if (Array.isArray(array)) {
-            array[index] = value;
-            syncObjectToYaml();
-        }
-    }
-
-    function addArrayItem(path, schema) {
-        let array = getNestedValue(state.currentObject, path);
-        if (!Array.isArray(array)) {
-            array = [];
-            setNestedValue(state.currentObject, path, array);
-        }
-
-        let defaultValue;
-        if (schema.type === 'object') {
-            defaultValue = {};
-        } else if (schema.type === 'string') {
-            defaultValue = '';
-        } else if (schema.type === 'number' || schema.type === 'integer') {
-            defaultValue = 0;
-        } else {
-            defaultValue = null;
-        }
-
-        array.push(defaultValue);
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function removeArrayItem(path) {
-        const match = path.match(/^(.+)\[(\d+)\]$/);
-        if (!match) return;
-
-        const arrayPath = match[1];
-        const index = parseInt(match[2]);
-        const array = getNestedValue(state.currentObject, arrayPath);
-        
-        if (Array.isArray(array)) {
-            array.splice(index, 1);
-            syncObjectToYaml();
-            renderCurrentSection();
-        }
-    }
-
-    function syncObjectToYaml() {
-        try {
-            const coercedObject = state.schema ? coerceValueBySchema(state.currentObject, state.schema) : state.currentObject;
-            const baselineObject = jsyaml.load(state.baselineYamlText) || {};
-            const cleanedObject = cleanObject(coercedObject, baselineObject);
-            state.currentObject = coercedObject || {};
-            state.currentYamlText = jsyaml.dump(cleanedObject, {
-                indent: 2,
-                lineWidth: -1,
-                noRefs: true,
-                sortKeys: false
-            });
-            state.editor.setValue(state.currentYamlText);
-            updateValidation();
-            updateChanges();
-            updateDiff();
-        } catch (error) {
-            console.error('Failed to sync to YAML:', error);
-        }
-    }
-
-    function cleanObject(obj, baselineObj, path = '') {
-        if (obj === null || obj === undefined) return undefined;
-        if (typeof obj !== 'object') return obj;
-        if (Array.isArray(obj)) {
-            const cleaned = obj
-                .map((item, index) => cleanObject(item, baselineObj, `${path}[${index}]`))
-                .filter(v => v !== undefined);
-            return cleaned.length > 0 ? cleaned : undefined;
-        }
-
-        const cleaned = {};
-        const baselineNode = baselineObj ? (path ? getNestedValue(baselineObj, path) : baselineObj) : undefined;
-        const baselineKeys = baselineNode && typeof baselineNode === 'object' && !Array.isArray(baselineNode)
-            ? Object.keys(baselineNode)
-            : [];
-        const objKeys = Object.keys(obj);
-        const orderedKeys = baselineKeys.concat(objKeys.filter(k => !baselineKeys.includes(k)));
-
-        for (const key of orderedKeys) {
-            if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-            const value = obj[key];
-            const nextPath = path ? `${path}.${key}` : key;
-            const cleanedValue = cleanObject(value, baselineObj, nextPath);
-            const baselineValue = baselineObj ? getNestedValue(baselineObj, nextPath) : undefined;
-            const allowEmptyString = cleanedValue === '' && baselineValue === '';
-            if (cleanedValue !== undefined &&
-                (cleanedValue !== '' || allowEmptyString) &&
-                !(typeof cleanedValue === 'object' && Object.keys(cleanedValue).length === 0)) {
-                cleaned[key] = cleanedValue;
-            }
-        }
-        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-    }
-
-    function trackChange(path, value) {
-        const existingIndex = state.changes.findIndex(c => c.path === path);
-        if (existingIndex >= 0) {
-            state.changes[existingIndex].value = value;
-        } else {
-            state.changes.push({ path, value, timestamp: Date.now() });
-        }
-    }
-
-    function hasChanged(path) {
-        const baselineValue = getNestedValue(jsyaml.load(state.baselineYamlText) || {}, path);
-        const currentValue = getNestedValue(state.currentObject, path);
-        return JSON.stringify(baselineValue) !== JSON.stringify(currentValue);
-    }
-
-    function revertField(path) {
-        const baselineObject = jsyaml.load(state.baselineYamlText) || {};
-        const baselineValue = getNestedValue(baselineObject, path);
-        setNestedValue(state.currentObject, path, baselineValue);
-        state.changes = state.changes.filter(c => c.path !== path);
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function revertSection() {
-        const baselineObject = jsyaml.load(state.baselineYamlText) || {};
-        state.currentObject[state.currentSection] = JSON.parse(JSON.stringify(baselineObject[state.currentSection] || {}));
-        state.changes = state.changes.filter(c => !c.path.startsWith(state.currentSection));
-        syncObjectToYaml();
-        renderCurrentSection();
-    }
-
-    function revertAll() {
-        if (!confirm('Revert all changes to baseline?')) return;
-        setYamlText(state.baselineYamlText, false);
-        state.changes = [];
-        renderCurrentSection();
-    }
-
-    function updateValidation() {
-        const resultsContainer = document.getElementById('validation-results');
-        
-        if (!state.schema || !state.currentObject) {
-            resultsContainer.innerHTML = '<div class="validation-success">No data to validate</div>';
-            state.validationErrors = 0;
-            updateHeaderStatus();
-            return;
-        }
-
-        try {
-            const ajv = new window.ajv7({ allErrors: true, strict: false });
-            addFormats(ajv);
-            
-            const schemaForValidation = JSON.parse(JSON.stringify(state.schema));
-            delete schemaForValidation.$schema;
-            
-            const validate = ajv.compile(schemaForValidation);
-            const coercedObject = coerceValueBySchema(state.currentObject, schemaForValidation);
-            state.currentObject = coercedObject || {};
-            const valid = validate(state.currentObject);
-
-            if (valid) {
-                resultsContainer.innerHTML = '<div class="validation-success">Validation passed</div>';
-                state.validationErrors = 0;
-            } else {
-                resultsContainer.innerHTML = validate.errors.map(error => `
-                    <div class="validation-item">
-                        <div class="path">${error.instancePath || '/'}</div>
-                        <div class="message">${error.message}</div>
-                    </div>
-                `).join('');
-                state.validationErrors = validate.errors.length;
-            }
-            updateHeaderStatus();
-        } catch (error) {
-            resultsContainer.innerHTML = `<div class="validation-item"><div class="message">Validation error: ${error.message}</div></div>`;
-            state.validationErrors = 1;
-            updateHeaderStatus();
-        }
-    }
-
-    function addFormats(ajv) {
-        ajv.addFormat('ipv4', {
-            type: 'string',
-            validate: (x) => /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(x)
-        });
-        ajv.addFormat('cidr', {
-            type: 'string',
-            validate: (x) => /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$/.test(x)
-        });
-        ajv.addFormat('uri', {
-            type: 'string',
-            validate: (x) => {
-                try { new URL(x); return true; } catch { return false; }
-            }
-        });
-        ajv.addFormat('fqdn', {
-            type: 'string',
-            validate: (x) => /^(?=.{1,253}$)(?:(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)*(?!-)[A-Za-z0-9-]{1,63}(?<!-)$/.test(x)
-        });
-    }
-
-    function updateChanges() {
-        const container = document.getElementById('changes-list');
-        
-        if (state.changes.length === 0) {
-            container.innerHTML = '<div class="validation-success">No changes</div>';
-            updateHeaderStatus();
-            return;
-        }
-
-        container.innerHTML = state.changes.map(change => `
-            <div class="change-item">
-                <span class="path">${change.path}</span>
-                <button class="revert-change" data-path="${change.path}">Revert</button>
-            </div>
-        `).join('');
-
-        container.querySelectorAll('.revert-change').forEach(btn => {
-            btn.addEventListener('click', () => revertField(btn.dataset.path));
-        });
-        
-        updateHeaderStatus();
-    }
-
-    function updateHeaderStatus() {
-        const filenameEl = document.getElementById('header-filename');
-        const changesCountEl = document.getElementById('changes-count');
-        const errorsCountEl = document.getElementById('errors-count');
-        const changesEl = document.getElementById('header-changes');
-        const errorsEl = document.getElementById('header-errors');
-        
-        if (filenameEl) filenameEl.textContent = state.currentFilename;
-        if (changesCountEl) changesCountEl.textContent = state.changes.length;
-        if (errorsCountEl) errorsCountEl.textContent = state.validationErrors;
-        
-        if (changesEl) {
-            changesEl.style.display = state.changes.length > 0 ? 'inline-flex' : 'none';
-        }
-        if (errorsEl) {
-            errorsEl.style.display = state.validationErrors > 0 ? 'inline-flex' : 'none';
-        }
-    }
-
-    function updateDiff() {
-        const container = document.getElementById('diff-preview');
-        
-        if (state.currentYamlText === state.baselineYamlText) {
-            container.innerHTML = '<span style="color: #6a6e73;">No changes from baseline</span>';
-            return;
-        }
-
-        try {
-            const diff = Diff.createTwoFilesPatch('baseline.yaml', 'current.yaml', state.baselineYamlText, state.currentYamlText);
-            container.innerHTML = formatDiff(diff);
-        } catch (error) {
-            container.textContent = 'Failed to generate diff';
-        }
-    }
-
-    function formatDiff(diff) {
-        return diff.split('\n').map(line => {
-            if (line.startsWith('+') && !line.startsWith('+++')) {
-                return `<span class="diff-add">${escapeHtml(line)}</span>`;
-            } else if (line.startsWith('-') && !line.startsWith('---')) {
-                return `<span class="diff-remove">${escapeHtml(line)}</span>`;
-            } else if (line.startsWith('@@')) {
-                return `<span class="diff-header">${escapeHtml(line)}</span>`;
-            }
-            return escapeHtml(line);
-        }).join('\n');
-    }
-
-    function showParseError(error) {
-        const container = document.getElementById('error-results');
-        container.innerHTML = `
-            <div class="validation-item">
-                <div class="path">YAML Parse Error</div>
-                <div class="message">${escapeHtml(error.message)}</div>
-            </div>
-        `;
-    }
-
-    function clearParseError() {
-        const container = document.getElementById('error-results');
-        container.innerHTML = '<div class="validation-success">No errors</div>';
-    }
-
-    function showError(message) {
-        const container = document.getElementById('error-results');
-        container.innerHTML = `
-            <div class="validation-item">
-                <div class="message">${escapeHtml(message)}</div>
-            </div>
-        `;
-    }
-
-    function handleHelpHover(e) {
-        if (state.pinnedHelp) return;
-        
-        if (state.helpHideTimeout) {
-            clearTimeout(state.helpHideTimeout);
-            state.helpHideTimeout = null;
-        }
-        
-        const target = e.currentTarget;
-        state.helpTimeout = setTimeout(() => {
-            showHelpBubble(target);
-        }, 300);
-    }
-
-    function handleHelpLeave() {
-        if (state.helpTimeout) {
-            clearTimeout(state.helpTimeout);
-            state.helpTimeout = null;
-        }
-        if (!state.pinnedHelp) {
-            state.helpHideTimeout = setTimeout(() => {
-                hideHelpBubble();
-            }, 400);
-        }
-    }
-    
-    function handleBubbleEnter() {
-        if (state.helpHideTimeout) {
-            clearTimeout(state.helpHideTimeout);
-            state.helpHideTimeout = null;
-        }
-    }
-    
-    function handleBubbleLeave() {
-        if (!state.pinnedHelp) {
-            state.helpHideTimeout = setTimeout(() => {
-                hideHelpBubble();
-            }, 400);
-        }
-    }
-
-    function showHelpBubble(target) {
-        const bubble = document.getElementById('help-bubble');
-        const description = target.dataset.description;
-        const docUrl = target.dataset.docUrl;
-
-        document.getElementById('help-description').textContent = description || 'No description available';
-        
-        const linksContainer = document.getElementById('help-links');
-        linksContainer.innerHTML = '';
-        if (docUrl && docUrl !== 'undefined') {
-            try {
-                const urls = JSON.parse(docUrl);
-                if (typeof urls === 'object') {
-                    Object.entries(urls).forEach(([label, url]) => {
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.target = '_blank';
-                        link.textContent = label;
-                        link.style.display = 'block';
-                        link.style.marginTop = '4px';
-                        linksContainer.appendChild(link);
-                    });
-                }
-            } catch {
-                if (docUrl.startsWith('http')) {
-                    const link = document.createElement('a');
-                    link.href = docUrl;
-                    link.target = '_blank';
-                    link.textContent = 'Documentation';
-                    linksContainer.appendChild(link);
-                }
-            }
-        }
-
-        bubble.style.visibility = 'hidden';
-        bubble.style.display = 'block';
-        bubble.style.left = '0px';
-        bubble.style.top = '0px';
-        
-        const bubbleWidth = bubble.offsetWidth;
-        const bubbleHeight = bubble.offsetHeight;
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        
-        const rect = target.getBoundingClientRect();
-        let left = rect.right + 10;
-        let top = rect.top;
-        
-        if (left + bubbleWidth > viewportWidth - 10) {
-            left = rect.left - bubbleWidth - 10;
-        }
-        if (left < 10) left = 10;
-        if (top + bubbleHeight > viewportHeight - 10) {
-            top = viewportHeight - bubbleHeight - 10;
-        }
-        if (top < 10) top = 10;
-        
-        bubble.style.left = `${left}px`;
-        bubble.style.top = `${top}px`;
-        bubble.style.visibility = 'visible';
-    }
-
-    function hideHelpBubble() {
-        if (state.pinnedHelp) return;
-        document.getElementById('help-bubble').style.display = 'none';
-    }
-
-    function forceHideHelpBubble() {
-        state.pinnedHelp = false;
-        document.getElementById('help-bubble').style.display = 'none';
-        updatePinButtonIcon();
-    }
-
-    function togglePinHelp() {
-        state.pinnedHelp = !state.pinnedHelp;
-        updatePinButtonIcon();
-    }
-
-    function updatePinButtonIcon() {
-        const pinBtn = document.querySelector('.help-bubble-pin');
-        if (state.pinnedHelp) {
-            pinBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 9V4l1 0c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>';
-            pinBtn.title = 'Unpin';
-        } else {
-            pinBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 4v5c0 1.12.37 2.16 1 3H9c.65-.86 1-1.9 1-3V4h4m3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>';
-            pinBtn.title = 'Pin';
-        }
-    }
-
-    function newDocument() {
-        if (!confirm('Create new document? Unsaved changes will be lost.')) return;
-        setYamlText(getDefaultYaml(), true);
-    }
-
-    function handleFileLoad(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const validExtensions = ['.yaml', '.yml', '.clusterfile'];
-        const fileName = file.name.toLowerCase();
-        const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-        
-        if (!hasValidExtension) {
-            showError('Invalid file type. Please select a .yaml, .yml, or .clusterfile file.');
-            e.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            setYamlText(event.target.result, true);
-            state.currentFilename = file.name;
-            updateHeaderStatus();
-        };
-        reader.readAsText(file);
-        e.target.value = '';
-    }
-
-    function saveToLocalStorage() {
-        const yamlToSave = redactSecrets(buildNormalizedYaml());
-        localStorage.setItem(STORAGE_KEYS.LAST_YAML, yamlToSave);
-        alert('Saved to browser storage');
-    }
-
-    function redactSecrets(yaml) {
-        return yaml;
-    }
-
-    function downloadYaml() {
-        const normalizedYaml = buildNormalizedYaml();
-        const blob = new Blob([normalizedYaml], { type: 'text/yaml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'clusterfile.yaml';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    function formatYaml() {
-        try {
-            const formatted = buildNormalizedYaml({ preserveCurrentText: true });
-            state.editor.setValue(formatted);
-        } catch (error) {
-            showError('Failed to format YAML: ' + error.message);
-        }
-    }
-
-    function copyYaml() {
-        const normalizedYaml = buildNormalizedYaml();
-        navigator.clipboard.writeText(normalizedYaml).then(() => {
-            alert('Copied to clipboard');
-        }).catch(() => {
-            showError('Failed to copy to clipboard');
-        });
-    }
-
-    function parsePath(path) {
-        if (!path) return [];
-        const parts = [];
-        let i = 0;
-        while (i < path.length) {
-            if (path[i] === '[') {
-                const closeBracket = path.indexOf(']', i);
-                if (closeBracket === -1) break;
-                let key = path.substring(i + 1, closeBracket);
-                if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
-                    key = key.slice(1, -1);
-                }
-                parts.push(key);
-                i = closeBracket + 1;
-                if (path[i] === '.') i++;
-            } else {
-                let nextDot = path.indexOf('.', i);
-                let nextBracket = path.indexOf('[', i);
-                let end = path.length;
-                if (nextDot !== -1 && (nextBracket === -1 || nextDot < nextBracket)) {
-                    end = nextDot;
-                } else if (nextBracket !== -1) {
-                    end = nextBracket;
-                }
-                if (end > i) {
-                    parts.push(path.substring(i, end));
-                }
-                i = end;
-                if (path[i] === '.') i++;
-            }
-        }
-        return parts;
-    }
-
-    function buildHostPath(hostname) {
-        if (hostname.includes('.') || hostname.includes('[') || hostname.includes(']')) {
-            return `hosts["${hostname}"]`;
-        }
-        return `hosts.${hostname}`;
-    }
-
-    function getHostnameFromPath(path) {
-        const match = path.match(/^hosts\["([^"]+)"\]/);
-        if (match) return match[1];
-        const match2 = path.match(/^hosts\.([^.]+)/);
-        if (match2) return match2[1];
-        return null;
-    }
-
-    function getNestedValue(obj, path) {
-        if (!path) return obj;
-        const parts = parsePath(path);
-        let current = obj;
-        for (const part of parts) {
-            if (current === null || current === undefined) return undefined;
-            current = current[part];
-        }
-        return current;
-    }
-
-    function setNestedValue(obj, path, value) {
-        if (!path) return;
-        const parts = parsePath(path);
-        let current = obj;
-        for (let i = 0; i < parts.length - 1; i++) {
-            const part = parts[i];
-            const nextPart = parts[i + 1];
-            if (current[part] === undefined || current[part] === null) {
-                current[part] = /^\d+$/.test(nextPart) ? [] : {};
-            }
-            current = current[part];
-        }
-        const lastPart = parts[parts.length - 1];
-        if (value === undefined) {
-            delete current[lastPart];
-        } else {
-            current[lastPart] = value;
-        }
-    }
-
-    function coerceValueBySchema(value, schema) {
-        if (value === null || value === undefined || !schema) return value;
-
-        const composite = schema.anyOf || schema.oneOf;
-        if (composite && Array.isArray(composite)) {
-            const numberOption = composite.find(o => o.type === 'integer' || o.type === 'number');
-            if (numberOption && typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
-                return numberOption.type === 'integer' ? parseInt(value, 10) : Number(value);
-            }
-            const booleanOption = composite.find(o => o.type === 'boolean');
-            if (booleanOption && typeof value === 'string') {
-                if (value === 'true') return true;
-                if (value === 'false') return false;
-            }
-            const objectOption = composite.find(o => o.type === 'object' || o.properties || o.patternProperties);
-            if (objectOption && typeof value === 'object' && !Array.isArray(value)) {
-                return coerceObjectBySchema(value, objectOption);
-            }
-            const arrayOption = composite.find(o => o.type === 'array' || o.items);
-            if (arrayOption && Array.isArray(value)) {
-                const itemSchema = arrayOption.items || {};
-                return value.map(item => coerceValueBySchema(item, itemSchema));
-            }
-        }
-
-        if (schema.type === 'integer' || schema.type === 'number') {
-            if (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
-                return schema.type === 'integer' ? parseInt(value, 10) : Number(value);
-            }
-            return value;
-        }
-
-        if (schema.type === 'boolean') {
-            if (typeof value === 'string') {
-                if (value === 'true') return true;
-                if (value === 'false') return false;
-            }
-            return value;
-        }
-
-        if (schema.type === 'array' && Array.isArray(value)) {
-            const itemSchema = schema.items || {};
-            return value.map(item => coerceValueBySchema(item, itemSchema));
-        }
-
-        if ((schema.type === 'object' || schema.properties || schema.patternProperties) &&
-            typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            return coerceObjectBySchema(value, schema);
-        }
-
-        return value;
-    }
-
-    function coerceObjectBySchema(obj, schema) {
-        const props = schema.properties || {};
-        const patternProps = schema.patternProperties || {};
-        const additional = schema.additionalProperties;
-
-        const result = Array.isArray(obj) ? [] : {};
-        Object.entries(obj).forEach(([key, val]) => {
-            let childSchema = props[key];
-            if (!childSchema && patternProps && Object.keys(patternProps).length > 0) {
-                for (const [pattern, patternSchema] of Object.entries(patternProps)) {
-                    const regex = new RegExp(pattern);
-                    if (regex.test(key)) {
-                        childSchema = patternSchema;
-                        break;
-                    }
-                }
-            }
-            if (!childSchema && additional && typeof additional === 'object') {
-                childSchema = additional;
-            }
-            result[key] = childSchema ? coerceValueBySchema(val, childSchema) : val;
-        });
-
-        return result;
-    }
-
-    function buildNormalizedYaml(options = {}) {
-        const sourceObject = options.preserveCurrentText
-            ? (jsyaml.load(state.currentYamlText) || {})
-            : state.currentObject;
-        const coercedObject = state.schema
-            ? coerceValueBySchema(sourceObject, state.schema)
-            : sourceObject;
-        const baselineObject = jsyaml.load(state.baselineYamlText) || {};
-        const cleanedObject = cleanObject(coercedObject, baselineObject);
-        return jsyaml.dump(cleanedObject, {
-            indent: 2,
-            lineWidth: -1,
-            noRefs: true,
-            sortKeys: false
-        });
-    }
-
-    function getDocUrl(schema) {
-        if (!schema) return '';
-        const docUrl = schema['x-doc-url'] || schema['x-doc-urls'];
-        if (!docUrl) return '';
-        if (typeof docUrl === 'string') return docUrl;
-        if (Array.isArray(docUrl)) {
-            if (typeof docUrl[0] === 'string') return docUrl[0];
-            if (typeof docUrl[0] === 'object') return JSON.stringify(docUrl[0]);
-        }
-        if (typeof docUrl === 'object') return JSON.stringify(docUrl);
-        return '';
-    }
-
-    function capitalizeFirst(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    function debounce(fn, delay) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => fn.apply(this, args), delay);
-        };
-    }
-
-    async function loadTemplates() {
-        try {
-            const response = await fetch(getApiBase() + '/api/templates');
-            const data = await response.json();
-            templateState.templates = data.templates || [];
-            
-            const select = document.getElementById('template-select');
-            select.innerHTML = '<option value="">-- Select a template --</option>';
-            
-            templateState.templates.forEach(template => {
-                const option = document.createElement('option');
-                option.value = template.name;
-                option.textContent = template.name;
-                option.dataset.description = template.description || '';
-                select.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Failed to load templates:', error);
-        }
-    }
-
-    function initTemplateOutputEditor() {
-        const editorElement = document.getElementById('template-output-editor');
-        if (!editorElement) return;
-        
-        templateState.outputEditor = CodeMirror(editorElement, {
-            mode: 'yaml',
-            theme: 'default',
-            lineNumbers: true,
-            lineWrapping: true,
-            readOnly: true,
-            tabSize: 2
-        });
-    }
-
-    function initTemplateEventListeners() {
-        const templateSelect = document.getElementById('template-select');
-        if (templateSelect) {
-            templateSelect.addEventListener('change', handleTemplateSelect);
-        }
-
-        const addParamBtn = document.getElementById('add-param-btn');
-        if (addParamBtn) {
-            addParamBtn.addEventListener('click', addParamRow);
-        }
-
-        const paramsContainer = document.getElementById('params-container');
-        if (paramsContainer) {
-            paramsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-param-btn')) {
-                    removeParamRow(e.target);
-                }
-            });
-        }
-
-        const renderBtn = document.getElementById('btn-render');
-        if (renderBtn) {
-            renderBtn.addEventListener('click', renderTemplate);
-        }
-
-        const previewBtn = document.getElementById('btn-preview-template');
-        if (previewBtn) {
-            previewBtn.addEventListener('click', previewTemplateSource);
-        }
-
-        const copyOutputBtn = document.getElementById('btn-copy-output');
-        if (copyOutputBtn) {
-            copyOutputBtn.addEventListener('click', copyTemplateOutput);
-        }
-
-        const downloadOutputBtn = document.getElementById('btn-download-output');
-        if (downloadOutputBtn) {
-            downloadOutputBtn.addEventListener('click', downloadTemplateOutput);
-        }
-    }
-
-    function handleTemplateSelect(e) {
-        const selectedOption = e.target.selectedOptions[0];
-        const descriptionEl = document.getElementById('template-description');
-        if (selectedOption && selectedOption.dataset.description) {
-            descriptionEl.textContent = selectedOption.dataset.description;
-        } else {
-            descriptionEl.textContent = '';
-        }
-    }
-
-    function addParamRow() {
-        const container = document.getElementById('params-container');
-        const row = document.createElement('div');
-        row.className = 'param-row';
-        row.innerHTML = `
-            <input type="text" class="param-path" placeholder="$.hosts[*].bmc.username" title="JSONPath expression">
-            <input type="text" class="param-value" placeholder="new-value" title="Value to set">
-            <button class="remove-param-btn pf-c-button pf-m-plain" type="button" title="Remove">X</button>
-        `;
-        container.appendChild(row);
-    }
-
-    function removeParamRow(btn) {
-        const row = btn.closest('.param-row');
-        const container = document.getElementById('params-container');
-        if (container.querySelectorAll('.param-row').length > 1) {
-            row.remove();
-        } else {
-            row.querySelector('.param-path').value = '';
-            row.querySelector('.param-value').value = '';
-        }
-    }
-
-    function getParams() {
-        const params = [];
-        const rows = document.querySelectorAll('#params-container .param-row');
-        rows.forEach(row => {
-            const path = row.querySelector('.param-path').value.trim();
-            const value = row.querySelector('.param-value').value;
-            if (path && value !== undefined && value !== '') {
-                params.push(`${path}=${value}`);
-            }
-        });
-        return params;
-    }
-
-    async function renderTemplate() {
-        const templateName = document.getElementById('template-select').value;
-        if (!templateName) {
-            alert('Please select a template');
-            return;
-        }
-
-        const yamlText = state.currentYamlText;
-        if (!yamlText || yamlText.trim() === '') {
-            alert('Please load or create a clusterfile first');
-            return;
-        }
-
-        const params = getParams();
-
-        try {
-            const response = await fetch(getApiBase() + '/api/render', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    yaml_text: yamlText,
-                    template_name: templateName,
-                    params: params
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                showTemplateError(result.detail || 'Rendering failed');
-                return;
-            }
-
-            if (result.success) {
-                templateState.lastRenderedOutput = result.output;
-                templateState.outputEditor.setValue(result.output);
-                
-                const outputContainer = document.querySelector('.template-output');
-                outputContainer.style.display = 'block';
-                
-                const warningsEl = document.getElementById('template-warnings');
-                if (result.warnings && result.warnings.length > 0) {
-                    warningsEl.innerHTML = '<strong>Warnings:</strong><br>' + result.warnings.join('<br>');
-                } else {
-                    warningsEl.innerHTML = '';
-                }
-                
-                clearTemplateError();
-            } else {
-                showTemplateError(result.error || 'Rendering failed');
-            }
-        } catch (error) {
-            console.error('Failed to render template:', error);
-            showTemplateError('Failed to render template: ' + error.message);
-        }
-    }
-
-    async function previewTemplateSource() {
-        const templateName = document.getElementById('template-select').value;
-        if (!templateName) {
-            alert('Please select a template');
-            return;
-        }
-
-        try {
-            const response = await fetch(getApiBase() + `/api/templates/${templateName}`);
-            const result = await response.json();
-
-            if (response.ok) {
-                templateState.lastRenderedOutput = result.content;
-                templateState.outputEditor.setValue(result.content);
-                
-                const outputContainer = document.querySelector('.template-output');
-                outputContainer.style.display = 'block';
-                
-                document.getElementById('template-warnings').innerHTML = '<em>Showing template source (not rendered output)</em>';
-            } else {
-                showTemplateError(result.detail || 'Failed to load template');
-            }
-        } catch (error) {
-            console.error('Failed to preview template:', error);
-            showTemplateError('Failed to preview template: ' + error.message);
-        }
-    }
-
-    function showTemplateError(message) {
-        let errorEl = document.querySelector('.template-error');
-        if (!errorEl) {
-            errorEl = document.createElement('div');
-            errorEl.className = 'template-error';
-            const form = document.querySelector('.template-form');
-            form.parentNode.insertBefore(errorEl, form);
-        }
-        errorEl.textContent = message;
-        errorEl.style.display = 'block';
-    }
-
-    function clearTemplateError() {
-        const errorEl = document.querySelector('.template-error');
-        if (errorEl) {
-            errorEl.style.display = 'none';
-        }
-    }
-
-    function copyTemplateOutput() {
-        const output = templateState.lastRenderedOutput;
-        if (output) {
-            navigator.clipboard.writeText(output).then(() => {
-                const btn = document.getElementById('btn-copy-output');
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = originalText, 1500);
-            });
-        }
-    }
-
-    function downloadTemplateOutput() {
-        const output = templateState.lastRenderedOutput;
-        if (!output) return;
-
-        const templateName = document.getElementById('template-select').value;
-        let filename = templateName.replace('.tpl', '').replace('.tmpl', '');
-        if (!filename.endsWith('.yaml') && !filename.endsWith('.yml') && !filename.endsWith('.sh')) {
-            filename += '.yaml';
-        }
-
-        const blob = new Blob([output], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
-})();
+            <ul class="changelog-release__changes">
+              ${release.changes.map(change => `
+                <li>${Help.escapeHtml(change)}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--primary" id="changelog-close">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+
+  overlay.querySelector('.modal__close').addEventListener('click', closeModal);
+  overlay.querySelector('#changelog-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  toast.innerHTML = `
+    <span>${Help.escapeHtml(message)}</span>
+    <span class="toast__close">×</span>
+  `;
+
+  toast.querySelector('.toast__close').addEventListener('click', () => {
+    toast.remove();
+  });
+
+  container.appendChild(toast);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+}
+
+/**
+ * Format timestamp
+ */
+function formatTime(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString();
+}
+
+/**
+ * Fetch schema from API
+ */
+async function fetchSchema() {
+  const response = await fetch(`${API_BASE}/api/schema`);
+  if (!response.ok) throw new Error('Failed to fetch schema');
+  return response.json();
+}
+
+/**
+ * Fetch samples from API
+ */
+async function fetchSamples() {
+  const response = await fetch(`${API_BASE}/api/samples`);
+  if (!response.ok) throw new Error('Failed to fetch samples');
+  const data = await response.json();
+  return data.samples || [];
+}
+
+/**
+ * Fetch templates from API
+ */
+async function fetchTemplates() {
+  const response = await fetch(`${API_BASE}/api/templates`);
+  if (!response.ok) throw new Error('Failed to fetch templates');
+  const data = await response.json();
+  return data.templates || [];
+}
+
+/**
+ * Fetch version from API
+ */
+async function fetchVersion() {
+  const response = await fetch(`${API_BASE}/healthz`);
+  if (!response.ok) throw new Error('Failed to fetch version');
+  return response.json();
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', init);
+
+// Export for debugging
+window.ClusterfileEditor = {
+  State,
+  Validator,
+  Help,
+  CodeMirror,
+  Form,
+  init,
+  loadDocument,
+  newDocument,
+  showToast
+};

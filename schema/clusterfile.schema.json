@@ -1,7 +1,80 @@
 {
-  "title": ".clusterfile",
-  "description": "Cluster configuration file used to drive an Assisted Installer–style UI. Descriptions and hints were imported from a saved Assisted Installer snapshot.",
+  "title": "Clusterfile",
+  "description": "Configuration file for OpenShift cluster installation using the Agent-based Installer.",
   "type": "object",
+  "$defs": {
+    "ipv4": {
+      "type": "string",
+      "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    },
+    "ipv6": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,7}:$|^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$|^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$|^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$|^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$|^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$|^[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}$|^:(:[0-9a-fA-F]{1,4}){1,7}$|^::$"
+    },
+    "ipAddress": {
+      "anyOf": [
+        { "$ref": "#/$defs/ipv4" },
+        { "$ref": "#/$defs/ipv6" }
+      ]
+    },
+    "cidrv4": {
+      "type": "string",
+      "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([0-9]|[1-2][0-9]|3[0-2])$"
+    },
+    "cidrv6": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F:]+)/([0-9]|[1-9][0-9]|1[0-2][0-8])$"
+    },
+    "cidr": {
+      "anyOf": [
+        { "$ref": "#/$defs/cidrv4" },
+        { "$ref": "#/$defs/cidrv6" }
+      ]
+    },
+    "macAddress": {
+      "type": "string",
+      "pattern": "^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$"
+    },
+    "fqdn": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+      "maxLength": 253
+    },
+    "dnsLabel": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+      "maxLength": 63
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?(\\+[a-zA-Z0-9.]+)?$"
+    },
+    "proxyUrl": {
+      "type": "string",
+      "pattern": "^https?://[^\\s]+$"
+    },
+    "registryUrl": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*(:[0-9]+)?(/[a-zA-Z0-9._-]+)*$"
+    },
+    "interfaceName": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9:._-]{0,63}$"
+    },
+    "devicePath": {
+      "type": "string",
+      "pattern": "^/dev/[a-zA-Z0-9/_-]+$"
+    },
+    "bondMode": {
+      "type": "string",
+      "enum": ["balance-rr", "active-backup", "balance-xor", "broadcast", "802.3ad", "balance-tlb", "balance-alb"]
+    },
+    "vlanId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4094
+    }
+  },
   "properties": {
     "account": {
       "title": "Account",
@@ -10,18 +83,15 @@
         "pullSecret": {
           "title": "Pull Secret",
           "type": "string",
-          "description": "Path to a file containing the pull secret JSON used to register the cluster and authenticate against Red Hat registries. Keep this value private.",
+          "minLength": 1,
+          "description": "Path to file containing Red Hat pull secret JSON for registry authentication.",
           "x-is-file": true,
-          "x-doc-urls": [
-            {
-              "OpenShift Installing (4.20)": "https://docs.openshift.com/container-platform/4.20/installing/"
-            }
-          ]
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-obtaining-installer_installing-bare-metal"
         }
       },
+      "required": ["pullSecret"],
       "additionalProperties": true,
-      "description": "Cluster independent accounts section.",
-      "x-doc-url": []
+      "description": "Red Hat account credentials for cluster registration."
     },
     "cluster": {
       "title": "Cluster",
@@ -32,43 +102,41 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["4.18.10", "4.18.9", "4.18.8", "4.19.0", "4.20.0"],
-              "description": "Select a known OpenShift release version."
+              "enum": ["4.14.0", "4.15.0", "4.16.0", "4.17.0", "4.18.0", "4.19.0", "4.20.0"],
+              "description": "Select a supported OpenShift release."
             },
             {
-              "type": "string",
-              "pattern": ".+",
-              "description": "Custom OpenShift version (free-text) if your version is not in the list above. Must be a available OpenShift release version."
+              "$ref": "#/$defs/semver",
+              "description": "Custom semantic version (x.y.z format)."
             }
           ],
-          "description": "OpenShift release version to install. Choose a supported release from the list or enter a custom semantic version. The selected version determines the installer and rendered manifests.",
-          "x-doc-url": {
-            "4.20": "https://docs.openshift.com/container-platform/4.20/installing/index.html",
-            "4.19": "https://docs.openshift.com/container-platform/4.19/installing/index.html"
-          }
+          "description": "OpenShift release version to install.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/release_notes/ocp-4-20-release-notes.html"
         },
         "name": {
           "title": "Cluster Name",
-          "type": "string",
-          "description": "Cluster name: a DNS label used as the cluster prefix. Must be lowercase letters, numbers or hyphens, start with a letter, end with a letter or number, and be suitable as the left-most DNS label. Example: 'demo'. This value is combined with the base domain to form the full cluster address (e.g. demo.example.com) and cannot be changed after installation. Cannot exceed 64char when combined with the base domain."
+          "$ref": "#/$defs/dnsLabel",
+          "description": "DNS-compatible cluster name (lowercase, hyphens allowed, max 63 chars).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuration-parameters_installing-bare-metal"
         },
         "sshKeys": {
           "title": "SSH Keys",
           "type": "array",
           "items": {
             "type": "string",
-            "description": "Path to a file containing an authorized SSH public key (one per entry). Templates call load_file() when a path is supplied.",
+            "minLength": 1,
+            "description": "Path to SSH public key file.",
             "x-is-file": true
           },
-          "description": "SSH public keys to install on cluster nodes. Provide one public key per entry (OpenSSH format). Keys are added to control plane and worker nodes' authorized_keys for administrative access. First key is used for initial access during installation.",
-          "x-doc-url": [
-            "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-user-ssh_keys_installing-bare-metal"
-          ]
+          "minItems": 1,
+          "description": "SSH public keys for node access (OpenSSH format).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#ssh-agent-using_installing-bare-metal"
         },
         "location": {
           "title": "Location",
           "type": "string",
-          "description": "Logical location or environment identifier for this cluster (free-text). Used for organizational purposes as labels and metadata in cluster resources."
+          "maxLength": 128,
+          "description": "Logical environment identifier for labels and metadata."
         },
         "manifests": {
           "title": "Manifests",
@@ -77,29 +145,26 @@
             "type": "object",
             "properties": {
               "name": {
+                "title": "Manifest Name",
                 "type": "string",
-                "description": "Logical name for the manifest file (used in overlays or for identification).",
-                "x-doc-url": []
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$",
+                "description": "Identifier for the manifest (DNS subdomain format)."
               },
               "file": {
+                "title": "Manifest File",
                 "type": "string",
-                "description": "Path to the manifest file to be applied during cluster provisioning.",
-                "x-is-file": true,
-                "x-doc-urls": [{
-                    "OpenShift Installing (4.20)": "https://docs.openshift.com/container-platform/4.20/installing/"
-                  }]
+                "minLength": 1,
+                "description": "Path to manifest file.",
+                "x-is-file": true
               }
             },
-            "required": [
-              "name",
-              "file"
-            ],
+            "required": ["name", "file"],
             "additionalProperties": true
           },
-          "description": "User-provided Kubernetes/OpenShift manifests to apply during installation.",
-          "x-doc-url": [
-            "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#manifests"
-          ]
+          "description": "Extra Kubernetes manifests to apply during installation.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-user-infra-generate-k8s-manifest-ignition_installing-bare-metal"
         },
         "mirrors": {
           "title": "Image Mirrors",
@@ -108,109 +173,78 @@
             "type": "object",
             "properties": {
               "source": {
-                "type": "string",
-                "description": "The source is the original, upstream repository location that a user specifies in an image pull request (e.g., in a Pod spec or FROM line in a Dockerfile). OpenShift intercepts pull requests for images from this source and attempts to redirect them to the configured mirrors. ",
-                "x-doc-urls": [{
-                    "Registry mirroring (4.20)": "https://docs.openshift.com/container-platform/4.20/registry/"
-                  }],
-                "anyOf": [{
-                    "type": "string",
-                    "format": "uri",
-                    "pattern": "^https?://"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "^[a-zA-Z0-9.-]+$"
-                  }]
+                "title": "Source Registry",
+                "$ref": "#/$defs/registryUrl",
+                "description": "Original registry to mirror (e.g., quay.io)."
               },
               "prefix": {
+                "title": "Mirror Prefix",
                 "type": "string",
-                "description": "prefix is not a user-facing field in the ImageContentSourcePolicy definition itself. Instead, it is an internal configuration parameter in the underlying /etc/containers/registries.conf file on the cluster nodes that results from applying an ImageContentSourcePolicy. It specifies the base URL or path of the original container image repository from which images are to be pulled."
+                "description": "Base path prefix for mirrored images."
               },
               "mirrors": {
+                "title": "Mirror URLs",
                 "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "The mirrors list contains one or more alternative repository locations where the same images are hosted. The OpenShift cluster's container runtime will attempt to pull the image from these mirror locations first, in the order specified (top-down priority), before falling back to the original source if all mirrors fail."
+                "items": { "$ref": "#/$defs/registryUrl" },
+                "minItems": 1,
+                "description": "Alternative registry locations (tried in order)."
               }
             },
+            "required": ["source", "mirrors"],
             "additionalProperties": true
           },
-          "description": "Registry mirror configuration for disconnected/air-gapped installs. Add credentials to pull secret if needed.",
-          "x-doc-url": [
-            "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/disconnected_environments/installing-mirroring-disconnected"
-          ]
+          "description": "Registry mirrors for disconnected installations.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/installing-mirroring-disconnected.html"
         },
         "platform": {
           "title": "Platform",
           "anyOf": [
-            { 
+            {
               "type": "string",
-              "enum": ["baremetal", "nutanix", "none"],
-              "description": "Infrastructure providers supported by the templates included"
+              "enum": ["baremetal", "nutanix", "vsphere", "none"],
+              "description": "Supported infrastructure platform."
             },
             {
               "type": "string",
-              "description": "Alternative infrastructure providers. vsphere, aws, azure, gcp, openstack, openshift, etc.",
-              "x-doc-url": [{
-                "vsphere": "https://docs.openshift.com/container-platform/4.20/installing/installing_vsphere/installing-vsphere.html",
-                "aws": "https://docs.openshift.com/container-platform/4.20/installing/installing_aws/installing-aws.html",
-                "azure": "https://docs.openshift.com/container-platform/4.20/installing/installing_azure/installing-azure.html",
-                "gcp": "https://docs.openshift.com/container-platform/4.20/installing/installing_gcp/installing-gcp.html",
-                "openstack": "https://docs.openshift.com/container-platform/4.20/installing/installing_openstack/installing-openstack.html",
-                "openshift": "https://docs.openshift.com/container-platform/4.20/installing/installing_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift_on_openshift"
-              }]
+              "pattern": "^[a-z]+$",
+              "description": "Other platform identifier."
             }
-        ],
-          "description": "The underlying infrastructure platform for the OpenShift cluster. This selection influences the installation process and configuration settings to match the capabilities and requirements of the chosen platform.",
-          "x-doc-url": [{
-            "baremetal": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html",
-            "nutanix": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-nutanix-agent-based-installer_installing-bare-metal",
-            "none": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-user-provisioned-infrastructure_installing-bare-metal"
-          }]
+          ],
+          "description": "Target infrastructure platform for the cluster.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
         },
         "arch": {
+          "title": "Architecture",
           "type": "string",
-          "description": "Supported architectures for OpenShift clusters. Options include x86_64 (also known as amd64) and ARM64 (also known as aarch64). The architecture selection impacts the choice of container images, binaries, and optimizations used during installation and operation of the cluster.",
-          "x-doc-url": [{
-            "x86_64": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-supported-platforms_installing-bare-metal",
-            "arm64": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-supported-platforms_installing-bare-metal"
-          }]
+          "enum": ["x86_64", "aarch64", "ppc64le", "s390x"],
+          "default": "x86_64",
+          "description": "CPU architecture.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
         }
       },
+      "required": ["name", "version"],
       "additionalProperties": true,
-      "description": "Cluster-level settings used to render installer and configuration manifests.",
-      "x-doc-url": [
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/installation_overview/index",
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer"
-      ]
+      "description": "Cluster-level configuration for installation.",
+      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
     },
     "network": {
       "title": "Network",
       "type": "object",
-      "required": [
-        "domain"
-      ],
+      "required": ["domain"],
       "properties": {
         "domain": {
           "title": "Base Domain",
-          "type": "string",
-          "description": "Base DNS domain for the cluster (for example: example.com). This cannot be changed after installation. All DNS records for the cluster must be subdomains of this base domain; the full cluster hostnames will be <cluster-name>.<base-domain>.",
-          "x-doc-url": [{
-            "4.20": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal",
-            "4.19": "https://docs.openshift.com/container-platform/4.19/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal"
-          }]
+          "$ref": "#/$defs/fqdn",
+          "description": "Base DNS domain (e.g., example.com). Cannot be changed after installation.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "trustBundle": {
           "title": "Trust Bundle",
           "type": "string",
-          "description": "Path to a PEM-encoded CA certificate bundle file to be used for cluster-wide TLS trust. Provide the file path; templates call load_file() to inline the content.",
+          "minLength": 1,
+          "description": "Path to PEM-encoded CA certificate bundle for cluster-wide TLS trust.",
           "x-is-file": true,
-          "x-doc-url": [{
-            "4.20": "https://docs.openshift.com/container-platform/4.20/security/certificates/replacing-default-trust-bundle.html",
-            "4.19": "https://docs.openshift.com/container-platform/4.19/security/certificates/replacing-default-trust-bundle.html"
-          }]
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/configuring-a-custom-pki.html"
         },
         "proxy": {
           "title": "Proxy",
@@ -218,268 +252,190 @@
           "properties": {
             "httpProxy": {
               "title": "HTTP Proxy",
-              "type": "string",
-              "description": "Proxy configuration for HTTP traffic. Specify the URL of the HTTP proxy server to be used by cluster components for outbound HTTP requests.",
-              "x-doc-url": [{
-                "4.20": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal",
-                "4.19": "https://docs.openshift.com/container-platform/4.19/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal"
-              }]
+              "$ref": "#/$defs/proxyUrl",
+              "description": "HTTP proxy URL (http://host:port).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             },
             "httpsProxy": {
               "title": "HTTPS Proxy",
-              "type": "string",
-              "description": "Proxy configuration for HTTPS traffic. Specify the URL of the HTTPS proxy server to be used by cluster components for outbound HTTPS requests.",
-              "x-doc-url": [{
-                "4.20": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal",
-                "4.19": "https://docs.openshift.com/container-platform/4.19/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal"
-              }]
+              "$ref": "#/$defs/proxyUrl",
+              "description": "HTTPS proxy URL (http://host:port or https://host:port).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             },
             "noProxy": {
               "title": "No Proxy",
               "type": "string",
-              "description": "Comma-separated list of hostnames or IP addresses that should bypass the proxy. Specify addresses for internal services and cluster components that should not use the proxy for outbound requests.",
-              "x-doc-url": [{
-                "4.20": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal",
-                "4.19": "https://docs.openshift.com/container-platform/4.19/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal"
-              }]
+              "pattern": "^[a-zA-Z0-9.*,/-]+$",
+              "description": "Comma-separated hosts/CIDRs that bypass the proxy.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             }
           },
           "additionalProperties": true,
-          "description": "Proxy configuration for the cluster.  Specify HTTP and HTTPS proxy servers along with a no-proxy list for addresses that should bypass the proxy. This configuration ensures that cluster components can access external resources as needed while avoiding the proxy for internal communications.",
-          "x-doc-url": [{
-            "4.20": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal",
-            "4.19": "https://docs.openshift.com/container-platform/4.19/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-proxy_installing-bare-metal"
-          }]
+          "description": "Proxy settings for cluster egress traffic.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
         },
         "ntpservers": {
           "title": "NTP Servers",
           "type": "array",
           "items": {
             "anyOf": [
-              {
-                "type": "string",
-                "format": "ipv4"
-              },
-              {
-                "type": "string",
-                "format": "fqdn"
-              }
+              { "$ref": "#/$defs/ipAddress" },
+              { "$ref": "#/$defs/fqdn" }
             ]
           },
-          "description": "NTP servers used during installation to synchronize time on cluster nodes. Provide a list of NTP server addresses (IP or FQDN) that the cluster nodes will use to ensure accurate timekeeping during and after installation.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installing/installing_bare_metal/installing-bare-metal.html#installation-configuring-ntp_installing-bare-metal",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#installation-configuring-ntp_preparing-to-install-with-agent-based-installer"
-          }]
+          "description": "NTP servers for time synchronization (IP or FQDN).",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/install_config/installing-customizing.html#installation-special-config-chrony_installing-customizing"
         },
         "nameservers": {
-          "title": "Name Servers",
+          "title": "DNS Servers",
           "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "ipv4"
-              },
-              {
-                "type": "string",
-                "pattern": "^[a-zA-Z0-9.-]+$"
-              }
-            ],
-            "description": "IP address or hostname of a nameserver"
-          },
-          "description": "Nameservers for cluster DNS resolution. Provide a list of DNS server IP addresses that the cluster will use for name resolution.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal"
-          }]
+          "items": { "$ref": "#/$defs/ipAddress" },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "DNS server IPs (1-3 recommended).",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "dnsResolver": {
           "title": "DNS Resolver",
           "type": "object",
           "properties": {
             "search": {
+              "title": "Search Domains",
               "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Search domains for DNS resolution. Provide a list of DNS search domains to be used by the cluster for resolving unqualified domain names.",
-              "x-doc-url": [{
-                "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal",
-                "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal"
-              }]
+              "items": { "$ref": "#/$defs/fqdn" },
+              "maxItems": 6,
+              "description": "DNS search domains (max 6).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
             }
           },
           "additionalProperties": true,
-          "description": "DNS resolver configuration for the cluster. Specify search domains to enhance DNS resolution for unqualified names within the cluster environment.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing/installing_bare_metal/installing-bare-metal.html#installation-preparing-dns_installing-bare-metal"
-          }]
+          "description": "DNS resolver configuration.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "primary": {
           "title": "Primary Network",
           "type": "object",
           "properties": {
             "bond": {
+              "title": "Bond Mode",
               "oneOf": [
-                {
-                  "type": "string",
-                  "enum": [
-                    "balance-rr",
-                    "active-backup",
-                    "balance-xor",
-                    "broadcast",
-                    "802.3ad",
-                    "balance-tlb",
-                    "balance-alb"
-                  ]
-                },
+                { "$ref": "#/$defs/bondMode" },
                 { "type": "boolean", "const": false }
               ],
-              "description": "Bonding mode for the primary network interface. Valid values: balance-rr, active-backup, balance-xor, broadcast, 802.3ad (LACP), balance-tlb, balance-alb. Use `false` to explicitly disable bonding for this network.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index",
-                "https://www.kernel.org/doc/Documentation/networking/bonding.txt"
-              ]
+              "description": "Linux bonding mode. Use false to disable bonding.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "vlan": {
+              "title": "VLAN ID",
               "oneOf": [
-                {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 4094
-                },
+                { "$ref": "#/$defs/vlanId" },
                 { "type": "boolean", "const": false }
               ],
-              "description": "VLAN ID for this network (1–4094). Leave unset for untagged networks. Use `false` to explicitly indicate VLAN is disabled. OpenShift uses this value when creating VLAN tags in NMState/network attachments.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-              ]
+              "description": "VLAN tag (1-4094). Use false for untagged.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "mtu": {
+              "title": "MTU",
               "type": "integer",
-              "minimum": 68,
+              "minimum": 576,
               "maximum": 9216,
-              "description": "MTU (bytes) for this interface. Default is 1500. Use larger values (for example 9000) only if all network devices (switches, NICs) support jumbo frames.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-              ]
+              "default": 1500,
+              "description": "Interface MTU in bytes (576-9216).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
             },
             "gateway": {
-              "type": "string",
-              "format": "ipv4",
-              "description": "Default gateway IP address for this network (IPv4 or IPv6). Used as the next-hop for hosts on this network; provide an address reachable within the specified subnet.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-              ]
+              "title": "Gateway",
+              "$ref": "#/$defs/ipAddress",
+              "description": "Default gateway IP address.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "subnet": {
-              "type": "string",
-              "format": "cidr",
-              "description": "Network CIDR for this interface (example: 192.168.0.0/24 or 2001:db8::/64). Used to allocate IPs and determine routing for the network. Accepts IPv4 or IPv6 CIDRs.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-              ]
+              "title": "Subnet",
+              "$ref": "#/$defs/cidr",
+              "description": "Network CIDR (e.g., 192.168.0.0/24).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "vips": {
+              "title": "Virtual IPs",
               "type": "object",
               "properties": {
                 "api": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "ipv4"
-                  },
-                  "description": "API VIP(s) for the cluster control plane. Provide either a single IP string or an array of IP strings used as the Kubernetes API virtual IP(s). Use IPv4 or IPv6 addresses that are reachable on the specified `subnet` and reserved for the cluster.",
-                  "x-doc-url": [
-                    "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-networking_installing-bare-metal",
-                    "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                  ]
+                  "title": "API VIP",
+                  "oneOf": [
+                    { "$ref": "#/$defs/ipAddress" },
+                    {
+                      "type": "array",
+                      "items": { "$ref": "#/$defs/ipAddress" },
+                      "minItems": 1,
+                      "maxItems": 2
+                    }
+                  ],
+                  "description": "Kubernetes API virtual IP (single or dual-stack array).",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
                 },
                 "apps": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "ipv4"
-                  },
-                  "description": "Application (ingress) VIP(s) for cluster applications. Provide a single IP or an array of IPs to be used for ingress/route traffic (the OpenShift `apps` VIP). Ensure addresses are reserved and routable on the target network.",
-                  "x-doc-url": [
-                    "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-networking_installing-bare-metal",
-                    "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                  ]
+                  "title": "Ingress VIP",
+                  "oneOf": [
+                    { "$ref": "#/$defs/ipAddress" },
+                    {
+                      "type": "array",
+                      "items": { "$ref": "#/$defs/ipAddress" },
+                      "minItems": 1,
+                      "maxItems": 2
+                    }
+                  ],
+                  "description": "Application ingress virtual IP (single or dual-stack array).",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
                 }
               },
+              "required": ["api", "apps"],
               "additionalProperties": true,
-              "description": "Virtual IP addresses for API and application ingress. These VIPs are applied via NMState/network attachments and must be reserved on your network.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-networking_installing-bare-metal",
-                "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-              ]
+              "description": "Virtual IPs for API and ingress endpoints.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
-          "description": "Primary network configuration for cluster communication. Defines settings for the main network used by cluster nodes, including bonding, VLANs, MTU, gateway, subnet, and VIPs for API and application access.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/kubernetes_nmstate/index",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer"
-          }]
+          "description": "Primary network settings for cluster communication.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
         },
         "cluster": {
           "title": "Cluster Network",
           "type": "object",
           "properties": {
             "subnet": {
-              "type": "string",
-              "format": "cidr",
-              "description": "Cluster Network or pod network CIDR. Defines the IP address range used for pod networking within the cluster. Pods will receive IPs from this subnet. Needs to be a unique, non-overlapping CIDR. Size depends on expected number of pods. Should be a /16 or larger for most clusters.",
-              "x-doc-url": [{
-                "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network",
-                "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network"
-              }]
+              "title": "Pod Network CIDR",
+              "$ref": "#/$defs/cidr",
+              "description": "IP range for pod networking (e.g., 10.128.0.0/14).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             },
             "hostPrefix": {
+              "title": "Host Prefix",
               "type": "integer",
-              "minimum": 8, 
-              "maximum": 30,
+              "minimum": 8,
+              "maximum": 128,
               "default": 23,
-              "description": "Host Prefix for the cluster network. Defines the subnet size for each node's pod network. Determines how many pods can be scheduled per node. Common values are 23 (512 pods/node) or 24 (256 pods/node). Must be smaller than the cluster network prefix. For example, if cluster network is /16, host prefix can be /23 or /24. Number of hosts supported is calculated based on the difference between cluster network prefix and host prefix.",
-              "x-doc-url": [{
-                "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network",
-                "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network"
-              }]
+              "description": "Subnet prefix per node (23=/512 pods, 24=/256 pods).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
-          "description": "The cluster network configuration defines the overall pod networking settings for the OpenShift cluster, including the subnet range and host prefix used for pod IP allocation.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking/cluster-network-and-service-network#nw-cluster-network_service-network"
-          }]
+          "description": "Pod network CIDR and per-node allocation.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/cluster-network-operator.html"
         },
         "service": {
           "title": "Service Network",
           "type": "object",
           "properties": {
             "subnet": {
-              "type": "string",
-              "format": "cidr",
-              "description": "Service network CIDR used for cluster Services (example: 172.30.0.0/16). Provide an IPv4 or IPv6 CIDR for service IP allocation.",
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/networking/cluster-network-and-service-network#nw-service-network_service-network"
-              ]
+              "title": "Service CIDR",
+              "$ref": "#/$defs/cidr",
+              "description": "IP range for Kubernetes Services (e.g., 172.30.0.0/16).",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
-          "description": "Service network configuration for cluster Services. Defines the IP address range used for Kubernetes Services/LoadBalancer within the cluster.",
-          "x-doc-url": [{
-            "4.20": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/cluster-network-and-service-network#nw-service-network_service-network",
-            "4.19": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking/cluster-network-and-service-network#nw-service-network_service-network"
-          }]
+          "description": "Service network CIDR for ClusterIP allocation.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/cluster-network-operator.html"
         },
         "secondary": {
           "title": "Secondary Networks",
@@ -488,264 +444,388 @@
             "type": "object",
             "properties": {
               "name": {
+                "title": "Network Name",
                 "type": "string",
-                "description": "Logical name for the secondary network (for example 'oob' or 'storage').",
-                "x-doc-url": [{
-                  "secondary networks": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/multiple_networks/secondary-networks"
-                }]
+                "minLength": 1,
+                "maxLength": 63,
+                "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+                "description": "Logical name (e.g., storage, oob).",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/multiple_networks/understanding-multiple-networks.html"
               },
               "type": {
+                "title": "Network Type",
                 "type": "string",
-                "description": "NodeNetworkConfigurationPolicy type (e.g. 'linux-bridge', 'bond', 'vlan', 'ethernet')."
+                "enum": ["linux-bridge", "bond", "vlan", "ethernet", "ovs-bridge"],
+                "description": "NMState interface type.",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "state": {
+                "title": "State",
                 "type": "string",
-                "description": "Operational state for the network (e.g., absent, down or up)."
+                "enum": ["up", "down", "absent"],
+                "default": "up",
+                "description": "Desired operational state."
               },
               "namespace": {
-                "type": "string",
-                "description": "Network namespace or VLAN grouping used by NMState/network attachments. Use default for global namespace."
+                "title": "Namespace",
+                "$ref": "#/$defs/dnsLabel",
+                "description": "Network namespace."
               },
               "vlan": {
+                "title": "VLAN ID",
                 "oneOf": [
-                  {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4094
-                  },
+                  { "$ref": "#/$defs/vlanId" },
                   { "type": "boolean", "const": false }
                 ],
-                "description": "VLAN ID for this secondary network (1–4094). Leave unset for untagged networks. Use `false` to explicitly indicate VLAN is disabled. OpenShift uses this value when creating VLAN tags in NMState/network attachments.",
-                "x-doc-url": [
-                  "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                  "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                ]
+                "description": "VLAN tag (1-4094). Use false for untagged.",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "ports": {
+                "title": "Ports",
                 "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "List of physical ports or interfaces that participate in this secondary network. For example: ['eth1', 'eth2'].",
-                "x-doc-url": []
+                "items": { "$ref": "#/$defs/interfaceName" },
+                "minItems": 1,
+                "description": "Physical interfaces (e.g., eth1, eth2)."
               },
               "subnet": {
+                "title": "Subnet",
                 "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "cidr"
-                  },
+                  { "$ref": "#/$defs/cidr" },
                   { "type": "string", "const": "dhcp" }
                 ],
-                "description": "Network CIDR for this secondary network (example: 192.168.0.0/24). Used to allocate IPs and determine routing for the network. Accepts IPv4 or IPv6 CIDRs.",
-                "x-doc-url": [
-                  "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                  "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                ]
+                "description": "Network CIDR or 'dhcp' for dynamic.",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "gateway": {
-                "type": "string",
-                "format": "ipv4",
-                "description": "Default gateway IP address for this secondary network (IPv4 or IPv6). Used as the next-hop for hosts on this network; provide an address reachable within the specified subnet.",
-                "x-doc-url": [
-                  "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                  "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                ]
+                "title": "Gateway",
+                "$ref": "#/$defs/ipAddress",
+                "description": "Gateway IP for this network."
               },
               "bond": {
+                "title": "Bond Mode",
                 "oneOf": [
-                  {
-                    "type": "string",
-                    "enum": [
-                      "balance-rr",
-                      "active-backup",
-                      "balance-xor",
-                      "broadcast",
-                      "802.3ad",
-                      "balance-tlb",
-                      "balance-alb"
-                    ]
-                  },
-                  { "type": "boolean", "const": false  }
+                  { "$ref": "#/$defs/bondMode" },
+                  { "type": "boolean", "const": false }
                 ],
-                "description": "Bonding mode for this secondary network interface. Select one of the supported Linux bonding modes; certain modes may require switch-side configuration (e.g., 802.3ad/LACP). Use `false` to explicitly disable bonding for this secondary network.",
-                "x-doc-url": [
-                  "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index",
-                  "https://www.kernel.org/doc/Documentation/networking/bonding.txt"
-                ]
+                "description": "Linux bonding mode. Use false to disable.",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "mtu": {
+                "title": "MTU",
                 "type": "integer",
-                "minimum": 68,
+                "minimum": 576,
                 "maximum": 9216,
-                "description": "MTU (bytes) for this interface. Default is 1500. Use larger values (for example 9000) only if all network devices (switches, NICs) support jumbo frames.",
-                "x-doc-url": [
-                  "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html",
-                  "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index"
-                ]
+                "description": "Interface MTU in bytes.",
+                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
               }
             },
+            "required": ["name"],
             "additionalProperties": true
           },
-          "description": "Secondary network configurations for additional networks attached to cluster nodes (storage, OOB, provisioning). Mirrors the primary network fields where applicable.",
-          "x-doc-url": [
-            "https://docs.openshift.com/container-platform/4.20/html/kubernetes_nmstate/index",
-            "https://docs.openshift.com/container-platform/4.20/networking/bridging-and-vlans.html"
-          ]
+          "description": "Additional networks (storage, OOB, provisioning).",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/multiple_networks/understanding-multiple-networks.html"
         }
       },
       "additionalProperties": true,
-      "description": "Network settings used for agent-config and nmstate-related configurations.",
-      "x-doc-url": [
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/kubernetes_nmstate/index",
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer"
-      ]
+      "description": "Network configuration for cluster and node networking.",
+      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-network-user-infra_installing-bare-metal"
     },
     "hosts": {
       "title": "Hosts",
       "type": "object",
       "properties": {},
       "patternProperties": {
-        "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$": {
+        "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$": {
           "type": "object",
           "properties": {
             "role": {
-              "title": "Host Role",
+              "title": "Role",
               "type": "string",
-              "description": "Logical role for the host. Use 'control' for control-plane hosts, 'worker' for worker nodes, or 'bootstrap' for bootstrap host.",
-              "enum": ["control", "worker", "bootstrap"],
-              "x-doc-url": [
-                "https://docs.openshift.com/container-platform/4.20/installing/overview.html"
-              ]
+              "description": "Node role: master/control (control-plane), worker, or bootstrap.",
+              "enum": ["master", "control", "worker", "bootstrap"],
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
             "storage": {
+              "title": "Storage",
               "type": "object",
-              "description": "Storage hints for OS and persistent disks used by OpenShift. Provide device identifiers so automated provisioning can select the appropriate disk.",
+              "description": "Disk hints for OS installation.",
               "properties": {
                 "os": {
+                  "title": "OS Disk",
                   "anyOf": [
                     {
                       "type": "object",
-                      "description": "Structured root device hint object. Use one or more identifiers to target the OS disk during automated provisioning.",
+                      "description": "Root device hints for OS disk selection.",
                       "properties": {
                         "deviceName": {
-                          "type": "string",
-                          "description": "Device path on the node, for example /dev/sda. Use with caution — paths may vary across OS versions.",
-                          "pattern": "^/dev/[A-Za-z0-9._-]+$"
+                          "title": "Device Path",
+                          "$ref": "#/$defs/devicePath",
+                          "description": "Device path (e.g., /dev/sda)."
                         },
                         "byId": {
+                          "title": "By-ID",
                           "type": "string",
-                          "description": "Stable by-id identifier (for example from /dev/disk/by-id) useful when device paths change."
+                          "minLength": 1,
+                          "description": "Stable /dev/disk/by-id identifier."
                         },
                         "wwn": {
+                          "title": "WWN",
                           "type": "string",
-                          "description": "World Wide Name (WWN) identifier for block storage devices.",
-                          "x-doc-url": ["https://docs.redhat.com/en/documentation/openshift_container_platform/4.15/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"]
+                          "pattern": "^[0-9a-fA-Fx]+$",
+                          "description": "World Wide Name identifier.",
+                          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
                         },
-                        "serialNumber": { "type": "string", "description": "Device serial number." },
-                        "hctl": { "type": "string", "description": "A string containing a SCSI bus address like 0:0:0:0. The hint must match the actual value exactly." },
-                        "model": { "type": "string", "description": "Device model string." },
-                        "vendor": { "type": "string", "description": "Device vendor string." },
-                        "rotational": { "type": "boolean", "description": "True for rotational (HDD) media, false for SSD/flash." },
-                        "minSizeGigabytes": { "type": "number", "minimum": 1, "description": "Minimum size in GiB required for the device to be considered." },
-                        "paths": { "type": "array", "items": { "type": "string" }, "description": "List of candidate device paths (for example /dev/sda, /dev/nvme0n1)." }
+                        "serialNumber": {
+                          "title": "Serial Number",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk serial number."
+                        },
+                        "hctl": {
+                          "title": "HCTL",
+                          "type": "string",
+                          "pattern": "^[0-9]+:[0-9]+:[0-9]+:[0-9]+$",
+                          "description": "SCSI address (H:C:T:L format)."
+                        },
+                        "model": {
+                          "title": "Model",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk model string."
+                        },
+                        "vendor": {
+                          "title": "Vendor",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk vendor string."
+                        },
+                        "rotational": {
+                          "title": "Rotational",
+                          "type": "boolean",
+                          "description": "True for HDD, false for SSD."
+                        },
+                        "minSizeGigabytes": {
+                          "title": "Minimum Size (GB)",
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 65536,
+                          "description": "Minimum disk size in GiB."
+                        },
+                        "paths": {
+                          "title": "Candidate Paths",
+                          "type": "array",
+                          "items": { "$ref": "#/$defs/devicePath" },
+                          "minItems": 1,
+                          "description": "List of candidate device paths."
+                        }
                       },
                       "additionalProperties": false
                     },
-                    { "type": "string", "description": "Simple device identifier or path (for example /dev/sda or a by-id string)." }
-                  ]
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Simple device path or by-id string."
+                    }
+                  ],
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
             },
             "bmc": {
+              "title": "BMC",
               "type": "object",
               "properties": {
-                "vendor": { "type": "string", "description": "BMC vendor name." },
-                "version": { "type": "integer", "minimum": 0, "description": "BMC firmware version (numeric when available)." },
-                "username": { "type": "string", "minLength": 1 },
-                "password": { "type": "string", "minLength": 1, "description": "Path to file containing BMC password or secret.", "x-is-file": true },
-                "address": { "anyOf": [{"type": "string", "format": "uri"}, {"type": "string", "format": "ipv4"}], "description": "BMC endpoint (IP or URI). Provide an IP or scheme://host:port if required.", "x-doc-url": [] },
-                "macAddress": { "type": "string", "pattern": "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$", "description": "MAC address for management interface." }
+                "vendor": {
+                  "title": "Vendor",
+                  "type": "string",
+                  "enum": ["dell", "hp", "hpe", "supermicro", "lenovo", "cisco", "fujitsu", "other"],
+                  "description": "BMC vendor."
+                },
+                "version": {
+                  "title": "Version",
+                  "anyOf": [
+                    { "type": "integer", "minimum": 0 },
+                    { "type": "string", "pattern": "^[0-9.]+$" }
+                  ],
+                  "description": "BMC/iDRAC/iLO firmware version."
+                },
+                "username": {
+                  "title": "Username",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "description": "BMC login username."
+                },
+                "password": {
+                  "title": "Password",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Path to file containing BMC password.",
+                  "x-is-file": true
+                },
+                "address": {
+                  "title": "Address",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(idrac-virtualmedia|redfish-virtualmedia|redfish|ipmi|ilo5-virtualmedia)://.+$",
+                      "description": "BMC URI with protocol."
+                    },
+                    { "$ref": "#/$defs/ipAddress" },
+                    { "$ref": "#/$defs/fqdn" }
+                  ],
+                  "description": "BMC endpoint (IP, FQDN, or protocol://host).",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
+                },
+                "macAddress": {
+                  "title": "MAC Address",
+                  "$ref": "#/$defs/macAddress",
+                  "description": "BMC management interface MAC."
+                },
+                "disableCertificateVerification": {
+                  "title": "Disable TLS Verification",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Skip BMC TLS certificate validation."
+                }
               },
               "additionalProperties": true,
-              "description": "Baseboard Management Controller (BMC) connection details."
+              "description": "Baseboard Management Controller settings.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
             },
             "network": {
+              "title": "Network",
               "type": "object",
               "properties": {
                 "interfaces": {
+                  "title": "Interfaces",
                   "type": "array",
                   "items": {
                     "type": "object",
                     "properties": {
-                      "name": { "type": "string", "description": "Interface name (for example 'eth0' or 'ens3').", "pattern": "^[A-Za-z0-9:_-]{1,64}$" },
-                      "macAddress": { "type": "string", "description": "MAC address in canonical form (AA:BB:CC:DD:EE:FF).", "pattern": "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$" }
+                      "name": {
+                        "title": "Name",
+                        "$ref": "#/$defs/interfaceName",
+                        "description": "Interface name (e.g., eth0, ens3)."
+                      },
+                      "macAddress": {
+                        "title": "MAC Address",
+                        "$ref": "#/$defs/macAddress",
+                        "description": "Interface MAC address."
+                      }
                     },
+                    "required": ["name", "macAddress"],
                     "additionalProperties": true
                   },
-                  "description": "List of physical interfaces present on the host."
+                  "minItems": 1,
+                  "description": "Physical network interfaces on the host.",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
                 },
                 "primary": {
+                  "title": "Primary",
                   "type": "object",
                   "properties": {
-                    "address": { "type": "string", "format": "ipv4", "description": "IP address assigned on the primary network (IPv4 or IPv6)." },
-                    "ports": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9:_-]{1,64}$" }, "description": "Logical port names or labels attached to the primary network." }
+                    "address": {
+                      "title": "IP Address",
+                      "$ref": "#/$defs/ipAddress",
+                      "description": "Host IP on the primary network."
+                    },
+                    "ports": {
+                      "title": "Ports",
+                      "type": "array",
+                      "items": { "$ref": "#/$defs/interfaceName" },
+                      "minItems": 1,
+                      "description": "Interface names for primary network."
+                    }
                   },
-                  "additionalProperties": true
+                  "required": ["address"],
+                  "additionalProperties": true,
+                  "description": "Primary network assignment for this host."
                 }
               },
               "additionalProperties": true,
-              "description": "Network configuration hints for the host."
+              "description": "Host-specific network configuration.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             }
           },
+          "required": ["role"],
           "additionalProperties": true,
-          "description": "Hosts definition",
-          "x-doc-url": []
+          "description": "Host configuration keyed by hostname."
         }
       },
       "additionalProperties": false,
+      "minProperties": 1,
       "propertyNames": {
-        "type": "string",
-        "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$",
-        "description": "Host key (hostname or FQDN).",
-        "x-doc-url": []
+        "$ref": "#/$defs/fqdn",
+        "description": "Hostname or FQDN."
       },
-      "description": "Host inventory keyed by hostname. Each host includes BMC and network/interface data.",
-      "x-doc-url": [
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer",
-        "https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/kubernetes_nmstate/index"
-      ]
+      "description": "Host inventory keyed by hostname (minimum 1 host required).",
+      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
     },
     "plugins": {
+      "title": "Plugins",
       "type": "object",
       "properties": {
         "nutanix": {
+          "title": "Nutanix",
           "type": "object",
           "properties": {
-            "platform": {
+            "prismCentral": {
+              "title": "Prism Central",
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "title": "Endpoint",
+                  "anyOf": [
+                    { "$ref": "#/$defs/ipAddress" },
+                    { "$ref": "#/$defs/fqdn" }
+                  ],
+                  "description": "Prism Central hostname or IP."
+                },
+                "port": {
+                  "title": "Port",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "default": 9440,
+                  "description": "Prism Central API port."
+                },
+                "username": {
+                  "title": "Username",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Prism Central username."
+                },
+                "password": {
+                  "title": "Password",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Path to Prism Central password file.",
+                  "x-is-file": true
+                }
+              },
+              "description": "Prism Central connection settings."
+            },
+            "subnetUUID": {
+              "title": "Subnet UUID",
               "type": "string",
-              "description": "platform section.",
-              "x-doc-url": []
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Nutanix subnet UUID for VMs."
             }
           },
           "additionalProperties": true,
-          "description": "nutanix section.",
-          "x-doc-url": []
+          "description": "Nutanix platform integration settings.",
+          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_nutanix/installing-nutanix-installer-provisioned.html"
         }
       },
       "additionalProperties": true,
-      "description": "plugins section.",
-      "x-doc-url": []
+      "description": "Platform-specific plugin configurations.",
+      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/index.html"
     }
   },
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": ".clusterfile schema (derived)",
-  "required": [
-    "account",
-    "cluster",
-    "network",
-    "hosts"
-  ]
+  "required": ["account", "cluster", "network", "hosts"]
 }
