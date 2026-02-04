@@ -327,3 +327,111 @@ podman push quay.io/dds/clusterfile-editor:latest
 ./clusterfile-editor.sh run
 podman run --rm --network=host quay.io/dds/clusterfile-editor:latest
 ```
+
+---
+
+## Session 2026-02-04 (Continued)
+
+### User Prompts Summary
+
+1. "we have the related template section, let's use it with the metadata, to help keep all parts needed together. extend the dns utility to also test for ntp, registry access using the pull secret file for auth, and other pieces of the setup we depend on for installation"
+
+### Requirements Implemented
+
+#### Related Templates Feature
+- **Requirement**: Link commonly-used templates together via metadata
+- **Solution**: Added `relatedTemplates` field to template `@meta` blocks
+- **Implementation**:
+  - Templates can list related templates by filename in metadata
+  - Editor UI dynamically renders related templates as clickable buttons
+  - Clicking a related template loads it in the template selector
+  - Icons match the related template's category
+
+#### Template Relationships
+
+| Template | Related Templates |
+|----------|-------------------|
+| install-config.yaml.tpl | agent-config.yaml.tpl, creds.yaml.tpl, mirror-registry-config.yaml.tpl, pre-check.sh.tpl |
+| agent-config.yaml.tpl | install-config.yaml.tpl, pre-check.sh.tpl |
+| creds.yaml.tpl | install-config.yaml.tpl |
+| pre-check.sh.tpl | install-config.yaml.tpl, agent-config.yaml.tpl |
+
+#### Pre-Installation Verification Script (pre-check.sh.tpl)
+- **Purpose**: Comprehensive script to verify infrastructure prerequisites before OpenShift installation
+- **Location**: `templates/pre-check.sh.tpl`
+- **Tests Included**:
+  1. **DNS Forward Lookups**: api, api-int, *.apps, etcd-N, host addresses
+  2. **DNS Reverse Lookups**: Verify PTR records for VIPs and hosts
+  3. **NTP Server Connectivity**: Test each configured NTP server
+  4. **DNS Resolver Reachability**: Verify all nameservers respond
+  5. **Registry Access**: Test pull-through with authentication using pull secret
+  6. **Network Connectivity**: Verify hosts can reach each other
+  7. **Proxy Verification**: Test proxy if configured
+  8. **BMC Connectivity**: Test Redfish/IPMI access for each host's BMC
+
+- **Output Features**:
+  - Color-coded pass/fail/warn indicators
+  - Summary count at end
+  - Exit code 1 if any critical failures
+
+- **Metadata**:
+  ```yaml
+  name: pre-check.sh
+  description: Pre-installation verification script for DNS, NTP, registry access, and network connectivity
+  type: clusterfile
+  category: utility
+  requires:
+    - cluster.name
+    - network.domain
+    - network.primary.vips
+    - network.ntpservers
+    - network.nameservers
+    - account.pullSecret
+    - hosts
+  relatedTemplates:
+    - install-config.yaml.tpl
+    - agent-config.yaml.tpl
+  ```
+
+### UI Changes
+
+#### Related Templates Section
+- Removed hardcoded "Load Credentials Template" button
+- Added dynamic section that appears when a template has relatedTemplates
+- Buttons show category icons and template names
+- Clicking loads the related template
+
+#### Category Icons
+Added icons for template categories:
+- `installation`: File icon
+- `credentials`: Lock icon
+- `acm`: Hub/spoke icon
+- `configuration`: Gear icon
+- `utility`: Terminal icon
+- `other`: Generic file icon
+
+### Files Changed
+
+```
+modified:   apps/editor/static/css/app.css          # Related templates styles
+modified:   apps/editor/static/index.html           # Cache bust v2.5.0
+modified:   apps/editor/static/js/app.js            # Dynamic related templates
+modified:   templates/agent-config.yaml.tpl         # relatedTemplates metadata
+modified:   templates/creds.yaml.tpl                # relatedTemplates metadata
+modified:   templates/install-config.yaml.tpl       # relatedTemplates metadata
+new file:   templates/pre-check.sh.tpl              # Pre-installation check script
+```
+
+### Commit
+
+```
+Add pre-check.sh template and related templates feature
+
+- Add templates/pre-check.sh.tpl: Pre-installation verification script
+  that tests DNS, NTP, registry access, network connectivity, and BMC
+- Add relatedTemplates metadata to install-config, agent-config, creds
+  templates to link commonly used together templates
+- Update editor UI to dynamically show related templates based on
+  metadata, replacing hardcoded credentials template button
+- Add category icons for template types in related templates display
+```
