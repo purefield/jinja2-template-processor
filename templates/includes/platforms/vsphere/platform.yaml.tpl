@@ -1,57 +1,5 @@
-{# vSphere IPI install-config.yaml template #}
-{# https://docs.openshift.com/container-platform/latest/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html #}
-{%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
-{%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
-{%- set vsphere = plugins.vsphere -%}
-{%- set vcenter = vsphere.vcenter -%}
----
-apiVersion: v1
-metadata:
-  name: {{ cluster.name }}
-
-baseDomain: {{ network.domain }}
-
-controlPlane:
-  name: master
-  replicas: {{ controlCount }}
-  platform:
-    vsphere:
-      cpus: {{ vsphere.cpus | default(4, true) }}
-      coresPerSocket: {{ vsphere.coresPerSocket | default(4, true) }}
-      memoryMB: {{ vsphere.memoryMiB | default(16384, true) }}
-      osDisk:
-        diskSizeGB: {{ vsphere.diskGiB | default(120, true) }}
-
-compute:
-  - name: worker
-    replicas: {{ workerCount }}
-    platform:
-      vsphere:
-        cpus: {{ vsphere.cpus | default(4, true) }}
-        coresPerSocket: {{ vsphere.coresPerSocket | default(4, true) }}
-        memoryMB: {{ vsphere.memoryMiB | default(16384, true) }}
-        osDisk:
-          diskSizeGB: {{ vsphere.diskGiB | default(120, true) }}
-
-{%- if network.proxy %}
-
-proxy:
-  httpProxy: {{ network.proxy.httpProxy }}
-  httpsProxy: {{ network.proxy.httpsProxy }}
-  noProxy: {{ network.proxy.noProxy }}
-{%- endif %}
-
-networking:
-  networkType: {{ network.primary.type | default("OVNKubernetes", true) }}
-  clusterNetwork:
-    - cidr: {{ network.cluster.subnet }}
-      hostPrefix: {{ network.cluster.hostPrefix | default(23, true) }}
-  machineNetwork:
-    - cidr: {{ network.primary.subnet }}
-  serviceNetwork:
-    - {{ network.service.subnet }}
-
-platform:
+{% set vsphere = plugins.vsphere %}
+{% set vcenter = vsphere.vcenter %}
   vsphere:
     apiVIPs:
 {%- if network.primary.vips.api is iterable and network.primary.vips.api is not string %}
@@ -111,27 +59,4 @@ platform:
 {%- if vcenter.folder is defined %}
           folder: /{{ vcenter.datacenter }}/vm/{{ vcenter.folder }}
 {%- endif %}
-{%- endif %}
-
-publish: External
-pullSecret: '{{ load_file(account.pullSecret) | trim }}'
-sshKey: |
-{%- for pubKey in cluster.sshKeys %}
-  {{ load_file(pubKey) | trim }}
-{%- endfor %}
-{%- if network.trustBundle is defined %}
-
-additionalTrustBundle: |
-{{ load_file(network.trustBundle) | indent(2, true) }}
-{%- endif %}
-{%- if cluster.mirrors is defined and cluster.mirrors | length > 0 %}
-
-imageContentSources:
-{%- for mirror in cluster.mirrors %}
-  - source: {{ mirror.source }}
-    mirrors:
-{%- for m in mirror.mirrors %}
-      - {{ m }}
-{%- endfor %}
-{%- endfor %}
-{%- endif %}
+{%- endif -%}

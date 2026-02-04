@@ -1,8 +1,10 @@
-{# GCP IPI install-config.yaml template #}
-{# https://docs.openshift.com/container-platform/latest/installing/installing_gcp/ipi/installing-gcp-customizations.html #}
+{# Unified IPI install-config.yaml template #}
+{# Supports: aws, azure, gcp, vsphere, openstack, ibmcloud, baremetal, none #}
+{# https://docs.openshift.com/container-platform/latest/installing/index.html #}
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
-{%- set gcp = plugins.gcp -%}
+{%- set platform = cluster.platform | default('baremetal', true) -%}
+{%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
 ---
 apiVersion: v1
 metadata:
@@ -13,39 +15,18 @@ baseDomain: {{ network.domain }}
 controlPlane:
   name: master
   replicas: {{ controlCount }}
+{%- if platform not in ['baremetal', 'none'] %}
   platform:
-    gcp:
-      type: {{ gcp.controlPlane.type | default("n2-standard-4", true) }}
-{%- if gcp.controlPlane.zones is defined %}
-      zones:
-{%- for zone in gcp.controlPlane.zones %}
-        - {{ zone }}
-{%- endfor %}
-{%- endif %}
-{%- if gcp.controlPlane.osDisk is defined %}
-      osDisk:
-        diskSizeGB: {{ gcp.controlPlane.osDisk.diskSizeGB | default(128, true) }}
-        diskType: {{ gcp.controlPlane.osDisk.diskType | default("pd-ssd", true) }}
+{% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}
 {%- endif %}
 
 compute:
   - name: worker
     replicas: {{ workerCount }}
+{%- if platform not in ['baremetal', 'none'] %}
     platform:
-      gcp:
-        type: {{ gcp.compute.type | default("n2-standard-4", true) }}
-{%- if gcp.compute.zones is defined %}
-        zones:
-{%- for zone in gcp.compute.zones %}
-          - {{ zone }}
-{%- endfor %}
+{% include 'includes/platforms/' ~ platform ~ '/compute.yaml.tpl' %}
 {%- endif %}
-{%- if gcp.compute.osDisk is defined %}
-        osDisk:
-          diskSizeGB: {{ gcp.compute.osDisk.diskSizeGB | default(128, true) }}
-          diskType: {{ gcp.compute.osDisk.diskType | default("pd-ssd", true) }}
-{%- endif %}
-
 {%- if network.proxy is defined %}
 
 proxy:
@@ -65,18 +46,7 @@ networking:
     - {{ network.service.subnet }}
 
 platform:
-  gcp:
-    projectID: {{ gcp.projectID }}
-    region: {{ gcp.region }}
-{%- if gcp.network is defined %}
-    network: {{ gcp.network }}
-{%- endif %}
-{%- if gcp.controlPlaneSubnet is defined %}
-    controlPlaneSubnet: {{ gcp.controlPlaneSubnet }}
-{%- endif %}
-{%- if gcp.computeSubnet is defined %}
-    computeSubnet: {{ gcp.computeSubnet }}
-{%- endif %}
+{% include 'includes/platforms/' ~ platform ~ '/platform.yaml.tpl' %}
 
 publish: External
 pullSecret: '{{ load_file(account.pullSecret) | trim }}'
@@ -100,7 +70,14 @@ imageContentSources:
 {%- endfor %}
 {%- endfor %}
 {%- endif %}
-{%- if gcp.credentials is defined %}
+{%- if platformPlugin.credentials is defined %}
 
 credentialsMode: Manual
+{%- endif %}
+{#- SNO bootstrap disk for platform: none #}
+{%- if platform == 'none' and controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
+{%- set bootstrapDisk = (hosts.values()|first).storage.os %}
+
+bootstrapInPlace:
+  installationDisk: {{ bootstrapDisk if bootstrapDisk is string else bootstrapDisk.deviceName }}
 {%- endif %}
