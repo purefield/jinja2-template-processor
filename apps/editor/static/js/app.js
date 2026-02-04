@@ -106,6 +106,35 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.3',
+    date: '2026-02-04',
+    changes: [
+      'Fixed CHANGELOG array in app.js to include 2.4.1 and 2.4.2 releases'
+    ]
+  },
+  {
+    version: '2.4.2',
+    date: '2026-02-04',
+    changes: [
+      'Refactored pre-check.sh into standalone modular templates',
+      'Added pre-check-files.sh.tpl for pull secret, SSH keys, trust bundle validation',
+      'Added pre-check-dns.sh.tpl for DNS forward/reverse and resolver checks',
+      'Added pre-check-network.sh.tpl for host, gateway, VIP, and proxy checks',
+      'Added pre-check-ntp.sh.tpl, pre-check-registry.sh.tpl, pre-check-bmc.sh.tpl',
+      'Master pre-check.sh.tpl now composes all modules with conditional rendering'
+    ]
+  },
+  {
+    version: '2.4.1',
+    date: '2026-02-04',
+    changes: [
+      'Added pre-check.sh.tpl for pre-installation verification',
+      'Added relatedTemplates metadata linking companion templates',
+      'Fixed download filename extension for rendered templates',
+      'Fixed test imports and assertions'
+    ]
+  },
+  {
     version: '2.4.0',
     date: '2026-02-04',
     changes: [

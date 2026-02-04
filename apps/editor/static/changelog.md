@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.4.3
+- **Changelog Sync**: Fixed CHANGELOG array in app.js to include 2.4.1 and 2.4.2 releases
+
 ## 2.4.2
 - **Modular Pre-Check Templates**: Refactored pre-check.sh into standalone modules
   - `pre-check-files.sh.tpl` - Validate pull secret, SSH keys, trust bundle, manifests
