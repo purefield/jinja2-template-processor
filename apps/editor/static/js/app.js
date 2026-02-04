@@ -230,6 +230,9 @@ function initUI() {
   // Set up tab navigation
   setupTabs();
 
+  // Set up resizable split view
+  setupSplitView();
+
   // Set up template buttons (they're in static HTML)
   setupTemplateButtons();
 
@@ -279,6 +282,116 @@ function navigateToSection(section) {
 
   // Save section to localStorage immediately
   localStorage.setItem(State.STORAGE_KEYS.CURRENT_SECTION, section);
+}
+
+/**
+ * Set up resizable split view
+ */
+function setupSplitView() {
+  const splitView = document.getElementById('split-view');
+  const divider = document.getElementById('split-divider');
+  const formPane = document.getElementById('form-pane');
+  const editorPane = document.getElementById('editor-pane');
+
+  if (!splitView || !divider || !formPane || !editorPane) {
+    console.warn('Split view elements not found');
+    return;
+  }
+
+  const STORAGE_KEY = 'clusterfile-editor-split-position';
+  const MIN_PANE_WIDTH = 250; // Minimum width in pixels
+  const DEFAULT_SPLIT = 50; // Default split percentage
+
+  // Restore saved position
+  const savedPosition = localStorage.getItem(STORAGE_KEY);
+  if (savedPosition) {
+    const percent = parseFloat(savedPosition);
+    if (percent >= 20 && percent <= 80) {
+      formPane.style.flex = `0 0 ${percent}%`;
+    }
+  }
+
+  let isDragging = false;
+  let startX = 0;
+  let startWidth = 0;
+
+  const startDrag = (e) => {
+    isDragging = true;
+    startX = e.clientX || e.touches?.[0]?.clientX || 0;
+    startWidth = formPane.getBoundingClientRect().width;
+
+    splitView.classList.add('split-view--dragging');
+    divider.classList.add('split-view__divider--dragging');
+
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchmove', onDrag, { passive: false });
+    document.addEventListener('touchend', stopDrag);
+
+    e.preventDefault();
+  };
+
+  const onDrag = (e) => {
+    if (!isDragging) return;
+
+    const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
+    const deltaX = clientX - startX;
+    const containerWidth = splitView.getBoundingClientRect().width;
+    const dividerWidth = divider.getBoundingClientRect().width;
+
+    let newWidth = startWidth + deltaX;
+
+    // Apply constraints
+    newWidth = Math.max(MIN_PANE_WIDTH, newWidth);
+    newWidth = Math.min(containerWidth - MIN_PANE_WIDTH - dividerWidth, newWidth);
+
+    // Convert to percentage
+    const percent = (newWidth / containerWidth) * 100;
+    formPane.style.flex = `0 0 ${percent}%`;
+
+    // Refresh CodeMirror editors to handle resize
+    if (window.ClusterfileEditor?.CodeMirror?.refreshEditors) {
+      window.ClusterfileEditor.CodeMirror.refreshEditors();
+    }
+
+    e.preventDefault();
+  };
+
+  const stopDrag = () => {
+    if (!isDragging) return;
+
+    isDragging = false;
+    splitView.classList.remove('split-view--dragging');
+    divider.classList.remove('split-view__divider--dragging');
+
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
+    document.removeEventListener('touchmove', onDrag);
+    document.removeEventListener('touchend', stopDrag);
+
+    // Save position to localStorage
+    const containerWidth = splitView.getBoundingClientRect().width;
+    const formWidth = formPane.getBoundingClientRect().width;
+    const percent = (formWidth / containerWidth) * 100;
+    localStorage.setItem(STORAGE_KEY, percent.toFixed(1));
+
+    // Final refresh of CodeMirror editors
+    if (window.ClusterfileEditor?.CodeMirror?.refreshEditors) {
+      window.ClusterfileEditor.CodeMirror.refreshEditors();
+    }
+  };
+
+  // Double-click to reset to default
+  divider.addEventListener('dblclick', () => {
+    formPane.style.flex = `0 0 ${DEFAULT_SPLIT}%`;
+    localStorage.setItem(STORAGE_KEY, DEFAULT_SPLIT.toString());
+    if (window.ClusterfileEditor?.CodeMirror?.refreshEditors) {
+      window.ClusterfileEditor.CodeMirror.refreshEditors();
+    }
+  });
+
+  divider.addEventListener('mousedown', startDrag);
+  divider.addEventListener('touchstart', startDrag, { passive: false });
 }
 
 /**
@@ -1757,7 +1870,7 @@ async function fetchVersion() {
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', init);
 
-// Export for debugging
+// Export for debugging and cross-module access
 window.ClusterfileEditor = {
   State,
   Validator,
@@ -1767,5 +1880,6 @@ window.ClusterfileEditor = {
   init,
   loadDocument,
   newDocument,
-  showToast
+  showToast,
+  navigateToSection
 };

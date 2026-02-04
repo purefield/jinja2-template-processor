@@ -313,22 +313,68 @@ html, body {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .split-view__pane {
-  flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-width: 0;
+  min-width: 200px;
 }
 
 .split-view__pane--form {
-  border-right: 1px solid var(--pf-global--BorderColor--100);
+  flex: 0 0 50%;
+  border-right: none;
 }
 
 .split-view__pane--editor {
+  flex: 1;
   background: var(--pf-global--BackgroundColor--100);
+}
+
+/* Split View Divider */
+.split-view__divider {
+  flex: 0 0 6px;
+  background: var(--pf-global--BorderColor--100);
+  cursor: col-resize;
+  position: relative;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.split-view__divider:hover,
+.split-view__divider--dragging {
+  background: var(--pf-global--primary-color--100);
+}
+
+.split-view__divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 32px;
+  background: var(--pf-global--Color--200);
+  border-radius: 1px;
+  opacity: 0.5;
+}
+
+.split-view__divider:hover::before,
+.split-view__divider--dragging::before {
+  background: var(--pf-global--Color--light-100);
+  opacity: 1;
+}
+
+/* Prevent text selection during drag */
+.split-view--dragging {
+  user-select: none;
+  cursor: col-resize;
+}
+
+.split-view--dragging * {
+  cursor: col-resize !important;
 }
 
 .split-view__header {
@@ -1498,6 +1544,18 @@ html, body {
   background: var(--pf-global--BackgroundColor--200);
   border-radius: var(--pf-global--BorderRadius--sm);
   font-size: var(--pf-global--FontSize--sm);
+  margin-bottom: var(--pf-global--spacer--md);
+}
+
+.plugin-platform-badge--link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.plugin-platform-badge--link:hover {
+  background: var(--pf-global--BackgroundColor--100);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .plugin-platform-badge__label {
@@ -1508,6 +1566,38 @@ html, body {
   font-weight: 600;
   color: var(--pf-global--primary-color--100);
   text-transform: capitalize;
+}
+
+.plugin-platform-badge__icon {
+  color: var(--pf-global--Color--200);
+  margin-left: var(--pf-global--spacer--xs);
+}
+
+.plugin-platform-badge--link:hover .plugin-platform-badge__icon {
+  color: var(--pf-global--primary-color--100);
+}
+
+/* Field Navigation Link */
+.field-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  margin-left: var(--pf-global--spacer--sm);
+  font-size: var(--pf-global--FontSize--xs);
+  color: var(--pf-global--link--Color);
+  text-decoration: none;
+  border-radius: var(--pf-global--BorderRadius--sm);
+  transition: background 0.15s, color 0.15s;
+}
+
+.field-nav-link:hover {
+  background: rgba(0, 102, 204, 0.1);
+  color: var(--pf-global--link--Color--hover);
+}
+
+.field-nav-link svg {
+  flex-shrink: 0;
 }
 
 /* File Input */
@@ -1663,8 +1753,12 @@ html, body {
   }
 
   .split-view__pane--form {
-    border-right: none;
+    flex: 0 0 50% !important;
     border-bottom: 1px solid var(--pf-global--BorderColor--100);
+  }
+
+  .split-view__divider {
+    display: none;
   }
 }
 

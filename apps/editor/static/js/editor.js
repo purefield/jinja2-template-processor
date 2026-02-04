@@ -427,6 +427,16 @@ function refreshRenderedEditor() {
 }
 
 /**
+ * Refresh all editors (used when split view is resized)
+ */
+function refreshEditors() {
+  if (yamlEditor) yamlEditor.refresh();
+  if (outputEditor) outputEditor.refresh();
+  if (templateEditor) templateEditor.refresh();
+  if (renderedEditor) renderedEditor.refresh();
+}
+
+/**
  * Focus the YAML editor
  */
 function focusEditor() {
@@ -475,6 +485,7 @@ window.EditorCodeMirror = {
   refreshEditor,
   refreshTemplateEditor,
   refreshRenderedEditor,
+  refreshEditors,
   focusEditor,
   getCursorPosition,
   hasFocus

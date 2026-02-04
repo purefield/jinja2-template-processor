@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/static/vendor/codemirror-foldgutter.css">
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="/static/css/app.css?v=2.2.2">
+  <link rel="stylesheet" href="/static/css/app.css?v=2.2.3">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/static/editor.svg">
@@ -140,9 +140,9 @@
 
       <!-- Content -->
       <div class="app-content">
-        <div class="split-view">
+        <div class="split-view" id="split-view">
           <!-- Form Pane -->
-          <div class="split-view__pane split-view__pane--form">
+          <div class="split-view__pane split-view__pane--form" id="form-pane">
             <div class="split-view__header">
               <span class="split-view__title">Form Editor</span>
             </div>
@@ -153,8 +153,11 @@
             </div>
           </div>
 
+          <!-- Resizable Divider -->
+          <div class="split-view__divider" id="split-divider" title="Drag to resize"></div>
+
           <!-- YAML Editor Pane -->
-          <div class="split-view__pane split-view__pane--editor editor-pane">
+          <div class="split-view__pane split-view__pane--editor editor-pane" id="editor-pane">
             <div class="tabs" data-tab-group="editor">
               <button class="tab tab--active" data-tab="yaml">YAML</button>
               <button class="tab" data-tab="diff">Diff</button>
@@ -218,12 +221,12 @@
   <script src="/static/vendor/nunjucks.min.js"></script>
 
   <!-- App Scripts (cache-bust: v2.1.5) -->
-  <script src="/static/js/state.js?v=2.2.2"></script>
-  <script src="/static/js/validator.js?v=2.2.2"></script>
-  <script src="/static/js/help.js?v=2.2.2"></script>
-  <script src="/static/js/editor.js?v=2.2.2"></script>
-  <script src="/static/js/form.js?v=2.2.2"></script>
-  <script src="/static/js/template-renderer.js?v=2.2.2"></script>
-  <script src="/static/js/app.js?v=2.2.2"></script>
+  <script src="/static/js/state.js?v=2.2.3"></script>
+  <script src="/static/js/validator.js?v=2.2.3"></script>
+  <script src="/static/js/help.js?v=2.2.3"></script>
+  <script src="/static/js/editor.js?v=2.2.3"></script>
+  <script src="/static/js/form.js?v=2.2.3"></script>
+  <script src="/static/js/template-renderer.js?v=2.2.3"></script>
+  <script src="/static/js/app.js?v=2.2.3"></script>
 </body>
 </html>
