@@ -704,6 +704,14 @@ async function selectPlatform(platform) {
   updateValidationBadge();
   updateChangesBadge();
 
+  // Refresh plugins section if it's currently displayed
+  if (State.state.currentSection === 'plugins') {
+    const formContent = document.getElementById('form-content');
+    if (formContent) {
+      Form.renderSection('plugins', formContent);
+    }
+  }
+
   showToast(`Platform set to ${PLATFORM_INFO[platform]?.name || platform}`, 'success');
 }
 

@@ -103,11 +103,126 @@ function renderSection(sectionName, container) {
 
   if (sectionName === 'hosts') {
     renderHostsSection(section, sectionSchema);
+  } else if (sectionName === 'plugins') {
+    renderPluginsSection(section, sectionSchema);
   } else {
     renderObjectFields(section, sectionSchema, sectionName, State.state.currentObject?.[sectionName] || {});
   }
 
   container.appendChild(section);
+}
+
+/**
+ * Map platform to plugin name
+ * Some platforms map to the same plugin, others have no plugin
+ */
+const PLATFORM_TO_PLUGIN = {
+  'vsphere': 'vsphere',
+  'aws': 'aws',
+  'azure': 'azure',
+  'gcp': 'gcp',
+  'openstack': 'openstack',
+  'ibmcloud': 'ibmcloud',
+  'nutanix': 'nutanix',
+  // These platforms don't have specific plugins
+  'baremetal': null,
+  'none': null
+};
+
+/**
+ * Render plugins section - only shows the plugin matching the selected platform
+ */
+function renderPluginsSection(container, schema) {
+  const platform = State.state.currentObject?.cluster?.platform;
+  const pluginName = PLATFORM_TO_PLUGIN[platform];
+
+  // No platform selected
+  if (!platform) {
+    const notice = document.createElement('div');
+    notice.className = 'empty-state';
+    notice.innerHTML = `
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="empty-state__title">No platform selected</div>
+      <div class="empty-state__description">Select a platform in the <strong>Cluster</strong> section to configure platform-specific settings.</div>
+    `;
+    container.appendChild(notice);
+    return;
+  }
+
+  // Platform doesn't have a plugin (baremetal, none)
+  if (pluginName === null) {
+    const notice = document.createElement('div');
+    notice.className = 'empty-state';
+    notice.innerHTML = `
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22,4 12,14.01 9,11.01"/>
+        </svg>
+      </div>
+      <div class="empty-state__title">No plugin required</div>
+      <div class="empty-state__description">The <strong>${Help.escapeHtml(platform)}</strong> platform does not require additional plugin configuration.</div>
+    `;
+    container.appendChild(notice);
+    return;
+  }
+
+  // Check if plugin schema exists
+  const pluginSchema = schema.properties?.[pluginName];
+  if (!pluginSchema) {
+    const notice = document.createElement('div');
+    notice.className = 'empty-state';
+    notice.innerHTML = `
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <div class="empty-state__title">Plugin not available</div>
+      <div class="empty-state__description">No schema defined for the <strong>${Help.escapeHtml(pluginName)}</strong> plugin.</div>
+    `;
+    container.appendChild(notice);
+    return;
+  }
+
+  // Show platform indicator
+  const platformBadge = document.createElement('div');
+  platformBadge.className = 'plugin-platform-badge';
+  platformBadge.innerHTML = `
+    <span class="plugin-platform-badge__label">Platform:</span>
+    <span class="plugin-platform-badge__value">${Help.escapeHtml(platform)}</span>
+  `;
+  platformBadge.style.marginBottom = '16px';
+  platformBadge.style.padding = '8px 12px';
+  platformBadge.style.background = 'var(--pf-global--BackgroundColor--200)';
+  platformBadge.style.borderRadius = '4px';
+  platformBadge.style.display = 'inline-block';
+  platformBadge.style.fontSize = '0.875rem';
+  container.appendChild(platformBadge);
+
+  // Render plugin title as subsection
+  const pluginTitle = document.createElement('h3');
+  pluginTitle.className = 'form-section__subtitle';
+  pluginTitle.textContent = pluginSchema.title || pluginName;
+  pluginTitle.style.marginTop = '16px';
+  pluginTitle.style.marginBottom = '12px';
+  pluginTitle.style.color = 'var(--pf-global--Color--100)';
+  pluginTitle.style.fontSize = '1rem';
+  pluginTitle.style.fontWeight = '600';
+  container.appendChild(pluginTitle);
+
+  // Render plugin fields
+  const pluginData = State.state.currentObject?.plugins?.[pluginName] || {};
+  const path = `plugins.${pluginName}`;
+  renderObjectFields(container, pluginSchema, path, pluginData);
 }
 
 /**
@@ -1298,6 +1413,7 @@ function removeHost(hostname) {
 window.EditorForm = {
   renderSection,
   renderHostsSection,
+  renderPluginsSection,
   renderObjectFields,
   renderField,
   setFormChangeCallback,
