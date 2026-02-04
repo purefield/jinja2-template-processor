@@ -1489,6 +1489,27 @@ html, body {
   margin-bottom: var(--pf-global--spacer--md);
 }
 
+/* Plugin Platform Badge */
+.plugin-platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pf-global--spacer--sm);
+  padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md);
+  background: var(--pf-global--BackgroundColor--200);
+  border-radius: var(--pf-global--BorderRadius--sm);
+  font-size: var(--pf-global--FontSize--sm);
+}
+
+.plugin-platform-badge__label {
+  color: var(--pf-global--Color--200);
+}
+
+.plugin-platform-badge__value {
+  font-weight: 600;
+  color: var(--pf-global--primary-color--100);
+  text-transform: capitalize;
+}
+
 /* File Input */
 .file-input {
   display: none;
