@@ -1,23 +1,55 @@
 # Clusterfile Editor Changelog
 
 ## 2.3.1
-- Simplify Templates page with platform info display card
-- Add "Change" link to navigate to Cluster section for platform changes
-- Add "Load Credentials Template" button for cloud platforms
-- Unified creds.yaml.tpl for CCO credential generation
+- **Templates Page Simplified**: Replaced 9 platform selection buttons with single platform info card
+- **Platform Info Card**: Shows current platform icon, name, and description
+- **Navigation Link**: Added "Change" link to navigate directly to Cluster section for platform changes
+- **Credentials Button**: Added "Load Credentials Template" button for cloud platforms (AWS, Azure, GCP, vSphere, OpenStack, IBM Cloud, Nutanix)
+- **UI Polish**: Reduced platform icon size from 32px to 20px for cleaner appearance
+- **Updated Template Descriptions**: install-config.yaml.tpl and creds.yaml.tpl now show proper descriptions
 
 ## 2.3.0
-- Add comprehensive template test suite (57 tests)
-- Consolidate install-config templates with dynamic platform includes
-- Add Nutanix platform support with IPI includes
-- All platforms now use unified install-config.yaml.tpl
-
+- **Template Consolidation**: Replaced 7 platform-specific install-config templates with unified `install-config.yaml.tpl`
+- **Dynamic Includes**: Created platform-specific includes under `templates/includes/platforms/{platform}/`
+  - Each IPI platform has: controlPlane.yaml.tpl, compute.yaml.tpl, platform.yaml.tpl, creds.yaml.tpl
+  - Supported platforms: aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix, baremetal, none
+- **Credentials Template**: Added unified `creds.yaml.tpl` for CCO (Cloud Credential Operator) credential generation
+- **Nutanix Support**: Added full Nutanix IPI platform support with all includes
+- **Test Suite**: Added comprehensive test suite with 57 tests
+  - `tests/run_tests.py` - Standalone runner (no pytest dependency)
+  - `tests/test_templates.py` - Full pytest-based test suite
+  - Covers all platforms, configuration options, includes, and edge cases
+- **Sample Data**: Added `customer.example.nutanix-ipi.clusterfile` sample
+- **Whitespace Fix**: Fixed Jinja2 `{%- set %}` whitespace stripping that broke YAML indentation
 
 ## 2.2.2
-- Add cross-navigation links and resizable split view
-- Filter Plugins section to show only platform-specific plugin
-- Add platform selector with auto-template selection
-- Add support for all IPI platforms
-- Add vSphere IPI support
+- **Cross-Navigation**: Added links between Plugins and Cluster sections for platform configuration
+- **Resizable Split View**: Added draggable divider between form and editor panes with localStorage persistence
+- **Plugin Filtering**: Plugins section now shows only the plugin matching cluster.platform
+- **Platform Selector**: Added platform buttons with auto-template selection on Templates page
+- **IPI Platforms**: Added support for AWS, Azure, GCP, OpenStack, IBM Cloud platforms
+- **vSphere IPI**: Added vSphere IPI support with failure domains
 
+## 2.2.1
+- Bug fixes and stability improvements
 
+## 2.2.0
+- Enhanced form editor with real-time validation
+- Improved YAML editor with syntax highlighting
+- Added diff view for change tracking
+
+## 2.1.0
+- Added Template and Rendered tabs for full-page template viewing
+- Auto-load template source when selecting from dropdown
+- Auto-render with parameter highlighting showing changed lines
+- Improved Changes section with grouped changes and clickable links
+- Fixed form focus loss when editing YAML
+- Enhanced filename display with modification indicator
+- Real-time validation and change badge updates
+
+## 2.0.0
+- Complete UI redesign with PatternFly styling
+- Split view with form editor and YAML editor
+- JSON Schema-driven form generation
+- Live template rendering
+- Sample clusterfile loading
