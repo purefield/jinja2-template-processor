@@ -1,0 +1,77 @@
+# Nutanix IPI Clusterfile Example
+# For use with install-config.yaml.tpl unified template
+account:
+  pullSecret: secrets/pull-secret.json
+
+cluster:
+  version: "4.18.0"
+  name: nutanix-cluster
+  platform: nutanix
+  arch: x86_64
+  location: dc1
+  sshKeys:
+    - secrets/id_rsa.pub
+
+plugins:
+  nutanix:
+    credentials: secrets/nutanix-credentials.json
+    prismCentral:
+      endpoint:
+        address: prism-central.example.com
+        port: 9440
+      username: admin@example.com
+      password: secrets/nutanix-password.txt
+    prismElements:
+      - name: PE1
+        endpoint:
+          address: prism-element.example.com
+          port: 9440
+        uuid: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    subnetUUIDs:
+      - yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+    controlPlane:
+      cpus: 4
+      coresPerSocket: 2
+      memoryMiB: 16384
+      osDisk:
+        diskSizeGiB: 120
+    compute:
+      cpus: 4
+      coresPerSocket: 2
+      memoryMiB: 16384
+      osDisk:
+        diskSizeGiB: 120
+
+network:
+  domain: example.com
+  # trustBundle: /path/to/ca-bundle.pem
+  # proxy:
+  #   httpProxy: http://proxy.example.com:8080
+  #   httpsProxy: http://proxy.example.com:8080
+  #   noProxy: .cluster.local,.svc,127.0.0.1,localhost
+  primary:
+    subnet: 10.0.0.0/24
+    vips:
+      api:
+        - 10.0.0.2
+      apps:
+        - 10.0.0.3
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+
+hosts:
+  control-0.nutanix-cluster.example.com:
+    role: control
+  control-1.nutanix-cluster.example.com:
+    role: control
+  control-2.nutanix-cluster.example.com:
+    role: control
+  worker-0.nutanix-cluster.example.com:
+    role: worker
+  worker-1.nutanix-cluster.example.com:
+    role: worker
+  worker-2.nutanix-cluster.example.com:
+    role: worker
