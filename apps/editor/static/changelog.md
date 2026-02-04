@@ -1,5 +1,15 @@
 # Clusterfile Editor Changelog
 
+## 2.4.1
+- **Pre-Check Script**: Added `pre-check.sh.tpl` template for pre-installation verification
+  - Tests DNS forward/reverse lookups, NTP, DNS resolvers, registry access, host connectivity, BMC
+  - Only includes sections when data exists (minimal output for minimal configs)
+  - Warns instead of fails - documents gaps without blocking
+- **Related Templates**: Templates now link to commonly-used companions via `relatedTemplates` metadata
+  - Dynamic related templates section in editor UI with category icons
+- **Download Fix**: Rendered template download now uses correct file extension (.yaml, .sh)
+- **Test Fixes**: Fixed test imports and assertions for template API
+
 ## 2.4.0
 - **Template Metadata**: Added `@meta` blocks to all templates with type, category, platforms, requires, and docs
 - **Smart Template Filtering**: Template dropdown now only shows clusterfile-type templates, grouped by category
