@@ -673,35 +673,32 @@ function renderCurrentSection() {
 function renderTemplatesSection(container) {
   // Get current platform from state
   const currentPlatform = State.getNestedValue(State.state.currentObject, 'cluster.platform') || '';
+  const platformInfo = PLATFORM_INFO[currentPlatform];
+  const hasCreds = PLATFORM_CREDS_TEMPLATES[currentPlatform];
 
   container.innerHTML = `
     <div class="template-panel">
       <div class="form-section">
-        <h2 class="form-section__title">Platform & Template</h2>
+        <h2 class="form-section__title">Template Selection</h2>
 
-        <div class="form-group platform-select">
-          <label class="form-label">Infrastructure Platform</label>
-          <div class="platform-grid" id="platform-grid">
-            ${Object.entries(PLATFORM_INFO).map(([key, info]) => `
-              <button class="platform-card ${currentPlatform === key ? 'platform-card--selected' : ''}"
-                      data-platform="${key}"
-                      title="${Help.escapeHtml(info.description)}">
-                <svg class="platform-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  ${info.icon === 'cloud' ? `
-                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
-                  ` : `
-                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                    <line x1="6" y1="6" x2="6.01" y2="6"/>
-                    <line x1="6" y1="18" x2="6.01" y2="18"/>
-                  `}
-                </svg>
-                <span class="platform-card__name">${Help.escapeHtml(info.name)}</span>
-              </button>
-            `).join('')}
-          </div>
-          <div class="form-description" id="platform-description">
-            ${currentPlatform && PLATFORM_INFO[currentPlatform] ? PLATFORM_INFO[currentPlatform].description : 'Select a platform to auto-configure template'}
+        <div class="form-group platform-display">
+          <label class="form-label">Current Platform</label>
+          <div class="platform-info-card">
+            <svg class="platform-info-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              ${platformInfo?.icon === 'cloud' ? `
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+              ` : `
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                <line x1="6" y1="6" x2="6.01" y2="6"/>
+                <line x1="6" y1="18" x2="6.01" y2="18"/>
+              `}
+            </svg>
+            <div class="platform-info-card__content">
+              <span class="platform-info-card__name">${platformInfo ? Help.escapeHtml(platformInfo.name) : 'Not configured'}</span>
+              <span class="platform-info-card__desc">${platformInfo ? Help.escapeHtml(platformInfo.description) : 'Set platform in Cluster section'}</span>
+            </div>
+            <a href="#" class="platform-info-card__link" id="change-platform-link">Change</a>
           </div>
         </div>
 
@@ -716,6 +713,21 @@ function renderTemplatesSection(container) {
           <div class="form-description" id="template-description"></div>
         </div>
 
+        ${hasCreds ? `
+        <div class="form-group">
+          <label class="form-label">Related Templates</label>
+          <div class="related-templates">
+            <button class="btn btn--secondary btn--sm" id="load-creds-template">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Load Credentials Template (creds.yaml.tpl)
+            </button>
+          </div>
+        </div>
+        ` : ''}
+
         <div class="form-group template-params">
           <label class="form-label">Parameter Overrides</label>
           <div id="template-params-list"></div>
@@ -729,19 +741,26 @@ function renderTemplatesSection(container) {
               <line x1="12" y1="16" x2="12" y2="12"/>
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            <span>Select a platform to auto-configure, or manually choose a template. Switch to "Rendered" tab to see output.</span>
+            <span>Select a template and switch to "Rendered" tab to see output.</span>
           </div>
         </div>
       </div>
     </div>
   `;
 
-  // Set up platform card click handlers
-  document.querySelectorAll('.platform-card').forEach(card => {
-    card.addEventListener('click', async () => {
-      const platform = card.dataset.platform;
-      await selectPlatform(platform);
-    });
+  // Set up change platform link
+  document.getElementById('change-platform-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.ClusterfileEditor.navigateToSection('cluster');
+  });
+
+  // Set up load credentials template button
+  document.getElementById('load-creds-template')?.addEventListener('click', async () => {
+    const templateSelect = document.getElementById('template-select');
+    if (templateSelect) {
+      templateSelect.value = 'creds.yaml.tpl';
+      templateSelect.dispatchEvent(new Event('change'));
+    }
   });
 
   // Set up template select event listener
