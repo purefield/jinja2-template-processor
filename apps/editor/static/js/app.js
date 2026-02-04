@@ -32,6 +32,32 @@ let EMBEDDED_SCHEMA = null;
 let EMBEDDED_SAMPLES = [];
 let EMBEDDED_TEMPLATES = [];
 
+// Platform to template mapping
+const PLATFORM_TEMPLATES = {
+  'baremetal': 'install-config-baremetal.yaml.tpl',
+  'vsphere': 'install-config-vsphere.yaml.tpl',
+  'aws': 'install-config-aws.yaml.tpl',
+  'azure': 'install-config-azure.yaml.tpl',
+  'gcp': 'install-config-gcp.yaml.tpl',
+  'openstack': 'install-config-openstack.yaml.tpl',
+  'ibmcloud': 'install-config-ibmcloud.yaml.tpl',
+  'nutanix': 'install-config-baremetal.yaml.tpl',  // Uses baremetal with nutanix platform
+  'none': 'install-config-baremetal.yaml.tpl'      // SNO uses baremetal template
+};
+
+// Platform display names and descriptions
+const PLATFORM_INFO = {
+  'baremetal': { name: 'Bare Metal', description: 'Agent-based installer for physical servers', icon: 'server' },
+  'vsphere': { name: 'VMware vSphere', description: 'IPI for vSphere/vCenter environments', icon: 'cloud' },
+  'aws': { name: 'AWS', description: 'IPI for Amazon Web Services', icon: 'cloud' },
+  'azure': { name: 'Azure', description: 'IPI for Microsoft Azure', icon: 'cloud' },
+  'gcp': { name: 'GCP', description: 'IPI for Google Cloud Platform', icon: 'cloud' },
+  'openstack': { name: 'OpenStack', description: 'IPI for OpenStack private clouds', icon: 'cloud' },
+  'ibmcloud': { name: 'IBM Cloud', description: 'IPI for IBM Cloud VPC', icon: 'cloud' },
+  'nutanix': { name: 'Nutanix', description: 'Agent-based installer for Nutanix AHV', icon: 'server' },
+  'none': { name: 'None (SNO)', description: 'Single Node OpenShift without platform integration', icon: 'server' }
+};
+
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
 
@@ -521,17 +547,46 @@ function renderCurrentSection() {
  * Render templates section
  */
 function renderTemplatesSection(container) {
+  // Get current platform from state
+  const currentPlatform = State.getNestedValue(State.state.currentObject, 'cluster.platform') || '';
+
   container.innerHTML = `
     <div class="template-panel">
       <div class="form-section">
-        <h2 class="form-section__title">Template Rendering</h2>
+        <h2 class="form-section__title">Platform & Template</h2>
+
+        <div class="form-group platform-select">
+          <label class="form-label">Infrastructure Platform</label>
+          <div class="platform-grid" id="platform-grid">
+            ${Object.entries(PLATFORM_INFO).map(([key, info]) => `
+              <button class="platform-card ${currentPlatform === key ? 'platform-card--selected' : ''}"
+                      data-platform="${key}"
+                      title="${Help.escapeHtml(info.description)}">
+                <svg class="platform-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  ${info.icon === 'cloud' ? `
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                  ` : `
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                    <line x1="6" y1="6" x2="6.01" y2="6"/>
+                    <line x1="6" y1="18" x2="6.01" y2="18"/>
+                  `}
+                </svg>
+                <span class="platform-card__name">${Help.escapeHtml(info.name)}</span>
+              </button>
+            `).join('')}
+          </div>
+          <div class="form-description" id="platform-description">
+            ${currentPlatform && PLATFORM_INFO[currentPlatform] ? PLATFORM_INFO[currentPlatform].description : 'Select a platform to auto-configure template'}
+          </div>
+        </div>
 
         <div class="form-group template-select">
           <label class="form-label">Template</label>
           <select class="form-select" id="template-select">
             <option value="">-- Select Template --</option>
             ${State.state.templates.map(t => `
-              <option value="${Help.escapeHtml(t.name)}">${Help.escapeHtml(t.name)}</option>
+              <option value="${Help.escapeHtml(t.name)}" ${PLATFORM_TEMPLATES[currentPlatform] === t.name ? 'selected' : ''}>${Help.escapeHtml(t.name)}</option>
             `).join('')}
           </select>
           <div class="form-description" id="template-description"></div>
@@ -550,14 +605,22 @@ function renderTemplatesSection(container) {
               <line x1="12" y1="16" x2="12" y2="12"/>
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            <span>Select a template to view its source. Switch to "Rendered" tab to see output.</span>
+            <span>Select a platform to auto-configure, or manually choose a template. Switch to "Rendered" tab to see output.</span>
           </div>
         </div>
       </div>
     </div>
   `;
 
-  // Set up event listeners
+  // Set up platform card click handlers
+  document.querySelectorAll('.platform-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      const platform = card.dataset.platform;
+      await selectPlatform(platform);
+    });
+  });
+
+  // Set up template select event listener
   const templateSelect = document.getElementById('template-select');
   const paramsContainer = document.getElementById('template-params-list');
 
@@ -581,6 +644,67 @@ function renderTemplatesSection(container) {
 
   // Set up copy/download buttons in pane header
   setupTemplateButtons();
+
+  // If there's a selected template, load it
+  if (PLATFORM_TEMPLATES[currentPlatform]) {
+    const templateName = PLATFORM_TEMPLATES[currentPlatform];
+    if (State.state.templates.find(t => t.name === templateName)) {
+      loadTemplateSource(templateName);
+    }
+  }
+}
+
+/**
+ * Select a platform and auto-configure template
+ */
+async function selectPlatform(platform) {
+  // Update cluster.platform in state
+  if (!State.state.currentObject.cluster) {
+    State.state.currentObject.cluster = {};
+  }
+  State.state.currentObject.cluster.platform = platform;
+
+  // Ensure plugins section exists for IPI platforms
+  const ipiPlatforms = ['vsphere', 'aws', 'azure', 'gcp', 'openstack', 'ibmcloud'];
+  if (ipiPlatforms.includes(platform) && !State.state.currentObject.plugins) {
+    State.state.currentObject.plugins = {};
+  }
+  if (ipiPlatforms.includes(platform) && !State.state.currentObject.plugins[platform]) {
+    State.state.currentObject.plugins[platform] = {};
+  }
+
+  // Sync to YAML
+  const yaml = State.toYaml();
+  State.state.currentYamlText = yaml;
+  CodeMirror.setEditorValue(yaml, false);
+
+  // Update UI
+  document.querySelectorAll('.platform-card').forEach(card => {
+    card.classList.toggle('platform-card--selected', card.dataset.platform === platform);
+  });
+  document.getElementById('platform-description').textContent =
+    PLATFORM_INFO[platform]?.description || '';
+
+  // Auto-select the recommended template
+  const templateName = PLATFORM_TEMPLATES[platform];
+  if (templateName) {
+    const templateSelect = document.getElementById('template-select');
+    if (templateSelect) {
+      templateSelect.value = templateName;
+      const template = State.state.templates.find(t => t.name === templateName);
+      document.getElementById('template-description').textContent = template?.description || '';
+    }
+
+    // Load template source
+    await loadTemplateSource(templateName);
+  }
+
+  // Update header and badges
+  updateHeader();
+  updateValidationBadge();
+  updateChangesBadge();
+
+  showToast(`Platform set to ${PLATFORM_INFO[platform]?.name || platform}`, 'success');
 }
 
 /**
