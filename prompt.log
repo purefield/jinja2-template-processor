@@ -1,32 +1,165 @@
 # Prompt Log - Clusterfile Editor Development
 
+This file documents development sessions, requirements, and architectural decisions for future reference.
+
+---
+
+## Project Overview
+
+**Purpose**: A Jinja2 template processor for generating OpenShift/Kubernetes configuration files from YAML clusterfiles.
+
+**Components**:
+1. **CLI tool** (`process.py`) - Renders Jinja2 templates with YAML data, JSONPath overrides, schema validation
+2. **Web editor** (`apps/editor/`) - FastAPI web UI for editing clusterfiles with live template rendering
+
+**Key Technologies**:
+- Python 3.12, FastAPI, Jinja2, PyYAML, jsonschema, yamllint
+- Frontend: Vanilla JS, CodeMirror, PatternFly CSS
+- Container: Podman/Docker, quay.io/dds/clusterfile-editor
+
+---
+
 ## Session 2026-02-03
 
-### Template Consolidation (v2.3.0)
-- Consolidated 7 platform-specific install-config templates into unified `install-config.yaml.tpl`
-- Created dynamic platform includes under `templates/includes/platforms/{platform}/`
-- Supported platforms: aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix, baremetal, none
-- Each IPI platform has: controlPlane.yaml.tpl, compute.yaml.tpl, platform.yaml.tpl, creds.yaml.tpl
-- Created unified `creds.yaml.tpl` for CCO credential generation
-- Added `customer.example.nutanix-ipi.clusterfile` sample
+### User Prompts Summary
 
-### Test Suite (v2.3.0)
-- Created comprehensive test suite with 57 tests
-- `tests/run_tests.py` - Standalone runner (no pytest required)
-- `tests/test_templates.py` - Full pytest-based test suite
-- Tests cover all platforms, configuration options, includes, and edge cases
+1. "commit" - Commit plugin filtering feature
+2. "test" - Run tests
+3. "link back to the cluster.platform from the platform field on the plugin page - also link the other way from the platform to the plugin. Allow the page content divider to be moved and persisted"
+4. "commit, release" - Release v2.2.2
+5. "can we combine the base template for the install-config for all plugins and use a dynamic include like I started to simplify the amount of templates to maintain for any changes and not to repeat ourselves"
+6. "yes, both" - Delete old templates and create credentials templates
+7. "create a full test for all configuration options with sample data and template rendering"
+8. "test" / "run" - Run tests and editor
+9. "commit, release" - Release v2.3.0
+10. "we need to cleanup the Infrastructure Platform buttons on the template page"
+11. "2" - Simplify to show current platform only (not selectable buttons)
+12. "let's make the platform logo smaller, its huge"
+13. "commit" / "release, update prompt.log and changelog"
+14. "rebuild and run" / "ship it" - Push to quay.io
 
-### UI Simplification (v2.3.1)
-- Simplified Templates page - replaced 9 platform buttons with single info card
-- Shows current platform with icon, name, description
-- Added "Change" link to navigate to Cluster section
-- Added "Load Credentials Template" button for cloud platforms
-- Reduced icon size for cleaner appearance
+### Requirements Implemented
 
-### Files Changed
-- Deleted: install-config-{aws,azure,gcp,vsphere,openstack,ibmcloud,baremetal}.yaml.tpl
-- Created: install-config.yaml.tpl, creds.yaml.tpl
-- Created: templates/includes/platforms/{platform}/*.yaml.tpl (36 files)
-- Created: tests/run_tests.py, tests/test_templates.py
-- Modified: apps/editor/static/js/app.js, apps/editor/static/css/app.css
-- Modified: apps/editor/app/template_processor.py
+#### Template Consolidation (DRY Principle)
+- **Requirement**: Reduce maintenance burden by not repeating platform-specific code
+- **Solution**: Unified `install-config.yaml.tpl` with dynamic includes
+- **Pattern**: `{% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}`
+- **Whitespace**: Use `{% set %}` NOT `{%- set %}` to preserve YAML indentation
+
+#### Platform Includes Structure
+```
+templates/includes/platforms/
+├── aws/          (controlPlane, compute, platform, creds)
+├── azure/        (controlPlane, compute, platform, creds)
+├── gcp/          (controlPlane, compute, platform, creds)
+├── vsphere/      (controlPlane, compute, platform, creds)
+├── openstack/    (controlPlane, compute, platform, creds)
+├── ibmcloud/     (controlPlane, compute, platform, creds)
+├── nutanix/      (controlPlane, compute, platform, creds)
+├── baremetal/    (platform only)
+└── none/         (platform only)
+```
+
+#### Credentials Template Pattern (Following ACM Pattern)
+- **Reference**: `acm-ztp.yaml.tpl`, `acm-capi-m3.yaml.tpl`, `acm-creds.yaml.tpl`
+- **Solution**: Unified `creds.yaml.tpl` with platform-specific includes
+- **Output**: Kubernetes Secrets for CCO (Cloud Credential Operator)
+- **Multi-doc YAML**: Use Kubernetes List wrapper instead of `---` separators
+
+#### UI Simplification
+- **Requirement**: Clean up redundant platform buttons since all use same template
+- **Solution**: Replace 9-button grid with single platform info card
+- **Features**:
+  - Shows current platform with icon, name, description
+  - "Change" link navigates to Cluster section
+  - "Load Credentials Template" button for cloud platforms
+
+#### Test Suite Requirements
+- **Coverage**: All 9 platforms, all config options, all includes
+- **No Dependencies**: `tests/run_tests.py` works without pytest
+- **Full Suite**: `tests/test_templates.py` for pytest users
+- **Categories**: Install config, credentials, platform includes, edge cases
+
+---
+
+## Architectural Decisions
+
+### Template Processing Flow
+1. Load YAML clusterfile (or inline JSON)
+2. Apply `-p` JSONPath overrides
+3. Optionally validate against JSON schema
+4. Render Jinja2 template with includes
+5. Parse and re-dump YAML for formatting
+6. Lint with yamllint
+
+### Custom Jinja2 Filters
+- `base64encode` - Base64 encode strings
+- `load_file()` - Read external file contents (for secrets)
+
+### Schema-Driven Form Generation
+- `schema/clusterfile.schema.json` defines data model
+- `x-is-file` marks fields that reference file paths
+- `hosts` uses `patternProperties` keyed by hostname
+- Top-level sections: account, cluster, network, hosts, plugins
+
+### Platform Detection
+- `cluster.platform` field determines which platform includes to use
+- Default: `baremetal` if not specified
+- SNO (Single Node OpenShift): `none` platform with bootstrapInPlace
+
+### Editor State Management
+- `State.state.currentObject` - Current clusterfile data
+- `State.state.originalObject` - Original for diff tracking
+- localStorage for split view position, preferences
+
+---
+
+## Future Work Considerations
+
+### Planned Features (from plan file)
+1. **Self-contained container** - No volume mounts needed (COPY at build time)
+2. **Offline distribution package** - Single tarball with image + scripts
+3. **Browser-only mode** - Standalone HTML with Nunjucks for rendering
+
+### Technical Debt
+- Some templates still have inline conditionals that could be includes
+- ACM templates could follow same consolidation pattern
+- Editor could use React/Vue for better state management
+
+### Testing Gaps
+- No integration tests for editor API endpoints
+- No E2E browser tests
+- No performance benchmarks for large clusterfiles
+
+---
+
+## Commands Reference
+
+```bash
+# CLI Processing
+./process.py data/example.clusterfile templates/install-config.yaml.tpl
+./process.py data/example.clusterfile templates/install-config.yaml.tpl -p cluster.name=foo
+
+# Editor Development
+./clusterfile-editor.sh build
+./clusterfile-editor.sh run
+./clusterfile-editor.sh release patch|minor|major
+
+# Testing
+python3 tests/run_tests.py
+
+# Container
+podman run --rm --network=host quay.io/dds/clusterfile-editor:latest
+```
+
+---
+
+## File Locations
+
+- **Templates**: `templates/*.yaml.tpl`
+- **Includes**: `templates/includes/`
+- **Schema**: `schema/clusterfile.schema.json`
+- **Samples**: `data/*.clusterfile`
+- **Editor App**: `apps/editor/`
+- **Tests**: `tests/`
+- **Container**: `apps/editor/Containerfile`
