@@ -53,23 +53,29 @@ Notes:
 ## Agent Based Installer
 ### Render agent-config.yaml
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl   > agent-config.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl > agent-config.yaml
 cat agent-config.yaml
 ```
 ### Render install-config.yaml
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/install-config-baremetal.yaml.tpl > install-config.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/install-config.yaml.tpl > install-config.yaml
 cat install-config.yaml
 ```
-### Render install-config.yaml for Nutanix
+### Render install-config.yaml for IPI platforms
 ```bash
-./process.py data/customer.example.nutanix.clusterfile templates/install-config-baremetal.yaml.tpl > install-config.yaml
-cat install-config.yaml
+# vSphere IPI with static IPs
+./process.py data/ipi-vsphere.clusterfile templates/install-config.yaml.tpl > install-config.yaml
+
+# AWS IPI
+./process.py data/ipi-aws.clusterfile templates/install-config.yaml.tpl > install-config.yaml
+
+# Nutanix IPI
+./process.py data/ipi-nutanix.clusterfile templates/install-config.yaml.tpl > install-config.yaml
 ```
 ### Render mirror-registry-config.yaml
 ```bash
 mkdir openshift
-./process.py data/customer.example.bond.vlan.clusterfile templates/mirror-registry-config.yaml.tpl > openshift/mirror-registry-config.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/mirror-registry-config.yaml.tpl > openshift/mirror-registry-config.yaml
 cat openshift/mirror-registry-config.yaml
 ```
 
@@ -77,7 +83,7 @@ cat openshift/mirror-registry-config.yaml
 ### Render acm-ztp.yaml
 Configuration file for ACM zero touch provisioning
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/acm-ztp.yaml.tpl > acm-ztp.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/acm-ztp.yaml.tpl > acm-ztp.yaml
 cat acm-ztp.yaml
 ```
 
@@ -85,27 +91,27 @@ cat acm-ztp.yaml
 ### Render acm-capi-m3.yaml
 Configuration file for ACM zero touch provisioning
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
 cat acm-capi-m3.yaml
 ```
 
 ### Render acm-asc.yaml
 Configuration file for ACM Agent Service Config
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/acm-asc.yaml.tpl > acm-asc.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/acm-asc.yaml.tpl > acm-asc.yaml
 cat acm-asc.yaml
 ```
 ## Render acm-creds.yaml.tpl
 This generates the hostinventory credentials for ACM
 ```bash
-./process.py data/customer.example.yaml templates/acm-creds.yaml.tpl > acm-creds.yaml
+./process.py data/baremetal.clusterfile templates/acm-creds.yaml.tpl > acm-creds.yaml
 cat acm-creds.yaml
 ```
 
 ## Render test-dns.sh
 Create forward and reverse DNS verification script
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/test-dns.sh.tpl | bash
+./process.py data/baremetal-bond-vlan.clusterfile templates/test-dns.sh.tpl | bash
 ```
 ## Render infinidat-setup.yaml.tpl
 This generates the infinidat machine, operator, driver configuration files with the configured content
@@ -128,10 +134,22 @@ This generates secondary network configuration based on network.secondary list
 * For VNF use cases with service-chaining must use linux-bridge (when routing is required only linux-bridge allows disabling mac spoofing where as OVNK localnet does not)
 
 ## Data Models
-- Standard: `customer.example.yaml`
-- VLAN only: `customer.example.vlan.clusterfile`
-- Bond only: `customer.example.bond.clusterfile`
-- Bond + VLAN: `customer.example.bond.vlan.clusterfile`
+**Baremetal/Agent-based:**
+- `baremetal.clusterfile` - Standard baremetal
+- `baremetal-vlan.clusterfile` - VLAN only
+- `baremetal-bond.clusterfile` - Bond only
+- `baremetal-bond-vlan.clusterfile` - Bond + VLAN
+- `agent-nutanix.clusterfile` - Agent-based on Nutanix
+- `sno.clusterfile` - Single Node OpenShift
+
+**IPI (Installer Provisioned Infrastructure):**
+- `ipi-aws.clusterfile` - AWS
+- `ipi-azure.clusterfile` - Azure
+- `ipi-gcp.clusterfile` - GCP
+- `ipi-ibmcloud.clusterfile` - IBM Cloud
+- `ipi-nutanix.clusterfile` - Nutanix
+- `ipi-openstack.clusterfile` - OpenStack
+- `ipi-vsphere.clusterfile` - vSphere (with static IP support)
 ---
 
 ## JSON/CLI Data Sources
@@ -163,12 +181,12 @@ To validate both the original data and again after applying `-p` overrides, use 
 
 Validate data only:
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
 ```
 
 Validate data and overrides (shortcut `-S`):
 ```bash
-./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
 ```
 
 Notes:
