@@ -32,17 +32,28 @@ let EMBEDDED_SCHEMA = null;
 let EMBEDDED_SAMPLES = [];
 let EMBEDDED_TEMPLATES = [];
 
-// Platform to template mapping
+// Platform to template mapping (all platforms use unified install-config.yaml.tpl)
 const PLATFORM_TEMPLATES = {
-  'baremetal': 'install-config-baremetal.yaml.tpl',
-  'vsphere': 'install-config-vsphere.yaml.tpl',
-  'aws': 'install-config-aws.yaml.tpl',
-  'azure': 'install-config-azure.yaml.tpl',
-  'gcp': 'install-config-gcp.yaml.tpl',
-  'openstack': 'install-config-openstack.yaml.tpl',
-  'ibmcloud': 'install-config-ibmcloud.yaml.tpl',
-  'nutanix': 'install-config-baremetal.yaml.tpl',  // Uses baremetal with nutanix platform
-  'none': 'install-config-baremetal.yaml.tpl'      // SNO uses baremetal template
+  'baremetal': 'install-config.yaml.tpl',
+  'vsphere': 'install-config.yaml.tpl',
+  'aws': 'install-config.yaml.tpl',
+  'azure': 'install-config.yaml.tpl',
+  'gcp': 'install-config.yaml.tpl',
+  'openstack': 'install-config.yaml.tpl',
+  'ibmcloud': 'install-config.yaml.tpl',
+  'nutanix': 'install-config.yaml.tpl',
+  'none': 'install-config.yaml.tpl'
+};
+
+// Platform to credentials template mapping
+const PLATFORM_CREDS_TEMPLATES = {
+  'aws': 'creds.yaml.tpl',
+  'azure': 'creds.yaml.tpl',
+  'gcp': 'creds.yaml.tpl',
+  'vsphere': 'creds.yaml.tpl',
+  'openstack': 'creds.yaml.tpl',
+  'ibmcloud': 'creds.yaml.tpl',
+  'nutanix': 'creds.yaml.tpl'
 };
 
 // Platform display names and descriptions

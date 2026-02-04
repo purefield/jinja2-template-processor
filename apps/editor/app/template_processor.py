@@ -252,7 +252,8 @@ def list_templates(templates_dir: Path) -> list:
 def get_template_description(template_path: Path) -> str:
     """Get a human-readable description for a template."""
     descriptions = {
-        "install-config-baremetal.yaml.tpl": "OpenShift install-config.yaml for baremetal/agent installer",
+        "install-config.yaml.tpl": "OpenShift install-config.yaml (unified for all platforms)",
+        "creds.yaml.tpl": "CCO credentials for cloud platforms (AWS, Azure, GCP, etc.)",
         "agent-config-bond-vlan.yaml.tpl": "Agent-based installer agent-config.yaml with bond/VLAN",
         "acm-ztp.yaml.tpl": "ACM Zero Touch Provisioning configuration",
         "acm-capi-m3.yaml.tpl": "ACM CAPI + Metal3 configuration for MCE",
