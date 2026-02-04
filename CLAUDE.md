@@ -17,16 +17,16 @@ A Jinja2 template processor for generating OpenShift/Kubernetes configuration fi
 pip install -r requirements.txt
 
 # Basic template rendering
-./process.py data/customer.example.bond.vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl
 
 # With JSONPath overrides
-./process.py data/customer.example.clusterfile templates/install-config-baremetal.yaml.tpl -p cluster.name=foo
+./process.py data/baremetal.clusterfile templates/install-config.yaml.tpl -p cluster.name=foo
 
 # With schema validation
-./process.py data/customer.example.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
+./process.py data/baremetal.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
 
 # Validate data and params (-S shortcut)
-./process.py data/customer.example.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
+./process.py data/baremetal.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
 
 # Inline JSON data
 ./process.py '{"cluster":{"name":"inline"}}' templates/agent-config-bond-vlan.yaml.tpl -p network.domain=example.com
@@ -83,9 +83,19 @@ poetry run uvicorn app.main:app --reload
 - Version tracked in `apps/editor/APP_VERSION` and synced to `main.py`/`index.html` on build
 
 ### Data Examples
-- Sample clusterfiles in `data/` demonstrate different configurations:
-  - `customer.example.clusterfile` - Basic
-  - `customer.example.vlan.clusterfile` - VLAN-only
-  - `customer.example.bond.clusterfile` - Bond-only
-  - `customer.example.bond.vlan.clusterfile` - Bond + VLAN
-  - `customer.example.nutanix.clusterfile` - Nutanix platform
+Sample clusterfiles in `data/` demonstrate different configurations:
+- **Baremetal/Agent-based:**
+  - `baremetal.clusterfile` - Basic baremetal
+  - `baremetal-vlan.clusterfile` - Baremetal with VLAN
+  - `baremetal-bond.clusterfile` - Baremetal with bond
+  - `baremetal-bond-vlan.clusterfile` - Baremetal with bond + VLAN
+  - `agent-nutanix.clusterfile` - Agent-based on Nutanix hardware
+  - `sno.clusterfile` - Single Node OpenShift
+- **IPI (Installer Provisioned Infrastructure):**
+  - `ipi-aws.clusterfile` - AWS IPI
+  - `ipi-azure.clusterfile` - Azure IPI
+  - `ipi-gcp.clusterfile` - GCP IPI
+  - `ipi-ibmcloud.clusterfile` - IBM Cloud IPI
+  - `ipi-nutanix.clusterfile` - Nutanix IPI
+  - `ipi-openstack.clusterfile` - OpenStack IPI
+  - `ipi-vsphere.clusterfile` - vSphere IPI (with static IP support)
