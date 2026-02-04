@@ -1,3 +1,14 @@
+{#- @meta
+name: acm-asc.yaml
+description: ACM Assisted Service ConfigMap for infrastructure operator settings
+type: clusterfile
+category: acm
+platforms:
+  - baremetal
+requires:
+  - network.proxy (optional)
+docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#enable-cim
+-#}
 apiVersion: v1
 kind: List
 metadata:

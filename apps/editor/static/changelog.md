@@ -1,5 +1,13 @@
 # Clusterfile Editor Changelog
 
+## 2.4.0
+- **Template Metadata**: Added `@meta` blocks to all templates with type, category, platforms, requires, and docs
+- **Smart Template Filtering**: Template dropdown now only shows clusterfile-type templates, grouped by category
+- **Template Info Display**: Selected template shows supported platforms, required fields, and documentation link
+- **vSphere Static IPs**: Added support for static IP configuration in vSphere IPI (TechPreview in OCP 4.17+)
+- **Dynamic Version**: Browser title and header now show version fetched from API
+- **Updated vSphere Example**: Example clusterfile now demonstrates static IP configuration
+
 ## 2.3.1
 - **Templates Page Simplified**: Replaced 9 platform selection buttons with single platform info card
 - **Platform Info Card**: Shows current platform icon, name, and description

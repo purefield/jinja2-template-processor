@@ -1,6 +1,21 @@
-{# Unified credentials template for OpenShift IPI platforms #}
-{# Generates CCO (Cloud Credential Operator) secrets for manual mode #}
-{# Supports: aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix #}
+{#- @meta
+name: creds.yaml
+description: Cloud Credential Operator (CCO) secrets for manual credential mode
+type: clusterfile
+category: credentials
+platforms:
+  - aws
+  - azure
+  - gcp
+  - vsphere
+  - openstack
+  - ibmcloud
+  - nutanix
+requires:
+  - cluster.platform
+  - plugins.<platform>.credentials
+docs: https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html
+-#}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
 {%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
 {%- if platformPlugin.credentials is defined or platform in ['vsphere', 'nutanix', 'openstack'] -%}

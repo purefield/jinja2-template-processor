@@ -1,3 +1,12 @@
+{#- @meta
+name: mirror-registry-config.yaml
+description: ImageDigestMirrorSet and ImageTagMirrorSet for disconnected registries
+type: clusterfile
+category: configuration
+requires:
+  - cluster.mirrors
+docs: https://docs.openshift.com/container-platform/latest/installing/disconnected_install/installing-mirroring-disconnected.html
+-#}
 apiVersion: v1 {%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
 kind: List
 metadata:

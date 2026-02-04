@@ -1,3 +1,17 @@
+{#- @meta
+name: acm-creds.yaml
+description: ACM host inventory credentials secret for assisted installer
+type: clusterfile
+category: acm
+platforms:
+  - baremetal
+requires:
+  - cluster.name
+  - cluster.sshKeys
+  - network.domain
+  - account.pullSecret
+docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview
+-#}
 apiVersion: v1
 kind: List
 metadata:

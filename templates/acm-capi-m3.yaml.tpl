@@ -1,4 +1,18 @@
-{#- https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted -#}
+{#- @meta
+name: acm-capi-m3.yaml
+description: ACM Cluster API with Metal3 provider for bare metal provisioning
+type: clusterfile
+category: acm
+platforms:
+  - baremetal
+requires:
+  - cluster.name
+  - cluster.sshKeys
+  - network.domain
+  - hosts.<hostname>.bmc
+  - hosts.<hostname>.network
+docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted
+-#}
 {#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}
 {%- set automatedCleaningMode = "disabled" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}

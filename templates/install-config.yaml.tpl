@@ -1,6 +1,29 @@
-{# Unified IPI install-config.yaml template #}
-{# Supports: aws, azure, gcp, vsphere, openstack, ibmcloud, baremetal, none #}
-{# https://docs.openshift.com/container-platform/latest/installing/index.html #}
+{#- @meta
+name: install-config.yaml
+description: OpenShift installer configuration for IPI and agent-based installs
+type: clusterfile
+category: installation
+platforms:
+  - aws
+  - azure
+  - gcp
+  - vsphere
+  - openstack
+  - ibmcloud
+  - nutanix
+  - baremetal
+  - none
+requires:
+  - account.pullSecret
+  - cluster.name
+  - cluster.sshKeys
+  - network.domain
+  - network.primary.subnet
+  - network.cluster.subnet
+  - network.service.subnet
+  - hosts
+docs: https://docs.openshift.com/container-platform/latest/installing/index.html
+-#}
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
 {%- set platform = cluster.platform | default('baremetal', true) -%}

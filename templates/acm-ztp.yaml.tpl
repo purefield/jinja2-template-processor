@@ -1,3 +1,19 @@
+{#- @meta
+name: acm-ztp.yaml
+description: ACM Zero Touch Provisioning manifests (InfraEnv, ClusterDeployment, NMState)
+type: clusterfile
+category: acm
+platforms:
+  - baremetal
+requires:
+  - account.pullSecret
+  - cluster.name
+  - cluster.sshKeys
+  - network.domain
+  - hosts.<hostname>.bmc
+  - hosts.<hostname>.network
+docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#ztp-intro
+-#}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1

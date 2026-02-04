@@ -75,6 +75,17 @@ let syncingFromForm = false;
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.0',
+    date: '2026-02-04',
+    changes: [
+      'Added template metadata with @meta blocks for type, category, platforms, requires, and docs',
+      'Template dropdown now groups templates by category and filters to clusterfile types only',
+      'Added vSphere IPI static IP support in install-config.yaml.tpl',
+      'Dynamic version display in browser title and header (fetched from API)',
+      'Template selection shows metadata: supported platforms, required fields, documentation links'
+    ]
+  },
+  {
     version: '2.3.1',
     date: '2026-02-03',
     changes: [
@@ -710,6 +721,54 @@ function renderTemplatesSection(container) {
   const platformInfo = PLATFORM_INFO[currentPlatform];
   const hasCreds = PLATFORM_CREDS_TEMPLATES[currentPlatform];
 
+  // Filter templates to only show clusterfile templates
+  const clusterfileTemplates = State.state.templates.filter(t => t.type === 'clusterfile');
+
+  // Group templates by category
+  const templatesByCategory = {};
+  clusterfileTemplates.forEach(t => {
+    const category = t.category || 'other';
+    if (!templatesByCategory[category]) templatesByCategory[category] = [];
+    templatesByCategory[category].push(t);
+  });
+
+  // Category display order and labels
+  const categoryOrder = ['installation', 'credentials', 'acm', 'configuration', 'utility'];
+  const categoryLabels = {
+    installation: 'Installation',
+    credentials: 'Credentials',
+    acm: 'ACM / ZTP',
+    configuration: 'Configuration',
+    utility: 'Utility Scripts',
+    other: 'Other'
+  };
+
+  // Build template options grouped by category
+  let templateOptions = '<option value="">-- Select Template --</option>';
+  categoryOrder.forEach(category => {
+    if (templatesByCategory[category]?.length) {
+      templateOptions += `<optgroup label="${categoryLabels[category] || category}">`;
+      templatesByCategory[category].forEach(t => {
+        const filename = t.filename || t.name;
+        const selected = PLATFORM_TEMPLATES[currentPlatform] === filename ? 'selected' : '';
+        templateOptions += `<option value="${Help.escapeHtml(filename)}" ${selected}>${Help.escapeHtml(t.name)} - ${Help.escapeHtml(t.description)}</option>`;
+      });
+      templateOptions += '</optgroup>';
+    }
+  });
+  // Add any remaining categories
+  Object.keys(templatesByCategory).forEach(category => {
+    if (!categoryOrder.includes(category) && templatesByCategory[category]?.length) {
+      templateOptions += `<optgroup label="${categoryLabels[category] || category}">`;
+      templatesByCategory[category].forEach(t => {
+        const filename = t.filename || t.name;
+        const selected = PLATFORM_TEMPLATES[currentPlatform] === filename ? 'selected' : '';
+        templateOptions += `<option value="${Help.escapeHtml(filename)}" ${selected}>${Help.escapeHtml(t.name)} - ${Help.escapeHtml(t.description)}</option>`;
+      });
+      templateOptions += '</optgroup>';
+    }
+  });
+
   container.innerHTML = `
     <div class="template-panel">
       <div class="form-section">
@@ -739,12 +798,9 @@ function renderTemplatesSection(container) {
         <div class="form-group template-select">
           <label class="form-label">Template</label>
           <select class="form-select" id="template-select">
-            <option value="">-- Select Template --</option>
-            ${State.state.templates.map(t => `
-              <option value="${Help.escapeHtml(t.name)}" ${PLATFORM_TEMPLATES[currentPlatform] === t.name ? 'selected' : ''}>${Help.escapeHtml(t.name)}</option>
-            `).join('')}
+            ${templateOptions}
           </select>
-          <div class="form-description" id="template-description"></div>
+          <div class="template-meta" id="template-meta"></div>
         </div>
 
         ${hasCreds ? `
@@ -803,8 +859,25 @@ function renderTemplatesSection(container) {
 
   templateSelect?.addEventListener('change', async () => {
     const templateName = templateSelect.value;
-    const template = State.state.templates.find(t => t.name === templateName);
-    document.getElementById('template-description').textContent = template?.description || '';
+    const template = State.state.templates.find(t => (t.filename || t.name) === templateName);
+    const metaContainer = document.getElementById('template-meta');
+
+    // Show template metadata
+    if (template && metaContainer) {
+      let metaHtml = '';
+      if (template.platforms?.length) {
+        metaHtml += `<div class="template-meta__item"><strong>Platforms:</strong> ${template.platforms.join(', ')}</div>`;
+      }
+      if (template.requires?.length) {
+        metaHtml += `<div class="template-meta__item"><strong>Requires:</strong> ${template.requires.slice(0, 5).join(', ')}${template.requires.length > 5 ? '...' : ''}</div>`;
+      }
+      if (template.docs) {
+        metaHtml += `<div class="template-meta__item"><a href="${Help.escapeHtml(template.docs)}" target="_blank" rel="noopener">Documentation ↗</a></div>`;
+      }
+      metaContainer.innerHTML = metaHtml;
+    } else if (metaContainer) {
+      metaContainer.innerHTML = '';
+    }
 
     // Auto-load template source when selected
     if (templateName) {
@@ -1755,6 +1828,10 @@ function showWelcomeTour() {
  * Update version display in header
  */
 function updateVersionDisplay() {
+  // Update document title
+  document.title = `Clusterfile Editor v${APP_VERSION}`;
+
+  // Update header version display
   const versionEl = document.querySelector('.app-header__version');
   if (versionEl) {
     const modeIndicator = isStandaloneMode ? ' (standalone)' : '';
