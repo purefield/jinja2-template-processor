@@ -1,5 +1,16 @@
 # Clusterfile Editor Changelog
 
+## 2.4.2
+- **Modular Pre-Check Templates**: Refactored pre-check.sh into standalone modules
+  - `pre-check-files.sh.tpl` - Validate pull secret, SSH keys, trust bundle, manifests
+  - `pre-check-dns.sh.tpl` - DNS forward/reverse lookups and resolver checks
+  - `pre-check-network.sh.tpl` - Host connectivity, gateway, VIP availability, proxy
+  - `pre-check-ntp.sh.tpl` - NTP server connectivity
+  - `pre-check-registry.sh.tpl` - Container registry connectivity with auth
+  - `pre-check-bmc.sh.tpl` - BMC ping and Redfish API checks
+- **Comprehensive Master Template**: `pre-check.sh.tpl` now composes all modules inline
+- **Conditional Rendering**: Each section only renders when relevant data exists
+
 ## 2.4.1
 - **Pre-Check Script**: Added `pre-check.sh.tpl` template for pre-installation verification
   - Tests DNS forward/reverse lookups, NTP, DNS resolvers, registry access, host connectivity, BMC
