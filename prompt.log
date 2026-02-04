@@ -1,0 +1,32 @@
+# Prompt Log - Clusterfile Editor Development
+
+## Session 2026-02-03
+
+### Template Consolidation (v2.3.0)
+- Consolidated 7 platform-specific install-config templates into unified `install-config.yaml.tpl`
+- Created dynamic platform includes under `templates/includes/platforms/{platform}/`
+- Supported platforms: aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix, baremetal, none
+- Each IPI platform has: controlPlane.yaml.tpl, compute.yaml.tpl, platform.yaml.tpl, creds.yaml.tpl
+- Created unified `creds.yaml.tpl` for CCO credential generation
+- Added `customer.example.nutanix-ipi.clusterfile` sample
+
+### Test Suite (v2.3.0)
+- Created comprehensive test suite with 57 tests
+- `tests/run_tests.py` - Standalone runner (no pytest required)
+- `tests/test_templates.py` - Full pytest-based test suite
+- Tests cover all platforms, configuration options, includes, and edge cases
+
+### UI Simplification (v2.3.1)
+- Simplified Templates page - replaced 9 platform buttons with single info card
+- Shows current platform with icon, name, description
+- Added "Change" link to navigate to Cluster section
+- Added "Load Credentials Template" button for cloud platforms
+- Reduced icon size for cleaner appearance
+
+### Files Changed
+- Deleted: install-config-{aws,azure,gcp,vsphere,openstack,ibmcloud,baremetal}.yaml.tpl
+- Created: install-config.yaml.tpl, creds.yaml.tpl
+- Created: templates/includes/platforms/{platform}/*.yaml.tpl (36 files)
+- Created: tests/run_tests.py, tests/test_templates.py
+- Modified: apps/editor/static/js/app.js, apps/editor/static/css/app.css
+- Modified: apps/editor/app/template_processor.py
