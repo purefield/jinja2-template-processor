@@ -154,6 +154,33 @@ podman run --rm --network=host quay.io/dds/clusterfile-editor:latest
 
 ---
 
+## Release Checklist
+
+When releasing a new version, update ALL of these:
+
+1. **`apps/editor/APP_VERSION`** - Version number (e.g., 2.3.1)
+2. **`apps/editor/static/changelog.md`** - Markdown changelog for documentation
+3. **`apps/editor/static/js/app.js`** - `CHANGELOG` array (in-app changelog modal)
+   - Located near top of file after `PLATFORM_INFO`
+   - Comment says "KEEP THIS UPDATED with each release"
+4. **`prompt.log`** - Session documentation for future development
+
+### Release Commands
+```bash
+# Update version and changelog files manually, then:
+git add -A && git commit -m "Release vX.Y.Z"
+git tag vX.Y.Z
+git push origin main --tags
+
+# Build and ship
+./clusterfile-editor.sh build
+podman push quay.io/dds/clusterfile-editor:X.Y.Z
+podman tag quay.io/dds/clusterfile-editor:X.Y.Z quay.io/dds/clusterfile-editor:latest
+podman push quay.io/dds/clusterfile-editor:latest
+```
+
+---
+
 ## File Locations
 
 - **Templates**: `templates/*.yaml.tpl`
@@ -163,3 +190,6 @@ podman run --rm --network=host quay.io/dds/clusterfile-editor:latest
 - **Editor App**: `apps/editor/`
 - **Tests**: `tests/`
 - **Container**: `apps/editor/Containerfile`
+- **Changelogs**:
+  - `apps/editor/static/changelog.md` (documentation)
+  - `apps/editor/static/js/app.js` → `CHANGELOG` array (in-app modal)

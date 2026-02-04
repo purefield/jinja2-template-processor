@@ -72,8 +72,40 @@ const PLATFORM_INFO = {
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
 
-// Changelog data
+// Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '2.3.1',
+    date: '2026-02-03',
+    changes: [
+      'Simplified Templates page with platform info display card',
+      'Added "Change" link to navigate to Cluster section',
+      'Added "Load Credentials Template" button for cloud platforms',
+      'Updated template descriptions for unified templates'
+    ]
+  },
+  {
+    version: '2.3.0',
+    date: '2026-02-03',
+    changes: [
+      'Consolidated 7 install-config templates into unified install-config.yaml.tpl',
+      'Added dynamic platform includes for all IPI platforms',
+      'Added unified creds.yaml.tpl for CCO credential generation',
+      'Added Nutanix platform support',
+      'Added comprehensive test suite with 57 tests'
+    ]
+  },
+  {
+    version: '2.2.2',
+    date: '2026-02-03',
+    changes: [
+      'Added cross-navigation links between Plugins and Cluster sections',
+      'Added resizable split view with localStorage persistence',
+      'Filter Plugins section to show only platform-specific plugin',
+      'Added support for all IPI platforms (AWS, Azure, GCP, OpenStack, IBM Cloud)',
+      'Added vSphere IPI support with failure domains'
+    ]
+  },
   {
     version: '2.1.0',
     date: '2026-02-03',
