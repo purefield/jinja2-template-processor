@@ -14,6 +14,8 @@ platforms:
 requires:
   - cluster.platform
   - plugins.<platform>.credentials
+relatedTemplates:
+  - install-config.yaml.tpl
 docs: https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html
 -#}
 {%- set platform = cluster.platform | default('baremetal', true) -%}

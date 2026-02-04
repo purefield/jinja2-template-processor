@@ -1414,6 +1414,22 @@ html, body {
   color: var(--pf-global--link--Color);
 }
 
+.related-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-global--spacer--sm);
+}
+
+.related-template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pf-global--spacer--xs);
+}
+
+.related-template-btn svg {
+  flex-shrink: 0;
+}
+
 .template-params {
   margin-bottom: var(--pf-global--spacer--md);
 }
