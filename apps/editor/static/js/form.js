@@ -193,19 +193,28 @@ function renderPluginsSection(container, schema) {
     return;
   }
 
-  // Show platform indicator
-  const platformBadge = document.createElement('div');
-  platformBadge.className = 'plugin-platform-badge';
+  // Show platform indicator with link back to Cluster section
+  const platformBadge = document.createElement('a');
+  platformBadge.className = 'plugin-platform-badge plugin-platform-badge--link';
+  platformBadge.href = '#';
+  platformBadge.dataset.navSection = 'cluster';
+  platformBadge.title = 'Click to change platform in Cluster section';
   platformBadge.innerHTML = `
     <span class="plugin-platform-badge__label">Platform:</span>
     <span class="plugin-platform-badge__value">${Help.escapeHtml(platform)}</span>
+    <svg class="plugin-platform-badge__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+      <polyline points="15,3 21,3 21,9"/>
+      <line x1="10" y1="14" x2="21" y2="3"/>
+    </svg>
   `;
-  platformBadge.style.marginBottom = '16px';
-  platformBadge.style.padding = '8px 12px';
-  platformBadge.style.background = 'var(--pf-global--BackgroundColor--200)';
-  platformBadge.style.borderRadius = '4px';
-  platformBadge.style.display = 'inline-block';
-  platformBadge.style.fontSize = '0.875rem';
+  platformBadge.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Navigate to cluster section - use global function if available
+    if (window.ClusterfileEditor?.navigateToSection) {
+      window.ClusterfileEditor.navigateToSection('cluster');
+    }
+  });
   container.appendChild(platformBadge);
 
   // Render plugin title as subsection
@@ -527,6 +536,35 @@ function renderEnumField(path, key, schema, value, allowCustom = true) {
     container.appendChild(customInput);
   }
 
+  // Add "Configure plugin" link for cluster.platform field
+  let pluginLink = null;
+  if (path === 'cluster.platform') {
+    pluginLink = document.createElement('a');
+    pluginLink.className = 'field-nav-link';
+    pluginLink.href = '#';
+    pluginLink.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"/>
+      </svg>
+      Configure plugin
+    `;
+    pluginLink.title = 'Configure platform-specific plugin settings';
+    pluginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.ClusterfileEditor?.navigateToSection) {
+        window.ClusterfileEditor.navigateToSection('plugins');
+      }
+    });
+    // Show/hide based on whether platform has a plugin
+    const updatePluginLinkVisibility = () => {
+      const currentPlatform = select.value;
+      const hasPlugin = PLATFORM_TO_PLUGIN[currentPlatform] !== null && PLATFORM_TO_PLUGIN[currentPlatform] !== undefined;
+      pluginLink.style.display = hasPlugin ? 'inline-flex' : 'none';
+    };
+    updatePluginLinkVisibility();
+    container.appendChild(pluginLink);
+  }
+
   select.addEventListener('change', () => {
     if (select.value === '__other__') {
       customInput.style.display = 'block';
@@ -539,6 +577,12 @@ function renderEnumField(path, key, schema, value, allowCustom = true) {
       customInput.style.display = 'none';
       customInput.value = '';
       updateFieldValue(path, select.value, schema);
+    }
+    // Update plugin link visibility if present
+    if (pluginLink && path === 'cluster.platform') {
+      const currentPlatform = select.value;
+      const hasPlugin = PLATFORM_TO_PLUGIN[currentPlatform] !== null && PLATFORM_TO_PLUGIN[currentPlatform] !== undefined;
+      pluginLink.style.display = hasPlugin ? 'inline-flex' : 'none';
     }
   });
 
