@@ -1251,12 +1251,13 @@ function triggerParamRender() {
 }
 
 /**
- * Download rendered output
+ * Download rendered output with correct file extension
  */
 function downloadRenderedOutput() {
   const output = CodeMirror.getRenderedValue();
   const templateName = document.getElementById('template-select')?.value || State.state.selectedTemplate || 'output';
-  const filename = templateName.replace('.tpl', '').replace('.tmpl', '').replace('.yaml', '') + '.yaml';
+  // Remove .tpl/.tmpl suffix to get the actual output filename (e.g., install-config.yaml.tpl → install-config.yaml)
+  const filename = templateName.replace(/\.(tpl|tmpl)$/, '') || 'output.yaml';
   downloadFile(output, filename);
 }
 
