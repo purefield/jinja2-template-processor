@@ -690,6 +690,8 @@ function renderCurrentSection() {
     renderChangesSection(container);
   } else if (section === 'validation') {
     renderValidationSection(container);
+  } else if (section === 'changelog') {
+    renderChangelogSection(container);
   } else {
     Form.renderSection(section, container);
   }
@@ -1765,47 +1767,42 @@ function updateVersionDisplay() {
 }
 
 /**
- * Show changelog modal
+ * Show changelog - navigate to changelog section
  */
 function showChangelog() {
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.innerHTML = `
-    <div class="modal modal--changelog">
-      <div class="modal__header">
-        <h2 class="modal__title">Changelog</h2>
-        <span class="modal__close">&times;</span>
-      </div>
-      <div class="modal__body">
-        ${CHANGELOG.map(release => `
-          <div class="changelog-release">
-            <div class="changelog-release__header">
-              <span class="changelog-release__version">v${Help.escapeHtml(release.version)}</span>
-              <span class="changelog-release__date">${Help.escapeHtml(release.date)}</span>
+  navigateToSection('changelog');
+}
+
+/**
+ * Render changelog section (full page)
+ */
+function renderChangelogSection(container) {
+  container.innerHTML = `
+    <div class="changelog-page">
+      <div class="form-section">
+        <h2 class="form-section__title">Changelog</h2>
+        <p class="form-description" style="margin-bottom: 24px;">
+          Release history and changes for Clusterfile Editor.
+        </p>
+
+        <div class="changelog-releases">
+          ${CHANGELOG.map(release => `
+            <div class="changelog-release">
+              <div class="changelog-release__header">
+                <span class="changelog-release__version">v${Help.escapeHtml(release.version)}</span>
+                <span class="changelog-release__date">${Help.escapeHtml(release.date)}</span>
+              </div>
+              <ul class="changelog-release__changes">
+                ${release.changes.map(change => `
+                  <li>${Help.escapeHtml(change)}</li>
+                `).join('')}
+              </ul>
             </div>
-            <ul class="changelog-release__changes">
-              ${release.changes.map(change => `
-                <li>${Help.escapeHtml(change)}</li>
-              `).join('')}
-            </ul>
-          </div>
-        `).join('')}
-      </div>
-      <div class="modal__footer">
-        <button class="btn btn--primary" id="changelog-close">Close</button>
+          `).join('')}
+        </div>
       </div>
     </div>
   `;
-
-  document.body.appendChild(overlay);
-
-  const closeModal = () => overlay.remove();
-
-  overlay.querySelector('.modal__close').addEventListener('click', closeModal);
-  overlay.querySelector('#changelog-close').addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeModal();
-  });
 }
 
 /**

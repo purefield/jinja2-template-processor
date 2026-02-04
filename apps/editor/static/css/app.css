@@ -1527,6 +1527,15 @@ html, body {
   line-height: 1.5;
 }
 
+/* Changelog page */
+.changelog-page {
+  max-width: 800px;
+}
+
+.changelog-releases {
+  margin-top: var(--pf-global--spacer--md);
+}
+
 /* Welcome Tour */
 .tour-step {
   margin-bottom: var(--pf-global--spacer--lg);
