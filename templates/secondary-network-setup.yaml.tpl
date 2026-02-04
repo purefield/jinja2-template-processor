@@ -1,3 +1,12 @@
+{#- @meta
+name: secondary-network-setup.yaml
+description: NodeNetworkConfigurationPolicy for secondary networks (bonds, VLANs, bridges)
+type: clusterfile
+category: configuration
+requires:
+  - network.secondary
+docs: https://docs.openshift.com/container-platform/latest/networking/k8s_nmstate/k8s-nmstate-observing-node-network-state.html
+-#}
 apiVersion: v1
 kind: List
 metadata:

@@ -1,5 +1,20 @@
-# bond the primary interface and use a VLAN interface for br-ex
-# after install, provision br-vmdata directly on bond0
+{#- @meta
+name: agent-config.yaml
+description: Agent-based installer configuration with NMState network config
+type: clusterfile
+category: installation
+platforms:
+  - baremetal
+  - none
+requires:
+  - cluster.name
+  - network.ntpservers
+  - hosts.<hostname>.role
+  - hosts.<hostname>.network.interfaces
+  - hosts.<hostname>.network.primary.address
+docs: https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html
+-#}
+{# Supports bond, vlan, or direct interface configurations #}
 {% set firstHostName,firstHost = hosts.items() | first %}
 {% set enabledFalse='{"enabled":false}' %}
 ---

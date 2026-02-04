@@ -1,5 +1,6 @@
-# vSphere IPI Clusterfile Example
-# For use with install-config-vsphere.yaml.tpl template
+# vSphere IPI Clusterfile Example with Static IPs
+# For use with install-config.yaml.tpl template
+# Reference: https://www.redhat.com/en/blog/how-to-perform-an-ipi-installation-of-openshift-on-vsphere-with-static-ip-addresses
 account:
   pullSecret: secrets/pull-secret.json
 
@@ -28,6 +29,14 @@ plugins:
     memoryMiB: 16384
     cpus: 4
     coresPerSocket: 4
+    # Bootstrap node static IP (optional, for static IP deployments)
+    bootstrap:
+      networkDevice:
+        ipAddrs:
+          - 192.168.1.10/24
+        gateway: 192.168.1.1
+        nameservers:
+          - 192.168.1.5
     # Optional: Multi-zone deployment with failure domains
     # failureDomains:
     #   - name: fd-zone1
@@ -51,9 +60,9 @@ network:
     httpsProxy: http://proxy.example.com:8080
     noProxy: .cluster.local,.svc,127.0.0.1,localhost,10.128.0.0/14,172.30.0.0/16,192.168.1.0/24,.example.com
   ntpservers:
-    - 192.168.1.10
+    - 192.168.1.5
   nameservers:
-    - 192.168.1.10
+    - 192.168.1.5
   dnsResolver:
     search:
       - example.com
@@ -74,18 +83,36 @@ network:
   service:
     subnet: 172.30.0.0/16
 
-# Hosts section is minimal for IPI - vSphere creates VMs automatically
-# Only specify if you need static IPs or custom names
+# Hosts with static IP configuration (TechPreview in OCP 4.17+)
+# When network.primary.address is defined, static IPs are generated
 hosts:
   control-0.vsphere-cluster.example.com:
     role: control
+    network:
+      primary:
+        address: 192.168.1.11
   control-1.vsphere-cluster.example.com:
     role: control
+    network:
+      primary:
+        address: 192.168.1.12
   control-2.vsphere-cluster.example.com:
     role: control
+    network:
+      primary:
+        address: 192.168.1.13
   worker-0.vsphere-cluster.example.com:
     role: worker
+    network:
+      primary:
+        address: 192.168.1.21
   worker-1.vsphere-cluster.example.com:
     role: worker
+    network:
+      primary:
+        address: 192.168.1.22
   worker-2.vsphere-cluster.example.com:
     role: worker
+    network:
+      primary:
+        address: 192.168.1.23

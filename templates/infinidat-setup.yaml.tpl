@@ -1,3 +1,11 @@
+{#- @meta
+name: infinidat-setup.yaml
+description: Infinidat storage configuration (multipath, iSCSI MachineConfigs)
+type: other
+category: storage
+requires: []
+docs: https://support.infinidat.com/hc/en-us/articles/10438163422237-Host-Configuration-Guide-for-Red-Hat-OpenShift
+-#}
 apiVersion: v1
 kind: List
 metadata:

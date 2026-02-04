@@ -230,34 +230,115 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     return {"success": True, "output": processed, "warnings": [], "error": ""}
 
 
+def parse_template_metadata(content: str) -> dict:
+    """
+    Parse @meta block from template content.
+
+    Metadata format:
+    {#- @meta
+    name: template-name.yaml
+    description: What this template does
+    type: clusterfile|other
+    category: installation|credentials|acm|configuration|utility|storage
+    platforms: [list of supported platforms]
+    requires: [list of required data fields]
+    docs: URL to documentation
+    -#}
+    """
+    meta = {
+        "name": "",
+        "description": "",
+        "type": "other",
+        "category": "other",
+        "platforms": [],
+        "requires": [],
+        "docs": ""
+    }
+
+    # Look for @meta block
+    import re
+    match = re.search(r'\{#-?\s*@meta\s*\n(.*?)\n\s*-?#\}', content, re.DOTALL)
+    if not match:
+        return meta
+
+    meta_text = match.group(1)
+    try:
+        parsed = yaml.safe_load(meta_text)
+        if isinstance(parsed, dict):
+            meta.update(parsed)
+    except Exception:
+        pass
+
+    return meta
+
+
 def list_templates(templates_dir: Path) -> list:
-    """List all available templates with descriptions."""
+    """List all available templates with metadata."""
     templates = []
     if not templates_dir.exists():
         return templates
 
-    for f in templates_dir.glob("*.tpl"):
-        templates.append({
-            "name": f.name,
-            "description": get_template_description(f)
-        })
-    for f in templates_dir.glob("*.tmpl"):
-        templates.append({
-            "name": f.name,
-            "description": get_template_description(f)
-        })
+    for f in sorted(templates_dir.glob("*.tpl")):
+        try:
+            content = f.read_text()
+            meta = parse_template_metadata(content)
+            meta["filename"] = f.name
+            if not meta["name"]:
+                meta["name"] = f.name
+            if not meta["description"]:
+                meta["description"] = get_template_description(f)
+            templates.append(meta)
+        except Exception:
+            templates.append({
+                "filename": f.name,
+                "name": f.name,
+                "description": get_template_description(f),
+                "type": "other",
+                "category": "other",
+                "platforms": [],
+                "requires": [],
+                "docs": ""
+            })
+
+    for f in sorted(templates_dir.glob("*.tmpl")):
+        try:
+            content = f.read_text()
+            meta = parse_template_metadata(content)
+            meta["filename"] = f.name
+            if not meta["name"]:
+                meta["name"] = f.name
+            if not meta["description"]:
+                meta["description"] = get_template_description(f)
+            templates.append(meta)
+        except Exception:
+            templates.append({
+                "filename": f.name,
+                "name": f.name,
+                "description": get_template_description(f),
+                "type": "other",
+                "category": "other",
+                "platforms": [],
+                "requires": [],
+                "docs": ""
+            })
+
     return templates
 
 
 def get_template_description(template_path: Path) -> str:
-    """Get a human-readable description for a template."""
+    """Get a fallback description for a template without metadata."""
     descriptions = {
         "install-config.yaml.tpl": "OpenShift install-config.yaml (unified for all platforms)",
         "creds.yaml.tpl": "CCO credentials for cloud platforms (AWS, Azure, GCP, etc.)",
         "agent-config-bond-vlan.yaml.tpl": "Agent-based installer agent-config.yaml with bond/VLAN",
         "acm-ztp.yaml.tpl": "ACM Zero Touch Provisioning configuration",
         "acm-capi-m3.yaml.tpl": "ACM CAPI + Metal3 configuration for MCE",
+        "acm-creds.yaml.tpl": "ACM host inventory credentials",
+        "acm-asc.yaml.tpl": "ACM Assisted Service ConfigMap",
         "mirror-registry-config.yaml.tpl": "Mirror registry configuration",
+        "nodes-config.yaml.tpl": "Node network configuration with NMState",
+        "secondary-network-setup.yaml.tpl": "Secondary network NNCP configuration",
+        "infinidat-setup.yaml.tpl": "Infinidat storage configuration",
         "test-dns.sh.tpl": "DNS verification script",
     }
     return descriptions.get(template_path.name, "Jinja2 template")
