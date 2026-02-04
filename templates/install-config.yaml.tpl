@@ -22,6 +22,11 @@ requires:
   - network.cluster.subnet
   - network.service.subnet
   - hosts
+relatedTemplates:
+  - agent-config.yaml.tpl
+  - creds.yaml.tpl
+  - mirror-registry-config.yaml.tpl
+  - pre-check.sh.tpl
 docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 -#}
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}

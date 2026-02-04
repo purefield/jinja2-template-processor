@@ -12,6 +12,10 @@ requires:
   - hosts.<hostname>.role
   - hosts.<hostname>.network.interfaces
   - hosts.<hostname>.network.primary.address
+relatedTemplates:
+  - install-config.yaml.tpl
+  - mirror-registry-config.yaml.tpl
+  - pre-check.sh.tpl
 docs: https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html
 -#}
 {# Supports bond, vlan, or direct interface configurations #}

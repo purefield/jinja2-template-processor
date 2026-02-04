@@ -72,6 +72,37 @@ const PLATFORM_INFO = {
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
 
+// Get icon SVG for template category
+function getTemplateIcon(category) {
+  const icons = {
+    installation: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14,2 14,8 20,8"/>
+    </svg>`,
+    credentials: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>`,
+    acm: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+    </svg>`,
+    configuration: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>`,
+    utility: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
+    </svg>`,
+    other: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14,2 14,8 20,8"/>
+    </svg>`
+  };
+  return icons[category] || icons.other;
+}
+
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
@@ -803,20 +834,12 @@ function renderTemplatesSection(container) {
           <div class="template-meta" id="template-meta"></div>
         </div>
 
-        ${hasCreds ? `
-        <div class="form-group">
+        <div class="form-group" id="related-templates-group" style="display: none;">
           <label class="form-label">Related Templates</label>
-          <div class="related-templates">
-            <button class="btn btn--secondary btn--sm" id="load-creds-template">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              Load Credentials Template (creds.yaml.tpl)
-            </button>
+          <div class="related-templates" id="related-templates-list">
+            <!-- Populated dynamically based on template metadata -->
           </div>
         </div>
-        ` : ''}
 
         <div class="form-group template-params">
           <label class="form-label">Parameter Overrides</label>
@@ -844,14 +867,7 @@ function renderTemplatesSection(container) {
     window.ClusterfileEditor.navigateToSection('cluster');
   });
 
-  // Set up load credentials template button
-  document.getElementById('load-creds-template')?.addEventListener('click', async () => {
-    const templateSelect = document.getElementById('template-select');
-    if (templateSelect) {
-      templateSelect.value = 'creds.yaml.tpl';
-      templateSelect.dispatchEvent(new Event('change'));
-    }
-  });
+  // Related template click handler is set up dynamically in template change handler
 
   // Set up template select event listener
   const templateSelect = document.getElementById('template-select');
@@ -877,6 +893,38 @@ function renderTemplatesSection(container) {
       metaContainer.innerHTML = metaHtml;
     } else if (metaContainer) {
       metaContainer.innerHTML = '';
+    }
+
+    // Show related templates from metadata
+    const relatedGroup = document.getElementById('related-templates-group');
+    const relatedList = document.getElementById('related-templates-list');
+    if (template?.relatedTemplates?.length && relatedGroup && relatedList) {
+      relatedGroup.style.display = 'block';
+      relatedList.innerHTML = template.relatedTemplates.map(rt => {
+        const relatedTemplate = State.state.templates.find(t => (t.filename || t.name) === rt);
+        const description = relatedTemplate?.description || rt;
+        const icon = getTemplateIcon(relatedTemplate?.category || 'other');
+        return `
+          <button class="btn btn--secondary btn--sm related-template-btn" data-template="${Help.escapeHtml(rt)}">
+            ${icon}
+            <span>${Help.escapeHtml(relatedTemplate?.name || rt)}</span>
+          </button>
+        `;
+      }).join('');
+
+      // Add click handlers for related template buttons
+      relatedList.querySelectorAll('.related-template-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tplName = btn.dataset.template;
+          const select = document.getElementById('template-select');
+          if (select) {
+            select.value = tplName;
+            select.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+    } else if (relatedGroup) {
+      relatedGroup.style.display = 'none';
     }
 
     // Auto-load template source when selected
