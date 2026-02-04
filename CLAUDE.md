@@ -17,19 +17,19 @@ A Jinja2 template processor for generating OpenShift/Kubernetes configuration fi
 pip install -r requirements.txt
 
 # Basic template rendering
-./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config-bond-vlan.yaml.tpl
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl
 
 # With JSONPath overrides
 ./process.py data/baremetal.clusterfile templates/install-config.yaml.tpl -p cluster.name=foo
 
 # With schema validation
-./process.py data/baremetal.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json
+./process.py data/baremetal.clusterfile templates/agent-config.yaml.tpl -s schema/clusterfile.schema.json
 
 # Validate data and params (-S shortcut)
-./process.py data/baremetal.clusterfile templates/agent-config-bond-vlan.yaml.tpl -s schema/clusterfile.schema.json -S
+./process.py data/baremetal.clusterfile templates/agent-config.yaml.tpl -s schema/clusterfile.schema.json -S
 
 # Inline JSON data
-./process.py '{"cluster":{"name":"inline"}}' templates/agent-config-bond-vlan.yaml.tpl -p network.domain=example.com
+./process.py '{"cluster":{"name":"inline"}}' templates/agent-config.yaml.tpl -p network.domain=example.com
 ```
 
 ### Container-based Processing
