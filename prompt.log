@@ -193,3 +193,137 @@ podman push quay.io/dds/clusterfile-editor:latest
 - **Changelogs**:
   - `apps/editor/static/changelog.md` (documentation)
   - `apps/editor/static/js/app.js` → `CHANGELOG` array (in-app modal)
+
+---
+
+## Session 2026-02-04
+
+### User Prompts Summary
+
+1. "compare the vsphere template to [Red Hat blog URL] does it cover this example? Use the details for our example file and sort all templates and examples alphabetically. Adjust file names to make them clear and concise."
+2. "Add metadata to templates for display of purpose and dependency to make it easier to find the right templates. Not all templates are for clusterfile and if they are they should have a metadata tag and only those should be shown."
+3. "The app title in the browser has an old version. it should pull from the app version to stay current"
+4. "continue" (multiple times to complete work)
+5. "2,1" - Commit/release first, then rename files
+6. "update prompt.log"
+
+### Requirements Implemented
+
+#### vSphere Static IP Support (OCP 4.17+ TechPreview)
+- **Reference**: https://www.redhat.com/en/blog/how-to-perform-an-ipi-installation-of-openshift-on-vsphere-with-static-ip-addresses
+- **Solution**: Added `hosts[]` array in `platform.vsphere` section
+- **Structure**:
+  ```yaml
+  platform:
+    vsphere:
+      hosts:
+        - role: bootstrap|control-plane|compute
+          failureDomain: <fd-name>
+          networkDevice:
+            ipAddrs: ["192.168.1.10/24"]
+            gateway: "192.168.1.1"
+            nameservers: ["192.168.1.5"]
+  ```
+- **Detection**: Enabled when `hosts.<hostname>.network.primary.address` is defined
+- **Updated**: `templates/includes/platforms/vsphere/platform.yaml.tpl`
+- **Updated**: `data/ipi-vsphere.clusterfile` with static IP example
+
+#### Template Metadata System
+- **Format**: YAML `@meta` block in Jinja2 comment at top of template
+  ```jinja2
+  {#- @meta
+  name: install-config.yaml
+  description: OpenShift installer configuration
+  type: clusterfile
+  category: installation
+  platforms: [aws, azure, gcp, vsphere, ...]
+  requires: [account.pullSecret, cluster.name, ...]
+  docs: https://docs.openshift.com/...
+  -#}
+  ```
+- **Fields**:
+  - `name` - Display name
+  - `description` - What the template does
+  - `type` - `clusterfile` (shown in editor) or `other` (hidden)
+  - `category` - Groups templates: installation, credentials, acm, configuration, utility
+  - `platforms` - List of supported platforms
+  - `requires` - Required data fields
+  - `docs` - Link to documentation
+- **Backend**: `parse_template_metadata()` in `template_processor.py`
+- **Frontend**: Template dropdown groups by category, shows metadata panel
+
+#### Dynamic Version Display
+- **Problem**: Browser title showed hardcoded "v2.1", header showed wrong version
+- **Solution**: Fetch version from `/healthz` API and update dynamically
+- **Updated**: `updateVersionDisplay()` in `app.js` now sets `document.title`
+- **Updated**: `index.html` uses placeholder, JS fills in real version
+
+#### File Naming Convention (Clarity & Alphabetical)
+- **Data files** renamed from `customer.example.X.clusterfile` to clearer names:
+  - Baremetal/Agent: `baremetal.clusterfile`, `baremetal-*.clusterfile`, `agent-nutanix.clusterfile`, `sno.clusterfile`
+  - IPI platforms: `ipi-aws.clusterfile`, `ipi-azure.clusterfile`, etc.
+- **Templates** renamed:
+  - `agent-config-bond-vlan.yaml.tpl` → `agent-config.yaml.tpl`
+- **Updated**: CLAUDE.md, README.md with new file names
+
+### Template Metadata Summary
+
+| Template | Type | Category | Platforms |
+|----------|------|----------|-----------|
+| install-config.yaml.tpl | clusterfile | installation | all 9 |
+| agent-config.yaml.tpl | clusterfile | installation | baremetal, none |
+| creds.yaml.tpl | clusterfile | credentials | aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix |
+| acm-ztp.yaml.tpl | clusterfile | acm | baremetal |
+| acm-capi-m3.yaml.tpl | clusterfile | acm | baremetal |
+| acm-creds.yaml.tpl | clusterfile | acm | baremetal |
+| acm-asc.yaml.tpl | clusterfile | acm | baremetal |
+| mirror-registry-config.yaml.tpl | clusterfile | configuration | all |
+| nodes-config.yaml.tpl | clusterfile | configuration | baremetal |
+| secondary-network-setup.yaml.tpl | clusterfile | configuration | all |
+| test-dns.sh.tpl | clusterfile | utility | all |
+| infinidat-setup.yaml.tpl | other | storage | n/a |
+
+### Data File Naming Convention
+
+| Old Name | New Name | Type |
+|----------|----------|------|
+| customer.example.clusterfile | baremetal.clusterfile | Agent-based |
+| customer.example.vlan.clusterfile | baremetal-vlan.clusterfile | Agent-based |
+| customer.example.bond.clusterfile | baremetal-bond.clusterfile | Agent-based |
+| customer.example.bond.vlan.clusterfile | baremetal-bond-vlan.clusterfile | Agent-based |
+| customer.example.nutanix.clusterfile | agent-nutanix.clusterfile | Agent-based |
+| customer.example.sno.clusterfile | sno.clusterfile | SNO |
+| customer.example.aws.clusterfile | ipi-aws.clusterfile | IPI |
+| customer.example.azure.clusterfile | ipi-azure.clusterfile | IPI |
+| customer.example.gcp.clusterfile | ipi-gcp.clusterfile | IPI |
+| customer.example.ibmcloud.clusterfile | ipi-ibmcloud.clusterfile | IPI |
+| customer.example.nutanix-ipi.clusterfile | ipi-nutanix.clusterfile | IPI |
+| customer.example.openstack.clusterfile | ipi-openstack.clusterfile | IPI |
+| customer.example.vsphere.clusterfile | ipi-vsphere.clusterfile | IPI |
+
+### Release v2.4.0
+
+- Template metadata with `@meta` blocks
+- Template dropdown groups by category, filters to clusterfile type
+- vSphere IPI static IP support
+- Dynamic version in browser title/header
+- File renames for clarity
+
+---
+
+## Updated Commands Reference
+
+```bash
+# CLI Processing (with new file names)
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl
+./process.py data/ipi-vsphere.clusterfile templates/install-config.yaml.tpl
+./process.py data/ipi-aws.clusterfile templates/install-config.yaml.tpl
+
+# With schema validation
+./process.py data/baremetal.clusterfile templates/install-config.yaml.tpl -s schema/clusterfile.schema.json
+
+# Editor
+./clusterfile-editor.sh build
+./clusterfile-editor.sh run
+podman run --rm --network=host quay.io/dds/clusterfile-editor:latest
+```
