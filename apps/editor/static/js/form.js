@@ -886,13 +886,17 @@ function renderObjectField(path, key, schema, value) {
  * Render a union type field (anyOf/oneOf)
  */
 function renderUnionField(path, key, schema, value) {
-  const options = schema.anyOf || schema.oneOf || [];
+  const rawOptions = schema.anyOf || schema.oneOf || [];
+  const rootSchema = State.state?.schema;
+
+  // Resolve $refs for each option before checking types
+  const options = rawOptions.map(o => resolveRef(o, rootSchema) || o);
 
   // Check for enum + custom string pattern
   const enumOption = options.find(o => o.enum);
   const stringOption = options.find(o => o.type === 'string' && !o.enum);
   const objectOption = options.find(o => o.type === 'object');
-  const boolFalseOption = options.find(o => o.const === false);
+  const boolFalseOption = rawOptions.find(o => o.const === false); // Check raw for const
   const intOrNumOption = options.find(o => o.type === 'integer' || o.type === 'number');
 
   // Pattern: oneOf [enum/int, {const: false}] - Mode selector
