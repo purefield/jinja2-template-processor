@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.5',
+    date: '2026-02-05',
+    changes: [
+      'Added robust schema handling utilities (safeResolveSchema, getSchemaArray)',
+      'Resolve $refs in all schema accesses (renderField, renderObjectFields, etc.)',
+      'Added defensive null/undefined guards throughout form rendering'
+    ]
+  },
+  {
     version: '2.4.4',
     date: '2026-02-05',
     changes: [
