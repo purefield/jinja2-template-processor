@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.4.4
+- **Fix Plugin Forms**: Resolve $refs in anyOf/oneOf before type detection for nested objects
+- **Fix Bond/VLAN Toggle**: Mode selector now properly detects enum options with $ref
+- **Fix Pull Secret Validation**: Check for `.auths` key instead of just valid JSON
+
 ## 2.4.3
 - **Changelog Sync**: Fixed CHANGELOG array in app.js to include 2.4.1 and 2.4.2 releases
 

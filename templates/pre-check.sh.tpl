@@ -47,7 +47,11 @@ echo "════════════════════════�
 section "Files"
 {%- if account is defined and account.pullSecret is defined %}
 if [ -f "{{ account.pullSecret }}" ]; then
-    jq . "{{ account.pullSecret }}" &>/dev/null && pass "{{ account.pullSecret }} valid JSON" || warn "{{ account.pullSecret }} invalid JSON"
+    if jq -e '.auths' "{{ account.pullSecret }}" &>/dev/null; then
+        pass "{{ account.pullSecret }} valid pull secret"
+    else
+        warn "{{ account.pullSecret }} invalid (missing auths)"
+    fi
 else
     warn "{{ account.pullSecret }} not found"
 fi

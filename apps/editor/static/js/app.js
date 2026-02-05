@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.4',
+    date: '2026-02-05',
+    changes: [
+      'Fix plugin forms: resolve $refs in anyOf/oneOf before type detection',
+      'Fix bond/vlan toggle: mode selector now properly detects enum options with $ref',
+      'Fix pull secret validation: check for .auths key instead of just valid JSON'
+    ]
+  },
+  {
     version: '2.4.3',
     date: '2026-02-04',
     changes: [
