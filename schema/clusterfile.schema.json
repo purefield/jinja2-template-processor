@@ -345,7 +345,7 @@
             },
             "mtu": {
               "title": "MTU",
-              "oneOf": [
+              "anyOf": [
                 { "$ref": "#/$defs/mtuPreset" },
                 { "$ref": "#/$defs/mtuCustom" },
                 { "type": "boolean", "const": false }
@@ -522,7 +522,7 @@
               },
               "mtu": {
                 "title": "MTU",
-                "oneOf": [
+                "anyOf": [
                   { "$ref": "#/$defs/mtuPreset" },
                   { "$ref": "#/$defs/mtuCustom" },
                   { "type": "boolean", "const": false }
