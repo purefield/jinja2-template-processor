@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.6',
+    date: '2026-02-05',
+    changes: [
+      'MTU field now uses dropdown: Default (1500), Jumbo (9000), Custom, or Disabled',
+      'Custom option allows manual entry (576-9216)',
+      'Disabled option omits MTU from config (uses system default)'
+    ]
+  },
+  {
     version: '2.4.5',
     date: '2026-02-05',
     changes: [

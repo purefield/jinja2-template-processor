@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 2.4.6
+- **MTU Toggle**: MTU field now uses dropdown with Default (1500), Jumbo (9000), Custom, or Disabled
+  - Presets: Default (1500) for standard frames, Jumbo (9000) for high-throughput networks
+  - Custom option allows manual entry (576-9216)
+  - Disabled option omits MTU from config (uses system default)
+  - Applies to both primary and secondary network MTU fields
+
 ## 2.4.5
 - **Robust Schema Handling**: Added utility functions for safe schema resolution
   - `safeResolveSchema()` - Validates and resolves $ref with fallback
