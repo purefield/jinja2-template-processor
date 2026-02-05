@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 2.4.7
+- **Fix Mode Field Regressions**: Bond, VLAN, and MTU toggle fixes
+  - Fix bond string values like "802.3ad" being coerced to numbers
+  - Disabled now omits the key from config instead of writing `false`
+  - Undefined/null values default to Disabled state
+  - MTU validation uses anyOf to avoid oneOf overlap between presets and custom range
+
 ## 2.4.6
 - **MTU Toggle**: MTU field now uses dropdown with Default (1500), Jumbo (9000), Custom, or Disabled
   - Presets: Default (1500) for standard frames, Jumbo (9000) for high-throughput networks
