@@ -652,7 +652,7 @@
                 "vendor": {
                   "title": "Vendor",
                   "type": "string",
-                  "enum": ["dell", "hp", "hpe", "supermicro", "lenovo", "cisco", "fujitsu", "other"],
+                  "enum": ["dell", "hp", "hpe", "supermicro", "lenovo", "cisco", "fujitsu", "ksushy", "kubevirt-redfish", "other"],
                   "description": "BMC vendor."
                 },
                 "version": {
