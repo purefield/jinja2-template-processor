@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.4.7',
+    date: '2026-02-05',
+    changes: [
+      'Fix bond string values like "802.3ad" being coerced to numbers',
+      'Disabled now omits the key from config instead of writing false',
+      'MTU validation uses anyOf to avoid oneOf overlap'
+    ]
+  },
+  {
     version: '2.4.6',
     date: '2026-02-05',
     changes: [
