@@ -1,5 +1,19 @@
 # Clusterfile Editor Changelog
 
+## 2.4.5
+- **Robust Schema Handling**: Added utility functions for safe schema resolution
+  - `safeResolveSchema()` - Validates and resolves $ref with fallback
+  - `getSchemaArray()` - Safely access array properties (enum, required)
+  - `getRootSchema()` - Convenience accessor for root schema
+- **Fix All $ref Resolutions**: Resolve $refs in all schema accesses
+  - `renderField()` - Resolve before type checking
+  - `renderObjectFields()` - Resolve both schema and field schemas
+  - `getHostSchema()` - Resolve patternProperties
+  - `renderPluginsSection()` - Resolve plugin schemas
+  - `renderModeField()` - Resolve options for value input
+  - `renderArrayField()` - Resolve items schema
+- **Defensive Null Checks**: Added proper null/undefined guards throughout
+
 ## 2.4.4
 - **Fix Plugin Forms**: Resolve $refs in anyOf/oneOf before type detection for nested objects
 - **Fix Bond/VLAN Toggle**: Mode selector now properly detects enum options with $ref

@@ -60,6 +60,47 @@ function getSchemaType(schema, rootSchema) {
 }
 
 /**
+ * Safely resolve a schema, ensuring result is a valid object
+ * @param {object} schema - Schema to resolve
+ * @param {object} rootSchema - Root schema for $ref resolution
+ * @returns {object} - Resolved schema or original if resolution fails
+ */
+function safeResolveSchema(schema, rootSchema) {
+  if (!schema || typeof schema !== 'object') return { type: 'string' };
+  const resolved = resolveRef(schema, rootSchema);
+  return (resolved && typeof resolved === 'object') ? resolved : schema;
+}
+
+/**
+ * Safely get an array property from schema
+ * @param {object} schema - Schema object
+ * @param {string} propName - Property name (e.g., 'enum', 'required')
+ * @returns {Array} - Array value or empty array
+ */
+function getSchemaArray(schema, propName) {
+  const prop = schema?.[propName];
+  return Array.isArray(prop) ? prop : [];
+}
+
+/**
+ * Check if a value is in schema enum (safely)
+ * @param {*} value - Value to check
+ * @param {object} schema - Schema with potential enum
+ * @returns {boolean} - True if value is in enum or enum doesn't exist
+ */
+function isValidEnumValue(value, schema) {
+  const enumValues = getSchemaArray(schema, 'enum');
+  return enumValues.length === 0 || enumValues.includes(value);
+}
+
+/**
+ * Get root schema from state (convenience function)
+ */
+function getRootSchema() {
+  return State.state?.schema;
+}
+
+/**
  * Set form change callback
  */
 function setFormChangeCallback(callback) {
@@ -173,8 +214,10 @@ function renderPluginsSection(container, schema) {
     return;
   }
 
-  // Check if plugin schema exists
-  const pluginSchema = schema.properties?.[pluginName];
+  // Check if plugin schema exists (resolve $ref on the plugins schema first)
+  const resolvedPluginsSchema = safeResolveSchema(schema, getRootSchema());
+  const rawPluginSchema = resolvedPluginsSchema?.properties?.[pluginName];
+  const pluginSchema = rawPluginSchema ? safeResolveSchema(rawPluginSchema, getRootSchema()) : null;
   if (!pluginSchema) {
     const notice = document.createElement('div');
     notice.className = 'empty-state';
@@ -286,10 +329,17 @@ function renderHostsSection(container, schema) {
  * Get host schema from patternProperties
  */
 function getHostSchema(hostsSchema) {
-  if (hostsSchema.patternProperties) {
-    const patterns = Object.keys(hostsSchema.patternProperties);
+  // Resolve $ref if hostsSchema itself is a reference
+  const resolved = safeResolveSchema(hostsSchema, getRootSchema());
+
+  if (resolved?.patternProperties && typeof resolved.patternProperties === 'object') {
+    const patterns = Object.keys(resolved.patternProperties);
     if (patterns.length > 0) {
-      return hostsSchema.patternProperties[patterns[0]];
+      const hostSchema = resolved.patternProperties[patterns[0]];
+      // Validate and resolve the host schema
+      if (hostSchema && typeof hostSchema === 'object') {
+        return safeResolveSchema(hostSchema, getRootSchema());
+      }
     }
   }
   return { type: 'object', properties: {} };
@@ -363,12 +413,19 @@ function renderHostCard(hostname, hostData, hostSchema) {
  * Render object fields recursively
  */
 function renderObjectFields(container, schema, basePath, data) {
-  if (!schema.properties) return;
+  // Validate schema is an object with properties
+  if (!schema || typeof schema !== 'object') return;
 
-  for (const [key, fieldSchema] of Object.entries(schema.properties)) {
+  // Resolve $ref if schema itself is a reference
+  const resolvedSchema = safeResolveSchema(schema, getRootSchema());
+  if (!resolvedSchema.properties || typeof resolvedSchema.properties !== 'object') return;
+
+  for (const [key, rawFieldSchema] of Object.entries(resolvedSchema.properties)) {
     const path = basePath ? `${basePath}.${key}` : key;
     const value = data?.[key];
 
+    // Resolve $ref for each field schema
+    const fieldSchema = safeResolveSchema(rawFieldSchema, getRootSchema());
     const fieldElement = renderField(path, key, fieldSchema, value);
     if (fieldElement) {
       container.appendChild(fieldElement);
@@ -380,27 +437,30 @@ function renderObjectFields(container, schema, basePath, data) {
  * Render a single field based on schema type
  */
 function renderField(path, key, schema, value) {
-  // Handle anyOf/oneOf
-  if (schema.anyOf || schema.oneOf) {
+  // Resolve $ref first to get actual schema
+  const resolvedSchema = safeResolveSchema(schema, getRootSchema());
+
+  // Handle anyOf/oneOf (check both original and resolved)
+  if (schema?.anyOf || schema?.oneOf || resolvedSchema?.anyOf || resolvedSchema?.oneOf) {
     return renderUnionField(path, key, schema, value);
   }
 
-  const type = schema.type;
+  const type = resolvedSchema.type;
 
   switch (type) {
     case 'string':
-      return renderStringField(path, key, schema, value);
+      return renderStringField(path, key, resolvedSchema, value);
     case 'integer':
     case 'number':
-      return renderNumberField(path, key, schema, value);
+      return renderNumberField(path, key, resolvedSchema, value);
     case 'boolean':
-      return renderBooleanField(path, key, schema, value);
+      return renderBooleanField(path, key, resolvedSchema, value);
     case 'array':
-      return renderArrayField(path, key, schema, value);
+      return renderArrayField(path, key, resolvedSchema, value);
     case 'object':
-      return renderObjectField(path, key, schema, value);
+      return renderObjectField(path, key, resolvedSchema, value);
     default:
-      return renderStringField(path, key, schema, value);
+      return renderStringField(path, key, resolvedSchema, value);
   }
 }
 
@@ -410,8 +470,9 @@ function renderField(path, key, schema, value) {
 function renderStringField(path, key, schema, value) {
   const group = createFormGroup(path, key, schema);
 
-  if (schema.enum) {
-    // Use select for enum
+  // Use select for enum (safely check it's an array with values)
+  const enumValues = getSchemaArray(schema, 'enum');
+  if (enumValues.length > 0) {
     return renderEnumField(path, key, schema, value);
   }
 
@@ -479,8 +540,11 @@ function renderStringField(path, key, schema, value) {
 function renderEnumField(path, key, schema, value, allowCustom = true) {
   const group = createFormGroup(path, key, schema);
 
+  // Safely get enum values
+  const enumValues = getSchemaArray(schema, 'enum');
+
   // Check if current value is a custom value (not in enum)
-  const isCustomValue = value && !schema.enum.includes(value);
+  const isCustomValue = value && !enumValues.includes(value);
 
   // Container for select + optional input
   const container = document.createElement('div');
@@ -500,7 +564,7 @@ function renderEnumField(path, key, schema, value, allowCustom = true) {
   emptyOpt.textContent = '-- Select --';
   select.appendChild(emptyOpt);
 
-  for (const opt of schema.enum) {
+  for (const opt of enumValues) {
     const option = document.createElement('option');
     option.value = opt;
     option.textContent = opt;
@@ -697,7 +761,9 @@ function renderArrayField(path, key, schema, value) {
   items.className = 'array-field__items';
 
   const arrValue = Array.isArray(value) ? value : [];
-  const itemSchema = schema.items || { type: 'string' };
+  // Resolve $ref on items schema
+  const rawItemSchema = schema.items || { type: 'string' };
+  const itemSchema = safeResolveSchema(rawItemSchema, getRootSchema());
 
   arrValue.forEach((item, idx) => {
     const itemPath = `${path}[${idx}]`;
@@ -892,12 +958,12 @@ function renderUnionField(path, key, schema, value) {
   // Resolve $refs for each option before checking types
   const options = rawOptions.map(o => resolveRef(o, rootSchema) || o);
 
-  // Check for enum + custom string pattern
-  const enumOption = options.find(o => o.enum);
-  const stringOption = options.find(o => o.type === 'string' && !o.enum);
-  const objectOption = options.find(o => o.type === 'object');
-  const boolFalseOption = rawOptions.find(o => o.const === false); // Check raw for const
-  const intOrNumOption = options.find(o => o.type === 'integer' || o.type === 'number');
+  // Check for enum + custom string pattern (use safe array check)
+  const enumOption = options.find(o => Array.isArray(o?.enum) && o.enum.length > 0);
+  const stringOption = options.find(o => o?.type === 'string' && !Array.isArray(o?.enum));
+  const objectOption = options.find(o => o?.type === 'object');
+  const boolFalseOption = rawOptions.find(o => o?.const === false); // Check raw for const
+  const intOrNumOption = options.find(o => o?.type === 'integer' || o?.type === 'number');
 
   // Pattern: oneOf [enum/int, {const: false}] - Mode selector
   if (boolFalseOption && (enumOption || intOrNumOption)) {
@@ -1177,16 +1243,22 @@ function renderModeField(path, key, schema, value, options) {
 
   container.appendChild(modeSelect);
 
-  // Value input (shown when enabled)
-  const valueOption = options.find(o => o.enum || o.type === 'integer' || o.type === 'number');
+  // Value input (shown when enabled) - resolve $refs in options first
+  const resolvedOptions = options.map(o => safeResolveSchema(o, getRootSchema()));
+  const valueOption = resolvedOptions.find(o =>
+    (Array.isArray(o?.enum) && o.enum.length > 0) || o?.type === 'integer' || o?.type === 'number'
+  );
   let valueInput;
 
-  if (valueOption?.enum) {
+  // Safely get enum values
+  const enumValues = getSchemaArray(valueOption, 'enum');
+
+  if (enumValues.length > 0) {
     valueInput = document.createElement('select');
     valueInput.className = 'form-select';
     valueInput.style.flex = '1';
 
-    for (const opt of valueOption.enum) {
+    for (const opt of enumValues) {
       const option = document.createElement('option');
       option.value = opt;
       option.textContent = opt;
@@ -1215,21 +1287,17 @@ function renderModeField(path, key, schema, value, options) {
         updateFieldValue(path, false, schema);
       } else {
         valueInput.disabled = false;
-        // Restore previous value or default
-        const newVal = valueOption.enum ? valueOption.enum[0] :
-          (valueOption.minimum !== undefined ? valueOption.minimum : 0);
-        if (valueInput.tagName === 'SELECT') {
-          valueInput.value = newVal;
-        } else {
-          valueInput.value = newVal;
-        }
-        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption.type, valueOption), schema);
+        // Restore previous value or default (use enumValues from outer scope)
+        const newVal = enumValues.length > 0 ? enumValues[0] :
+          (typeof valueOption?.minimum === 'number' ? valueOption.minimum : 0);
+        valueInput.value = newVal;
+        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption?.type, valueOption), schema);
       }
     });
 
     valueInput.addEventListener('change', () => {
       if (modeSelect.value === 'enabled') {
-        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption.type, valueOption), schema);
+        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption?.type, valueOption), schema);
       }
     });
   }
