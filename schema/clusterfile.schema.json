@@ -73,6 +73,15 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 4094
+    },
+    "mtuPreset": {
+      "type": "integer",
+      "enum": [1500, 9000]
+    },
+    "mtuCustom": {
+      "type": "integer",
+      "minimum": 576,
+      "maximum": 9216
     }
   },
   "properties": {
@@ -336,11 +345,12 @@
             },
             "mtu": {
               "title": "MTU",
-              "type": "integer",
-              "minimum": 576,
-              "maximum": 9216,
-              "default": 1500,
-              "description": "Interface MTU in bytes (576-9216).",
+              "oneOf": [
+                { "$ref": "#/$defs/mtuPreset" },
+                { "$ref": "#/$defs/mtuCustom" },
+                { "type": "boolean", "const": false }
+              ],
+              "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
             },
             "gateway": {
@@ -512,10 +522,12 @@
               },
               "mtu": {
                 "title": "MTU",
-                "type": "integer",
-                "minimum": 576,
-                "maximum": 9216,
-                "description": "Interface MTU in bytes.",
+                "oneOf": [
+                  { "$ref": "#/$defs/mtuPreset" },
+                  { "$ref": "#/$defs/mtuCustom" },
+                  { "type": "boolean", "const": false }
+                ],
+                "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
               }
             },

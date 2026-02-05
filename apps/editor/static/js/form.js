@@ -1215,6 +1215,7 @@ function updateCompactObjectField(basePath, propKey, value, schema) {
 
 /**
  * Render a mode selector field (enabled/disabled pattern)
+ * Supports: enum only, integer only, or enum+integer (presets + custom)
  */
 function renderModeField(path, key, schema, value, options) {
   const group = createFormGroup(path, key, schema);
@@ -1224,83 +1225,104 @@ function renderModeField(path, key, schema, value, options) {
   container.style.gap = '8px';
   container.style.alignItems = 'center';
 
-  // Mode toggle
+  // Resolve $refs in options first
+  const resolvedOptions = options.map(o => safeResolveSchema(o, getRootSchema()));
+  const enumOption = resolvedOptions.find(o => Array.isArray(o?.enum) && o.enum.length > 0);
+  // Find integer option WITHOUT enum (for custom input)
+  const customIntOption = resolvedOptions.find(o =>
+    (o?.type === 'integer' || o?.type === 'number') && !Array.isArray(o?.enum)
+  );
+  const enumValues = getSchemaArray(enumOption, 'enum');
+  const hasPresets = enumValues.length > 0;
+  const hasCustom = !!customIntOption;
+
+  // Mode/value dropdown
   const modeSelect = document.createElement('select');
   modeSelect.className = 'form-select';
   modeSelect.style.width = 'auto';
 
-  const enabledOpt = document.createElement('option');
-  enabledOpt.value = 'enabled';
-  enabledOpt.textContent = 'Enabled';
-  modeSelect.appendChild(enabledOpt);
+  // Add preset enum values with descriptive labels
+  if (hasPresets) {
+    for (const val of enumValues) {
+      const opt = document.createElement('option');
+      opt.value = `preset:${val}`;
+      // Nice labels for known MTU values
+      if (val === 1500) opt.textContent = 'Default (1500)';
+      else if (val === 9000) opt.textContent = 'Jumbo (9000)';
+      else opt.textContent = String(val);
+      modeSelect.appendChild(opt);
+    }
+  }
 
+  // Add Custom option if integer type available
+  if (hasCustom) {
+    const customOpt = document.createElement('option');
+    customOpt.value = 'custom';
+    customOpt.textContent = 'Custom';
+    modeSelect.appendChild(customOpt);
+  }
+
+  // Add Disabled option
   const disabledOpt = document.createElement('option');
   disabledOpt.value = 'disabled';
   disabledOpt.textContent = 'Disabled';
   modeSelect.appendChild(disabledOpt);
 
-  modeSelect.value = value === false ? 'disabled' : 'enabled';
+  // Determine current selection
+  const getCurrentMode = (val) => {
+    if (val === false) return 'disabled';
+    if (hasPresets && enumValues.includes(val)) return `preset:${val}`;
+    if (hasCustom && typeof val === 'number') return 'custom';
+    if (hasPresets) return `preset:${enumValues[0]}`;
+    return 'custom';
+  };
+  modeSelect.value = getCurrentMode(value);
 
   container.appendChild(modeSelect);
 
-  // Value input (shown when enabled) - resolve $refs in options first
-  const resolvedOptions = options.map(o => safeResolveSchema(o, getRootSchema()));
-  const valueOption = resolvedOptions.find(o =>
-    (Array.isArray(o?.enum) && o.enum.length > 0) || o?.type === 'integer' || o?.type === 'number'
-  );
-  let valueInput;
-
-  // Safely get enum values
-  const enumValues = getSchemaArray(valueOption, 'enum');
-
-  if (enumValues.length > 0) {
-    valueInput = document.createElement('select');
-    valueInput.className = 'form-select';
-    valueInput.style.flex = '1';
-
-    for (const opt of enumValues) {
-      const option = document.createElement('option');
-      option.value = opt;
-      option.textContent = opt;
-      if (opt === value) option.selected = true;
-      valueInput.appendChild(option);
+  // Custom value input (only shown when Custom is selected)
+  let customInput = null;
+  if (hasCustom) {
+    customInput = document.createElement('input');
+    customInput.type = 'number';
+    customInput.className = 'form-input form-input--number';
+    customInput.style.flex = '1';
+    customInput.style.display = modeSelect.value === 'custom' ? '' : 'none';
+    if (modeSelect.value === 'custom' && typeof value === 'number') {
+      customInput.value = value;
     }
-  } else if (valueOption?.type === 'integer' || valueOption?.type === 'number') {
-    valueInput = document.createElement('input');
-    valueInput.type = 'number';
-    valueInput.className = 'form-input form-input--number';
-    valueInput.style.flex = '1';
-    valueInput.value = typeof value === 'number' ? value : '';
+    if (customIntOption.minimum !== undefined) customInput.min = customIntOption.minimum;
+    if (customIntOption.maximum !== undefined) customInput.max = customIntOption.maximum;
+    if (customIntOption.type === 'integer') customInput.step = '1';
 
-    if (valueOption.minimum !== undefined) valueInput.min = valueOption.minimum;
-    if (valueOption.maximum !== undefined) valueInput.max = valueOption.maximum;
-    if (valueOption.type === 'integer') valueInput.step = '1';
-  }
+    container.appendChild(customInput);
 
-  if (valueInput) {
-    valueInput.disabled = value === false;
-    container.appendChild(valueInput);
-
-    modeSelect.addEventListener('change', () => {
-      if (modeSelect.value === 'disabled') {
-        valueInput.disabled = true;
-        updateFieldValue(path, false, schema);
-      } else {
-        valueInput.disabled = false;
-        // Restore previous value or default (use enumValues from outer scope)
-        const newVal = enumValues.length > 0 ? enumValues[0] :
-          (typeof valueOption?.minimum === 'number' ? valueOption.minimum : 0);
-        valueInput.value = newVal;
-        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption?.type, valueOption), schema);
-      }
-    });
-
-    valueInput.addEventListener('change', () => {
-      if (modeSelect.value === 'enabled') {
-        updateFieldValue(path, State.coerceValue(valueInput.value, valueOption?.type, valueOption), schema);
+    customInput.addEventListener('change', () => {
+      if (modeSelect.value === 'custom') {
+        updateFieldValue(path, State.coerceValue(customInput.value, customIntOption.type, customIntOption), schema);
       }
     });
   }
+
+  // Handle mode changes
+  modeSelect.addEventListener('change', () => {
+    const mode = modeSelect.value;
+    if (customInput) {
+      customInput.style.display = mode === 'custom' ? '' : 'none';
+    }
+
+    if (mode === 'disabled') {
+      updateFieldValue(path, false, schema);
+    } else if (mode === 'custom') {
+      // Set to minimum or current value
+      const newVal = customIntOption.minimum !== undefined ? customIntOption.minimum : 0;
+      if (customInput) customInput.value = newVal;
+      updateFieldValue(path, newVal, schema);
+    } else if (mode.startsWith('preset:')) {
+      const presetVal = parseInt(mode.split(':')[1], 10);
+      updateFieldValue(path, presetVal, schema);
+    }
+  });
 
   group.appendChild(container);
   addFieldDescription(group, schema);
