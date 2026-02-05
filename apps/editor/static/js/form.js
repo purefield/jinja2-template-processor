@@ -1270,11 +1270,12 @@ function renderModeField(path, key, schema, value, options) {
 
   // Determine current selection
   const getCurrentMode = (val) => {
-    if (val === false) return 'disabled';
+    if (val === false || val === undefined || val === null) return 'disabled';
     if (hasPresets && enumValues.includes(val)) return `preset:${val}`;
     if (hasCustom && typeof val === 'number') return 'custom';
     if (hasPresets) return `preset:${enumValues[0]}`;
-    return 'custom';
+    if (hasCustom) return 'custom';
+    return 'disabled';
   };
   modeSelect.value = getCurrentMode(value);
 
@@ -1312,14 +1313,17 @@ function renderModeField(path, key, schema, value, options) {
     }
 
     if (mode === 'disabled') {
-      updateFieldValue(path, false, schema);
+      updateFieldValue(path, undefined, schema);
     } else if (mode === 'custom') {
       // Set to minimum or current value
       const newVal = customIntOption.minimum !== undefined ? customIntOption.minimum : 0;
       if (customInput) customInput.value = newVal;
       updateFieldValue(path, newVal, schema);
     } else if (mode.startsWith('preset:')) {
-      const presetVal = parseInt(mode.split(':')[1], 10);
+      const raw = mode.split(':')[1];
+      // Coerce to number if the enum contains numbers, otherwise keep as string
+      const presetVal = (enumOption?.type === 'integer' || enumOption?.type === 'number')
+        ? parseInt(raw, 10) : raw;
       updateFieldValue(path, presetVal, schema);
     }
   });
