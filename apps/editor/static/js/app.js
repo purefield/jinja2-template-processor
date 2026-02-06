@@ -847,12 +847,13 @@ function renderTemplatesSection(container) {
   });
 
   // Category display order and labels
-  const categoryOrder = ['installation', 'credentials', 'acm', 'configuration', 'utility'];
+  const categoryOrder = ['installation', 'credentials', 'acm', 'configuration', 'documentation', 'utility'];
   const categoryLabels = {
     installation: 'Installation',
     credentials: 'Credentials',
     acm: 'ACM / ZTP',
     configuration: 'Configuration',
+    documentation: 'Documentation',
     utility: 'Utility Scripts',
     other: 'Other'
   };
@@ -1013,6 +1014,7 @@ function renderTemplatesSection(container) {
     // Auto-load template source when selected
     if (templateName) {
       await loadTemplateSource(templateName);
+      updatePreviewButton(templateName);
       // Switch to template tab to show source
       const templateTab = document.querySelector('.tab[data-tab="template"]');
       if (templateTab) templateTab.click();
@@ -1109,6 +1111,7 @@ function setupTemplateButtons() {
     navigator.clipboard.writeText(content).then(() => showToast('Copied', 'success'));
   });
   document.getElementById('download-rendered-btn')?.addEventListener('click', downloadRenderedOutput);
+  document.getElementById('preview-rendered-btn')?.addEventListener('click', previewRenderedHtml);
 }
 
 /**
@@ -1342,6 +1345,30 @@ function downloadRenderedOutput() {
   // Remove .tpl/.tmpl suffix to get the actual output filename (e.g., install-config.yaml.tpl → install-config.yaml)
   const filename = templateName.replace(/\.(tpl|tmpl)$/, '') || 'output.yaml';
   downloadFile(output, filename);
+}
+
+/**
+ * Preview rendered HTML output in a new browser tab
+ */
+function previewRenderedHtml() {
+  const output = CodeMirror.getRenderedValue();
+  if (!output) return;
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(output);
+    win.document.close();
+  } else {
+    showToast('Popup blocked — allow popups for this site', 'warning');
+  }
+}
+
+/**
+ * Show or hide the Preview button based on whether the template produces HTML
+ */
+function updatePreviewButton(templateName) {
+  const btn = document.getElementById('preview-rendered-btn');
+  if (!btn) return;
+  btn.style.display = (templateName && templateName.match(/\.html?\./)) ? '' : 'none';
 }
 
 /**
