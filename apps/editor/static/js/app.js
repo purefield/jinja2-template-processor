@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.5',
+    date: '2026-02-06',
+    changes: [
+      'Pre-check templates restructured: body includes + composable master',
+      'Check logic deduplicated into includes/pre-check/ body files',
+      'Standalone modules are thin wrappers, master composes all via include'
+    ]
+  },
+  {
     version: '2.5.4',
     date: '2026-02-06',
     changes: [

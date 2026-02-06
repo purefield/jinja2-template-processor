@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 2.5.5
+- **Pre-Check Template Restructure**: Modular body includes with composable master
+  - Check logic in `includes/pre-check/` body files (files, dns, network, ntp, registry, bmc)
+  - Standalone modules are thin wrappers: common + body + summary
+  - Master `pre-check.sh.tpl` composes all bodies via include — no duplicated logic
+  - 91 render combinations tested (13 clusterfiles x 7 templates)
+
 ## 2.5.4
 - **Cluster Overview Enhancements**: Network capacity calculations and DNS improvements
   - api-int DNS record now CNAME pointing to api record
