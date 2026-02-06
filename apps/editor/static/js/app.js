@@ -106,6 +106,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.3',
+    date: '2026-02-06',
+    changes: [
+      'One-click Preview button in header bar for cluster overview',
+      'Renders current clusterfile as HTML overview and opens in new tab'
+    ]
+  },
+  {
     version: '2.5.2',
     date: '2026-02-06',
     changes: [
