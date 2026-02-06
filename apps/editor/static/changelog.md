@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.5.3
+- **Preview Button in Header**: One-click cluster overview preview from top menu bar
+  - Eye icon button renders cluster-overview.html.tpl and opens in new tab
+  - Works with any loaded clusterfile — no template selection needed
+
 ## 2.5.2
 - **Cluster Overview HTML**: Self-contained HTML document replaces markdown version
   - Opens directly in any browser — no markdown viewer needed
