@@ -42,20 +42,15 @@ baseDomain: {{ network.domain }}
 
 controlPlane:
   name: master
-  replicas: {{ controlCount }}
-{%- if platform not in ['baremetal', 'none'] %}
+  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'none'] %}
   platform:
-{% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}
-{%- endif %}
+{% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
-    replicas: {{ workerCount }}
-{%- if platform not in ['baremetal', 'none'] %}
+    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'none'] %}
     platform:
-{% include 'includes/platforms/' ~ platform ~ '/compute.yaml.tpl' %}
-{%- endif %}
-{%- if network.proxy is defined %}
+{% include 'includes/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
 proxy:
   httpProxy: {{ network.proxy.httpProxy }}
@@ -78,27 +73,18 @@ platform:
 
 publish: External
 pullSecret: '{{ load_file(account.pullSecret) | trim }}'
-sshKey: |
-{%- for pubKey in cluster.sshKeys %}
-  {{ load_file(pubKey) | trim }}
-{%- endfor %}
-{%- if network.trustBundle is defined %}
+sshKey: |{% for pubKey in cluster.sshKeys %}
+  {{ load_file(pubKey) | trim }}{%- endfor %}{% if network.trustBundle is defined %}
 
 additionalTrustBundle: |
 {{ load_file(network.trustBundle) | indent(2, true) }}
 {%- endif %}
 {%- if cluster.mirrors is defined and cluster.mirrors | length > 0 %}
 
-imageContentSources:
-{%- for mirror in cluster.mirrors %}
+imageContentSources:{% for mirror in cluster.mirrors %}
   - source: {{ mirror.source }}
-    mirrors:
-{%- for m in mirror.mirrors %}
-      - {{ m }}
-{%- endfor %}
-{%- endfor %}
-{%- endif %}
-{%- if platformPlugin.credentials is defined %}
+    mirrors:{% for m in mirror.mirrors %}
+      - {{ m }}{%- endfor %}{%- endfor %}{%- endif %}{% if platformPlugin.credentials is defined %}
 
 credentialsMode: Manual
 {%- endif %}

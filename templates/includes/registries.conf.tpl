@@ -1,4 +1,4 @@
-{% if cluster.mirrors -%}
+{%- if cluster.mirrors -%}
 unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
 short-name-mode = ""{% for mirror in cluster.mirrors %}
 [[registry]]
@@ -7,4 +7,4 @@ short-name-mode = ""{% for mirror in cluster.mirrors %}
   mirror-by-digest-only = true
   [[registry.mirror]]{% for location in mirror.mirrors %}
     location = "{{ location }}"{% endfor %}
-{% endfor %}{% endif %}
+{% endfor %}{%- endif -%}

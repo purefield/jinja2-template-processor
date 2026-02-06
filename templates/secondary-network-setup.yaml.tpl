@@ -61,30 +61,21 @@ items:{%- set enabledFalse='{"enabled":false}' %}{% for network in network.secon
   spec:
     config: |-
       {
-        "name": "{{ interfaceName }}-network",
-
-        {%- if network.type == 'bridge' %}
+        "name": "{{ interfaceName }}-network",{% if network.type == 'bridge' %}
         "bridge": "{{ interfaceName }}",
         "type": "cnv-bridge",
-        "macspoofchk": true,
-
-        {%- elif network.type == 'macvlan' %}
+        "macspoofchk": true,{% elif network.type == 'macvlan' %}
         "type": "macvlan",
         "master": "{{ interface }}",
         "linkInContainer": false,
-        "mode": "bridge",
-
-        {%- endif %}
+        "mode": "bridge",{% endif %}
         "cniVersion": "0.3.1"
         "ipam": {
-
-        {%- if network.subnet == 'dhcp' %}
+{%- if network.subnet == 'dhcp' %}
            "type": "dhcp"
-
-        {%- else %}
+{%- else %}
            "type": "whereabouts",
            "range": {{ network.subnet }}
-
-        {%- endif%}
+{%- endif %}
         }
       }{% endfor %}
