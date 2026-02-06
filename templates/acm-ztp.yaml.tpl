@@ -173,8 +173,7 @@ items:
     hubAcceptsClient: true
     leaseDurationSeconds: 60
 # https://nmstate.io/examples.html
-# https://access.redhat.com/solutions/7011711
-{% for name,host in hosts.items() %}
+# https://access.redhat.com/solutions/7011711{% for name,host in hosts.items() %}
 - apiVersion: agent-install.openshift.io/v1beta1
   kind: NMStateConfig
   metadata:
@@ -216,7 +215,7 @@ items:
     bootMACAddress: {{ bootNic.macAddress }}
     online: true
     customDeploy:
-      method: start_assisted_install{%- endfor %}
+      method: start_assisted_install{% endfor %}
 - kind: InfraEnv
   apiVersion: agent-install.openshift.io/v1beta1
   metadata:

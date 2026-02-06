@@ -7,7 +7,8 @@ requires:
   - cluster.mirrors
 docs: https://docs.openshift.com/container-platform/latest/installing/disconnected_install/installing-mirroring-disconnected.html
 -#}
-apiVersion: v1 {%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset -%}
+apiVersion: v1
 kind: List
 metadata:
   resourceVersion: ""

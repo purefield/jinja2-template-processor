@@ -216,8 +216,7 @@ items:
             role: worker
         pullSecretRef:
           name: "pullsecret-{{ cluster.name }}"
-        sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% endif%}
-{% for name,host in hosts.items() %}{% set shortname=name.split('.')[0]%}
+        sshAuthorizedKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% endif %}{% for name,host in hosts.items() %}{% set shortname=name.split('.')[0] %}
 - kind: Secret
   apiVersion: v1
   metadata:
@@ -266,5 +265,5 @@ items:
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
-    online: false
-{% endfor %}
+    online: false{% endfor %}
+
