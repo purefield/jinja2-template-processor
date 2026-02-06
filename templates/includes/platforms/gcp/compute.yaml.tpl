@@ -1,14 +1,9 @@
 {% set gcp = plugins.gcp %}
+{% set w = gcp.compute | default({}) %}
       gcp:
-        type: {{ gcp.compute.type | default("n2-standard-4", true) }}
-{%- if gcp.compute.zones is defined %}
-        zones:
-{%- for zone in gcp.compute.zones %}
-          - {{ zone }}
-{%- endfor %}
-{%- endif %}
-{%- if gcp.compute.osDisk is defined %}
+        type: {{ w.type | default("n2-standard-4", true) }}{% if w.zones is defined %}
+        zones:{% for zone in w.zones %}
+          - {{ zone }}{%- endfor %}{% endif %}{% if w.osDisk is defined %}
         osDisk:
-          diskSizeGB: {{ gcp.compute.osDisk.diskSizeGB | default(128, true) }}
-          diskType: {{ gcp.compute.osDisk.diskType | default("pd-ssd", true) }}
-{%- endif -%}
+          diskSizeGB: {{ w.osDisk.diskSizeGB | default(128, true) }}
+          diskType: {{ w.osDisk.diskType | default("pd-ssd", true) }}{%- endif -%}

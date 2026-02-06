@@ -1,14 +1,9 @@
 {% set azure = plugins.azure %}
+{% set w = azure.compute | default({}) %}
       azure:
-        type: {{ azure.compute.type | default("Standard_D4s_v3", true) }}
-{%- if azure.compute.zones is defined %}
-        zones:
-{%- for zone in azure.compute.zones %}
-          - "{{ zone }}"
-{%- endfor %}
-{%- endif %}
-{%- if azure.compute.osDisk is defined %}
+        type: {{ w.type | default("Standard_D4s_v3", true) }}{% if w.zones is defined %}
+        zones:{% for zone in w.zones %}
+          - "{{ zone }}"{%- endfor %}{% endif %}{% if w.osDisk is defined %}
         osDisk:
-          diskSizeGB: {{ azure.compute.osDisk.diskSizeGB | default(128, true) }}
-          diskType: {{ azure.compute.osDisk.diskType | default("Premium_LRS", true) }}
-{%- endif -%}
+          diskSizeGB: {{ w.osDisk.diskSizeGB | default(128, true) }}
+          diskType: {{ w.osDisk.diskType | default("Premium_LRS", true) }}{%- endif -%}

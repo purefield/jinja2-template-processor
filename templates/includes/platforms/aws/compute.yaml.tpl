@@ -1,14 +1,9 @@
 {% set aws = plugins.aws %}
+{% set w = aws.compute | default({}) %}
       aws:
-        type: {{ aws.compute.type | default("m6i.xlarge", true) }}
-{%- if aws.compute.zones is defined %}
-        zones:
-{%- for zone in aws.compute.zones %}
-          - {{ zone }}
-{%- endfor %}
-{%- endif %}
-{%- if aws.compute.rootVolume is defined %}
+        type: {{ w.type | default("m6i.xlarge", true) }}{% if w.zones is defined %}
+        zones:{% for zone in w.zones %}
+          - {{ zone }}{%- endfor %}{% endif %}{% if w.rootVolume is defined %}
         rootVolume:
-          size: {{ aws.compute.rootVolume.size | default(120, true) }}
-          type: {{ aws.compute.rootVolume.type | default("gp3", true) }}
-{%- endif -%}
+          size: {{ w.rootVolume.size | default(120, true) }}
+          type: {{ w.rootVolume.type | default("gp3", true) }}{%- endif -%}
