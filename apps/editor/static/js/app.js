@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.2',
+    date: '2026-02-06',
+    changes: [
+      'Self-contained HTML cluster overview with dark mode, print styles, responsive layout',
+      'Preview button opens HTML templates in a new browser tab',
+      'Documentation category in template dropdown'
+    ]
+  },
+  {
     version: '2.5.1',
     date: '2026-02-06',
     changes: [
