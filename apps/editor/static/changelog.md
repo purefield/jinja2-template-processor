@@ -1,5 +1,14 @@
 # Clusterfile Editor Changelog
 
+## 2.5.1
+- **Template Restyle Complete**: Remaining 7 templates restyled with YAML-leading style and Jinja whitespace flags
+  - install-config, secondary-network-setup, mirror-registry-config, ACM templates, includes
+  - All `if/endif/for/endfor` moved inline; whitespace flags (`{%-`/`-%}`) for tight output
+- **Cluster Overview Document**: New `cluster-overview.md.tpl` template for customer-facing documentation
+  - Renders clean markdown from any clusterfile (baremetal, IPI, SNO)
+  - Sections: identity, topology, network, hosts, mirrors, trust, DNS records
+  - Adapts layout to platform (detailed host cards vs compact table)
+
 ## 2.5.0
 - **Template Restyle**: All 18 platform include templates now follow YAML-leading style
   - Every line starts with output structure; Jinja directives appended inline
