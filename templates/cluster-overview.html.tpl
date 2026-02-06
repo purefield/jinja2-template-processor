@@ -242,7 +242,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
       {%- set hostPrefix = network.cluster.hostPrefix | default(23) | int -%}
       {%- set podsPerNode = 2 ** (32 - hostPrefix) -%}
       {%- set maxNodes = 2 ** (hostPrefix - clusterPrefix) -%}
-      <tr><td>Cluster (pods)</td><td><code>{{ network.cluster.subnet }}</code></td><td>{{ podsPerNode }} pods/node ({{ maxNodes }} max nodes at /{{ hostPrefix }})</td></tr>{% endif %}{% if network.service is defined and network.service.subnet is defined %}
+      <tr><td>Cluster (pods)</td><td><code>{{ network.cluster.subnet }}</code></td><td>{{ podsPerNode }} pods/node at /{{ hostPrefix }} ({{ maxNodes }} max nodes)</td></tr>{% endif %}{% if network.service is defined and network.service.subnet is defined %}
       {%- set svcPrefix = network.service.subnet.split('/')[1] | int -%}
       <tr><td>Service</td><td><code>{{ network.service.subnet }}</code></td><td>{{ 2 ** (32 - svcPrefix) - 2 }} addresses</td></tr>{% endif %}{% if network.primary is defined and network.primary.subnet is defined %}
       {%- set machinePrefix = network.primary.subnet.split('/')[1] | int -%}
