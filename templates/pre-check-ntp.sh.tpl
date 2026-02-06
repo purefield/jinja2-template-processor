@@ -7,14 +7,7 @@ requires:
   - cluster.name
   - network.domain
 -#}
-{% include 'includes/pre-check/common.sh.tpl' %}
-section "NTP"
-{%- for ntp in network.ntpservers | default([]) %}
-if timeout 2 bash -c "echo > /dev/udp/{{ ntp }}/123" 2>/dev/null; then
-    pass "{{ ntp }}:123 reachable"
-else
-    warn "{{ ntp }}:123 not reachable"
-fi
-{%- endfor %}
+{%- include 'includes/pre-check/common.sh.tpl' %}
+{%- include 'includes/pre-check/ntp.sh.tpl' %}
 
 summary
