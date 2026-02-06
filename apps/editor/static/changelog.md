@@ -1,5 +1,14 @@
 # Clusterfile Editor Changelog
 
+## 2.5.2
+- **Cluster Overview HTML**: Self-contained HTML document replaces markdown version
+  - Opens directly in any browser — no markdown viewer needed
+  - Dark mode, print-friendly, responsive layout with inline CSS
+  - Host cards for baremetal, compact table for IPI platforms
+- **Preview Button**: HTML templates show a Preview button in the rendered output pane
+  - Opens rendered HTML in a new browser tab for live preview
+- **Documentation Category**: New dropdown group for documentation templates
+
 ## 2.5.1
 - **Template Restyle Complete**: Remaining 7 templates restyled with YAML-leading style and Jinja whitespace flags
   - install-config, secondary-network-setup, mirror-registry-config, ACM templates, includes
