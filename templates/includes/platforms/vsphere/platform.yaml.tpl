@@ -61,23 +61,16 @@
 {%- endif %}
 {%- endif %}
 {#- Static IP configuration (TechPreview in OCP 4.17+) -#}
-{#- Enabled when hosts have network.primary.address defined -#}
-{%- set staticHosts = [] %}
-{%- for hostname, host in hosts.items() %}
-{%- if host.network is defined and host.network.primary is defined and host.network.primary.address is defined %}
-{%- set _ = staticHosts.append({'hostname': hostname, 'host': host}) %}
-{%- endif %}
-{%- endfor %}
+{%- set staticHosts = [] -%}
+{%- for hostname, host in hosts.items()
+    if host.network is defined and host.network.primary is defined and host.network.primary.address is defined -%}
+  {%- set _ = staticHosts.append({'hostname': hostname, 'host': host}) -%}
+{%- endfor -%}
 {%- if staticHosts | length > 0 %}
     hosts:
-{#- Bootstrap node (if defined in vsphere.bootstrap) -#}
 {%- if vsphere.bootstrap is defined and vsphere.bootstrap.networkDevice is defined %}
       - role: bootstrap
-{%- if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 %}
-        failureDomain: {{ vsphere.failureDomains[0].name }}
-{%- else %}
-        failureDomain: {{ cluster.name }}-fd
-{%- endif %}
+        failureDomain: {{ vsphere.failureDomains[0].name if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 else cluster.name ~ '-fd' }}
         networkDevice:
           ipAddrs:
             - {{ vsphere.bootstrap.networkDevice.ipAddrs[0] }}
@@ -89,16 +82,9 @@
 {%- endfor %}
 {%- endif %}
 {%- endif %}
-{#- Control plane nodes -#}
-{%- for item in staticHosts %}
-{%- set host = item.host %}
-{%- if host.role in ['control', 'master'] %}
+{%- for item in staticHosts if item.host.role in ['control', 'master'] %}{% set host = item.host %}
       - role: control-plane
-{%- if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 %}
-        failureDomain: {{ host.failureDomain | default(vsphere.failureDomains[0].name, true) }}
-{%- else %}
-        failureDomain: {{ cluster.name }}-fd
-{%- endif %}
+        failureDomain: {{ host.failureDomain | default(vsphere.failureDomains[0].name, true) if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 else cluster.name ~ '-fd' }}
         networkDevice:
           ipAddrs:
             - {{ host.network.primary.address }}/{{ (network.primary.subnet | default('0.0.0.0/24')).split('/')[1] }}
@@ -109,18 +95,10 @@
             - {{ ns }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}
 {%- endfor %}
-{#- Compute (worker) nodes -#}
-{%- for item in staticHosts %}
-{%- set host = item.host %}
-{%- if host.role == 'worker' %}
+{%- for item in staticHosts if item.host.role == 'worker' %}{% set host = item.host %}
       - role: compute
-{%- if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 %}
-        failureDomain: {{ host.failureDomain | default(vsphere.failureDomains[0].name, true) }}
-{%- else %}
-        failureDomain: {{ cluster.name }}-fd
-{%- endif %}
+        failureDomain: {{ host.failureDomain | default(vsphere.failureDomains[0].name, true) if vsphere.failureDomains is defined and vsphere.failureDomains | length > 0 else cluster.name ~ '-fd' }}
         networkDevice:
           ipAddrs:
             - {{ host.network.primary.address }}/{{ (network.primary.subnet | default('0.0.0.0/24')).split('/')[1] }}
@@ -130,7 +108,6 @@
 {%- for ns in host.network.primary.nameservers | default(network.nameservers, true) %}
             - {{ ns }}
 {%- endfor %}
-{%- endif %}
 {%- endif %}
 {%- endfor %}
 {%- endif -%}
