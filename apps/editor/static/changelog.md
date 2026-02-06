@@ -1,5 +1,13 @@
 # Clusterfile Editor Changelog
 
+## 2.5.4
+- **Cluster Overview Enhancements**: Network capacity calculations and DNS improvements
+  - api-int DNS record now CNAME pointing to api record
+  - Cluster network: pods per node and max nodes from host prefix
+  - Service network: usable address count
+  - Machine network: usable host count
+  - NIC table: name and MAC grouped in nested table to prevent wrapping
+
 ## 2.5.3
 - **Preview Button in Header**: One-click cluster overview preview from top menu bar
   - Eye icon button renders cluster-overview.html.tpl and opens in new tab

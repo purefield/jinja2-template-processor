@@ -226,7 +226,8 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   <h2>Network</h2>{% if network.primary is defined %}
   <h3>Primary</h3>
   <table class="kv">{% if network.primary.subnet is defined %}
-    <tr><td>Machine Network</td><td>{{ network.primary.subnet }}</td></tr>{% endif %}{% if network.primary.gateway is defined %}
+    {%- set primaryPrefix = network.primary.subnet.split('/')[1] | int -%}
+    <tr><td>Machine Network</td><td>{{ network.primary.subnet }} <span style="color:var(--muted)">({{ 2 ** (32 - primaryPrefix) - 2 }} hosts)</span></td></tr>{% endif %}{% if network.primary.gateway is defined %}
     <tr><td>Gateway</td><td>{{ network.primary.gateway }}</td></tr>{% endif %}
     <tr><td>Network Type</td><td>{{ network.primary.type | default('OVNKubernetes') }}</td></tr>{% if network.primary.mtu %}
     <tr><td>MTU</td><td>{{ network.primary.mtu }}</td></tr>{% endif %}{% if network.primary.bond %}
@@ -235,11 +236,17 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   </table>{% endif %}{% if network.cluster is defined %}
   <h3>Cluster Networks</h3>
   <table>
-    <thead><tr><th>Network</th><th>CIDR</th><th>Details</th></tr></thead>
+    <thead><tr><th>Network</th><th>CIDR</th><th>Capacity</th></tr></thead>
     <tbody>{% if network.cluster.subnet is defined %}
-      <tr><td>Cluster (pods)</td><td><code>{{ network.cluster.subnet }}</code></td><td>hostPrefix: /{{ network.cluster.hostPrefix | default(23) }}</td></tr>{% endif %}{% if network.service is defined and network.service.subnet is defined %}
-      <tr><td>Service</td><td><code>{{ network.service.subnet }}</code></td><td>—</td></tr>{% endif %}{% if network.primary is defined and network.primary.subnet is defined %}
-      <tr><td>Machine</td><td><code>{{ network.primary.subnet }}</code></td><td>—</td></tr>{% endif %}
+      {%- set clusterPrefix = network.cluster.subnet.split('/')[1] | int -%}
+      {%- set hostPrefix = network.cluster.hostPrefix | default(23) | int -%}
+      {%- set podsPerNode = 2 ** (32 - hostPrefix) -%}
+      {%- set maxNodes = 2 ** (hostPrefix - clusterPrefix) -%}
+      <tr><td>Cluster (pods)</td><td><code>{{ network.cluster.subnet }}</code></td><td>{{ podsPerNode }} pods/node ({{ maxNodes }} max nodes at /{{ hostPrefix }})</td></tr>{% endif %}{% if network.service is defined and network.service.subnet is defined %}
+      {%- set svcPrefix = network.service.subnet.split('/')[1] | int -%}
+      <tr><td>Service</td><td><code>{{ network.service.subnet }}</code></td><td>{{ 2 ** (32 - svcPrefix) - 2 }} addresses</td></tr>{% endif %}{% if network.primary is defined and network.primary.subnet is defined %}
+      {%- set machinePrefix = network.primary.subnet.split('/')[1] | int -%}
+      <tr><td>Machine</td><td><code>{{ network.primary.subnet }}</code></td><td>{{ 2 ** (32 - machinePrefix) - 2 }} usable hosts</td></tr>{% endif %}
     </tbody>
   </table>{% endif %}{% if network.primary is defined and network.primary.vips is defined %}
   <h3>Virtual IPs</h3>
@@ -276,7 +283,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
       <tr><td>IP Address</td><td>{{ item.host.network.primary.address }}</td></tr>{% if item.host.bmc is defined %}
       <tr><td>BMC</td><td>{{ item.host.bmc.address }} <span class="tag">{{ item.host.bmc.vendor }}{% if item.host.bmc.version is defined %} v{{ item.host.bmc.version }}{% endif %}</span></td></tr>{% endif %}{% if item.host.storage is defined and item.host.storage.os is defined %}
       <tr><td>Boot Disk</td><td>{% if item.host.storage.os is mapping %}{% for k, v in item.host.storage.os.items() %}{{ k }}: <code>{{ v }}</code>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}<code>{{ item.host.storage.os }}</code>{% endif %}</td></tr>{% endif %}{% if item.host.network.interfaces is defined %}
-      <tr><td>NICs</td><td>{% for iface in item.host.network.interfaces %}<code>{{ iface.name }}</code> <span class="tag">{{ iface.macAddress }}</span>{% if not loop.last %} {% endif %}{% endfor %}</td></tr>{% endif %}{% if item.host.network.primary.ports is defined %}
+      <tr><td>NICs</td><td><table style="margin:0;border:none"><tbody>{% for iface in item.host.network.interfaces %}<tr style="border:none"><td style="border:none;padding:2px 8px 2px 0"><code>{{ iface.name }}</code></td><td style="border:none;padding:2px 0"><span class="tag">{{ iface.macAddress }}</span></td></tr>{% endfor %}</tbody></table></td></tr>{% endif %}{% if item.host.network.primary.ports is defined %}
       <tr><td>Bond Ports</td><td>{% for p in item.host.network.primary.ports %}<code>{{ p }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
     </table>
   </div>{% endfor %}
@@ -327,8 +334,8 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   <table>
     <thead><tr><th>Record</th><th>Type</th><th>Value</th></tr></thead>
     <tbody>{% if network.primary is defined and network.primary.vips is defined %}{% for vip in network.primary.vips.api | default([]) %}
-      <tr><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>
-      <tr><td><code>api-int.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% for vip in network.primary.vips.apps | default([]) %}
+      <tr><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}
+      <tr><td><code>api-int.{{ cluster.name }}.{{ network.domain }}</code></td><td>CNAME</td><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td></tr>{% for vip in network.primary.vips.apps | default([]) %}
       <tr><td><code>*.apps.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% endif %}{% for item in detailedHosts %}
       <tr><td><code>{{ item.name }}</code></td><td>A</td><td><code>{{ item.host.network.primary.address }}</code></td></tr>{% endfor %}
     </tbody>
