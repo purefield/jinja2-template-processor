@@ -1,5 +1,15 @@
 # Clusterfile Editor Changelog
 
+## 2.5.0
+- **Template Restyle**: All 18 platform include templates now follow YAML-leading style
+  - Every line starts with output structure; Jinja directives appended inline
+  - Closing directives attach to previous YAML lines, never on their own line
+  - Templates are now human-scannable — you see the YAML shape at a glance
+- **Robustness Defaults**: All controlPlane/compute templates use `| default({})` for optional sub-sections
+  - Agent-based clusterfiles no longer crash when IPI-specific data is absent
+  - Nutanix platform guards prismCentral/prismElements/subnetUUIDs behind `is defined`
+- **BMC Vendor Enum**: Added `ksushy` and `kubevirt-redfish` to schema BMC vendor enum
+
 ## 2.4.7
 - **Fix Mode Field Regressions**: Bond, VLAN, and MTU toggle fixes
   - Fix bond string values like "802.3ad" being coerced to numbers

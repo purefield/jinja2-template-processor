@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.0',
+    date: '2026-02-06',
+    changes: [
+      'All 18 platform templates restyled: YAML structure leads, Jinja hides inline',
+      'Robustness defaults for all controlPlane/compute templates (agent-based safe)',
+      'Added ksushy and kubevirt-redfish to BMC vendor enum'
+    ]
+  },
+  {
     version: '2.4.7',
     date: '2026-02-05',
     changes: [
