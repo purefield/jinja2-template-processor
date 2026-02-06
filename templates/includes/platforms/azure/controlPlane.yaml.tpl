@@ -1,14 +1,9 @@
 {% set azure = plugins.azure %}
+{% set cp = azure.controlPlane | default({}) %}
     azure:
-      type: {{ azure.controlPlane.type | default("Standard_D8s_v3", true) }}
-{%- if azure.controlPlane.zones is defined %}
-      zones:
-{%- for zone in azure.controlPlane.zones %}
-        - "{{ zone }}"
-{%- endfor %}
-{%- endif %}
-{%- if azure.controlPlane.osDisk is defined %}
+      type: {{ cp.type | default("Standard_D8s_v3", true) }}{% if cp.zones is defined %}
+      zones:{% for zone in cp.zones %}
+        - "{{ zone }}"{%- endfor %}{% endif %}{% if cp.osDisk is defined %}
       osDisk:
-        diskSizeGB: {{ azure.controlPlane.osDisk.diskSizeGB | default(1024, true) }}
-        diskType: {{ azure.controlPlane.osDisk.diskType | default("Premium_LRS", true) }}
-{%- endif -%}
+        diskSizeGB: {{ cp.osDisk.diskSizeGB | default(1024, true) }}
+        diskType: {{ cp.osDisk.diskType | default("Premium_LRS", true) }}{%- endif -%}

@@ -1,17 +1,10 @@
 {% set aws = plugins.aws %}
+{% set cp = aws.controlPlane | default({}) %}
     aws:
-      type: {{ aws.controlPlane.type | default("m6i.xlarge", true) }}
-{%- if aws.controlPlane.zones is defined %}
-      zones:
-{%- for zone in aws.controlPlane.zones %}
-        - {{ zone }}
-{%- endfor %}
-{%- endif %}
-{%- if aws.controlPlane.rootVolume is defined %}
+      type: {{ cp.type | default("m6i.xlarge", true) }}{% if cp.zones is defined %}
+      zones:{% for zone in cp.zones %}
+        - {{ zone }}{%- endfor %}{% endif %}{% if cp.rootVolume is defined %}
       rootVolume:
-        size: {{ aws.controlPlane.rootVolume.size | default(120, true) }}
-        type: {{ aws.controlPlane.rootVolume.type | default("gp3", true) }}
-{%- if aws.controlPlane.rootVolume.iops is defined %}
-        iops: {{ aws.controlPlane.rootVolume.iops }}
-{%- endif %}
-{%- endif -%}
+        size: {{ cp.rootVolume.size | default(120, true) }}
+        type: {{ cp.rootVolume.type | default("gp3", true) }}{% if cp.rootVolume.iops is defined %}
+        iops: {{ cp.rootVolume.iops }}{%- endif %}{%- endif -%}
