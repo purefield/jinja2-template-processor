@@ -645,6 +645,9 @@ function setupHeaderActions() {
   // Download button
   document.getElementById('btn-download')?.addEventListener('click', downloadDocument);
 
+  // Preview overview button
+  document.getElementById('btn-preview-overview')?.addEventListener('click', previewClusterOverview);
+
   // Feedback button
   document.getElementById('btn-feedback')?.addEventListener('click', openFeedback);
 
@@ -1368,6 +1371,45 @@ function previewRenderedHtml() {
     win.document.close();
   } else {
     showToast('Popup blocked — allow popups for this site', 'warning');
+  }
+}
+
+/**
+ * Render cluster-overview.html.tpl and open preview in new tab
+ */
+async function previewClusterOverview() {
+  const yaml = State.state.currentYamlText;
+  if (!yaml || !yaml.trim()) {
+    showToast('Load a clusterfile first', 'warning');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        yaml_text: yaml,
+        template_name: 'cluster-overview.html.tpl',
+        params: []
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Render failed');
+    }
+
+    const result = await response.json();
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(result.output);
+      win.document.close();
+    } else {
+      showToast('Popup blocked — allow popups for this site', 'warning');
+    }
+  } catch (e) {
+    showToast(`Preview failed: ${e.message}`, 'error');
   }
 }
 
