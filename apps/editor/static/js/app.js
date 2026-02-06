@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.4',
+    date: '2026-02-06',
+    changes: [
+      'api-int DNS record as CNAME pointing to api record',
+      'Network capacity calculations: pods/node, max nodes, service addresses, usable hosts',
+      'NIC name and MAC address grouped in nested table to prevent wrapping'
+    ]
+  },
+  {
     version: '2.5.3',
     date: '2026-02-06',
     changes: [
