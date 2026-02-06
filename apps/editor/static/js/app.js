@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.1',
+    date: '2026-02-06',
+    changes: [
+      'Restyle remaining 7 templates with YAML-leading style and whitespace flags',
+      'New cluster-overview.md.tpl for customer-facing cluster documentation',
+      'Adapts to platform: detailed host cards (baremetal) or compact table (IPI)'
+    ]
+  },
+  {
     version: '2.5.0',
     date: '2026-02-06',
     changes: [
