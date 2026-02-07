@@ -1470,22 +1470,24 @@
           "type": "object",
           "properties": {
             "storageClass": {
-              "title": "OS Storage Class",
-              "type": "string",
-              "minLength": 1,
-              "description": "StorageClassName for VM OS disks."
-            },
-            "workerStorageClass": {
-              "title": "Worker OS Storage Class",
-              "type": "string",
-              "minLength": 1,
-              "description": "StorageClassName for worker VM OS disks. Defaults to storageClass if not set."
-            },
-            "dataStorageClass": {
-              "title": "Data Storage Class",
-              "type": "string",
-              "minLength": 1,
-              "description": "StorageClassName for VM data disks. Defaults to storageClass if not set."
+              "title": "Storage Classes",
+              "type": "object",
+              "properties": {
+                "default": {
+                  "title": "Default Storage Class",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Default StorageClass (ODF, Ceph) for worker OS disks and general use."
+                },
+                "performance": {
+                  "title": "Performance Storage Class",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Fast StorageClass (NVMe, LVMS) for control plane OS disks (etcd) and data disks. Defaults to storageClass.default if not set."
+                }
+              },
+              "additionalProperties": true,
+              "description": "Storage class tiers. 'default' for bulk/capacity, 'performance' for fast I/O (etcd, data disks)."
             },
             "bridge": {
               "title": "Bridge Name",
@@ -1499,6 +1501,54 @@
               "type": "string",
               "minLength": 1,
               "description": "Node label key for round-robin VM placement (e.g., vgNode)."
+            },
+            "storageMapping": {
+              "title": "Storage Class Mapping",
+              "type": "object",
+              "properties": {
+                "control": {
+                  "title": "Control Plane",
+                  "type": "object",
+                  "properties": {
+                    "os": {
+                      "title": "OS Disk Tier",
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Storage class tier for control plane OS disks. References a key in storageClass (e.g., 'performance')."
+                    },
+                    "data": {
+                      "title": "Data Disk Tier",
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Storage class tier for control plane data disks. Defaults to os tier if not set."
+                    }
+                  },
+                  "additionalProperties": true,
+                  "description": "Storage class tier mapping for control plane nodes."
+                },
+                "worker": {
+                  "title": "Worker",
+                  "type": "object",
+                  "properties": {
+                    "os": {
+                      "title": "OS Disk Tier",
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Storage class tier for worker OS disks. References a key in storageClass (e.g., 'default')."
+                    },
+                    "data": {
+                      "title": "Data Disk Tier",
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Storage class tier for worker data disks. Defaults to os tier if not set."
+                    }
+                  },
+                  "additionalProperties": true,
+                  "description": "Storage class tier mapping for worker nodes."
+                }
+              },
+              "additionalProperties": true,
+              "description": "Maps node roles to storage class tiers for OS and data disks. Tier labels reference keys in storageClass."
             }
           },
           "additionalProperties": true,

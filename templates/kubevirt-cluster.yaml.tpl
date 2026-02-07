@@ -19,9 +19,9 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set cm = cluster.machine | default({}) -%}
 {%- set controlMachine = cm.control | default({}) -%}
 {%- set workerMachine  = cm.worker | default({}) -%}
-{%- set storageClass = kv.storageClass | default("lvms-vg1") -%}
-{%- set workerStorageClass = kv.workerStorageClass | default(storageClass) -%}
-{%- set dataStorageClass = kv.dataStorageClass | default(storageClass) -%}
+{%- set kvsc = kv.storageClass | default({}) -%}
+{%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
+{%- set kvmap = kv.storageMapping | default({}) -%}
 {%- set bridge = kv.bridge | default("bridge-1410") -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
@@ -65,7 +65,11 @@ items:
 {%- set dataDisks = hms.data | default([]) -%}
 {%- set ifname  = host.network.interfaces[0].name -%}
 {%- set macaddr = host.network.interfaces[0].macAddress -%}
-{%- set ossc = storageClass if host.role == 'control' else workerStorageClass -%}
+{%- set roleMap = kvmap[host.role] | default(kvmap.control | default({})) -%}
+{%- set osClassLabel = roleMap.os | default("default") -%}
+{%- set dataClassLabel = roleMap.data | default(osClassLabel) -%}
+{%- set ossc = kvsc[osClassLabel] | default(defaultSC) -%}
+{%- set datasc = kvsc[dataClassLabel] | default(defaultSC) -%}
 {%- set vgNode  = (loop.index - 1) % 3 + 1 %}
 - kind: PersistentVolumeClaim
   apiVersion: v1
@@ -92,7 +96,7 @@ items:
     resources:
       requests:
         storage: {{ diskSize }}Gi
-    storageClassName: {{ dataStorageClass }}{% endfor %}
+    storageClassName: {{ datasc }}{% endfor %}
 - kind: VirtualMachine
   apiVersion: kubevirt.io/v1
   metadata:
