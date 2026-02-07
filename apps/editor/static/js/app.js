@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.7',
+    date: '2026-02-06',
+    changes: [
+      'ACM ClusterImageSet template matching upstream stolostron format',
+      'Mirror-aware releaseImage for disconnected environments',
+      'ACM ClusterImageSets subscription template for connected auto-sync'
+    ]
+  },
+  {
     version: '2.5.6',
     date: '2026-02-06',
     changes: [

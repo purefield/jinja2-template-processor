@@ -1,5 +1,15 @@
 # Clusterfile Editor Changelog
 
+## 2.5.7
+- **ACM ClusterImageSet Template**: Version management for ACM/MCE cluster deployments
+  - Matches stolostron/acm-hive-openshift-releases upstream format exactly
+  - Mirror-aware releaseImage for disconnected environments
+  - Name convention matches ZTP imageSetRef (`img{version}-{arch}-appsub`)
+- **ACM ClusterImageSets Subscription**: Auto-sync template for connected environments
+  - Namespace, Application, Channel, Subscription resources
+  - Points to backplane-2.10 branch of acm-hive-openshift-releases
+  - Configurable channel (fast/stable/candidate)
+
 ## 2.5.6
 - **Privacy & Trust Indicators**: Enterprise trust signals for security-conscious environments
   - Green "Local only" badge in header with lock icon — always visible
