@@ -23,23 +23,20 @@ RUN pip install --no-cache-dir \
     uvicorn
 
 # Copy application code from apps/editor/
-COPY apps/editor/app/ /app/app/
-COPY apps/editor/static/ /app/static/
-COPY apps/editor/APP_VERSION /app/
+COPY --chown=editor:editor apps/editor/app/ /app/app/
+COPY --chown=editor:editor apps/editor/static/ /app/static/
+COPY --chown=editor:editor apps/editor/APP_VERSION /app/
 
 # Copy schema, samples, and templates from repo root
-COPY schema/ /app/schema/
-COPY data/ /app/samples/
-COPY templates/ /app/templates/
+COPY --chown=editor:editor schema/ /app/schema/
+COPY --chown=editor:editor data/ /app/samples/
+COPY --chown=editor:editor templates/ /app/templates/
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV SAMPLES_DIR=/app/samples
 ENV TEMPLATES_DIR=/app/templates
 ENV SCHEMA_DIR=/app/schema
-
-# Change ownership to non-root user
-RUN chown -R editor:editor /app
 
 # Switch to non-root user
 USER editor
