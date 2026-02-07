@@ -35,6 +35,9 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   'ibmcloud': 'IBM Cloud',
   'nutanix': 'Nutanix'
 } -%}
+{%- set cm = cluster.machine | default({}) if cluster.machine is defined else {} -%}
+{%- set controlMachine = cm.control | default({}) -%}
+{%- set workerMachine  = cm.worker | default({}) -%}
 {%- set detailedHosts = [] -%}
 {%- set simpleHosts = [] -%}
 {%- for name, host in hosts.items() -%}
@@ -219,7 +222,63 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
       <tr><td><strong>Total</strong></td><td><strong>{{ hosts | length }}</strong></td></tr>
     </tbody>
   </table>{% if controlHosts | length == 1 and workerHosts | length == 0 %}
-  <div class="callout">Single Node OpenShift — control plane and workloads run on one node.</div>{% endif %}
+  <div class="callout">Single Node OpenShift — control plane and workloads run on one node.</div>{% endif %}{% if controlMachine.cpus is defined or workerMachine.cpus is defined %}
+  <h3>Machine Resources</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Count</th><th>Cores</th><th>Sockets</th><th>Memory</th><th>OS Disk</th><th>Data Disks</th><th>Total vCPUs</th><th>Total Memory</th><th>Total Storage</th></tr></thead>
+    <tbody>{% if controlMachine.cpus is defined %}
+      {%- set cCount = controlHosts | length -%}
+      {%- set cSockets = controlMachine.sockets | default(1) -%}
+      {%- set cVcpus = controlMachine.cpus * cSockets -%}
+      {%- set cStorage = controlMachine.storage | default({}) -%}
+      {%- set cDataDisks = cStorage.data | default([]) -%}
+      {%- set cStoragePerNode = cStorage.os | default(0) + cDataDisks | sum -%}
+      <tr>
+        <td>Control Plane</td>
+        <td>{{ cCount }}</td>
+        <td>{{ controlMachine.cpus }}</td>
+        <td>{{ cSockets }}</td>
+        <td>{{ controlMachine.memory | default('—') }}{% if controlMachine.memory is defined %} GiB{% endif %}</td>
+        <td>{% if cStorage.os is defined %}{{ cStorage.os }} GiB{% else %}—{% endif %}</td>
+        <td>{% if cDataDisks | length > 0 %}{{ cDataDisks | length }} &times; {{ cDataDisks[0] }} GiB{% else %}—{% endif %}</td>
+        <td>{{ cVcpus * cCount }}</td>
+        <td>{% if controlMachine.memory is defined %}{{ controlMachine.memory * cCount }} GiB{% else %}—{% endif %}</td>
+        <td>{% if cStoragePerNode > 0 %}{{ (cStoragePerNode * cCount) | int | string | reverse | batch(3) | map('join') | join(',') | reverse }} GiB{% else %}—{% endif %}</td>
+      </tr>{% endif %}{% if workerMachine.cpus is defined and workerHosts | length > 0 %}
+      {%- set wCount = workerHosts | length -%}
+      {%- set wSockets = workerMachine.sockets | default(1) -%}
+      {%- set wVcpus = workerMachine.cpus * wSockets -%}
+      {%- set wStorage = workerMachine.storage | default({}) -%}
+      {%- set wDataDisks = wStorage.data | default([]) -%}
+      {%- set wStoragePerNode = wStorage.os | default(0) + wDataDisks | sum -%}
+      <tr>
+        <td>Worker</td>
+        <td>{{ wCount }}</td>
+        <td>{{ workerMachine.cpus }}</td>
+        <td>{{ wSockets }}</td>
+        <td>{{ workerMachine.memory | default('—') }}{% if workerMachine.memory is defined %} GiB{% endif %}</td>
+        <td>{% if wStorage.os is defined %}{{ wStorage.os }} GiB{% else %}—{% endif %}</td>
+        <td>{% if wDataDisks | length > 0 %}{{ wDataDisks | length }} &times; {{ wDataDisks[0] }} GiB{% else %}—{% endif %}</td>
+        <td>{{ wVcpus * wCount }}</td>
+        <td>{% if workerMachine.memory is defined %}{{ workerMachine.memory * wCount }} GiB{% else %}—{% endif %}</td>
+        <td>{% if wStoragePerNode > 0 %}{{ (wStoragePerNode * wCount) | int | string | reverse | batch(3) | map('join') | join(',') | reverse }} GiB{% else %}—{% endif %}</td>
+      </tr>{% endif %}
+      {%- set totalCount = controlHosts | length + workerHosts | length -%}
+      {%- set totalVcpus = ((controlMachine.cpus | default(0)) * (controlMachine.sockets | default(1)) * (controlHosts | length)) + ((workerMachine.cpus | default(0)) * (workerMachine.sockets | default(1)) * (workerHosts | length)) -%}
+      {%- set totalMemory = ((controlMachine.memory | default(0)) * (controlHosts | length)) + ((workerMachine.memory | default(0)) * (workerHosts | length)) -%}
+      {%- set cSt = controlMachine.storage | default({}) -%}
+      {%- set wSt = workerMachine.storage | default({}) -%}
+      {%- set totalStorage = ((cSt.os | default(0) + (cSt.data | default([]) | sum)) * (controlHosts | length)) + ((wSt.os | default(0) + (wSt.data | default([]) | sum)) * (workerHosts | length)) -%}
+      <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>{{ totalCount }}</strong></td>
+        <td></td><td></td><td></td><td></td><td></td>
+        <td><strong>{{ totalVcpus }}</strong></td>
+        <td><strong>{% if totalMemory > 0 %}{{ totalMemory }} GiB{% else %}—{% endif %}</strong></td>
+        <td><strong>{% if totalStorage > 0 %}{{ totalStorage | int | string | reverse | batch(3) | map('join') | join(',') | reverse }} GiB{% else %}—{% endif %}</strong></td>
+      </tr>
+    </tbody>
+  </table>{% endif %}
 </section>
 
 <section>
@@ -282,7 +341,17 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
       <tr><td>Role</td><td>{{ 'Control Plane' if item.host.role in ['control', 'master'] else 'Worker' }}</td></tr>
       <tr><td>IP Address</td><td>{{ item.host.network.primary.address }}</td></tr>{% if item.host.bmc is defined %}
       <tr><td>BMC</td><td>{{ item.host.bmc.address }} <span class="tag">{{ item.host.bmc.vendor }}{% if item.host.bmc.version is defined %} v{{ item.host.bmc.version }}{% endif %}</span></td></tr>{% endif %}{% if item.host.storage is defined and item.host.storage.os is defined %}
-      <tr><td>Boot Disk</td><td>{% if item.host.storage.os is mapping %}{% for k, v in item.host.storage.os.items() %}{{ k }}: <code>{{ v }}</code>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}<code>{{ item.host.storage.os }}</code>{% endif %}</td></tr>{% endif %}{% if item.host.network.interfaces is defined %}
+      <tr><td>Boot Disk</td><td>{% if item.host.storage.os is mapping %}{% for k, v in item.host.storage.os.items() %}{{ k }}: <code>{{ v }}</code>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}<code>{{ item.host.storage.os }}</code>{% endif %}</td></tr>{% endif %}
+      {%- set hostRole = 'control' if item.host.role in ['control', 'master'] else 'worker' -%}
+      {%- set roleMachine = controlMachine if hostRole == 'control' else workerMachine -%}
+      {%- set hm = item.host.machine if item.host.machine is defined else roleMachine if roleMachine.cpus is defined else {} -%}
+      {%- set hmAnnotation = '' if (item.host.machine is defined) else ' <span style="color:var(--muted)">(role default)</span>' if roleMachine.cpus is defined else '' -%}
+      {%- if hm.cpus is defined %}
+      {%- set hmSockets = hm.sockets | default(1) -%}
+      <tr><td>vCPUs</td><td>{{ hm.cpus * hmSockets }} <span style="color:var(--muted)">({{ hm.cpus }} cores &times; {{ hmSockets }} sockets)</span>{{ hmAnnotation }}</td></tr>{% if hm.memory is defined %}
+      <tr><td>Memory</td><td>{{ hm.memory }} GiB{{ hmAnnotation }}</td></tr>{% endif %}{% if hm.storage is defined and hm.storage.os is defined %}
+      <tr><td>OS Disk</td><td>{{ hm.storage.os }} GiB{{ hmAnnotation }}</td></tr>{% endif %}{% if hm.storage is defined and hm.storage.data is defined %}
+      <tr><td>Data Disks</td><td>{{ hm.storage.data | length }} &times; {{ hm.storage.data[0] }} GiB{{ hmAnnotation }}</td></tr>{% endif %}{% endif %}{% if item.host.network.interfaces is defined %}
       <tr><td>NICs</td><td><table style="margin:0;border:none"><tbody>{% for iface in item.host.network.interfaces %}<tr style="border:none"><td style="border:none;padding:2px 8px 2px 0"><code>{{ iface.name }}</code></td><td style="border:none;padding:2px 0"><span class="tag">{{ iface.macAddress }}</span></td></tr>{% endfor %}</tbody></table></td></tr>{% endif %}{% if item.host.network.primary.ports is defined %}
       <tr><td>Bond Ports</td><td>{% for p in item.host.network.primary.ports %}<code>{{ p }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
     </table>

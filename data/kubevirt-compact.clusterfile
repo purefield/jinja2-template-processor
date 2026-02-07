@@ -1,0 +1,102 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.18.10
+  platform: kubevirt
+  name: kubevirt-compact
+  machine:
+    control:
+      cpus: 16
+      sockets: 1
+      memory: 64
+      storage:
+        os: 120
+        data:
+          - 345
+  sshKeys:
+    - 2023/acm/id_rsa.pub
+  location: dc1
+network:
+  domain: base.domain
+  ntpservers:
+    - 10.0.0.100
+  nameservers:
+    - 10.0.0.100
+  dnsResolver:
+    search:
+      - base.domain
+  primary:
+    bond: false
+    vlan: false
+    gateway: 10.0.0.1
+    subnet: 10.0.0.0/24
+    vips:
+      api:
+        - 10.0.0.2
+      apps:
+        - 10.0.0.3
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 22
+  service:
+    subnet: 172.30.0.0/16
+plugins:
+  kubevirt:
+    storageClass: lvms-vg1
+    bridge: bridge-1410
+    nodeSelector: vgNode
+hosts:
+  node1.kubevirt-compact.base.domain:
+    role: control
+    storage:
+      os:
+        deviceName: /dev/vda
+    bmc:
+      vendor: kubevirt-redfish
+      username: admin
+      password: bmc-password.txt
+      address: redfish
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:11
+      primary:
+        address: 10.0.0.4
+        ports:
+          - eth0
+  node2.kubevirt-compact.base.domain:
+    role: control
+    storage:
+      os:
+        deviceName: /dev/vda
+    bmc:
+      vendor: kubevirt-redfish
+      username: admin
+      password: bmc-password.txt
+      address: redfish
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:21
+      primary:
+        address: 10.0.0.5
+        ports:
+          - eth0
+  node3.kubevirt-compact.base.domain:
+    role: control
+    storage:
+      os:
+        deviceName: /dev/vda
+    bmc:
+      vendor: kubevirt-redfish
+      username: admin
+      password: bmc-password.txt
+      address: redfish
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:31
+      primary:
+        address: 10.0.0.6
+        ports:
+          - eth0

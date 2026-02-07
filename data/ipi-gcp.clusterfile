@@ -9,6 +9,20 @@ cluster:
   platform: gcp
   arch: x86_64
   location: us-central1
+  # n2-standard-4: 4 vCPUs, 16 GiB
+  machine:
+    control:
+      cpus: 4
+      sockets: 1
+      memory: 16
+      storage:
+        os: 128
+    worker:
+      cpus: 4
+      sockets: 1
+      memory: 16
+      storage:
+        os: 128
   sshKeys:
     - secrets/id_rsa.pub
 

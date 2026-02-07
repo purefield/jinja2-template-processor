@@ -6,8 +6,24 @@ plugins:
 cluster:
   version: 4.18.10
   platform: nutanix
-  arch: x86-64
+  arch: x86_64
   name: cluster
+  machine:
+    control:
+      cpus: 16
+      sockets: 2
+      memory: 64
+      storage:
+        os: 200
+    worker:
+      cpus: 32
+      sockets: 2
+      memory: 128
+      storage:
+        os: 500
+        data:
+          - 1000
+          - 1000
   sshKeys:
     - 2023/acm/id_rsa.pub
     - 2023/acm/id_rsa.pub
@@ -66,7 +82,7 @@ network:
     subnet: 172.30.0.0/16
   secondary:
     - name: vm
-      type: bridge
+      type: linux-bridge
       state: up
       namespace: demo
       vlan: 123
@@ -74,7 +90,7 @@ network:
         - eth3
       subnet: dhcp
     - name: migration
-      type: macvlan
+      type: bond
       state: up
       namespace: openshift-cnv
       bond: active-backup
