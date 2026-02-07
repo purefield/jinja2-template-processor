@@ -42,6 +42,7 @@ const PLATFORM_TEMPLATES = {
   'openstack': 'install-config.yaml.tpl',
   'ibmcloud': 'install-config.yaml.tpl',
   'nutanix': 'install-config.yaml.tpl',
+  'kubevirt': 'kubevirt-cluster.yaml.tpl',
   'none': 'install-config.yaml.tpl'
 };
 
@@ -66,6 +67,7 @@ const PLATFORM_INFO = {
   'openstack': { name: 'OpenStack', description: 'IPI for OpenStack private clouds', icon: 'cloud' },
   'ibmcloud': { name: 'IBM Cloud', description: 'IPI for IBM Cloud VPC', icon: 'cloud' },
   'nutanix': { name: 'Nutanix', description: 'Agent-based installer for Nutanix AHV', icon: 'server' },
+  'kubevirt': { name: 'KubeVirt', description: 'OpenShift Virtualization VM-based cluster provisioning', icon: 'server' },
   'none': { name: 'None (SNO)', description: 'Single Node OpenShift without platform integration', icon: 'server' }
 };
 
