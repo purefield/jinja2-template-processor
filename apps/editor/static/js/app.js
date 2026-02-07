@@ -106,6 +106,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.6',
+    date: '2026-02-06',
+    changes: [
+      'Green "Local only" privacy badge in header with lock icon',
+      'Privacy & Trust section: data locality, credential handling, auditable output, deployment options',
+      'Enhanced file-path field tooltips reinforcing local-only processing'
+    ]
+  },
+  {
     version: '2.5.5',
     date: '2026-02-06',
     changes: [
@@ -855,6 +864,8 @@ function renderCurrentSection() {
     renderValidationSection(container);
   } else if (section === 'changelog') {
     renderChangelogSection(container);
+  } else if (section === 'privacy') {
+    renderPrivacySection(container);
   } else {
     Form.renderSection(section, container);
   }
@@ -2077,6 +2088,12 @@ function updateVersionDisplay() {
       : 'Click for changelog';
     versionEl.addEventListener('click', showChangelog);
   }
+
+  // Privacy badge click
+  const privacyBadge = document.getElementById('privacy-badge');
+  if (privacyBadge) {
+    privacyBadge.addEventListener('click', () => navigateToSection('privacy'));
+  }
 }
 
 /**
@@ -2112,6 +2129,73 @@ function renderChangelogSection(container) {
               </ul>
             </div>
           `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render privacy & trust section
+ */
+function renderPrivacySection(container) {
+  const lockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+  const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--pf-global--success-color--100)" stroke-width="2" width="16" height="16" style="vertical-align:-3px;margin-right:6px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>';
+  const fileIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:6px;flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+  const eyeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:6px;flex-shrink:0"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const shieldIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:6px;flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+
+  container.innerHTML = `
+    <div class="changelog-page">
+      <div class="form-section">
+        <h2 class="form-section__title">${lockIcon}Privacy &amp; Trust</h2>
+        <p class="form-description" style="margin-bottom:24px;">
+          This tool is designed for enterprise environments where data privacy is non-negotiable.
+          Every design decision prioritizes keeping your configuration data under your control.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div style="background:rgba(62,134,53,0.08);border:1px solid rgba(62,134,53,0.2);border-radius:6px;padding:16px 20px;">
+            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">${shieldIcon}Data Stays Local</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+              <div>${checkIcon}<strong>No external connections</strong> &mdash; all processing happens inside this container</div>
+              <div>${checkIcon}<strong>No telemetry or analytics</strong> &mdash; zero tracking, no phone-home, no usage data</div>
+              <div>${checkIcon}<strong>No cloud dependencies</strong> &mdash; works fully air-gapped behind your firewall</div>
+              <div>${checkIcon}<strong>No data persistence</strong> &mdash; nothing is stored server-side; browser localStorage only</div>
+            </div>
+          </div>
+
+          <div style="background:var(--pf-global--BackgroundColor--200);border:1px solid var(--pf-global--BorderColor--100);border-radius:6px;padding:16px 20px;">
+            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">${fileIcon}Credential Handling</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+              <div>${checkIcon}<strong>File path references only</strong> &mdash; pull secrets, SSH keys, and trust bundles are stored as file paths, never as content</div>
+              <div>${checkIcon}<strong>Read at render time</strong> &mdash; file contents are loaded by the CLI tool (<code>process.py</code>) only when generating output</div>
+              <div>${checkIcon}<strong>Never transmitted</strong> &mdash; credential file contents never pass through the web editor</div>
+              <div>${checkIcon}<strong>No secrets in YAML</strong> &mdash; clusterfiles contain paths like <code>secrets/pull-secret.json</code>, not the secrets themselves</div>
+            </div>
+          </div>
+
+          <div style="background:var(--pf-global--BackgroundColor--200);border:1px solid var(--pf-global--BorderColor--100);border-radius:6px;padding:16px 20px;">
+            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">${eyeIcon}Auditable Output</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+              <div>${checkIcon}<strong>Human-readable scripts</strong> &mdash; pre-check scripts are plain bash using standard RHEL tools (<code>dig</code>, <code>ping</code>, <code>curl</code>, <code>jq</code>, <code>openssl</code>)</div>
+              <div>${checkIcon}<strong>Review before execution</strong> &mdash; every generated script can be inspected in the Rendered tab before download</div>
+              <div>${checkIcon}<strong>Non-destructive checks</strong> &mdash; pre-check scripts are read-only; they test connectivity, never modify infrastructure</div>
+              <div>${checkIcon}<strong>Open source templates</strong> &mdash; all Jinja2 templates are visible, auditable, and modifiable</div>
+            </div>
+          </div>
+
+          <div style="background:var(--pf-global--BackgroundColor--200);border:1px solid var(--pf-global--BorderColor--100);border-radius:6px;padding:16px 20px;">
+            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">${shieldIcon}Deployment Options</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+              <div>${checkIcon}<strong>Run locally</strong> &mdash; <code>podman run -p 8000:8000 quay.io/dds/clusterfile-editor</code></div>
+              <div>${checkIcon}<strong>Air-gapped install</strong> &mdash; mirror the container image to your internal registry</div>
+              <div>${checkIcon}<strong>CLI-only mode</strong> &mdash; <code>process.py</code> works without the web editor, no network needed</div>
+              <div>${checkIcon}<strong>Minimal image</strong> &mdash; Python 3.12 slim base, no unnecessary packages</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

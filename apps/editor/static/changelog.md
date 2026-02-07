@@ -1,5 +1,15 @@
 # Clusterfile Editor Changelog
 
+## 2.5.6
+- **Privacy & Trust Indicators**: Enterprise trust signals for security-conscious environments
+  - Green "Local only" badge in header with lock icon — always visible
+  - Dedicated Privacy & Trust section with four detail panels:
+    - Data Stays Local — no external connections, telemetry, or cloud dependencies
+    - Credential Handling — file path references only, never transmitted
+    - Auditable Output — human-readable scripts, review before execution
+    - Deployment Options — local, air-gapped, CLI-only modes
+  - Enhanced file-path field tooltips reinforcing local-only processing
+
 ## 2.5.5
 - **Pre-Check Template Restructure**: Modular body includes with composable master
   - Check logic in `includes/pre-check/` body files (files, dns, network, ntp, registry, bmc)
