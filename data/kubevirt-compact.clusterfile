@@ -42,7 +42,12 @@ network:
     subnet: 172.30.0.0/16
 plugins:
   kubevirt:
-    storageClass: lvms-vg1
+    storageClass:
+      default: lvms-vg1
+    storageMapping:
+      control:
+        os: default
+        data: default
     bridge: bridge-1410
     nodeSelector: vgNode
 hosts:

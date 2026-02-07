@@ -50,9 +50,16 @@ network:
     subnet: 172.30.0.0/16
 plugins:
   kubevirt:
-    storageClass: lvms-vg1
-    workerStorageClass: ocs-storagecluster-ceph-rbd
-    dataStorageClass: lvms-vg1
+    storageClass:
+      default: ocs-storagecluster-ceph-rbd
+      performance: lvms-vg1
+    storageMapping:
+      control:
+        os: performance
+        data: performance
+      worker:
+        os: default
+        data: default
     bridge: bridge-1410
     nodeSelector: vgNode
 hosts:
@@ -144,23 +151,5 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:51
       primary:
         address: 10.0.0.12
-        ports:
-          - eth0
-  node6.kubevirt-cluster.base.domain:
-    role: worker
-    storage:
-      os:
-        deviceName: /dev/vda
-    bmc:
-      vendor: kubevirt-redfish
-      username: admin
-      password: bmc-password.txt
-      address: redfish
-    network:
-      interfaces:
-        - name: eth0
-          macAddress: 00:1A:2B:3C:4D:61
-      primary:
-        address: 10.0.0.13
         ports:
           - eth0
