@@ -11,7 +11,7 @@ requires:
 relatedTemplates:
   - acm-ztp.yaml.tpl
   - acm-capi-m3.yaml.tpl
-docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.12/html/clusters/cluster_mce_overview#clusterimageset-cr
+docs: https://github.com/stolostron/acm-hive-openshift-releases
 -#}
 {%- set arch = cluster.arch | default("x86-64", true) -%}
 {%- set imageArch = arch | replace("-", "_") -%}
@@ -20,12 +20,9 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
-  name: img{{ cluster.version }}-{{ arch }}-appsub
   labels:
+    channel: fast
     visible: "true"
-    channel: stable
-    vendor: OpenShift
-    version: "{{ cluster.version }}"
-    arch: {{ imageArch }}
+  name: img{{ cluster.version }}-{{ arch }}-appsub
 spec:
   releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release:{{ cluster.version }}-{{ imageArch }}
