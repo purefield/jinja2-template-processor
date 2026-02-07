@@ -106,6 +106,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.5.8',
+    date: '2026-02-06',
+    changes: [
+      'ACM template cross-links: all 6 ACM templates have relatedTemplates metadata',
+      'Bidirectional links for template discovery in the editor UI'
+    ]
+  },
+  {
     version: '2.5.7',
     date: '2026-02-06',
     changes: [

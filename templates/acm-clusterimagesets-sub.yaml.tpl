@@ -18,6 +18,8 @@ requires:
 relatedTemplates:
   - acm-clusterimageset.yaml.tpl
   - acm-ztp.yaml.tpl
+  - acm-capi-m3.yaml.tpl
+  - acm-asc.yaml.tpl
 docs: https://github.com/stolostron/acm-hive-openshift-releases/tree/backplane-2.10/subscribe
 -#}
 {%- set channel = cluster.channel | default("fast", true) -%}

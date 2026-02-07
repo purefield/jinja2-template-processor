@@ -12,6 +12,11 @@ requires:
   - network.domain
   - hosts.<hostname>.bmc
   - hosts.<hostname>.network
+relatedTemplates:
+  - acm-clusterimageset.yaml.tpl
+  - acm-capi-m3.yaml.tpl
+  - acm-asc.yaml.tpl
+  - acm-creds.yaml.tpl
 docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#ztp-intro
 -#}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
