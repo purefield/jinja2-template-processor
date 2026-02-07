@@ -82,6 +82,52 @@
       "type": "integer",
       "minimum": 576,
       "maximum": 9216
+    },
+    "machineSpec": {
+      "type": "object",
+      "properties": {
+        "cpus": {
+          "title": "CPUs",
+          "type": "integer",
+          "minimum": 1,
+          "description": "CPU cores per socket."
+        },
+        "sockets": {
+          "title": "Sockets",
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Number of CPU sockets. Total vCPUs = cpus × sockets."
+        },
+        "memory": {
+          "title": "Memory",
+          "type": "integer",
+          "minimum": 1,
+          "description": "Memory in GiB."
+        },
+        "storage": {
+          "title": "Storage",
+          "type": "object",
+          "properties": {
+            "os": {
+              "title": "OS Disk",
+              "type": "integer",
+              "minimum": 1,
+              "description": "OS disk size in GiB."
+            },
+            "data": {
+              "title": "Data Disks",
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1 },
+              "description": "Data disk sizes in GiB."
+            }
+          },
+          "additionalProperties": true,
+          "description": "Disk storage specification."
+        }
+      },
+      "additionalProperties": true,
+      "description": "Machine resource specification."
     }
   },
   "properties": {
@@ -210,7 +256,7 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "none"],
+              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "kubevirt", "none"],
               "description": "Supported infrastructure platform."
             },
             {
@@ -229,6 +275,16 @@
           "default": "x86_64",
           "description": "CPU architecture.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
+        },
+        "machine": {
+          "title": "Machine Resources",
+          "type": "object",
+          "properties": {
+            "control": { "$ref": "#/$defs/machineSpec", "description": "Control plane node defaults." },
+            "worker":  { "$ref": "#/$defs/machineSpec", "description": "Worker node defaults." }
+          },
+          "additionalProperties": true,
+          "description": "Default machine resource specifications per role. Individual hosts can override via hosts.<name>.machine."
         }
       },
       "required": ["name", "version"],
@@ -760,6 +816,11 @@
               "additionalProperties": true,
               "description": "Host-specific network configuration.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+            },
+            "machine": {
+              "title": "Machine Resources",
+              "$ref": "#/$defs/machineSpec",
+              "description": "Per-host resource override. Takes precedence over cluster.machine role defaults."
             }
           },
           "required": ["role"],
@@ -1403,6 +1464,46 @@
           "additionalProperties": true,
           "description": "IBM Cloud IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_ibm_cloud/ipi/installing-ibm-cloud-customizations.html"
+        },
+        "kubevirt": {
+          "title": "KubeVirt",
+          "type": "object",
+          "properties": {
+            "storageClass": {
+              "title": "OS Storage Class",
+              "type": "string",
+              "minLength": 1,
+              "description": "StorageClassName for VM OS disks."
+            },
+            "workerStorageClass": {
+              "title": "Worker OS Storage Class",
+              "type": "string",
+              "minLength": 1,
+              "description": "StorageClassName for worker VM OS disks. Defaults to storageClass if not set."
+            },
+            "dataStorageClass": {
+              "title": "Data Storage Class",
+              "type": "string",
+              "minLength": 1,
+              "description": "StorageClassName for VM data disks. Defaults to storageClass if not set."
+            },
+            "bridge": {
+              "title": "Bridge Name",
+              "type": "string",
+              "minLength": 1,
+              "default": "bridge-1410",
+              "description": "Linux bridge name for the NetworkAttachmentDefinition CNI config."
+            },
+            "nodeSelector": {
+              "title": "Node Selector Key",
+              "type": "string",
+              "minLength": 1,
+              "description": "Node label key for round-robin VM placement (e.g., vgNode)."
+            }
+          },
+          "additionalProperties": true,
+          "description": "KubeVirt / OpenShift Virtualization settings for VM-based cluster provisioning.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
         }
       },
       "additionalProperties": true,

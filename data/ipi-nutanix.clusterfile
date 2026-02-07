@@ -9,6 +9,19 @@ cluster:
   platform: nutanix
   arch: x86_64
   location: dc1
+  machine:
+    control:
+      cpus: 4
+      sockets: 1
+      memory: 16
+      storage:
+        os: 120
+    worker:
+      cpus: 4
+      sockets: 1
+      memory: 16
+      storage:
+        os: 120
   sshKeys:
     - secrets/id_rsa.pub
 

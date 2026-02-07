@@ -3,6 +3,22 @@ account:
 cluster:
   version: 4.18.10
   name: cluster
+  machine:
+    control:
+      cpus: 16
+      sockets: 2
+      memory: 64
+      storage:
+        os: 200
+    worker:
+      cpus: 32
+      sockets: 2
+      memory: 128
+      storage:
+        os: 500
+        data:
+          - 1000
+          - 1000
   sshKeys:
     - 2023/acm/id_rsa.pub
     - 2023/acm/id_rsa.pub

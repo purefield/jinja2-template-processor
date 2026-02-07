@@ -10,6 +10,19 @@ cluster:
   platform: vsphere
   arch: x86_64
   location: datacenter1
+  machine:
+    control:
+      cpus: 4
+      sockets: 1
+      memory: 16
+      storage:
+        os: 120
+    worker:
+      cpus: 8
+      sockets: 1
+      memory: 32
+      storage:
+        os: 200
   sshKeys:
     - secrets/id_rsa.pub
 
