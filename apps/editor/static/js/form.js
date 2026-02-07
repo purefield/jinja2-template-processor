@@ -165,6 +165,7 @@ const PLATFORM_TO_PLUGIN = {
   'openstack': 'openstack',
   'ibmcloud': 'ibmcloud',
   'nutanix': 'nutanix',
+  'kubevirt': 'kubevirt',
   // These platforms don't have specific plugins
   'baremetal': null,
   'none': null
