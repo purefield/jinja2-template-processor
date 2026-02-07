@@ -4,7 +4,7 @@ account:
   pullSecret: secrets/pull-secret.json
 
 cluster:
-  version: "4.18.0"
+  version: "4.21.0"
   name: osp-cluster
   platform: openstack
   arch: x86_64
