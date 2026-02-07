@@ -11,6 +11,11 @@ requires:
   - network.domain
   - hosts.<hostname>.bmc
   - hosts.<hostname>.network
+relatedTemplates:
+  - acm-clusterimageset.yaml.tpl
+  - acm-ztp.yaml.tpl
+  - acm-asc.yaml.tpl
+  - acm-creds.yaml.tpl
 docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted
 -#}
 {#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}

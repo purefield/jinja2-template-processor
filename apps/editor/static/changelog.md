@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.5.8
+- **ACM Template Cross-Links**: All 6 ACM templates now include `relatedTemplates` metadata
+  - acm-ztp, acm-capi-m3, acm-asc, acm-creds, acm-clusterimageset, acm-clusterimagesets-sub
+  - Full bidirectional links for template discovery in the editor UI
+  - Added `docs` URLs for upstream documentation references
+
 ## 2.5.7
 - **ACM ClusterImageSet Template**: Version management for ACM/MCE cluster deployments
   - Matches stolostron/acm-hive-openshift-releases upstream format exactly

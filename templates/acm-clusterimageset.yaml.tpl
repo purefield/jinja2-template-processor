@@ -9,8 +9,10 @@ platforms:
 requires:
   - cluster.version
 relatedTemplates:
+  - acm-clusterimagesets-sub.yaml.tpl
   - acm-ztp.yaml.tpl
   - acm-capi-m3.yaml.tpl
+  - acm-asc.yaml.tpl
 docs: https://github.com/stolostron/acm-hive-openshift-releases
 -#}
 {%- set arch = cluster.arch | default("x86-64", true) -%}
