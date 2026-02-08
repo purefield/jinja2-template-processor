@@ -432,6 +432,101 @@ function renderObjectFields(container, schema, basePath, data) {
       container.appendChild(fieldElement);
     }
   }
+
+  // Render additional properties (custom key-value pairs not in schema)
+  if (resolvedSchema.additionalProperties && data && typeof data === 'object') {
+    const definedKeys = new Set(Object.keys(resolvedSchema.properties));
+    const extraKeys = Object.keys(data).filter(k => !definedKeys.has(k));
+
+    if (extraKeys.length > 0 || resolvedSchema['x-allow-custom']) {
+      const extraContainer = document.createElement('div');
+      extraContainer.className = 'additional-props';
+
+      extraKeys.forEach(key => {
+        const path = basePath ? `${basePath}.${key}` : key;
+        const item = renderAdditionalProperty(path, key, data[key], extraContainer, basePath);
+        extraContainer.appendChild(item);
+      });
+
+      container.appendChild(extraContainer);
+    }
+
+    // Add button for new custom properties
+    if (resolvedSchema.additionalProperties === true ||
+        (typeof resolvedSchema.additionalProperties === 'object' && resolvedSchema.additionalProperties.type === 'string')) {
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn btn--secondary btn--sm';
+      addBtn.textContent = '+ Add Custom Entry';
+      addBtn.style.marginTop = '8px';
+      addBtn.addEventListener('click', () => {
+        const newKey = prompt('Enter key name:');
+        if (!newKey || newKey.trim() === '') return;
+        const trimmed = newKey.trim();
+        if (definedKeys.has(trimmed) || (data && data[trimmed] !== undefined)) {
+          alert(`Key "${trimmed}" already exists.`);
+          return;
+        }
+        const path = basePath ? `${basePath}.${trimmed}` : trimmed;
+        State.setNestedValue(State.state.currentObject, path, '');
+        State.recordChange(path, '');
+        triggerFormChange();
+        // Re-render the section
+        if (window.ClusterfileEditor?.refreshCurrentSection) {
+          window.ClusterfileEditor.refreshCurrentSection();
+        }
+      });
+      container.appendChild(addBtn);
+    }
+  }
+}
+
+/**
+ * Render a single additional (custom) key-value property
+ */
+function renderAdditionalProperty(path, key, value, container, basePath) {
+  const item = document.createElement('div');
+  item.className = 'form-group additional-prop-item';
+  item.dataset.path = path;
+  item.style.display = 'flex';
+  item.style.gap = '8px';
+  item.style.alignItems = 'center';
+
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.textContent = key;
+  label.style.minWidth = '100px';
+  label.style.marginBottom = '0';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-input';
+  input.value = value || '';
+  input.placeholder = 'Value';
+  input.style.flex = '1';
+  input.addEventListener('change', () => {
+    updateFieldValue(path, input.value, { type: 'string' });
+  });
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'btn btn--link btn--sm';
+  removeBtn.textContent = '\u00d7';
+  removeBtn.title = `Remove ${key}`;
+  removeBtn.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
+  removeBtn.addEventListener('click', () => {
+    State.deleteNestedValue(State.state.currentObject, path);
+    State.recordChange(path, undefined);
+    triggerFormChange();
+    if (window.ClusterfileEditor?.refreshCurrentSection) {
+      window.ClusterfileEditor.refreshCurrentSection();
+    }
+  });
+
+  item.appendChild(label);
+  item.appendChild(input);
+  item.appendChild(removeBtn);
+  return item;
 }
 
 /**

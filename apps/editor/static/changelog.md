@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.6.2
+- **Custom Storage Class Editor**: `storageClass` objects with `additionalProperties` now support inline key-value editing
+  - Existing custom entries shown as editable rows with remove button
+  - "Add Custom Entry" button to define new storage tiers beyond default/performance
+  - Enables custom tier names in `storageMapping` enum "Other" to map to actual StorageClass names
+
 ## 2.6.1
 - **Storage Mapping Enums**: `storageMapping` os/data tier fields now use `enum: ["default", "performance"]`
   - Editor renders dropdowns instead of free-text inputs

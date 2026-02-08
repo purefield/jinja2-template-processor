@@ -108,6 +108,32 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.6.2',
+    date: '2026-02-08',
+    changes: [
+      'Custom storage class editor: key-value list editor for additionalProperties objects',
+      'Add/remove custom storage tiers beyond default and performance'
+    ]
+  },
+  {
+    version: '2.6.1',
+    date: '2026-02-07',
+    changes: [
+      'Storage mapping enums: storageMapping tier fields use enum dropdowns',
+      'Validation catches typos in tier labels'
+    ]
+  },
+  {
+    version: '2.6.0',
+    date: '2026-02-07',
+    changes: [
+      'KubeVirt platform support: full OpenShift Virtualization cluster provisioning',
+      'Machine resource specifications: per-role CPU, memory, storage defaults',
+      'Storage class mapping: data-driven tier assignment in plugins.kubevirt',
+      'All examples bumped to OpenShift 4.21.0'
+    ]
+  },
+  {
     version: '2.5.8',
     date: '2026-02-06',
     changes: [
@@ -2356,5 +2382,6 @@ window.ClusterfileEditor = {
   loadDocument,
   newDocument,
   showToast,
-  navigateToSection
+  navigateToSection,
+  refreshCurrentSection: renderCurrentSection
 };
