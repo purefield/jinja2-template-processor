@@ -1513,13 +1513,13 @@
                     "os": {
                       "title": "OS Disk Tier",
                       "type": "string",
-                      "minLength": 1,
-                      "description": "Storage class tier for control plane OS disks. References a key in storageClass (e.g., 'performance')."
+                      "enum": ["default", "performance"],
+                      "description": "Storage class tier for control plane OS disks."
                     },
                     "data": {
                       "title": "Data Disk Tier",
                       "type": "string",
-                      "minLength": 1,
+                      "enum": ["default", "performance"],
                       "description": "Storage class tier for control plane data disks. Defaults to os tier if not set."
                     }
                   },
@@ -1533,13 +1533,13 @@
                     "os": {
                       "title": "OS Disk Tier",
                       "type": "string",
-                      "minLength": 1,
-                      "description": "Storage class tier for worker OS disks. References a key in storageClass (e.g., 'default')."
+                      "enum": ["default", "performance"],
+                      "description": "Storage class tier for worker OS disks."
                     },
                     "data": {
                       "title": "Data Disk Tier",
                       "type": "string",
-                      "minLength": 1,
+                      "enum": ["default", "performance"],
                       "description": "Storage class tier for worker data disks. Defaults to os tier if not set."
                     }
                   },

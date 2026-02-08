@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.6.1
+- **Storage Mapping Enums**: `storageMapping` os/data tier fields now use `enum: ["default", "performance"]`
+  - Editor renders dropdowns instead of free-text inputs
+  - Validation catches typos in tier labels
+
 ## 2.6.0
 - **KubeVirt Platform Support**: Full OpenShift Virtualization cluster provisioning
   - `kubevirt-cluster.yaml.tpl` generates Namespace, NetworkAttachmentDefinition, PVCs, and VirtualMachines
