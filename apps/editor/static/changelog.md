@@ -2,9 +2,13 @@
 
 ## 2.6.2
 - **Custom Storage Class Editor**: `storageClass` objects with `additionalProperties` now support inline key-value editing
+  - Inline add row with tier name + StorageClassName fields (no dialog)
   - Existing custom entries shown as editable rows with remove button
-  - "Add Custom Entry" button to define new storage tiers beyond default/performance
-  - Enables custom tier names in `storageMapping` enum "Other" to map to actual StorageClass names
+  - Values persist to YAML immediately via direct state updates
+- **Flexible Storage Tier Names**: `storageMapping` tier fields accept any value, not just default/performance
+  - Replaced `enum` constraint with `examples` for datalist autocomplete suggestions
+  - Custom tiers (e.g., "archive") defined in `storageClass` can now be used in `storageMapping`
+  - Schema validation passes with any tier name that references a `storageClass` key
 
 ## 2.6.1
 - **Storage Mapping Enums**: `storageMapping` os/data tier fields now use `enum: ["default", "performance"]`

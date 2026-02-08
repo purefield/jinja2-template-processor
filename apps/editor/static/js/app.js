@@ -111,8 +111,9 @@ const CHANGELOG = [
     version: '2.6.2',
     date: '2026-02-08',
     changes: [
-      'Custom storage class editor: key-value list editor for additionalProperties objects',
-      'Add/remove custom storage tiers beyond default and performance'
+      'Custom storage class editor: inline key-value add/edit/remove for custom tiers',
+      'Flexible storage tier names: datalist suggestions replace enum constraints',
+      'Custom tiers in storageClass can now be referenced in storageMapping'
     ]
   },
   {
