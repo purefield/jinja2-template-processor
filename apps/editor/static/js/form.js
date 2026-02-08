@@ -438,45 +438,70 @@ function renderObjectFields(container, schema, basePath, data) {
     const definedKeys = new Set(Object.keys(resolvedSchema.properties));
     const extraKeys = Object.keys(data).filter(k => !definedKeys.has(k));
 
-    if (extraKeys.length > 0 || resolvedSchema['x-allow-custom']) {
-      const extraContainer = document.createElement('div');
-      extraContainer.className = 'additional-props';
+    const extraContainer = document.createElement('div');
+    extraContainer.className = 'additional-props';
 
-      extraKeys.forEach(key => {
-        const path = basePath ? `${basePath}.${key}` : key;
-        const item = renderAdditionalProperty(path, key, data[key], extraContainer, basePath);
-        extraContainer.appendChild(item);
-      });
+    extraKeys.forEach(key => {
+      const path = basePath ? `${basePath}.${key}` : key;
+      const item = renderAdditionalProperty(path, key, data[key]);
+      extraContainer.appendChild(item);
+    });
 
-      container.appendChild(extraContainer);
-    }
+    container.appendChild(extraContainer);
 
-    // Add button for new custom properties
+    // Inline add row: [key input] [value input] [+ button]
     if (resolvedSchema.additionalProperties === true ||
         (typeof resolvedSchema.additionalProperties === 'object' && resolvedSchema.additionalProperties.type === 'string')) {
+      const addRow = document.createElement('div');
+      addRow.className = 'form-group additional-prop-add';
+      addRow.style.display = 'flex';
+      addRow.style.gap = '8px';
+      addRow.style.alignItems = 'center';
+      addRow.style.marginTop = '8px';
+
+      const keyInput = document.createElement('input');
+      keyInput.type = 'text';
+      keyInput.className = 'form-input';
+      keyInput.placeholder = 'Tier name';
+      keyInput.style.flex = '1';
+
+      const valInput = document.createElement('input');
+      valInput.type = 'text';
+      valInput.className = 'form-input';
+      valInput.placeholder = 'StorageClassName';
+      valInput.style.flex = '2';
+
       const addBtn = document.createElement('button');
       addBtn.type = 'button';
       addBtn.className = 'btn btn--secondary btn--sm';
-      addBtn.textContent = '+ Add Custom Entry';
-      addBtn.style.marginTop = '8px';
-      addBtn.addEventListener('click', () => {
-        const newKey = prompt('Enter key name:');
-        if (!newKey || newKey.trim() === '') return;
-        const trimmed = newKey.trim();
+      addBtn.textContent = '+';
+      addBtn.title = 'Add custom entry';
+
+      const doAdd = () => {
+        const trimmed = keyInput.value.trim();
+        if (!trimmed) return;
         if (definedKeys.has(trimmed) || (data && data[trimmed] !== undefined)) {
-          alert(`Key "${trimmed}" already exists.`);
+          keyInput.style.borderColor = 'var(--pf-global--danger-color--100, #c9190b)';
           return;
         }
+        const val = valInput.value.trim();
         const path = basePath ? `${basePath}.${trimmed}` : trimmed;
-        State.setNestedValue(State.state.currentObject, path, '');
-        State.recordChange(path, '');
+        State.setNestedValue(State.state.currentObject, path, val);
+        State.recordChange(path, val);
         triggerFormChange();
-        // Re-render the section
         if (window.ClusterfileEditor?.refreshCurrentSection) {
           window.ClusterfileEditor.refreshCurrentSection();
         }
-      });
-      container.appendChild(addBtn);
+      };
+
+      addBtn.addEventListener('click', doAdd);
+      valInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+      keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') valInput.focus(); });
+
+      addRow.appendChild(keyInput);
+      addRow.appendChild(valInput);
+      addRow.appendChild(addBtn);
+      container.appendChild(addRow);
     }
   }
 }
@@ -484,7 +509,7 @@ function renderObjectFields(container, schema, basePath, data) {
 /**
  * Render a single additional (custom) key-value property
  */
-function renderAdditionalProperty(path, key, value, container, basePath) {
+function renderAdditionalProperty(path, key, value) {
   const item = document.createElement('div');
   item.className = 'form-group additional-prop-item';
   item.dataset.path = path;
@@ -501,11 +526,13 @@ function renderAdditionalProperty(path, key, value, container, basePath) {
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'form-input';
-  input.value = value || '';
-  input.placeholder = 'Value';
+  input.value = value != null ? String(value) : '';
+  input.placeholder = 'StorageClassName';
   input.style.flex = '1';
   input.addEventListener('change', () => {
-    updateFieldValue(path, input.value, { type: 'string' });
+    State.setNestedValue(State.state.currentObject, path, input.value);
+    State.recordChange(path, input.value);
+    triggerFormChange();
   });
 
   const removeBtn = document.createElement('button');
