@@ -1487,7 +1487,9 @@
                 }
               },
               "additionalProperties": true,
-              "description": "Storage class tiers. 'default' for bulk/capacity, 'performance' for fast I/O (etcd, data disks)."
+              "description": "Storage class tiers. 'default' for bulk/capacity, 'performance' for fast I/O (etcd, data disks).",
+              "x-render": "tier-map",
+              "x-tier-options": ["default", "performance"]
             },
             "bridge": {
               "title": "Bridge Name",
@@ -1513,13 +1515,13 @@
                     "os": {
                       "title": "OS Disk Tier",
                       "type": "string",
-                      "examples": ["default", "performance"],
+                      "x-options-from-keys": "plugins.kubevirt.storageClass",
                       "description": "Storage class tier for control plane OS disks. Must match a key in storageClass."
                     },
                     "data": {
                       "title": "Data Disk Tier",
                       "type": "string",
-                      "examples": ["default", "performance"],
+                      "x-options-from-keys": "plugins.kubevirt.storageClass",
                       "description": "Storage class tier for control plane data disks. Defaults to os tier if not set."
                     }
                   },
@@ -1533,13 +1535,13 @@
                     "os": {
                       "title": "OS Disk Tier",
                       "type": "string",
-                      "examples": ["default", "performance"],
+                      "x-options-from-keys": "plugins.kubevirt.storageClass",
                       "description": "Storage class tier for worker OS disks. Must match a key in storageClass."
                     },
                     "data": {
                       "title": "Data Disk Tier",
                       "type": "string",
-                      "examples": ["default", "performance"],
+                      "x-options-from-keys": "plugins.kubevirt.storageClass",
                       "description": "Storage class tier for worker data disks. Defaults to os tier if not set."
                     }
                   },

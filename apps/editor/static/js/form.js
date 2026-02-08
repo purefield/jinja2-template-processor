@@ -433,127 +433,6 @@ function renderObjectFields(container, schema, basePath, data) {
     }
   }
 
-  // Render additional properties (custom key-value pairs not in schema)
-  if (resolvedSchema.additionalProperties && data && typeof data === 'object') {
-    const definedKeys = new Set(Object.keys(resolvedSchema.properties));
-    const extraKeys = Object.keys(data).filter(k => !definedKeys.has(k));
-
-    const extraContainer = document.createElement('div');
-    extraContainer.className = 'additional-props';
-
-    extraKeys.forEach(key => {
-      const path = basePath ? `${basePath}.${key}` : key;
-      const item = renderAdditionalProperty(path, key, data[key]);
-      extraContainer.appendChild(item);
-    });
-
-    container.appendChild(extraContainer);
-
-    // Inline add row: [key input] [value input] [+ button]
-    if (resolvedSchema.additionalProperties === true ||
-        (typeof resolvedSchema.additionalProperties === 'object' && resolvedSchema.additionalProperties.type === 'string')) {
-      const addRow = document.createElement('div');
-      addRow.className = 'form-group additional-prop-add';
-      addRow.style.display = 'flex';
-      addRow.style.gap = '8px';
-      addRow.style.alignItems = 'center';
-      addRow.style.marginTop = '8px';
-
-      const keyInput = document.createElement('input');
-      keyInput.type = 'text';
-      keyInput.className = 'form-input';
-      keyInput.placeholder = 'Tier name';
-      keyInput.style.flex = '1';
-
-      const valInput = document.createElement('input');
-      valInput.type = 'text';
-      valInput.className = 'form-input';
-      valInput.placeholder = 'StorageClassName';
-      valInput.style.flex = '2';
-
-      const addBtn = document.createElement('button');
-      addBtn.type = 'button';
-      addBtn.className = 'btn btn--secondary btn--sm';
-      addBtn.textContent = '+';
-      addBtn.title = 'Add custom entry';
-
-      const doAdd = () => {
-        const trimmed = keyInput.value.trim();
-        if (!trimmed) return;
-        if (definedKeys.has(trimmed) || (data && data[trimmed] !== undefined)) {
-          keyInput.style.borderColor = 'var(--pf-global--danger-color--100, #c9190b)';
-          return;
-        }
-        const val = valInput.value.trim();
-        const path = basePath ? `${basePath}.${trimmed}` : trimmed;
-        State.setNestedValue(State.state.currentObject, path, val);
-        State.recordChange(path, val);
-        triggerFormChange();
-        if (window.ClusterfileEditor?.refreshCurrentSection) {
-          window.ClusterfileEditor.refreshCurrentSection();
-        }
-      };
-
-      addBtn.addEventListener('click', doAdd);
-      valInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
-      keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') valInput.focus(); });
-
-      addRow.appendChild(keyInput);
-      addRow.appendChild(valInput);
-      addRow.appendChild(addBtn);
-      container.appendChild(addRow);
-    }
-  }
-}
-
-/**
- * Render a single additional (custom) key-value property
- */
-function renderAdditionalProperty(path, key, value) {
-  const item = document.createElement('div');
-  item.className = 'form-group additional-prop-item';
-  item.dataset.path = path;
-  item.style.display = 'flex';
-  item.style.gap = '8px';
-  item.style.alignItems = 'center';
-
-  const label = document.createElement('label');
-  label.className = 'form-label';
-  label.textContent = key;
-  label.style.minWidth = '100px';
-  label.style.marginBottom = '0';
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'form-input';
-  input.value = value != null ? String(value) : '';
-  input.placeholder = 'StorageClassName';
-  input.style.flex = '1';
-  input.addEventListener('change', () => {
-    State.setNestedValue(State.state.currentObject, path, input.value);
-    State.recordChange(path, input.value);
-    triggerFormChange();
-  });
-
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'btn btn--link btn--sm';
-  removeBtn.textContent = '\u00d7';
-  removeBtn.title = `Remove ${key}`;
-  removeBtn.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
-  removeBtn.addEventListener('click', () => {
-    State.deleteNestedValue(State.state.currentObject, path);
-    State.recordChange(path, undefined);
-    triggerFormChange();
-    if (window.ClusterfileEditor?.refreshCurrentSection) {
-      window.ClusterfileEditor.refreshCurrentSection();
-    }
-  });
-
-  item.appendChild(label);
-  item.appendChild(input);
-  item.appendChild(removeBtn);
-  return item;
 }
 
 /**
@@ -597,6 +476,21 @@ function renderStringField(path, key, schema, value) {
   const enumValues = getSchemaArray(schema, 'enum');
   if (enumValues.length > 0) {
     return renderEnumField(path, key, schema, value);
+  }
+
+  // Dynamic enum from data object keys (x-options-from-keys)
+  if (schema['x-options-from-keys']) {
+    const srcPath = schema['x-options-from-keys'];
+    const parts = srcPath.split('.');
+    let srcObj = State.state.currentObject;
+    for (const p of parts) {
+      srcObj = srcObj?.[p];
+    }
+    const dynamicKeys = (srcObj && typeof srcObj === 'object') ? Object.keys(srcObj) : [];
+    if (dynamicKeys.length > 0) {
+      const dynSchema = { ...schema, enum: dynamicKeys };
+      return renderEnumField(path, key, dynSchema, value);
+    }
   }
 
   // Handle x-is-file fields with special styling
@@ -647,21 +541,6 @@ function renderStringField(path, key, schema, value) {
   input.id = `field-${path.replace(/[.\[\]"]/g, '-')}`;
   input.value = value || '';
   input.placeholder = schema.default !== undefined ? String(schema.default) : '';
-
-  // Attach datalist for examples (suggestions without constraint)
-  const examples = getSchemaArray(schema, 'examples');
-  if (examples.length > 0) {
-    const listId = `dl-${path.replace(/[.\[\]"]/g, '-')}`;
-    const datalist = document.createElement('datalist');
-    datalist.id = listId;
-    examples.forEach(ex => {
-      const opt = document.createElement('option');
-      opt.value = String(ex);
-      datalist.appendChild(opt);
-    });
-    group.appendChild(datalist);
-    input.setAttribute('list', listId);
-  }
 
   input.addEventListener('input', () => {
     updateFieldValue(path, input.value, schema);
@@ -1057,6 +936,11 @@ function removeArrayItem(path, container, element) {
  * Render a nested object field
  */
 function renderObjectField(path, key, schema, value) {
+  // Tier-map: render as uniform key-value list with enum key selector
+  if (schema['x-render'] === 'tier-map') {
+    return renderTierMapField(path, key, schema, value);
+  }
+
   const fieldset = document.createElement('fieldset');
   fieldset.className = 'form-fieldset';
   if (State.hasChanged(path)) {
@@ -1084,6 +968,184 @@ function renderObjectField(path, key, schema, value) {
   fieldset.appendChild(content);
 
   return fieldset;
+}
+
+/**
+ * Render a tier-map object as a uniform key-value list.
+ * Each entry: [tier name select] = [StorageClassName input] [× remove]
+ * Plus an add row at the bottom.
+ */
+function renderTierMapField(path, key, schema, value) {
+  const data = value || {};
+  const tierOptions = schema['x-tier-options'] || Object.keys(schema.properties || {});
+  const allKeys = Object.keys(data);
+
+  const fieldset = document.createElement('fieldset');
+  fieldset.className = 'form-fieldset';
+
+  const legend = document.createElement('legend');
+  legend.className = 'form-fieldset__legend';
+  legend.innerHTML = `<span class="form-fieldset__toggle">▼</span> ${Help.escapeHtml(schema.title || key)}`;
+  if (Help.createHelpIcon && schema.description) {
+    legend.appendChild(Help.createHelpIcon(schema, key));
+  }
+  legend.addEventListener('click', () => fieldset.classList.toggle('form-fieldset--collapsed'));
+  fieldset.appendChild(legend);
+
+  const content = document.createElement('div');
+  content.className = 'form-fieldset__content';
+
+  // Render each existing entry as a row
+  allKeys.forEach(tierKey => {
+    const row = renderTierMapRow(path, tierKey, data[tierKey], tierOptions, allKeys);
+    content.appendChild(row);
+  });
+
+  // Add row: [tier select + Other] [value input] [+ button]
+  const usedKeys = new Set(allKeys);
+  const addRow = document.createElement('div');
+  addRow.className = 'form-group tier-map-add';
+  addRow.style.display = 'flex';
+  addRow.style.gap = '8px';
+  addRow.style.alignItems = 'center';
+  addRow.style.marginTop = '8px';
+
+  const addSelect = document.createElement('select');
+  addSelect.className = 'form-select';
+  addSelect.style.flex = '1';
+  const emptyOpt = document.createElement('option');
+  emptyOpt.value = '';
+  emptyOpt.textContent = '+ Add tier...';
+  addSelect.appendChild(emptyOpt);
+  tierOptions.filter(t => !usedKeys.has(t)).forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    addSelect.appendChild(opt);
+  });
+  const otherOpt = document.createElement('option');
+  otherOpt.value = '__other__';
+  otherOpt.textContent = 'Other...';
+  addSelect.appendChild(otherOpt);
+
+  const addKeyInput = document.createElement('input');
+  addKeyInput.type = 'text';
+  addKeyInput.className = 'form-input';
+  addKeyInput.placeholder = 'Custom tier name';
+  addKeyInput.style.flex = '1';
+  addKeyInput.style.display = 'none';
+
+  const addValInput = document.createElement('input');
+  addValInput.type = 'text';
+  addValInput.className = 'form-input';
+  addValInput.placeholder = 'StorageClassName';
+  addValInput.style.flex = '2';
+  addValInput.style.display = 'none';
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'btn btn--secondary btn--sm';
+  addBtn.textContent = '+';
+  addBtn.title = 'Add tier';
+  addBtn.style.display = 'none';
+
+  addSelect.addEventListener('change', () => {
+    if (addSelect.value === '__other__') {
+      addKeyInput.style.display = 'block';
+      addValInput.style.display = 'block';
+      addBtn.style.display = 'block';
+      addKeyInput.focus();
+    } else if (addSelect.value) {
+      addKeyInput.style.display = 'none';
+      addValInput.style.display = 'block';
+      addBtn.style.display = 'block';
+      addValInput.focus();
+    } else {
+      addKeyInput.style.display = 'none';
+      addValInput.style.display = 'none';
+      addBtn.style.display = 'none';
+    }
+  });
+
+  const doAdd = () => {
+    const tierName = addSelect.value === '__other__' ? addKeyInput.value.trim() : addSelect.value;
+    if (!tierName) return;
+    if (usedKeys.has(tierName)) return;
+    const val = addValInput.value.trim();
+    const entryPath = `${path}.${tierName}`;
+    State.setNestedValue(State.state.currentObject, entryPath, val);
+    State.recordChange(entryPath, val);
+    triggerFormChange();
+    if (window.ClusterfileEditor?.refreshCurrentSection) {
+      window.ClusterfileEditor.refreshCurrentSection();
+    }
+  };
+
+  addBtn.addEventListener('click', doAdd);
+  addValInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+
+  addRow.appendChild(addSelect);
+  addRow.appendChild(addKeyInput);
+  addRow.appendChild(addValInput);
+  addRow.appendChild(addBtn);
+  content.appendChild(addRow);
+
+  fieldset.appendChild(content);
+  return fieldset;
+}
+
+/**
+ * Render a single tier-map entry row: [tier label] [value input] [× remove]
+ */
+function renderTierMapRow(basePath, tierKey, tierValue, tierOptions, allKeys) {
+  const path = `${basePath}.${tierKey}`;
+  const row = document.createElement('div');
+  row.className = 'form-group tier-map-row';
+  row.dataset.path = path;
+  row.style.display = 'flex';
+  row.style.gap = '8px';
+  row.style.alignItems = 'center';
+  row.style.marginBottom = '6px';
+
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.textContent = tierKey;
+  label.style.minWidth = '110px';
+  label.style.marginBottom = '0';
+  label.style.fontFamily = 'var(--pf-global--FontFamily--monospace, monospace)';
+  label.style.fontWeight = '600';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-input';
+  input.value = tierValue != null ? String(tierValue) : '';
+  input.placeholder = 'StorageClassName';
+  input.style.flex = '1';
+  input.addEventListener('change', () => {
+    State.setNestedValue(State.state.currentObject, path, input.value);
+    State.recordChange(path, input.value);
+    triggerFormChange();
+  });
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'btn btn--link btn--sm';
+  removeBtn.textContent = '\u00d7';
+  removeBtn.title = `Remove ${tierKey}`;
+  removeBtn.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
+  removeBtn.addEventListener('click', () => {
+    State.deleteNestedValue(State.state.currentObject, path);
+    State.recordChange(path, undefined);
+    triggerFormChange();
+    if (window.ClusterfileEditor?.refreshCurrentSection) {
+      window.ClusterfileEditor.refreshCurrentSection();
+    }
+  });
+
+  row.appendChild(label);
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  return row;
 }
 
 /**

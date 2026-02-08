@@ -1,14 +1,17 @@
 # Clusterfile Editor Changelog
 
+## 2.6.3
+- **Tier Map Editor**: `storageClass` rendered as uniform key-value list with enum tier selector
+  - Each row: `[tier name]` `[StorageClassName input]` `[× remove]`
+  - Add row: dropdown with predefined tiers (default, performance) + Other for custom names
+  - Tier keys shown in monospace for clear identification
+- **Dynamic Tier Dropdowns**: `storageMapping` os/data fields auto-populate from `storageClass` keys
+  - `x-options-from-keys` schema annotation resolves dropdown options from live data
+  - Adding a custom tier in `storageClass` immediately appears in tier selection dropdowns
+  - Enum + Other pattern for consistent UX across tier definition and usage
+
 ## 2.6.2
-- **Custom Storage Class Editor**: `storageClass` objects with `additionalProperties` now support inline key-value editing
-  - Inline add row with tier name + StorageClassName fields (no dialog)
-  - Existing custom entries shown as editable rows with remove button
-  - Values persist to YAML immediately via direct state updates
-- **Flexible Storage Tier Names**: `storageMapping` tier fields accept any value, not just default/performance
-  - Replaced `enum` constraint with `examples` for datalist autocomplete suggestions
-  - Custom tiers (e.g., "archive") defined in `storageClass` can now be used in `storageMapping`
-  - Schema validation passes with any tier name that references a `storageClass` key
+- **Custom Storage Class Editor**: `storageClass` inline key-value editing with YAML persistence
 
 ## 2.6.1
 - **Storage Mapping Enums**: `storageMapping` os/data tier fields now use `enum: ["default", "performance"]`

@@ -108,12 +108,19 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.6.3',
+    date: '2026-02-08',
+    changes: [
+      'Tier map editor: uniform key-value list with enum tier name selector + Other',
+      'Dynamic tier dropdowns: storageMapping auto-populates from storageClass keys',
+      'x-options-from-keys schema annotation for data-driven enum fields'
+    ]
+  },
+  {
     version: '2.6.2',
     date: '2026-02-08',
     changes: [
-      'Custom storage class editor: inline key-value add/edit/remove for custom tiers',
-      'Flexible storage tier names: datalist suggestions replace enum constraints',
-      'Custom tiers in storageClass can now be referenced in storageMapping'
+      'Custom storage class key-value editing with YAML persistence'
     ]
   },
   {
