@@ -1,5 +1,23 @@
 # Clusterfile Editor Changelog
 
+## 2.6.0
+- **KubeVirt Platform Support**: Full OpenShift Virtualization cluster provisioning
+  - `kubevirt-cluster.yaml.tpl` generates Namespace, NetworkAttachmentDefinition, PVCs, and VirtualMachines
+  - `kubevirt-install-iso.yaml.tpl` generates DataVolume for discovery ISO boot
+  - Three sample clusterfiles: full (3+2), compact (3 control), SNO
+  - kubevirt-redfish BMC vendor for virtual BMC emulation
+- **Machine Resource Specifications**: Platform-agnostic `cluster.machine` with per-role defaults
+  - `cluster.machine.control` / `cluster.machine.worker` for CPU, sockets, memory, storage
+  - Per-host `hosts.<name>.machine` overrides for exceptions
+  - Schema `$defs/machineSpec` reusable definition
+  - vSphere and Nutanix templates updated with `cluster.machine` fallback
+- **Storage Class Mapping**: Data-driven storage tier assignment in `plugins.kubevirt`
+  - `storageClass.default` / `storageClass.performance` define available tiers
+  - `storageMapping` maps roles to tiers for OS and data disks
+  - Control plane gets performance (etcd), workers get default (capacity)
+- **Editor Integration**: KubeVirt in plugin page, template page, and platform selector
+- **All examples bumped to OpenShift 4.21.0**
+
 ## 2.5.8
 - **ACM Template Cross-Links**: All 6 ACM templates now include `relatedTemplates` metadata
   - acm-ztp, acm-capi-m3, acm-asc, acm-creds, acm-clusterimageset, acm-clusterimagesets-sub
