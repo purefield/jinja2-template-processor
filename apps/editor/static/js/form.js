@@ -648,6 +648,21 @@ function renderStringField(path, key, schema, value) {
   input.value = value || '';
   input.placeholder = schema.default !== undefined ? String(schema.default) : '';
 
+  // Attach datalist for examples (suggestions without constraint)
+  const examples = getSchemaArray(schema, 'examples');
+  if (examples.length > 0) {
+    const listId = `dl-${path.replace(/[.\[\]"]/g, '-')}`;
+    const datalist = document.createElement('datalist');
+    datalist.id = listId;
+    examples.forEach(ex => {
+      const opt = document.createElement('option');
+      opt.value = String(ex);
+      datalist.appendChild(opt);
+    });
+    group.appendChild(datalist);
+    input.setAttribute('list', listId);
+  }
+
   input.addEventListener('input', () => {
     updateFieldValue(path, input.value, schema);
   });
