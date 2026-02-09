@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.6.6
+- **UDN Networking**: Replace linux-bridge NAD with OVN UserDefinedNetwork in kubevirt template
+  - No node-level bridge configuration needed — OVN handles the overlay
+  - Removed `bridge` field from schema and sample clusterfiles
+
 ## 2.6.5
 - **Editable Filename**: Click the filename in the header to rename
   - Inline input with Enter to save, Escape to cancel
