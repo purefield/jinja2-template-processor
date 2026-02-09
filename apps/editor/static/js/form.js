@@ -285,13 +285,61 @@ function renderHostsSection(container, schema) {
   const hostsData = State.state.currentObject?.hosts || {};
   const hostNames = Object.keys(hostsData);
 
-  // Add host button
+  // Add host inline row
+  const addRow = document.createElement('div');
+  addRow.className = 'host-add-row';
+  addRow.style.display = 'flex';
+  addRow.style.gap = '8px';
+  addRow.style.alignItems = 'center';
+  addRow.style.marginBottom = '16px';
+
+  const addInput = document.createElement('input');
+  addInput.type = 'text';
+  addInput.className = 'form-input';
+  addInput.placeholder = 'hostname.example.com';
+  addInput.style.flex = '1';
+
+  const addError = document.createElement('span');
+  addError.className = 'field-error';
+  addError.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
+  addError.style.fontSize = '0.85em';
+  addError.style.display = 'none';
+
   const addBtn = document.createElement('button');
+  addBtn.type = 'button';
   addBtn.className = 'btn btn--primary btn--sm';
-  addBtn.innerHTML = '+ Add Host';
-  addBtn.style.marginBottom = '16px';
-  addBtn.addEventListener('click', () => showAddHostModal());
-  container.appendChild(addBtn);
+  addBtn.textContent = '+ Add Host';
+
+  const doAddHost = () => {
+    addError.style.display = 'none';
+    const hostname = addInput.value.trim();
+    if (!hostname) return;
+    const fqdnPattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
+    if (!fqdnPattern.test(hostname)) {
+      addError.textContent = 'Invalid FQDN';
+      addError.style.display = 'inline';
+      return;
+    }
+    if (State.state.currentObject.hosts?.[hostname]) {
+      addError.textContent = 'Already exists';
+      addError.style.display = 'inline';
+      return;
+    }
+    if (!State.state.currentObject.hosts) State.state.currentObject.hosts = {};
+    State.state.currentObject.hosts[hostname] = { role: 'worker', network: { interfaces: [], primary: {} } };
+    State.recordChange(`hosts["${hostname}"]`, State.state.currentObject.hosts[hostname]);
+    triggerFormChange();
+    addInput.value = '';
+    if (window.ClusterfileEditor?.refreshCurrentSection) window.ClusterfileEditor.refreshCurrentSection();
+  };
+
+  addBtn.addEventListener('click', doAddHost);
+  addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAddHost(); });
+
+  addRow.appendChild(addInput);
+  addRow.appendChild(addBtn);
+  addRow.appendChild(addError);
+  container.appendChild(addRow);
 
   if (hostNames.length === 0) {
     const empty = document.createElement('div');
@@ -1649,106 +1697,161 @@ function updateFieldValue(path, value, schema) {
 }
 
 /**
- * Show add host modal
+ * Shared FQDN validation
  */
-function showAddHostModal() {
-  const hostname = prompt('Enter hostname (FQDN):');
-  if (!hostname) return;
+const FQDN_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
 
-  // Validate hostname
-  const fqdnPattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-  if (!fqdnPattern.test(hostname)) {
-    alert('Invalid hostname. Must be a valid FQDN.');
-    return;
-  }
-
-  // Check for duplicates
-  if (State.state.currentObject.hosts?.[hostname]) {
-    alert('A host with this name already exists.');
-    return;
-  }
-
-  // Add host
-  if (!State.state.currentObject.hosts) {
-    State.state.currentObject.hosts = {};
-  }
-  State.state.currentObject.hosts[hostname] = {
-    role: 'worker',
-    network: {
-      interfaces: [],
-      primary: {}
-    }
-  };
-
-  State.recordChange(`hosts["${hostname}"]`, State.state.currentObject.hosts[hostname]);
-  triggerFormChange();
+function validateHostname(name, exclude) {
+  if (!name) return 'Enter a hostname';
+  if (!FQDN_PATTERN.test(name)) return 'Invalid FQDN';
+  if (name !== exclude && State.state.currentObject.hosts?.[name]) return 'Already exists';
+  return null;
 }
 
 /**
- * Duplicate a host
+ * Duplicate a host — shows inline input replacing hostname label
  */
 function duplicateHost(hostname) {
-  const newHostname = prompt('Enter new hostname:', hostname + '-copy');
-  if (!newHostname) return;
+  const card = document.querySelector(`[data-hostname="${CSS.escape(hostname)}"]`);
+  if (!card) return;
+  const headerLabel = card.querySelector('.host-card__hostname');
+  if (!headerLabel || headerLabel.dataset.editing) return;
 
-  // Validate
-  const fqdnPattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-  if (!fqdnPattern.test(newHostname)) {
-    alert('Invalid hostname. Must be a valid FQDN.');
-    return;
-  }
+  const original = headerLabel.textContent;
+  headerLabel.dataset.editing = 'true';
 
-  if (State.state.currentObject.hosts?.[newHostname]) {
-    alert('A host with this name already exists.');
-    return;
-  }
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-input form-input--sm';
+  input.value = hostname + '-copy';
+  input.style.width = '100%';
+  input.style.fontSize = 'inherit';
 
-  // Deep clone
-  const original = State.state.currentObject.hosts[hostname];
-  State.state.currentObject.hosts[newHostname] = JSON.parse(JSON.stringify(original));
+  const error = document.createElement('span');
+  error.className = 'field-error';
+  error.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
+  error.style.fontSize = '0.8em';
+  error.style.display = 'none';
 
-  State.recordChange(`hosts["${newHostname}"]`, State.state.currentObject.hosts[newHostname]);
-  triggerFormChange();
+  const commit = () => {
+    const newName = input.value.trim();
+    const err = validateHostname(newName);
+    if (err) { error.textContent = err; error.style.display = 'inline'; return; }
+    const orig = State.state.currentObject.hosts[hostname];
+    State.state.currentObject.hosts[newName] = JSON.parse(JSON.stringify(orig));
+    State.recordChange(`hosts["${newName}"]`, State.state.currentObject.hosts[newName]);
+    triggerFormChange();
+    if (window.ClusterfileEditor?.refreshCurrentSection) window.ClusterfileEditor.refreshCurrentSection();
+  };
+
+  const cancel = () => {
+    headerLabel.textContent = original;
+    delete headerLabel.dataset.editing;
+    error.remove();
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') commit();
+    if (e.key === 'Escape') cancel();
+  });
+  input.addEventListener('blur', cancel);
+
+  headerLabel.textContent = '';
+  headerLabel.appendChild(input);
+  headerLabel.appendChild(error);
+  input.select();
 }
 
 /**
- * Rename a host
+ * Rename a host — shows inline input replacing hostname label
  */
 function renameHost(hostname) {
-  const newHostname = prompt('Enter new hostname:', hostname);
-  if (!newHostname || newHostname === hostname) return;
+  const card = document.querySelector(`[data-hostname="${CSS.escape(hostname)}"]`);
+  if (!card) return;
+  const headerLabel = card.querySelector('.host-card__hostname');
+  if (!headerLabel || headerLabel.dataset.editing) return;
 
-  // Validate
-  const fqdnPattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-  if (!fqdnPattern.test(newHostname)) {
-    alert('Invalid hostname. Must be a valid FQDN.');
-    return;
-  }
+  headerLabel.dataset.editing = 'true';
 
-  if (State.state.currentObject.hosts?.[newHostname]) {
-    alert('A host with this name already exists.');
-    return;
-  }
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-input form-input--sm';
+  input.value = hostname;
+  input.style.width = '100%';
+  input.style.fontSize = 'inherit';
 
-  // Rename
-  const hostData = State.state.currentObject.hosts[hostname];
-  delete State.state.currentObject.hosts[hostname];
-  State.state.currentObject.hosts[newHostname] = hostData;
+  const error = document.createElement('span');
+  error.className = 'field-error';
+  error.style.color = 'var(--pf-global--danger-color--100, #c9190b)';
+  error.style.fontSize = '0.8em';
+  error.style.display = 'none';
 
-  State.recordChange(`hosts["${hostname}"]`, undefined);
-  State.recordChange(`hosts["${newHostname}"]`, hostData);
-  triggerFormChange();
+  const commit = () => {
+    const newName = input.value.trim();
+    if (newName === hostname) { cancel(); return; }
+    const err = validateHostname(newName, hostname);
+    if (err) { error.textContent = err; error.style.display = 'inline'; return; }
+    const hostData = State.state.currentObject.hosts[hostname];
+    delete State.state.currentObject.hosts[hostname];
+    State.state.currentObject.hosts[newName] = hostData;
+    State.recordChange(`hosts["${hostname}"]`, undefined);
+    State.recordChange(`hosts["${newName}"]`, hostData);
+    triggerFormChange();
+    if (window.ClusterfileEditor?.refreshCurrentSection) window.ClusterfileEditor.refreshCurrentSection();
+  };
+
+  const cancel = () => {
+    headerLabel.textContent = hostname;
+    delete headerLabel.dataset.editing;
+    error.remove();
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') commit();
+    if (e.key === 'Escape') cancel();
+  });
+  input.addEventListener('blur', () => setTimeout(cancel, 150));
+
+  headerLabel.textContent = '';
+  headerLabel.appendChild(input);
+  headerLabel.appendChild(error);
+  input.select();
 }
 
 /**
- * Remove a host
+ * Remove a host — immediate with undo toast
  */
 function removeHost(hostname) {
-  if (!confirm(`Remove host "${hostname}"?`)) return;
-
+  const hostData = JSON.parse(JSON.stringify(State.state.currentObject.hosts[hostname]));
   delete State.state.currentObject.hosts[hostname];
   State.recordChange(`hosts["${hostname}"]`, undefined);
   triggerFormChange();
+
+  // Show undo toast
+  const existing = document.querySelector('.undo-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'undo-toast';
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--pf-global--BackgroundColor--dark-100,#151515);color:#fff;padding:10px 20px;border-radius:6px;display:flex;gap:12px;align-items:center;z-index:9999;font-size:0.9em;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+  toast.innerHTML = `<span>Removed <strong>${Help.escapeHtml(hostname)}</strong></span>`;
+
+  const undoBtn = document.createElement('button');
+  undoBtn.style.cssText = 'background:none;border:1px solid #fff;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:0.9em';
+  undoBtn.textContent = 'Undo';
+  undoBtn.addEventListener('click', () => {
+    if (!State.state.currentObject.hosts) State.state.currentObject.hosts = {};
+    State.state.currentObject.hosts[hostname] = hostData;
+    State.recordChange(`hosts["${hostname}"]`, hostData);
+    triggerFormChange();
+    toast.remove();
+    if (window.ClusterfileEditor?.refreshCurrentSection) window.ClusterfileEditor.refreshCurrentSection();
+  });
+  toast.appendChild(undoBtn);
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
+
+  if (window.ClusterfileEditor?.refreshCurrentSection) window.ClusterfileEditor.refreshCurrentSection();
 }
 
 // Export for use in other modules
@@ -1760,7 +1863,6 @@ window.EditorForm = {
   renderField,
   setFormChangeCallback,
   triggerFormChange,
-  showAddHostModal,
   duplicateHost,
   renameHost,
   removeHost

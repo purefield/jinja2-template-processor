@@ -712,12 +712,29 @@ function updateModeUI() {
  * Set up header action buttons
  */
 function setupHeaderActions() {
-  // New button
-  document.getElementById('btn-new')?.addEventListener('click', () => {
-    if (confirm('Create new document? Unsaved changes will be lost.')) {
-      newDocument();
-    }
-  });
+  // New button — double-click or click twice to confirm
+  const btnNew = document.getElementById('btn-new');
+  if (btnNew) {
+    let pendingNew = false;
+    btnNew.addEventListener('click', () => {
+      if (pendingNew) {
+        newDocument();
+        pendingNew = false;
+        btnNew.textContent = btnNew.dataset.originalText || 'New';
+        btnNew.classList.remove('btn--danger');
+        return;
+      }
+      pendingNew = true;
+      btnNew.dataset.originalText = btnNew.textContent;
+      btnNew.textContent = 'Confirm?';
+      btnNew.classList.add('btn--danger');
+      setTimeout(() => {
+        pendingNew = false;
+        btnNew.textContent = btnNew.dataset.originalText || 'New';
+        btnNew.classList.remove('btn--danger');
+      }, 3000);
+    });
+  }
 
   // Load button
   document.getElementById('btn-load')?.addEventListener('click', () => {
@@ -1579,16 +1596,30 @@ function renderChangesSection(container) {
     </div>
   `;
 
-  // Set up revert all handler
-  document.getElementById('revert-all-btn')?.addEventListener('click', () => {
-    if (confirm('Revert all changes?')) {
-      State.revertAll();
-      syncEditorFromState();
-      renderCurrentSection();
-      updateHeader();
-      showToast('All changes reverted', 'success');
-    }
-  });
+  // Set up revert all handler — click twice to confirm
+  const revertBtn = document.getElementById('revert-all-btn');
+  if (revertBtn) {
+    let pendingRevert = false;
+    revertBtn.addEventListener('click', () => {
+      if (pendingRevert) {
+        State.revertAll();
+        syncEditorFromState();
+        renderCurrentSection();
+        updateHeader();
+        showToast('All changes reverted', 'success');
+        pendingRevert = false;
+        revertBtn.textContent = revertBtn.dataset.originalText || 'Revert All';
+        return;
+      }
+      pendingRevert = true;
+      revertBtn.dataset.originalText = revertBtn.textContent;
+      revertBtn.textContent = 'Confirm revert?';
+      setTimeout(() => {
+        pendingRevert = false;
+        revertBtn.textContent = revertBtn.dataset.originalText || 'Revert All';
+      }, 3000);
+    });
+  }
 
   // Set up section link handlers
   container.querySelectorAll('[data-section]').forEach(link => {
