@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.6.5',
+    date: '2026-02-09',
+    changes: [
+      'Editable filename: click header filename to rename, persists to localStorage',
+      'Page title and downloads use the edited filename'
+    ]
+  },
+  {
     version: '2.6.4',
     date: '2026-02-09',
     changes: [
@@ -1904,8 +1912,17 @@ function updateHeader() {
   const filenameEl = document.querySelector('.app-header__filename');
   const modifiedEl = document.getElementById('modified-indicator');
 
-  if (filenameEl) {
+  if (filenameEl && !filenameEl.dataset.editing) {
     filenameEl.textContent = State.state.currentFilename || 'untitled.clusterfile';
+    filenameEl.title = 'Click to rename';
+    filenameEl.style.cursor = 'pointer';
+    filenameEl.style.borderBottom = '1px dashed var(--pf-global--BorderColor--100, #666)';
+
+    // Attach click handler once
+    if (!filenameEl.dataset.hasClickHandler) {
+      filenameEl.dataset.hasClickHandler = 'true';
+      filenameEl.addEventListener('click', () => startFilenameEdit(filenameEl));
+    }
   }
 
   // Show modification indicator if there are changes
@@ -1913,6 +1930,49 @@ function updateHeader() {
     const hasChanges = State.getChanges().length > 0;
     modifiedEl.style.display = hasChanges ? 'inline' : 'none';
   }
+
+  // Update page title
+  document.title = (State.state.currentFilename || 'untitled.clusterfile') + ' — Clusterfile Editor';
+}
+
+/**
+ * Inline filename editing in the header
+ */
+function startFilenameEdit(el) {
+  if (el.dataset.editing) return;
+  el.dataset.editing = 'true';
+
+  const current = State.state.currentFilename || 'untitled.clusterfile';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.className = 'app-header__filename-input';
+  input.style.cssText = 'background:transparent;border:1px solid var(--pf-global--BorderColor--100,#666);color:inherit;font:inherit;padding:1px 4px;border-radius:3px;width:' + Math.max(200, current.length * 8.5) + 'px;outline:none;';
+
+  const commit = () => {
+    const newName = input.value.trim() || 'untitled.clusterfile';
+    State.state.currentFilename = newName;
+    State.saveToLocalStorage();
+    delete el.dataset.editing;
+    el.textContent = newName;
+    document.title = newName + ' — Clusterfile Editor';
+  };
+
+  const cancel = () => {
+    delete el.dataset.editing;
+    el.textContent = current;
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { cancel(); }
+  });
+  input.addEventListener('blur', commit);
+
+  el.textContent = '';
+  el.appendChild(input);
+  input.select();
 }
 
 /**

@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.6.5
+- **Editable Filename**: Click the filename in the header to rename
+  - Inline input with Enter to save, Escape to cancel
+  - Persists to localStorage, used in page title and downloads
+  - Works for new documents, loaded files, and samples
+
 ## 2.6.4
 - **No Browser Dialogs**: All `prompt()`, `alert()`, `confirm()` replaced with inline UI
   - Add host: inline FQDN input with validation errors
