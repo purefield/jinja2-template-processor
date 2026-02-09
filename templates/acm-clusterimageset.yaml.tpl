@@ -15,8 +15,8 @@ relatedTemplates:
   - acm-asc.yaml.tpl
 docs: https://github.com/stolostron/acm-hive-openshift-releases
 -#}
-{%- set arch = cluster.arch | default("x86-64", true) -%}
-{%- set imageArch = arch | replace("-", "_") -%}
+{%- set imageArch = cluster.arch | default("x86_64", true) | replace("-", "_") -%}
+{%- set arch = imageArch | replace("_", "-") -%}
 {%- set quayMirrors = (cluster.mirrors | default([])) | selectattr('source', 'equalto', 'quay.io') | list -%}
 {%- set releaseHost = quayMirrors[0].mirrors[0].split('/')[0] if quayMirrors | length > 0 else 'quay.io' -%}
 apiVersion: hive.openshift.io/v1
