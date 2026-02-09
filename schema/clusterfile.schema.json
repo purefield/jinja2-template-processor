@@ -609,8 +609,8 @@
             "role": {
               "title": "Role",
               "type": "string",
-              "description": "Node role: master/control (control-plane), worker, or bootstrap.",
-              "enum": ["master", "control", "worker", "bootstrap"],
+              "description": "Node role: control (control-plane), worker, or bootstrap.",
+              "enum": ["control", "worker", "bootstrap"],
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
             "storage": {
