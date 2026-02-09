@@ -43,7 +43,9 @@ items:
   spec:
     topology: Layer2
     layer2:
-      role: Secondary{% for name, host in hosts.items() %}
+      role: Secondary
+      ipam:
+        mode: Disabled{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}
