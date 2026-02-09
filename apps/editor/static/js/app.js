@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.6.4',
+    date: '2026-02-09',
+    changes: [
+      'No browser dialogs: all prompt/alert/confirm replaced with inline UI',
+      'Inline host add/duplicate/rename with validation, undo toast for remove',
+      'Click-twice-to-confirm for destructive actions (new document, revert all)'
+    ]
+  },
+  {
     version: '2.6.3',
     date: '2026-02-08',
     changes: [

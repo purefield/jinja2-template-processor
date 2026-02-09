@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 2.6.4
+- **No Browser Dialogs**: All `prompt()`, `alert()`, `confirm()` replaced with inline UI
+  - Add host: inline FQDN input with validation errors
+  - Duplicate/rename host: inline input replaces hostname label (Enter/Escape)
+  - Remove host: immediate delete with undo toast
+  - New document and revert all: click-twice-to-confirm pattern
+
 ## 2.6.3
 - **Tier Map Editor**: `storageClass` rendered as uniform key-value list with enum tier selector
   - Each row: `[tier name]` `[StorageClassName input]` `[× remove]`
