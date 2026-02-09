@@ -1491,13 +1491,6 @@
               "x-render": "tier-map",
               "x-tier-options": ["default", "performance"]
             },
-            "bridge": {
-              "title": "Bridge Name",
-              "type": "string",
-              "minLength": 1,
-              "default": "bridge-1410",
-              "description": "Linux bridge name for the NetworkAttachmentDefinition CNI config."
-            },
             "nodeSelector": {
               "title": "Node Selector Key",
               "type": "string",

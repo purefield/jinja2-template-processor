@@ -22,10 +22,8 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvsc = kv.storageClass | default({}) -%}
 {%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
 {%- set kvmap = kv.storageMapping | default({}) -%}
-{%- set bridge = kv.bridge | default("bridge-1410") -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
-{%- set nad = "virtualmachine-net" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
 {%- set hasIsoDisk = true if bootDelivery == 'iso' else false -%}
 apiVersion: v1
@@ -37,22 +35,15 @@ items:
   apiVersion: v1
   metadata:
     name: {{ namespace }}
-- kind: NetworkAttachmentDefinition
-  apiVersion: k8s.cni.cncf.io/v1
+- kind: UserDefinedNetwork
+  apiVersion: k8s.ovn.org/v1
   metadata:
-    annotations:
-      description: Machine Network Attachment
-    name: {{ nad }}
+    name: virtualmachine-net
     namespace: {{ namespace }}
   spec:
-    config: |-
-      {
-        "cniVersion": "0.3.1",
-        "name": "{{ nad }}",
-        "type": "bridge",
-        "bridge": "{{ bridge }}",
-        "promiscMode": true
-      }{% for name, host in hosts.items() %}
+    topology: Layer2
+    layer2:
+      role: Secondary{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}
@@ -126,7 +117,7 @@ items:
           vm.kubevirt.io/os: rhel9
           vm.kubevirt.io/workload: server
           k8s.v1.cni.cncf.io/networks: |
-            [{"name":"{{ nad }}","namespace":"{{ namespace }}","interface":"net1","interfaceRequest":"net1"}]
+            [{"name":"virtualmachine-net","namespace":"{{ namespace }}","interface":"net1","interfaceRequest":"net1"}]
         labels:
           node: {{ vmname }}
           cluster: {{ cluster.name }}
@@ -186,7 +177,7 @@ items:
         evictionStrategy: None
         networks:
           - multus:
-              networkName: {{ namespace }}/{{ nad }}
+              networkName: {{ namespace }}/virtualmachine-net
             name: {{ ifname }}
         terminationGracePeriodSeconds: 180
         volumes:

@@ -60,7 +60,6 @@ plugins:
       worker:
         os: default
         data: default
-    bridge: bridge-1410
     nodeSelector: vgNode
 hosts:
   node1.kubevirt-cluster.base.domain:
