@@ -22,6 +22,9 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvsc = kv.storageClass | default({}) -%}
 {%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
 {%- set kvmap = kv.storageMapping | default({}) -%}
+{%- set netType = kv.networkType | default("udn") -%}
+{%- set physnet = kv.physicalNetwork | default("physnet") -%}
+{%- set bridge = kv.bridge | default("bridge-1410") -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
@@ -35,17 +38,37 @@ items:
   apiVersion: v1
   metadata:
     name: {{ namespace }}
+{%- if netType == "udn" %}
 - kind: UserDefinedNetwork
   apiVersion: k8s.ovn.org/v1
   metadata:
     name: virtualmachine-net
     namespace: {{ namespace }}
   spec:
-    topology: Layer2
-    layer2:
+    topology: Localnet
+    localnet:
       role: Secondary
+      physicalNetworkName: {{ physnet }}
       ipam:
-        mode: Disabled{% for name, host in hosts.items() %}
+        mode: Disabled
+{%- else %}
+- kind: NetworkAttachmentDefinition
+  apiVersion: k8s.cni.cncf.io/v1
+  metadata:
+    annotations:
+      description: Machine Network Attachment
+    name: virtualmachine-net
+    namespace: {{ namespace }}
+  spec:
+    config: |-
+      {
+        "cniVersion": "0.3.1",
+        "name": "virtualmachine-net",
+        "type": "bridge",
+        "bridge": "{{ bridge }}",
+        "promiscMode": true
+      }
+{%- endif %}{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}

@@ -1491,6 +1491,27 @@
               "x-render": "tier-map",
               "x-tier-options": ["default", "performance"]
             },
+            "networkType": {
+              "title": "VM Network Type",
+              "type": "string",
+              "enum": ["udn", "linux-bridge"],
+              "default": "udn",
+              "description": "Networking backend for VM connectivity. 'udn' uses OVN UserDefinedNetwork (Localnet), 'linux-bridge' uses a pre-configured bridge via NetworkAttachmentDefinition."
+            },
+            "physicalNetwork": {
+              "title": "Physical Network Name",
+              "type": "string",
+              "minLength": 1,
+              "default": "physnet",
+              "description": "OVN localnet physical network name (networkType=udn). Must match the bridge mapping configured on hypervisor nodes (k8s.ovn.org/node-bridge-mapping annotation)."
+            },
+            "bridge": {
+              "title": "Bridge Name",
+              "type": "string",
+              "minLength": 1,
+              "default": "bridge-1410",
+              "description": "Linux bridge name for the NetworkAttachmentDefinition CNI config (networkType=linux-bridge)."
+            },
             "nodeSelector": {
               "title": "Node Selector Key",
               "type": "string",

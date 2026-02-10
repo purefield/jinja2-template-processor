@@ -48,6 +48,8 @@ plugins:
       control:
         os: default
         data: default
+    networkType: udn
+    physicalNetwork: physnet
     nodeSelector: vgNode
 hosts:
   node1.kubevirt-compact.base.domain:
