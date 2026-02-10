@@ -274,17 +274,34 @@ items:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
-- kind: ConfigMap
-  apiVersion: v1
+- kind: Job
+  apiVersion: batch/v1
   metadata:
-    name: os-images-{{ cluster.name }}
-    namespace: {{ cluster.name }}
-    labels:
-      app: assisted-service-os-images
-  data:
-    openshiftVersion: "{{ majorMinor }}"
-    version: "{{ cluster.version }}"
-    cpuArchitecture: {{ imageArch }}
-    url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
-    rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
+    name: os-images-sync-{{ cluster.name }}
+    namespace: multicluster-engine
+  spec:
+    ttlSecondsAfterFinished: 300
+    backoffLimit: 3
+    template:
+      spec:
+        serviceAccountName: os-images-sync
+        restartPolicy: Never
+        containers:
+          - name: sync
+            image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -e
+                VERSION="{{ cluster.version }}"
+                EXISTS=$(oc get agentserviceconfig agent \
+                  -o go-template='{% raw %}{{range .spec.osImages}}{{if eq .version "{% endraw %}'"$VERSION"'{% raw %}'"}}found{{end}}{{end}}{% endraw %}')
+                if [ "$EXISTS" = "found" ]; then
+                  echo "osImage for $VERSION already present, skipping"
+                  exit 0
+                fi
+                oc patch agentserviceconfig agent --type json \
+                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso","rootFSUrl":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"}}]'
+                echo "Added osImage for $VERSION"
 
