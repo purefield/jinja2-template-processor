@@ -2,7 +2,7 @@ account:
   pullSecret: 2023/pull-secret.json
 cluster:
   version: 4.21.0
-  platform: baremetal
+  platform: none
   arch: x86_64
   name: cluster
   machine:
@@ -60,11 +60,6 @@ network:
     mtu: 9000
     gateway: 10.0.0.1
     subnet: 10.0.0.0/24
-    vips:
-      api:
-        - 10.0.0.2
-      apps:
-        - 10.0.0.3
   cluster:
     subnet: 10.128.0.0/14
     hostPrefix: 22
@@ -95,6 +90,7 @@ hosts:
     role: control
     storage:
       os:
+        deviceName: /dev/sda
         wwn: wwn01
     bmc:
       vendor: dell
