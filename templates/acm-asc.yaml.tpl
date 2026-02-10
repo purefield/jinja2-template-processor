@@ -88,3 +88,97 @@ items:
         cpuArchitecture: {{ imageArch }}
         url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
         rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: os-images-{{ cluster.name }}
+    namespace: multicluster-engine
+    labels:
+      app: assisted-service-os-images
+  data:
+    openshiftVersion: "{{ majorMinor }}"
+    cpuArchitecture: {{ imageArch }}
+    url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
+    rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: os-images-sync
+    namespace: multicluster-engine
+- kind: Role
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync
+    namespace: multicluster-engine
+  rules:
+    - apiGroups: [""]
+      resources: ["configmaps"]
+      verbs: ["get", "list"]
+- kind: RoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync
+    namespace: multicluster-engine
+  subjects:
+    - kind: ServiceAccount
+      name: os-images-sync
+      namespace: multicluster-engine
+  roleRef:
+    kind: Role
+    name: os-images-sync
+    apiGroup: rbac.authorization.k8s.io
+- kind: ClusterRole
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync
+  rules:
+    - apiGroups: ["agent-install.openshift.io"]
+      resources: ["agentserviceconfigs"]
+      verbs: ["get", "patch"]
+- kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync
+  subjects:
+    - kind: ServiceAccount
+      name: os-images-sync
+      namespace: multicluster-engine
+  roleRef:
+    kind: ClusterRole
+    name: os-images-sync
+    apiGroup: rbac.authorization.k8s.io
+- kind: CronJob
+  apiVersion: batch/v1
+  metadata:
+    name: os-images-sync
+    namespace: multicluster-engine
+  spec:
+    schedule: "*/15 * * * *"
+    concurrencyPolicy: Replace
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 3
+    jobTemplate:
+      spec:
+        backoffLimit: 1
+        template:
+          spec:
+            serviceAccountName: os-images-sync
+            restartPolicy: Never
+            containers:
+              - name: sync
+                image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    set -e
+                    NS=multicluster-engine
+                    IMAGES=$(oc get configmap -n "$NS" -l app=assisted-service-os-images \
+                      -o go-template='{% raw %}[{{range $i, $cm := .items}}{{if $i}},{{end}}{"openshiftVersion":"{{index $cm.data "openshiftVersion"}}","cpuArchitecture":"{{index $cm.data "cpuArchitecture"}}","url":"{{index $cm.data "url"}}","rootFSUrl":"{{index $cm.data "rootFSUrl"}}"}{{end}}]{% endraw %}')
+                    if [ "$IMAGES" = "[]" ]; then
+                      echo "No os-images ConfigMaps found, skipping"
+                      exit 0
+                    fi
+                    oc patch agentserviceconfig agent --type merge \
+                      -p "{\"spec\":{\"osImages\":$IMAGES}}"
+                    echo "Synced osImages from ConfigMaps"
