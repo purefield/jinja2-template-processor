@@ -43,7 +43,7 @@ plugins:
       control:
         os: default
         data: default
-    networkType: udn
+    networkType: cudn
     physicalNetwork: physnet
     nodeSelector: vgNode
 hosts:

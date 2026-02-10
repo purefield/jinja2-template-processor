@@ -22,9 +22,10 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvsc = kv.storageClass | default({}) -%}
 {%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
 {%- set kvmap = kv.storageMapping | default({}) -%}
-{%- set netType = kv.networkType | default("udn") -%}
+{%- set netType = kv.networkType | default("cudn") -%}
 {%- set physnet = kv.physicalNetwork | default("physnet") -%}
 {%- set bridge = kv.bridge | default("bridge-1410") -%}
+{%- set netName = cluster.name + "-vmnet" if netType == "cudn" else "virtualmachine-net" -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
@@ -38,11 +39,11 @@ items:
   apiVersion: v1
   metadata:
     name: {{ namespace }}
-{%- if netType == "udn" %}
+{%- if netType == "cudn" %}
 - kind: ClusterUserDefinedNetwork
   apiVersion: k8s.ovn.org/v1
   metadata:
-    name: virtualmachine-net
+    name: {{ netName }}
   spec:
     namespaceSelector:
       matchExpressions:
@@ -63,13 +64,13 @@ items:
   metadata:
     annotations:
       description: Linux Bridge Machine Network
-    name: virtualmachine-net
+    name: {{ netName }}
     namespace: {{ namespace }}
   spec:
     config: |-
       {
         "cniVersion": "0.3.1",
-        "name": "virtualmachine-net",
+        "name": "{{ netName }}",
         "type": "bridge",
         "bridge": "{{ bridge }}",
         "promiscMode": true
@@ -148,7 +149,7 @@ items:
           vm.kubevirt.io/os: rhel9
           vm.kubevirt.io/workload: server
           k8s.v1.cni.cncf.io/networks: |
-            [{"name":"virtualmachine-net","namespace":"{{ namespace }}","interface":"net1","interfaceRequest":"net1"}]
+            [{"name":"{{ netName }}","namespace":"{{ namespace }}","interface":"net1","interfaceRequest":"net1"}]
         labels:
           node: {{ vmname }}
           cluster: {{ cluster.name }}
@@ -208,7 +209,7 @@ items:
         evictionStrategy: None
         networks:
           - multus:
-              networkName: {{ namespace }}/virtualmachine-net
+              networkName: {{ namespace }}/{{ netName }}
             name: {{ ifname }}
         terminationGracePeriodSeconds: 180
         volumes:
