@@ -274,11 +274,28 @@ items:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: os-images-sync
+    namespace: {{ cluster.name }}
+- kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync-{{ cluster.name }}
+  subjects:
+    - kind: ServiceAccount
+      name: os-images-sync
+      namespace: {{ cluster.name }}
+  roleRef:
+    kind: ClusterRole
+    name: os-images-sync
+    apiGroup: rbac.authorization.k8s.io
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: os-images-sync-{{ cluster.name }}
-    namespace: multicluster-engine
+    name: os-images-sync
+    namespace: {{ cluster.name }}
   spec:
     ttlSecondsAfterFinished: 300
     backoffLimit: 3

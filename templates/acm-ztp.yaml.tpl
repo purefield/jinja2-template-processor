@@ -259,11 +259,28 @@ items:
     agentLabelSelector:
       matchLabels:
         cluster-name: {{ cluster.name }}
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: os-images-sync
+    namespace: {{ cluster.name }}
+- kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: os-images-sync-{{ cluster.name }}
+  subjects:
+    - kind: ServiceAccount
+      name: os-images-sync
+      namespace: {{ cluster.name }}
+  roleRef:
+    kind: ClusterRole
+    name: os-images-sync
+    apiGroup: rbac.authorization.k8s.io
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: os-images-sync-{{ cluster.name }}
-    namespace: multicluster-engine
+    name: os-images-sync
+    namespace: {{ cluster.name }}
   spec:
     ttlSecondsAfterFinished: 300
     backoffLimit: 3

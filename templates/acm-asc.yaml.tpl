@@ -89,11 +89,6 @@ items:
         cpuArchitecture: {{ imageArch }}
         url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
         rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
-- kind: ServiceAccount
-  apiVersion: v1
-  metadata:
-    name: os-images-sync
-    namespace: multicluster-engine
 - kind: ClusterRole
   apiVersion: rbac.authorization.k8s.io/v1
   metadata:
@@ -102,15 +97,3 @@ items:
     - apiGroups: ["agent-install.openshift.io"]
       resources: ["agentserviceconfigs"]
       verbs: ["get", "patch"]
-- kind: ClusterRoleBinding
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: os-images-sync
-  subjects:
-    - kind: ServiceAccount
-      name: os-images-sync
-      namespace: multicluster-engine
-  roleRef:
-    kind: ClusterRole
-    name: os-images-sync
-    apiGroup: rbac.authorization.k8s.io
