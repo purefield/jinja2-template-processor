@@ -1494,16 +1494,16 @@
             "networkType": {
               "title": "VM Network Type",
               "type": "string",
-              "enum": ["udn", "linux-bridge"],
-              "default": "udn",
-              "description": "Networking backend for VM connectivity. 'udn' uses OVN UserDefinedNetwork (Localnet), 'linux-bridge' uses a pre-configured bridge via NetworkAttachmentDefinition."
+              "enum": ["linux-bridge", "udn"],
+              "default": "linux-bridge",
+              "description": "Networking backend for VM connectivity. 'udn' uses OVN-Kubernetes localnet (requires bridge mapping on nodes), 'linux-bridge' uses a pre-configured bridge directly."
             },
             "physicalNetwork": {
               "title": "Physical Network Name",
               "type": "string",
               "minLength": 1,
               "default": "physnet",
-              "description": "OVN localnet physical network name (networkType=udn). Must match the bridge mapping configured on hypervisor nodes (k8s.ovn.org/node-bridge-mapping annotation)."
+              "description": "OVN localnet physical network name (networkType=udn). Must match a bridge mapping in the OVN-Kubernetes config (e.g., physnet:br-1410)."
             },
             "bridge": {
               "title": "Bridge Name",

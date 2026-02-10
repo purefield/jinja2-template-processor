@@ -236,7 +236,7 @@ if __name__ == "__main__":
             sys.exit(2)
 
     # Require at least one input source
-    if not data and not args.param:
+    if not args.data_file and not args.param:
         parser.error("Provide either a data_file or at least one -p override.")
 
     # Apply JSONPath overrides with create-if-missing semantics

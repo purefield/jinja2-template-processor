@@ -39,24 +39,30 @@ items:
   metadata:
     name: {{ namespace }}
 {%- if netType == "udn" %}
-- kind: UserDefinedNetwork
+- kind: ClusterUserDefinedNetwork
   apiVersion: k8s.ovn.org/v1
   metadata:
     name: virtualmachine-net
-    namespace: {{ namespace }}
   spec:
-    topology: Localnet
-    localnet:
-      role: Secondary
-      physicalNetworkName: {{ physnet }}
-      ipam:
-        mode: Disabled
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - {{ namespace }}
+    network:
+      topology: Localnet
+      localnet:
+        role: Secondary
+        physicalNetworkName: {{ physnet }}
+        ipam:
+          mode: Disabled
 {%- else %}
 - kind: NetworkAttachmentDefinition
   apiVersion: k8s.cni.cncf.io/v1
   metadata:
     annotations:
-      description: Machine Network Attachment
+      description: Linux Bridge Machine Network
     name: virtualmachine-net
     namespace: {{ namespace }}
   spec:
