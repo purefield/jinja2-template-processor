@@ -5,6 +5,7 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
+  - kubevirt
 requires:
   - account.pullSecret
   - cluster.name
@@ -19,6 +20,8 @@ relatedTemplates:
   - acm-creds.yaml.tpl
 docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#ztp-intro
 -#}
+{%- set imageArch = cluster.arch | default("x86_64", true) -%}
+{%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
@@ -256,3 +259,15 @@ items:
     agentLabelSelector:
       matchLabels:
         cluster-name: {{ cluster.name }}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: os-images-{{ cluster.name }}
+    namespace: multicluster-engine
+    labels:
+      app: assisted-service-os-images
+  data:
+    openshiftVersion: "{{ majorMinor }}"
+    cpuArchitecture: {{ imageArch }}
+    url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
+    rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"

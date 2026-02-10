@@ -5,6 +5,7 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
+  - kubevirt
 requires:
   - network.proxy (optional)
 relatedTemplates:
@@ -14,6 +15,8 @@ relatedTemplates:
   - acm-clusterimageset.yaml.tpl
 docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#enable-cim
 -#}
+{%- set imageArch = cluster.arch | default("x86_64", true) -%}
+{%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -80,3 +83,8 @@ items:
       resources:
         requests:
           storage: 50Gi
+    osImages:
+      - openshiftVersion: "{{ majorMinor }}"
+        cpuArchitecture: {{ imageArch }}
+        url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
+        rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"

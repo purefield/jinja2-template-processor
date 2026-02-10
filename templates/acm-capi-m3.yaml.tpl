@@ -5,6 +5,7 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
+  - kubevirt
 requires:
   - cluster.name
   - cluster.sshKeys
@@ -19,6 +20,8 @@ relatedTemplates:
 docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assisted
 -#}
 {#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}
+{%- set imageArch = cluster.arch | default("x86_64", true) -%}
+{%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set automatedCleaningMode = "disabled" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
 {%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
@@ -271,4 +274,16 @@ items:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: os-images-{{ cluster.name }}
+    namespace: multicluster-engine
+    labels:
+      app: assisted-service-os-images
+  data:
+    openshiftVersion: "{{ majorMinor }}"
+    cpuArchitecture: {{ imageArch }}
+    url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
+    rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
 
