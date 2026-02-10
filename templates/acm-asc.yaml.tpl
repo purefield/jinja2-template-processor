@@ -85,6 +85,7 @@ items:
           storage: 50Gi
     osImages:
       - openshiftVersion: "{{ majorMinor }}"
+        version: "{{ cluster.version }}"
         cpuArchitecture: {{ imageArch }}
         url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
         rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
@@ -97,6 +98,7 @@ items:
       app: assisted-service-os-images
   data:
     openshiftVersion: "{{ majorMinor }}"
+    version: "{{ cluster.version }}"
     cpuArchitecture: {{ imageArch }}
     url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
     rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
@@ -154,7 +156,7 @@ items:
                   - |
                     set -e
                     IMAGES=$(oc get configmap --all-namespaces -l app=assisted-service-os-images \
-                      -o go-template='{% raw %}[{{range $i, $cm := .items}}{{if $i}},{{end}}{"openshiftVersion":"{{index $cm.data "openshiftVersion"}}","cpuArchitecture":"{{index $cm.data "cpuArchitecture"}}","url":"{{index $cm.data "url"}}","rootFSUrl":"{{index $cm.data "rootFSUrl"}}"}{{end}}]{% endraw %}')
+                      -o go-template='{% raw %}[{{range $i, $cm := .items}}{{if $i}},{{end}}{"openshiftVersion":"{{index $cm.data "openshiftVersion"}}","version":"{{index $cm.data "version"}}","cpuArchitecture":"{{index $cm.data "cpuArchitecture"}}","url":"{{index $cm.data "url"}}","rootFSUrl":"{{index $cm.data "rootFSUrl"}}"}{{end}}]{% endraw %}')
                     if [ "$IMAGES" = "[]" ]; then
                       echo "No os-images ConfigMaps found, skipping"
                       exit 0

@@ -283,6 +283,7 @@ items:
       app: assisted-service-os-images
   data:
     openshiftVersion: "{{ majorMinor }}"
+    version: "{{ cluster.version }}"
     cpuArchitecture: {{ imageArch }}
     url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
     rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
