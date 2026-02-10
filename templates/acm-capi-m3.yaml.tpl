@@ -278,7 +278,7 @@ items:
   apiVersion: v1
   metadata:
     name: os-images-{{ cluster.name }}
-    namespace: multicluster-engine
+    namespace: {{ cluster.name }}
     labels:
       app: assisted-service-os-images
   data:

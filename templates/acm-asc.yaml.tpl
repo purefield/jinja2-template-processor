@@ -105,33 +105,14 @@ items:
   metadata:
     name: os-images-sync
     namespace: multicluster-engine
-- kind: Role
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: os-images-sync
-    namespace: multicluster-engine
-  rules:
-    - apiGroups: [""]
-      resources: ["configmaps"]
-      verbs: ["get", "list"]
-- kind: RoleBinding
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: os-images-sync
-    namespace: multicluster-engine
-  subjects:
-    - kind: ServiceAccount
-      name: os-images-sync
-      namespace: multicluster-engine
-  roleRef:
-    kind: Role
-    name: os-images-sync
-    apiGroup: rbac.authorization.k8s.io
 - kind: ClusterRole
   apiVersion: rbac.authorization.k8s.io/v1
   metadata:
     name: os-images-sync
   rules:
+    - apiGroups: [""]
+      resources: ["configmaps"]
+      verbs: ["get", "list"]
     - apiGroups: ["agent-install.openshift.io"]
       resources: ["agentserviceconfigs"]
       verbs: ["get", "patch"]
@@ -172,8 +153,7 @@ items:
                   - -c
                   - |
                     set -e
-                    NS=multicluster-engine
-                    IMAGES=$(oc get configmap -n "$NS" -l app=assisted-service-os-images \
+                    IMAGES=$(oc get configmap --all-namespaces -l app=assisted-service-os-images \
                       -o go-template='{% raw %}[{{range $i, $cm := .items}}{{if $i}},{{end}}{"openshiftVersion":"{{index $cm.data "openshiftVersion"}}","cpuArchitecture":"{{index $cm.data "cpuArchitecture"}}","url":"{{index $cm.data "url"}}","rootFSUrl":"{{index $cm.data "rootFSUrl"}}"}{{end}}]{% endraw %}')
                     if [ "$IMAGES" = "[]" ]; then
                       echo "No os-images ConfigMaps found, skipping"
