@@ -1491,26 +1491,54 @@
               "x-render": "tier-map",
               "x-tier-options": ["default", "performance"]
             },
-            "networkType": {
-              "title": "VM Network Type",
-              "type": "string",
-              "enum": ["linux-bridge", "cudn"],
-              "default": "linux-bridge",
-              "description": "Networking backend for VM connectivity. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet topology (requires bridge mapping on nodes), 'linux-bridge' uses a pre-configured bridge via NetworkAttachmentDefinition."
-            },
-            "physicalNetwork": {
-              "title": "Physical Network Name",
-              "type": "string",
-              "minLength": 1,
-              "default": "physnet",
-              "description": "OVN localnet physical network name (networkType=cudn). Must match a bridge mapping in the OVN-Kubernetes config (e.g., physnet:br-1410)."
-            },
-            "bridge": {
-              "title": "Bridge Name",
-              "type": "string",
-              "minLength": 1,
-              "default": "bridge-1410",
-              "description": "Linux bridge name for the NetworkAttachmentDefinition CNI config (networkType=linux-bridge)."
+            "network": {
+              "title": "VM Network",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "title": "Network Type",
+                  "type": "string",
+                  "enum": ["cudn", "linux-bridge", "nad"],
+                  "default": "cudn",
+                  "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition by name."
+                },
+                "name": {
+                  "title": "Network Name",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Name of the network resource VMs attach to. For 'cudn' defaults to cudn-vmdata-<vlan>. For 'nad' this is the pre-existing NAD name. Not used for 'linux-bridge'."
+                },
+                "vlan": {
+                  "title": "VLAN ID",
+                  "$ref": "#/$defs/vlanId",
+                  "description": "VLAN ID for CUDN mode. Labels the namespace with vlan-<id> for CUDN selector match and derives the default network name."
+                },
+                "linuxBridge": {
+                  "title": "Linux Bridge Options",
+                  "type": "object",
+                  "properties": {
+                    "bridge": {
+                      "title": "Bridge Name",
+                      "type": "string",
+                      "minLength": 1,
+                      "default": "bridge-1410",
+                      "description": "Linux bridge device name for the NetworkAttachmentDefinition CNI config."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Options for linux-bridge NetworkAttachmentDefinition."
+                },
+                "nad": {
+                  "title": "NAD Options",
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false,
+                  "description": "Placeholder for NAD-specific options. Use network.name for the NAD name."
+                }
+              },
+              "required": ["type"],
+              "additionalProperties": false,
+              "description": "VM network configuration. Choose a type and fill in the corresponding options."
             },
             "nodeSelector": {
               "title": "Node Selector Key",

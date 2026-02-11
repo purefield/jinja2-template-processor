@@ -60,8 +60,9 @@ plugins:
       worker:
         os: default
         data: default
-    networkType: cudn
-    physicalNetwork: physnet
+    network:
+      type: cudn
+      vlan: 1410
     nodeSelector: vgNode
 hosts:
   node1.kubevirt-cluster.base.domain:

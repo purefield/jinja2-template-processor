@@ -22,10 +22,18 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvsc = kv.storageClass | default({}) -%}
 {%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
 {%- set kvmap = kv.storageMapping | default({}) -%}
-{%- set netType = kv.networkType | default("cudn") -%}
-{%- set physnet = kv.physicalNetwork | default("physnet") -%}
-{%- set bridge = kv.bridge | default("bridge-1410") -%}
-{%- set netName = cluster.name + "-vmnet" if netType == "cudn" else "virtualmachine-net" -%}
+{%- set kvnet = kv.network | default({}) -%}
+{%- set netType = kvnet.type | default("cudn") -%}
+{%- set vlanId = network.primary.vlan if network.primary.vlan is defined and network.primary.vlan else kvnet.vlan | default(false) -%}
+{%- set lbOpts = kvnet.linuxBridge | default({}) -%}
+{%- set bridge = lbOpts.bridge | default("bridge-1410") -%}
+{%- if netType == "cudn" -%}
+  {%- set netName = kvnet.name | default("cudn-vmdata-" + vlanId | string) -%}
+{%- elif netType == "nad" -%}
+  {%- set netName = kvnet.name -%}
+{%- else -%}
+  {%- set netName = "virtualmachine-net" -%}
+{%- endif -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
@@ -38,27 +46,9 @@ items:
 - kind: Namespace
   apiVersion: v1
   metadata:
-    name: {{ namespace }}
-{%- if netType == "cudn" %}
-- kind: ClusterUserDefinedNetwork
-  apiVersion: k8s.ovn.org/v1
-  metadata:
-    name: {{ netName }}
-  spec:
-    namespaceSelector:
-      matchExpressions:
-        - key: kubernetes.io/metadata.name
-          operator: In
-          values:
-            - {{ namespace }}
-    network:
-      topology: Localnet
-      localnet:
-        role: Secondary
-        physicalNetworkName: {{ physnet }}
-        ipam:
-          mode: Disabled
-{%- else %}
+    name: {{ namespace }}{% if netType == "cudn" and vlanId %}
+    labels:
+      vlan-{{ vlanId }}: ""{% endif %}{% if netType == "linux-bridge" %}
 - kind: NetworkAttachmentDefinition
   apiVersion: k8s.cni.cncf.io/v1
   metadata:
@@ -74,8 +64,7 @@ items:
         "type": "bridge",
         "bridge": "{{ bridge }}",
         "promiscMode": true
-      }
-{%- endif %}{% for name, host in hosts.items() %}
+      }{% endif %}{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}
