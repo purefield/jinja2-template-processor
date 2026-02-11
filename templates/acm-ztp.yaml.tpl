@@ -298,7 +298,7 @@ items:
                 set -e
                 VERSION="{{ cluster.version }}"
                 EXISTS=$(oc get agentserviceconfig agent \
-                  -o go-template='{% raw %}{{range .spec.osImages}}{{if eq .version "{% endraw %}'"$VERSION"'{% raw %}'"}}found{{end}}{{end}}{% endraw %}')
+                  -o go-template='{% raw %}{{range .spec.osImages}}{{if eq .version "{% endraw %}'"$VERSION"'{% raw %}"}}found{{end}}{{end}}{% endraw %}')
                 if [ "$EXISTS" = "found" ]; then
                   echo "osImage for $VERSION already present, skipping"
                   exit 0
