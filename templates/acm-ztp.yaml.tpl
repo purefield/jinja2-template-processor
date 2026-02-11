@@ -304,5 +304,5 @@ items:
                   exit 0
                 fi
                 oc patch agentserviceconfig agent --type json \
-                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso","rootFSUrl":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"}}]'
+                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-iso.{{ imageArch }}.iso","rootFSUrl":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"}}]'
                 echo "Added osImage for $VERSION"

@@ -87,7 +87,7 @@ items:
       - openshiftVersion: "{{ majorMinor }}"
         version: "{{ cluster.version }}"
         cpuArchitecture: {{ imageArch }}
-        url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live.{{ imageArch }}.iso"
+        url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-iso.{{ imageArch }}.iso"
         rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"
 - kind: ClusterRole
   apiVersion: rbac.authorization.k8s.io/v1
