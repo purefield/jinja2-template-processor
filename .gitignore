@@ -1,0 +1,3 @@
+*.log
+CLAUDE.md
+__pycache__/
