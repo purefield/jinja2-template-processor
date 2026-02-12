@@ -536,7 +536,7 @@ class TestInstallConfigTemplate:
         assert '-----BEGIN CERTIFICATE-----' in result['additionalTrustBundle']
 
     def test_image_content_sources(self, template_env):
-        """Test imageContentSources for disconnected installs."""
+        """Test imageDigestSources for disconnected installs."""
         data = base_cluster_data()
         data['cluster']['platform'] = 'baremetal'
         data['network']['primary'] = baremetal_vips_data()['primary']
@@ -553,9 +553,9 @@ class TestInstallConfigTemplate:
 
         result = self.render_template(template_env, data)
 
-        assert 'imageContentSources' in result
-        assert len(result['imageContentSources']) == 2
-        assert result['imageContentSources'][0]['source'] == 'quay.io'
+        assert 'imageDigestSources' in result
+        assert len(result['imageDigestSources']) == 2
+        assert result['imageDigestSources'][0]['source'] == 'quay.io'
 
     def test_multiple_ssh_keys(self, template_env):
         """Test multiple SSH keys configuration."""

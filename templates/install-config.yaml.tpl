@@ -81,7 +81,7 @@ additionalTrustBundle: |
 {%- endif %}
 {%- if cluster.mirrors is defined and cluster.mirrors | length > 0 %}
 
-imageContentSources:{% for mirror in cluster.mirrors %}
+imageDigestSources:{% for mirror in cluster.mirrors %}
   - source: {{ mirror.source }}
     mirrors:{% for m in mirror.mirrors %}
       - {{ m }}{%- endfor %}{%- endfor %}{%- endif %}{% if platformPlugin.credentials is defined %}
