@@ -909,5 +909,122 @@ class TestYAMLOutput:
             assert result is not None, f"Failed to parse YAML for platform: {platform}"
 
 
+class TestKubevirtClusterTemplate:
+    """Test the kubevirt-cluster.yaml.tpl template."""
+
+    def kubevirt_cluster_data(self, tpm=False):
+        """Return minimal data for kubevirt-cluster template rendering."""
+        return {
+            'cluster': {
+                'name': 'kv-test',
+                'machine': {
+                    'control': {
+                        'cpus': 8, 'sockets': 1, 'memory': 32,
+                        'storage': {'os': 120}
+                    },
+                    'worker': {
+                        'cpus': 8, 'sockets': 1, 'memory': 32,
+                        'storage': {'os': 120}
+                    }
+                }
+            },
+            'network': {
+                'primary': {'vlan': False}
+            },
+            'plugins': {
+                'kubevirt': {
+                    'storageClass': {'default': 'lvms-vg1'},
+                    'network': {'type': 'cudn', 'vlan': '1410'},
+                    'tpm': tpm
+                }
+            },
+            'hosts': {
+                'node1.kv-test.example.com': {
+                    'role': 'control',
+                    'network': {
+                        'interfaces': [
+                            {'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}
+                        ]
+                    }
+                }
+            }
+        }
+
+    def render_template(self, env, data):
+        """Render kubevirt-cluster template and parse YAML."""
+        template = env.get_template('kubevirt-cluster.yaml.tpl')
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def get_vm(self, result):
+        """Extract the first VirtualMachine from the rendered List."""
+        for item in result['items']:
+            if item['kind'] == 'VirtualMachine':
+                return item
+        return None
+
+    def test_tpm_enabled(self, template_env):
+        """Test that TPM device, SMM features, and EFI firmware appear when tpm=true."""
+        data = self.kubevirt_cluster_data(tpm=True)
+        result = self.render_template(template_env, data)
+        vm = self.get_vm(result)
+
+        assert vm is not None, "No VirtualMachine found in rendered output"
+        domain = vm['spec']['template']['spec']['domain']
+
+        # TPM device
+        assert 'tpm' in domain['devices']
+        assert domain['devices']['tpm']['persistent'] is True
+
+        # SMM feature
+        assert 'features' in domain
+        assert 'smm' in domain['features']
+
+        # UEFI firmware
+        assert 'firmware' in domain
+        assert domain['firmware']['bootloader']['efi']['persistent'] is True
+
+    def test_tpm_disabled(self, template_env):
+        """Test that TPM device, features, and firmware are absent when tpm=false."""
+        data = self.kubevirt_cluster_data(tpm=False)
+        result = self.render_template(template_env, data)
+        vm = self.get_vm(result)
+
+        assert vm is not None, "No VirtualMachine found in rendered output"
+        domain = vm['spec']['template']['spec']['domain']
+
+        assert 'tpm' not in domain.get('devices', {})
+        assert 'features' not in domain
+        assert 'firmware' not in domain
+
+    def test_tpm_default_omitted(self, template_env):
+        """Test that TPM fields are absent when tpm key is not set at all."""
+        data = self.kubevirt_cluster_data(tpm=False)
+        del data['plugins']['kubevirt']['tpm']
+        result = self.render_template(template_env, data)
+        vm = self.get_vm(result)
+
+        assert vm is not None, "No VirtualMachine found in rendered output"
+        domain = vm['spec']['template']['spec']['domain']
+
+        assert 'tpm' not in domain.get('devices', {})
+        assert 'features' not in domain
+        assert 'firmware' not in domain
+
+    def test_vm_structure_with_tpm(self, template_env):
+        """Test that core VM structure remains valid when TPM is enabled."""
+        data = self.kubevirt_cluster_data(tpm=True)
+        result = self.render_template(template_env, data)
+        vm = self.get_vm(result)
+
+        # Core structure still present
+        assert vm['apiVersion'] == 'kubevirt.io/v1'
+        assert vm['spec']['runStrategy'] == 'RerunOnFailure'
+        domain = vm['spec']['template']['spec']['domain']
+        assert domain['memory']['guest'] == '32Gi'
+        assert domain['cpu']['cores'] == 8
+        assert domain['resources']['requests']['memory'] == '16Gi'
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
