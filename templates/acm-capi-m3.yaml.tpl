@@ -29,6 +29,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
+{%- set enableTPM = cluster.tpm | default(false) -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -273,7 +274,38 @@ items:
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
-    online: false{% endfor %}
+    online: false{% endfor %}{% if enableTPM %}
+- kind: ManifestWork
+  apiVersion: work.open-cluster-management.io/v1
+  metadata:
+    name: tpm-disk-encryption
+    namespace: {{ cluster.name }}
+  spec:
+    workload:
+      manifests:
+        - apiVersion: machineconfiguration.openshift.io/v1
+          kind: MachineConfig
+          metadata:
+            name: 99-master-tpm-disk-encryption
+          spec:
+            config:
+              ignition:
+                version: 3.2.0
+              storage:
+                luks:
+                  - name: root
+                    device: /dev/disk/by-partlabel/root
+                    clevis:
+                      tpm2: true
+                    options:
+                      - --cipher
+                      - aes-cbc-essiv:sha256
+                    wipeVolume: true
+                filesystems:
+                  - device: /dev/mapper/root
+                    format: xfs
+                    wipeFilesystem: true
+                    label: root{% endif %}
 - kind: ServiceAccount
   apiVersion: v1
   metadata:

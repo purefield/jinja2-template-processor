@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 2.8.2
+- **TPM ManifestWork**: Post-install TPM delivery via ACM ManifestWork for all install methods
+  - `extraclustermanifests` only applies at install time — ManifestWork pushes to running clusters
+  - ACM ZTP: ManifestWork added alongside existing extraclustermanifests ConfigMap
+  - ACM CAPI Metal3: ManifestWork added for TPM support (no extraclustermanifests in CAPI flow)
+  - Ensures LUKS disk encryption MachineConfig reaches both new and existing managed clusters
+
 ## 2.8.1
 - **Smart Storage**: Topology-aware storage class and data disk assignment
   - Control plane OS disks use performance storage class (fast I/O for etcd)

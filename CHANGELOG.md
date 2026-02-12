@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.2 (2026-02-12)
+
+- **tpm-manifestwork** — Add ManifestWork to ACM ZTP and CAPI templates for post-install TPM MachineConfig delivery to managed clusters; `extraclustermanifests` only applies at install time, ManifestWork ensures running clusters also get the LUKS encryption config
+- **capi-tpm** — Add TPM support to acm-capi-m3.yaml.tpl (ManifestWork for post-install, same as ZTP)
+
 ## v2.8.1 (2026-02-12)
 
 - **smart-storage** — Topology-aware storage class and data disk assignment: control OS→performance (etcd), worker OS→default, data→performance (ODF); compact cluster (≤5 hosts) puts data disks on control, standard cluster (≥3 workers) puts data disks on workers

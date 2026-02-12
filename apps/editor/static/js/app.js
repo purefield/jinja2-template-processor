@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.2',
+    date: '2026-02-12',
+    changes: [
+      'TPM ManifestWork: post-install TPM delivery via ACM ManifestWork for all install methods',
+      'ACM ZTP: ManifestWork added alongside extraclustermanifests for running cluster support',
+      'ACM CAPI Metal3: ManifestWork added for TPM support (CAPI has no extraclustermanifests)'
+    ]
+  },
+  {
     version: '2.8.1',
     date: '2026-02-12',
     changes: [
