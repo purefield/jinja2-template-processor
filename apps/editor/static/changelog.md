@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.8.3
+- **TPM Install-Time Only**: Removed ManifestWork — LUKS post-install wipes root disks
+- **POC Banner**: Red "Proof of Concept" ConsoleNotification on all managed cluster consoles
+  - ACM ZTP/CAPI: auto-delivered via ManifestWork
+  - ABI/IPI: standalone `poc-banner.yaml.tpl` for `manifests/` dir or `oc apply`
+
 ## 2.8.2
 - **TPM Install-Time Only**: LUKS disk encryption via `extraclustermanifests` at install time only
   - Removed ManifestWork — applying LUKS MachineConfig post-install wipes root disks (destructive)

@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.3 (2026-02-12)
+
+- **tpm-install-only** — Remove ManifestWork for TPM; LUKS disk encryption is install-time only via `extraclustermanifests` (post-install wipes root disks)
+- **poc-banner** — Red "Proof of Concept" ConsoleNotification banner on all managed clusters; ManifestWork in ACM ZTP/CAPI, standalone `poc-banner.yaml.tpl` for ABI/IPI
+
 ## v2.8.2 (2026-02-12)
 
 - **tpm-install-only** — Remove ManifestWork for TPM; LUKS disk encryption is install-time only via `extraclustermanifests`. Applying LUKS MachineConfig post-install wipes root disks and reboots all nodes — too destructive for auto-delivery. TPM remains correctly handled at install time for both ZTP and CAPI flows.

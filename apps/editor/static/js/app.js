@@ -108,13 +108,18 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
-    version: '2.8.2',
+    version: '2.8.3',
     date: '2026-02-12',
     changes: [
       'TPM install-time only: removed ManifestWork — LUKS post-install wipes root disks',
-      'TPM disk encryption handled via extraclustermanifests at install time (ZTP)',
-      'Safety guard: test ensures no ManifestWork is generated for TPM',
       'POC banner: red ConsoleNotification on all managed clusters (ZTP, CAPI, ABI, IPI)'
+    ]
+  },
+  {
+    version: '2.8.2',
+    date: '2026-02-12',
+    changes: [
+      'TPM ManifestWork for post-install delivery (reverted in v2.8.3)'
     ]
   },
   {
