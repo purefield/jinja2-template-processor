@@ -64,6 +64,7 @@ plugins:
       type: cudn
       vlan: 1410
     nodeSelector: vgNode
+    tpm: true
 hosts:
   node1.kubevirt-cluster.base.domain:
     role: control

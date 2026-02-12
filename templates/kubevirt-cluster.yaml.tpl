@@ -34,6 +34,7 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- else -%}
   {%- set netName = "virtualmachine-net" -%}
 {%- endif -%}
+{%- set enableTPM = kv.tpm | default(false) -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
@@ -186,7 +187,15 @@ items:
               - bridge: {}
                 macAddress: {{ macaddr }}
                 model: virtio
-                name: {{ ifname }}
+                name: {{ ifname }}{% if enableTPM %}
+            tpm:
+              persistent: true{% endif %}{% if enableTPM %}
+          features:
+            smm: {}
+          firmware:
+            bootloader:
+              efi:
+                persistent: true{% endif %}
           resources:
             overcommitGuestOverhead: true
             requests:

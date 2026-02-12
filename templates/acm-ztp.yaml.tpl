@@ -24,6 +24,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
+{%- set enableTPM = plugins.kubevirt.tpm | default(false) if plugins is defined and plugins.kubevirt is defined else false -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -89,7 +90,7 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -97,7 +98,9 @@ items:
     namespace: {{ cluster.name }}
   data:{% if cluster.manifests %}{% for manifest in cluster.manifests %}
     99-{{ manifest.name }}: |
-{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if enableTPM %}{%- set tpmManifest %}{% include "includes/tpm-disk-encryption.yaml.tpl" %}{% endset %}
+    99-tpm-disk-encryption: |
+{{ tpmManifest | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
     99-image-digest-mirror-set: |
       kind: ImageDigestMirrorSet
       apiVersion: config.openshift.io/v1
@@ -127,7 +130,7 @@ items:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
   spec:
     clusterName: {{ cluster.name }}
-    baseDomain: {{ network.domain }}{% if cluster.manifests or cluster.mirrors %}
+    baseDomain: {{ network.domain }}{% if cluster.manifests or cluster.mirrors or enableTPM %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}
     clusterInstallRef:

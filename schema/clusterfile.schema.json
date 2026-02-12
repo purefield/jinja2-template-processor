@@ -1546,6 +1546,12 @@
               "minLength": 1,
               "description": "Node label key for round-robin VM placement (e.g., vgNode)."
             },
+            "tpm": {
+              "title": "TPM",
+              "type": "boolean",
+              "default": false,
+              "description": "Enable persistent TPM 2.0 device on VMs. Required for LUKS disk encryption on the provisioned cluster."
+            },
             "storageMapping": {
               "title": "Storage Class Mapping",
               "type": "object",
