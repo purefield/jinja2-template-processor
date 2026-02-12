@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.7.1
+- **Cache Busting**: Static asset URLs (`?v=`) now dynamically use the current app version
+  - Backend replaces hardcoded `?v=` params in index.html at serve time
+  - No more stale CSS/JS after upgrades
+
 ## 2.7.0
 - **KubeVirt TPM Support**: Persistent TPM 2.0 device on VMs for LUKS disk encryption
   - `tpm: persistent: true` in domain.devices, SMM features, UEFI firmware with persistent EFI

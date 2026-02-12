@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.7.1 (2026-02-12)
+
+- **cache-bust** — Dynamic cache-busting: backend injects current version into static asset URLs at serve time (`e86ffbe`)
+
 ## v2.7.0 (2026-02-12)
 
 ### Features

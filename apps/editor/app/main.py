@@ -156,8 +156,11 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Serve the main application."""
+    """Serve the main application with cache-busted asset URLs."""
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
-        return FileResponse(index_path)
+        import re
+        html = index_path.read_text()
+        html = re.sub(r'\?v=[^"\']+', f'?v={VERSION}', html)
+        return HTMLResponse(content=html)
     return HTMLResponse(content=f"<h1>Clusterfile Editor v{VERSION}</h1><p>Frontend not found</p>")

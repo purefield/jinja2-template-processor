@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.7.1',
+    date: '2026-02-12',
+    changes: [
+      'Cache busting: static asset URLs dynamically use current app version, no more stale CSS/JS after upgrades'
+    ]
+  },
+  {
     version: '2.7.0',
     date: '2026-02-12',
     changes: [
