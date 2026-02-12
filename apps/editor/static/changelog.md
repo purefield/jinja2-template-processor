@@ -1,5 +1,19 @@
 # Clusterfile Editor Changelog
 
+## 2.7.0
+- **KubeVirt TPM Support**: Persistent TPM 2.0 device on VMs for LUKS disk encryption
+  - `tpm: persistent: true` in domain.devices, SMM features, UEFI firmware with persistent EFI
+  - Inline MachineConfig for Clevis TPM2-based LUKS encryption in acm-ztp extraclustermanifests
+  - `plugins.kubevirt.tpm` boolean in schema (default: false)
+- **imageDigestSources**: Replace deprecated `imageContentSources` with `imageDigestSources` in install-config
+  - Deprecated in OCP 4.14, warning from 4.19 onward
+- **KubeVirt VLAN Networking**: VLAN support with restructured kubevirt VM networking
+- **CUDN Localnet**: ClusterUserDefinedNetwork CRD for proper UDN Localnet support with linux-bridge fallback
+- **RHCOS osImages**: RHCOS osImages in ASC and per-cluster osImages ConfigMaps for ZTP/CAPI
+- **osImages Sync**: Event-driven Jobs replace CronJob polling for osImages sync
+- **Fix**: RHCOS ISO URL corrected (`rhcos-live.iso` → `rhcos-live-iso.iso`)
+- **Fix**: Baremetal platform include handles SNO without VIPs
+
 ## 2.6.6
 - **UDN Networking**: Replace linux-bridge NAD with OVN UserDefinedNetwork in kubevirt template
   - No node-level bridge configuration needed — OVN handles the overlay

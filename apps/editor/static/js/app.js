@@ -108,6 +108,27 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.7.0',
+    date: '2026-02-12',
+    changes: [
+      'KubeVirt TPM support: persistent TPM 2.0 device on VMs for LUKS disk encryption',
+      'imageDigestSources: replace deprecated imageContentSources in install-config (OCP 4.19+)',
+      'KubeVirt VLAN networking: VLAN support with restructured VM networking',
+      'CUDN Localnet: ClusterUserDefinedNetwork CRD for proper UDN Localnet support',
+      'RHCOS osImages: per-cluster osImages ConfigMaps for ZTP/CAPI',
+      'osImages sync: event-driven Jobs replace CronJob polling',
+      'Fix: RHCOS ISO URL corrected (rhcos-live.iso → rhcos-live-iso.iso)',
+      'Fix: baremetal platform include handles SNO without VIPs'
+    ]
+  },
+  {
+    version: '2.6.6',
+    date: '2026-02-09',
+    changes: [
+      'UDN Networking: replace linux-bridge NAD with OVN UserDefinedNetwork in kubevirt template'
+    ]
+  },
+  {
     version: '2.6.5',
     date: '2026-02-09',
     changes: [
