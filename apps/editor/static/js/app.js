@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.1',
+    date: '2026-02-12',
+    changes: [
+      'Smart storage: control OS→performance (etcd), worker OS→default, data→performance (ODF)',
+      'Compact cluster (≤5 hosts): data disks on control nodes; standard (≥3 workers): on workers',
+      'Gap topology (not enough workers for ODF): no data disks provisioned'
+    ]
+  },
+  {
     version: '2.8.0',
     date: '2026-02-12',
     changes: [

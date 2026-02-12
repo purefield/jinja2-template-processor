@@ -1,5 +1,14 @@
 # Clusterfile Editor Changelog
 
+## 2.8.1
+- **Smart Storage**: Topology-aware storage class and data disk assignment
+  - Control plane OS disks use performance storage class (fast I/O for etcd)
+  - Worker OS disks use default storage class (capacity-oriented)
+  - Data disks always use performance storage class (ODF/Ceph)
+  - Compact cluster (≤5 hosts): data disks on control nodes (ODF collocated)
+  - Standard cluster (≥3 workers): data disks on worker nodes (dedicated ODF)
+  - Gap topology: no data disks when insufficient nodes for ODF
+
 ## 2.8.0
 - **Cluster-Level TPM**: `cluster.tpm` replaces `plugins.kubevirt.tpm` as platform-agnostic master switch
   - Enables LUKS disk encryption MachineConfig in ACM/ZTP for any platform (baremetal, kubevirt, etc.)
