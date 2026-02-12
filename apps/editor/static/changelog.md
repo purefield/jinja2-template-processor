@@ -5,6 +5,10 @@
   - Removed ManifestWork — applying LUKS MachineConfig post-install wipes root disks (destructive)
   - TPM correctly handled at install time for ZTP (extraclustermanifests ConfigMap)
   - For running clusters, TPM encryption must be applied manually with full awareness of data loss
+- **POC Banner**: Red "Proof of Concept" banner on all managed cluster consoles
+  - ACM ZTP and CAPI: ManifestWork delivers ConsoleNotification to managed clusters automatically
+  - ABI/IPI: Standalone `poc-banner.yaml.tpl` template — place in `manifests/` dir or `oc apply`
+  - All install methods covered: ACM ZTP, ACM CAPI, ABI, IPI
 
 ## 2.8.1
 - **Smart Storage**: Topology-aware storage class and data disk assignment

@@ -113,7 +113,8 @@ const CHANGELOG = [
     changes: [
       'TPM install-time only: removed ManifestWork — LUKS post-install wipes root disks',
       'TPM disk encryption handled via extraclustermanifests at install time (ZTP)',
-      'Safety guard: test ensures no ManifestWork is generated for TPM'
+      'Safety guard: test ensures no ManifestWork is generated for TPM',
+      'POC banner: red ConsoleNotification on all managed clusters (ZTP, CAPI, ABI, IPI)'
     ]
   },
   {

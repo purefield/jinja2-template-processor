@@ -274,6 +274,23 @@ items:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
+- kind: ManifestWork
+  apiVersion: work.open-cluster-management.io/v1
+  metadata:
+    name: poc-banner
+    namespace: {{ cluster.name }}
+  spec:
+    workload:
+      manifests:
+        - apiVersion: console.openshift.io/v1
+          kind: ConsoleNotification
+          metadata:
+            name: poc-banner
+          spec:
+            text: "This is a Proof of Concept and not for production use"
+            location: BannerTop
+            color: "#fff"
+            backgroundColor: "#e00"
 - kind: ServiceAccount
   apiVersion: v1
   metadata:

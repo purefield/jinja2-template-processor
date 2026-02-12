@@ -1313,14 +1313,138 @@ class TestAcmZtpTemplate:
         assert cm is None, "extraclustermanifests ConfigMap should not exist when TPM is omitted"
 
     def test_no_manifestwork_for_tpm(self, template_env):
-        """TPM is install-time only via extraclustermanifests. No ManifestWork should exist
+        """TPM is install-time only via extraclustermanifests. No TPM ManifestWork should exist
         because applying LUKS MachineConfig post-install wipes root disks."""
         data = self.acm_ztp_data(platform='baremetal', tpm=True)
         result = self.render_template(template_env, data)
 
         for item in result['items']:
-            assert item['kind'] != 'ManifestWork', \
-                "ManifestWork must not be used for TPM — LUKS post-install wipes root disks"
+            if item['kind'] == 'ManifestWork':
+                assert item['metadata']['name'] != 'tpm-disk-encryption', \
+                    "ManifestWork must not be used for TPM — LUKS post-install wipes root disks"
+
+    def test_poc_banner_present(self, template_env):
+        """Test that POC banner ManifestWork is always present in ZTP output."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        result = self.render_template(template_env, data)
+
+        banner = None
+        for item in result['items']:
+            if item['kind'] == 'ManifestWork' and item['metadata']['name'] == 'poc-banner':
+                banner = item
+                break
+        assert banner is not None, "poc-banner ManifestWork not found"
+        cn = banner['spec']['workload']['manifests'][0]
+        assert cn['kind'] == 'ConsoleNotification'
+        assert 'Proof of Concept' in cn['spec']['text']
+        assert cn['spec']['location'] == 'BannerTop'
+
+
+class TestAcmCapiTemplate:
+    """Test the acm-capi-m3.yaml.tpl template."""
+
+    def acm_capi_data(self):
+        """Return data for acm-capi-m3 template rendering."""
+        return {
+            'account': {
+                'pullSecret': 'secrets/pull-secret.json'
+            },
+            'cluster': {
+                'name': 'capi-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub']
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False,
+                    'vlan': False,
+                    'gateway': '10.0.0.1',
+                    'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {
+                        'api': ['10.0.0.2'],
+                        'apps': ['10.0.0.3']
+                    }
+                },
+                'cluster': {
+                    'subnet': '10.128.0.0/14',
+                    'hostPrefix': 23
+                },
+                'service': {
+                    'subnet': '172.30.0.0/16'
+                }
+            },
+            'hosts': {
+                'node1.capi-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                },
+                'node2.capi-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}],
+                        'primary': {'address': '10.0.0.5', 'ports': ['eth0']}
+                    }
+                },
+                'node3.capi-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}],
+                        'primary': {'address': '10.0.0.6', 'ports': ['eth0']}
+                    }
+                }
+            },
+            'plugins': {}
+        }
+
+    def render_template(self, env, data):
+        """Render acm-capi-m3 template and parse YAML."""
+        template = env.get_template('acm-capi-m3.yaml.tpl')
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def test_poc_banner_present(self, template_env):
+        """Test that POC banner ManifestWork is present in CAPI output."""
+        data = self.acm_capi_data()
+        result = self.render_template(template_env, data)
+
+        banner = None
+        for item in result['items']:
+            if item['kind'] == 'ManifestWork' and item['metadata']['name'] == 'poc-banner':
+                banner = item
+                break
+        assert banner is not None, "poc-banner ManifestWork not found in CAPI template"
+        cn = banner['spec']['workload']['manifests'][0]
+        assert cn['kind'] == 'ConsoleNotification'
+        assert 'Proof of Concept' in cn['spec']['text']
 
 
 if __name__ == '__main__':
