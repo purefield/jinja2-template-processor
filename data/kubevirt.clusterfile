@@ -24,6 +24,7 @@ cluster:
   sshKeys:
     - 2023/acm/id_rsa.pub
   location: dc1
+  tpm: true
 network:
   domain: base.domain
   ntpservers:
@@ -64,7 +65,6 @@ plugins:
       type: cudn
       vlan: 1410
     nodeSelector: vgNode
-    tpm: true
 hosts:
   node1.kubevirt-cluster.base.domain:
     role: control

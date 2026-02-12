@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.0',
+    date: '2026-02-12',
+    changes: [
+      'Cluster-level TPM: cluster.tpm replaces plugins.kubevirt.tpm as platform-agnostic master switch',
+      'Enables LUKS disk encryption MachineConfig in ACM/ZTP for any platform (baremetal, kubevirt, etc.)',
+      'On kubevirt, automatically adds persistent vTPM device with SMM and UEFI firmware to VMs'
+    ]
+  },
+  {
     version: '2.7.1',
     date: '2026-02-12',
     changes: [

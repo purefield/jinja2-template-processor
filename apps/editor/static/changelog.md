@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.8.0
+- **Cluster-Level TPM**: `cluster.tpm` replaces `plugins.kubevirt.tpm` as platform-agnostic master switch
+  - Enables LUKS disk encryption MachineConfig in ACM/ZTP for any platform (baremetal, kubevirt, etc.)
+  - On kubevirt, automatically adds persistent vTPM device with SMM and UEFI firmware to VMs
+  - Schema updated: `cluster.tpm` boolean (default: false); removed from `plugins.kubevirt`
+
 ## 2.7.1
 - **Cache Busting**: Static asset URLs (`?v=`) now dynamically use the current app version
   - Backend replaces hardcoded `?v=` params in index.html at serve time

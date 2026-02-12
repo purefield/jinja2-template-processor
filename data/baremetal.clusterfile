@@ -25,6 +25,7 @@ cluster:
     - 2023/acm/id_rsa.pub
     - 2023/acm/id_rsa.pub
   location: dc1
+  tpm: true
   manifests:
     - name: crio-config
       file: templates/installer/99-crio-config.yaml

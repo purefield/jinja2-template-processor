@@ -34,7 +34,7 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- else -%}
   {%- set netName = "virtualmachine-net" -%}
 {%- endif -%}
-{%- set enableTPM = kv.tpm | default(false) -%}
+{%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}

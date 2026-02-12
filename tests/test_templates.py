@@ -917,6 +917,7 @@ class TestKubevirtClusterTemplate:
         return {
             'cluster': {
                 'name': 'kv-test',
+                'tpm': tpm,
                 'machine': {
                     'control': {
                         'cpus': 8, 'sockets': 1, 'memory': 32,
@@ -934,8 +935,7 @@ class TestKubevirtClusterTemplate:
             'plugins': {
                 'kubevirt': {
                     'storageClass': {'default': 'lvms-vg1'},
-                    'network': {'type': 'cudn', 'vlan': '1410'},
-                    'tpm': tpm
+                    'network': {'type': 'cudn', 'vlan': '1410'}
                 }
             },
             'hosts': {
@@ -1000,7 +1000,7 @@ class TestKubevirtClusterTemplate:
     def test_tpm_default_omitted(self, template_env):
         """Test that TPM fields are absent when tpm key is not set at all."""
         data = self.kubevirt_cluster_data(tpm=False)
-        del data['plugins']['kubevirt']['tpm']
+        del data['cluster']['tpm']
         result = self.render_template(template_env, data)
         vm = self.get_vm(result)
 
@@ -1024,6 +1024,166 @@ class TestKubevirtClusterTemplate:
         assert domain['memory']['guest'] == '32Gi'
         assert domain['cpu']['cores'] == 8
         assert domain['resources']['requests']['memory'] == '16Gi'
+
+
+class TestAcmZtpTemplate:
+    """Test the acm-ztp.yaml.tpl template for TPM at cluster level."""
+
+    def acm_ztp_data(self, platform='baremetal', tpm=False):
+        """Return data for acm-ztp template rendering."""
+        data = {
+            'account': {
+                'pullSecret': 'secrets/pull-secret.json'
+            },
+            'cluster': {
+                'name': 'ztp-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': platform,
+                'tpm': tpm,
+                'sshKeys': ['secrets/id_rsa.pub']
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False,
+                    'vlan': False,
+                    'gateway': '10.0.0.1',
+                    'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {
+                        'api': ['10.0.0.2'],
+                        'apps': ['10.0.0.3']
+                    }
+                },
+                'cluster': {
+                    'subnet': '10.128.0.0/14',
+                    'hostPrefix': 23
+                },
+                'service': {
+                    'subnet': '172.30.0.0/16'
+                }
+            },
+            'hosts': {
+                'node1.ztp-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell',
+                        'version': 9,
+                        'username': 'admin',
+                        'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [
+                            {'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}
+                        ],
+                        'primary': {
+                            'address': '10.0.0.4',
+                            'ports': ['eth0']
+                        }
+                    }
+                },
+                'node2.ztp-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell',
+                        'version': 9,
+                        'username': 'admin',
+                        'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [
+                            {'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}
+                        ],
+                        'primary': {
+                            'address': '10.0.0.5',
+                            'ports': ['eth0']
+                        }
+                    }
+                },
+                'node3.ztp-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell',
+                        'version': 9,
+                        'username': 'admin',
+                        'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [
+                            {'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}
+                        ],
+                        'primary': {
+                            'address': '10.0.0.6',
+                            'ports': ['eth0']
+                        }
+                    }
+                }
+            },
+            'plugins': {}
+        }
+        return data
+
+    def render_template(self, env, data):
+        """Render acm-ztp template and parse YAML."""
+        template = env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def get_configmap(self, result, name):
+        """Find a ConfigMap by name in the rendered List."""
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == name:
+                return item
+        return None
+
+    def test_tpm_manifest_baremetal(self, template_env):
+        """Test that TPM manifest appears in extraclustermanifests for baremetal with cluster.tpm: true."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=True)
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-tpm-disk-encryption' in cm['data']
+        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption']
+
+    def test_tpm_manifest_kubevirt(self, template_env):
+        """Test that TPM manifest appears in extraclustermanifests for kubevirt with cluster.tpm: true."""
+        data = self.acm_ztp_data(platform='kubevirt', tpm=True)
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-tpm-disk-encryption' in cm['data']
+        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption']
+
+    def test_no_tpm_manifest_when_disabled(self, template_env):
+        """Test that TPM manifest is absent when cluster.tpm is false."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        # ConfigMap should not exist when no manifests, mirrors, or TPM
+        assert cm is None, "extraclustermanifests ConfigMap should not exist when TPM is disabled"
+
+    def test_no_tpm_manifest_when_omitted(self, template_env):
+        """Test that TPM manifest is absent when cluster.tpm key is not set."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        del data['cluster']['tpm']
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is None, "extraclustermanifests ConfigMap should not exist when TPM is omitted"
 
 
 if __name__ == '__main__':

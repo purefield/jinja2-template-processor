@@ -4,7 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.0 (2026-02-12)
+
+- **cluster-tpm** — Promote TPM from `plugins.kubevirt.tpm` to `cluster.tpm` as platform-agnostic master switch; auto-propagates to kubevirt VM hardware and ACM ZTP disk encryption manifests for any platform
 - **kubevirt-tpm-tests** — Add test suite for KubeVirt TPM feature: enabled, disabled, omitted, and VM structure validation
+- **acm-ztp-tpm-tests** — Add ACM ZTP template tests for TPM manifest generation across baremetal and kubevirt platforms
 
 ## v2.7.1 (2026-02-12)
 

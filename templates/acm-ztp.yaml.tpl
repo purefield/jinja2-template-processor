@@ -24,7 +24,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
-{%- set enableTPM = plugins.kubevirt.tpm | default(false) if plugins is defined and plugins.kubevirt is defined else false -%}
+{%- set enableTPM = cluster.tpm | default(false) -%}
 apiVersion: v1
 kind: List
 metadata:

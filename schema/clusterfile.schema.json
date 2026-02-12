@@ -285,6 +285,12 @@
           },
           "additionalProperties": true,
           "description": "Default machine resource specifications per role. Individual hosts can override via hosts.<name>.machine."
+        },
+        "tpm": {
+          "title": "TPM Disk Encryption",
+          "type": "boolean",
+          "default": false,
+          "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs."
         }
       },
       "required": ["name", "version"],
@@ -1545,12 +1551,6 @@
               "type": "string",
               "minLength": 1,
               "description": "Node label key for round-robin VM placement (e.g., vgNode)."
-            },
-            "tpm": {
-              "title": "TPM",
-              "type": "boolean",
-              "default": false,
-              "description": "Enable persistent TPM 2.0 device on VMs. Required for LUKS disk encryption on the provisioned cluster."
             },
             "storageMapping": {
               "title": "Storage Class Mapping",
