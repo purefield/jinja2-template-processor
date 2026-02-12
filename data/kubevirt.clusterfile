@@ -60,7 +60,7 @@ plugins:
         data: performance
       worker:
         os: default
-        data: default
+        data: performance
     network:
       type: cudn
       vlan: 1410

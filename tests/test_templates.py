@@ -912,8 +912,22 @@ class TestYAMLOutput:
 class TestKubevirtClusterTemplate:
     """Test the kubevirt-cluster.yaml.tpl template."""
 
-    def kubevirt_cluster_data(self, tpm=False):
-        """Return minimal data for kubevirt-cluster template rendering."""
+    def kubevirt_cluster_data(self, tpm=False, num_control=1, num_worker=0):
+        """Return data for kubevirt-cluster template rendering with variable topology."""
+        host_template = lambda i, role: {
+            'role': role,
+            'network': {
+                'interfaces': [
+                    {'name': 'eth0', 'macAddress': f'00:1A:2B:3C:4D:{i:02X}'}
+                ]
+            }
+        }
+        hosts = {}
+        for i in range(num_control):
+            hosts[f'ctrl{i+1}.kv-test.example.com'] = host_template(i + 1, 'control')
+        for i in range(num_worker):
+            hosts[f'worker{i+1}.kv-test.example.com'] = host_template(num_control + i + 1, 'worker')
+
         return {
             'cluster': {
                 'name': 'kv-test',
@@ -921,11 +935,11 @@ class TestKubevirtClusterTemplate:
                 'machine': {
                     'control': {
                         'cpus': 8, 'sockets': 1, 'memory': 32,
-                        'storage': {'os': 120}
+                        'storage': {'os': 120, 'data': [345]}
                     },
                     'worker': {
                         'cpus': 8, 'sockets': 1, 'memory': 32,
-                        'storage': {'os': 120}
+                        'storage': {'os': 120, 'data': [345]}
                     }
                 }
             },
@@ -934,20 +948,14 @@ class TestKubevirtClusterTemplate:
             },
             'plugins': {
                 'kubevirt': {
-                    'storageClass': {'default': 'lvms-vg1'},
+                    'storageClass': {
+                        'default': 'ocs-storagecluster-ceph-rbd',
+                        'performance': 'lvms-vg1'
+                    },
                     'network': {'type': 'cudn', 'vlan': '1410'}
                 }
             },
-            'hosts': {
-                'node1.kv-test.example.com': {
-                    'role': 'control',
-                    'network': {
-                        'interfaces': [
-                            {'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}
-                        ]
-                    }
-                }
-            }
+            'hosts': hosts
         }
 
     def render_template(self, env, data):
@@ -956,12 +964,28 @@ class TestKubevirtClusterTemplate:
         rendered = template.render(data)
         return yaml.safe_load(rendered)
 
-    def get_vm(self, result):
-        """Extract the first VirtualMachine from the rendered List."""
+    def get_vm(self, result, index=0):
+        """Extract a VirtualMachine from the rendered List by index."""
+        vms = [item for item in result['items'] if item['kind'] == 'VirtualMachine']
+        return vms[index] if index < len(vms) else None
+
+    def get_pvcs(self, result):
+        """Extract all PVCs from the rendered List."""
+        return [item for item in result['items'] if item['kind'] == 'PersistentVolumeClaim']
+
+    def get_pvcs_for_vm(self, result, vmname):
+        """Extract PVCs matching a VM name (OS + data)."""
+        return [pvc for pvc in self.get_pvcs(result)
+                if pvc['metadata']['name'].startswith(vmname)]
+
+    def get_vms_by_role(self, result):
+        """Return dict of role -> list of VMs."""
+        vms = {'master': [], 'worker': []}
         for item in result['items']:
             if item['kind'] == 'VirtualMachine':
-                return item
-        return None
+                role = item['spec']['template']['metadata']['labels']['role']
+                vms[role].append(item)
+        return vms
 
     def test_tpm_enabled(self, template_env):
         """Test that TPM device, SMM features, and EFI firmware appear when tpm=true."""
@@ -1024,6 +1048,109 @@ class TestKubevirtClusterTemplate:
         assert domain['memory']['guest'] == '32Gi'
         assert domain['cpu']['cores'] == 8
         assert domain['resources']['requests']['memory'] == '16Gi'
+
+
+    def test_compact_cluster_control_gets_data_disks(self, template_env):
+        """Compact cluster (<=5 hosts): control nodes get data disks."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=0)
+        result = self.render_template(template_env, data)
+        vms = self.get_vms_by_role(result)
+
+        # 3 total hosts <= 5, so control nodes should have data disks
+        for vm in vms['master']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) > 0, "Compact cluster control node should have data disks"
+
+    def test_compact_cluster_5_nodes_control_gets_data(self, template_env):
+        """Compact cluster with 5 hosts: control nodes get data disks, workers do not."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=2)
+        result = self.render_template(template_env, data)
+        vms = self.get_vms_by_role(result)
+
+        # 5 total hosts <= 5, control gets data disks
+        for vm in vms['master']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) > 0, "Compact 5-node control should have data disks"
+
+        # 5 < 3+3=6, workers do NOT get data disks
+        for vm in vms['worker']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) == 0, "Compact 5-node workers should NOT have data disks"
+
+    def test_standard_cluster_workers_get_data_disks(self, template_env):
+        """Standard cluster (>=controlCount+3 hosts): workers get data disks, control does not."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=3)
+        result = self.render_template(template_env, data)
+        vms = self.get_vms_by_role(result)
+
+        # 6 total hosts > 5, control does NOT get data disks
+        for vm in vms['master']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) == 0, "Standard cluster control should NOT have data disks"
+
+        # 6 >= 3+3=6, workers get data disks
+        for vm in vms['worker']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) > 0, "Standard cluster workers should have data disks"
+
+    def test_gap_cluster_no_data_disks(self, template_env):
+        """Gap topology (6 hosts but only 2 workers): no one gets data disks."""
+        data = self.kubevirt_cluster_data(num_control=4, num_worker=2)
+        result = self.render_template(template_env, data)
+        vms = self.get_vms_by_role(result)
+
+        # 6 total > 5, so control does NOT get data disks
+        for vm in vms['master']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) == 0, "Gap topology control should NOT have data disks"
+
+        # 6 < 4+3=7, workers do NOT get data disks either
+        for vm in vms['worker']:
+            volumes = vm['spec']['template']['spec']['volumes']
+            data_vols = [v for v in volumes if v['name'].startswith('datadisk-')]
+            assert len(data_vols) == 0, "Gap topology workers should NOT have data disks"
+
+    def test_control_os_uses_performance_storage(self, template_env):
+        """Control plane OS PVC uses performance storage class by default."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=0)
+        result = self.render_template(template_env, data)
+        pvcs = self.get_pvcs(result)
+
+        os_pvcs = [p for p in pvcs if '-data-' not in p['metadata']['name']]
+        for pvc in os_pvcs:
+            assert pvc['spec']['storageClassName'] == 'lvms-vg1', \
+                f"Control OS PVC should use performance (lvms-vg1), got {pvc['spec']['storageClassName']}"
+
+    def test_worker_os_uses_default_storage(self, template_env):
+        """Worker OS PVC uses default storage class."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=3)
+        result = self.render_template(template_env, data)
+        pvcs = self.get_pvcs(result)
+
+        # Worker OS PVCs (not data PVCs) — workers are named worker1, worker2, worker3
+        worker_os_pvcs = [p for p in pvcs
+                          if 'worker' in p['metadata']['name']
+                          and '-data-' not in p['metadata']['name']]
+        for pvc in worker_os_pvcs:
+            assert pvc['spec']['storageClassName'] == 'ocs-storagecluster-ceph-rbd', \
+                f"Worker OS PVC should use default (ocs), got {pvc['spec']['storageClassName']}"
+
+    def test_data_disks_use_performance_storage(self, template_env):
+        """Data disk PVCs always use performance storage class."""
+        data = self.kubevirt_cluster_data(num_control=3, num_worker=3)
+        result = self.render_template(template_env, data)
+        pvcs = self.get_pvcs(result)
+
+        data_pvcs = [p for p in pvcs if '-data-' in p['metadata']['name']]
+        for pvc in data_pvcs:
+            assert pvc['spec']['storageClassName'] == 'lvms-vg1', \
+                f"Data PVC should use performance (lvms-vg1), got {pvc['spec']['storageClassName']}"
 
 
 class TestAcmZtpTemplate:

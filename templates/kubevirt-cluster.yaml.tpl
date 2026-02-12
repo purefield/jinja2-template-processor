@@ -35,6 +35,8 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
   {%- set netName = "virtualmachine-net" -%}
 {%- endif -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
+{%- set performanceSC = kvsc.performance | default(defaultSC) -%}
+{%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
 {%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
@@ -78,11 +80,13 @@ items:
 {%- set dataDisks = hms.data | default([]) -%}
 {%- set ifname  = host.network.interfaces[0].name -%}
 {%- set macaddr = host.network.interfaces[0].macAddress -%}
-{%- set roleMap = kvmap[host.role] | default(kvmap.control | default({})) -%}
-{%- set osClassLabel = roleMap.os | default("default") -%}
-{%- set dataClassLabel = roleMap.data | default(osClassLabel) -%}
+{%- set roleMap = kvmap[host.role] | default({}) -%}
+{%- set osClassLabel = roleMap.os | default("performance" if host.role == "control" else "default") -%}
+{%- set dataClassLabel = roleMap.data | default("performance") -%}
 {%- set ossc = kvsc[osClassLabel] | default(defaultSC) -%}
-{%- set datasc = kvsc[dataClassLabel] | default(defaultSC) -%}
+{%- set datasc = kvsc[dataClassLabel] | default(performanceSC) -%}
+{%- set hasDataDisk = true if (host.role == 'control' and hosts | length <= 5) or (host.role != 'control' and hosts | length >= controlCount + 3) else false -%}
+{%- set dataDisks = hms.data | default([]) if hasDataDisk else [] -%}
 {%- set vgNode  = (loop.index - 1) % 3 + 1 %}
 - kind: PersistentVolumeClaim
   apiVersion: v1
