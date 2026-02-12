@@ -111,9 +111,9 @@ const CHANGELOG = [
     version: '2.8.2',
     date: '2026-02-12',
     changes: [
-      'TPM ManifestWork: post-install TPM delivery via ACM ManifestWork for all install methods',
-      'ACM ZTP: ManifestWork added alongside extraclustermanifests for running cluster support',
-      'ACM CAPI Metal3: ManifestWork added for TPM support (CAPI has no extraclustermanifests)'
+      'TPM install-time only: removed ManifestWork — LUKS post-install wipes root disks',
+      'TPM disk encryption handled via extraclustermanifests at install time (ZTP)',
+      'Safety guard: test ensures no ManifestWork is generated for TPM'
     ]
   },
   {

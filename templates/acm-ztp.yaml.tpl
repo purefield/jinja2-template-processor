@@ -261,38 +261,7 @@ items:
       namespace: multicluster-engine{% endif %}
     agentLabelSelector:
       matchLabels:
-        cluster-name: {{ cluster.name }}{% if enableTPM %}
-- kind: ManifestWork
-  apiVersion: work.open-cluster-management.io/v1
-  metadata:
-    name: tpm-disk-encryption
-    namespace: {{ cluster.name }}
-  spec:
-    workload:
-      manifests:
-        - apiVersion: machineconfiguration.openshift.io/v1
-          kind: MachineConfig
-          metadata:
-            name: 99-master-tpm-disk-encryption
-          spec:
-            config:
-              ignition:
-                version: 3.2.0
-              storage:
-                luks:
-                  - name: root
-                    device: /dev/disk/by-partlabel/root
-                    clevis:
-                      tpm2: true
-                    options:
-                      - --cipher
-                      - aes-cbc-essiv:sha256
-                    wipeVolume: true
-                filesystems:
-                  - device: /dev/mapper/root
-                    format: xfs
-                    wipeFilesystem: true
-                    label: root{% endif %}
+        cluster-name: {{ cluster.name }}
 - kind: ServiceAccount
   apiVersion: v1
   metadata:
