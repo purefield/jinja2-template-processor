@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.8.5
+- **Release Script**: Updated `clusterfile-editor.sh release` to full ship-it process — syncs all version locations, commits, tags, pushes, builds, deploys, restarts, and verifies health
+
 ## 2.8.4
 - **TPM Disk Encryption**: Updated MachineConfig with AES-CBC-ESSIV cipher, volume wipe, and XFS root filesystem
 - **ZTP Fix**: Moved `manifestsConfigMapRef` under `provisioning` key

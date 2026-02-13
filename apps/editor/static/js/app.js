@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.5',
+    date: '2026-02-13',
+    changes: [
+      'Release script: clusterfile-editor.sh release now runs full ship-it process (sync, commit, tag, push, build, deploy, verify)'
+    ]
+  },
+  {
     version: '2.8.4',
     date: '2026-02-13',
     changes: [
