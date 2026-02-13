@@ -2,10 +2,12 @@ apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
   name: 99-master-tpm-disk-encryption
+  labels:
+    machineconfiguration.openshift.io/role: master
 spec:
   config:
     ignition:
-      version: 3.2.0
+      version: 3.4.0
     storage:
       luks:
         - name: root
