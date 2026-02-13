@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.4 (2026-02-13)
+- **Update tpm disk encryption
+
 ## v2.8.3 (2026-02-12)
 
 - **tpm-install-only** — Remove ManifestWork for TPM; LUKS disk encryption is install-time only via `extraclustermanifests` (post-install wipes root disks)
