@@ -36,7 +36,7 @@ Commands:
   run       Run the editor (default) - pulls image from registry
   build     Build container image locally
   push      Push built image to registry
-  release   Release new version (bump, build, push, tag)
+  release   Full release: bump version, sync all 5 locations, commit, tag, push, build, deploy, verify
   package   Create offline distribution tarball for air-gapped deployment
   standalone Build standalone HTML file (browser-only, no backend)
   all       Build and push
@@ -126,12 +126,46 @@ release_image() {
 
     sync_version
     update_changelog
+
+    # Commit all version/changelog changes
+    if command -v git >/dev/null 2>&1; then
+        if [ -n "$(git -C "${SCRIPT_DIR}" status --porcelain)" ]; then
+            echo "Committing version and changelog updates..."
+            git -C "${SCRIPT_DIR}" add \
+                "${APP_VERSION_FILE}" \
+                "${EDITOR_DIR}/Containerfile" \
+                "${EDITOR_DIR}/static/changelog.md" \
+                "${EDITOR_DIR}/static/js/app.js" \
+                "${SCRIPT_DIR}/CHANGELOG.md"
+            git -C "${SCRIPT_DIR}" commit -m "Release v${APP_VERSION}"
+        fi
+    fi
+
     tag_release
+
+    # Push commit and tags
+    if command -v git >/dev/null 2>&1; then
+        echo "Pushing to remote..."
+        git -C "${SCRIPT_DIR}" push
+        git -C "${SCRIPT_DIR}" push --tags
+    fi
+
     build_image
     push_image
     echo "Tag and push :latest to ${IMAGE_REGISTRY}"
     ${CONTAINER_RUNTIME} tag "${IMAGE_REF}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
     ${CONTAINER_RUNTIME} push "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
+
+    # Restart running container
+    echo "Restarting running app..."
+    ${CONTAINER_RUNTIME} run -d --replace --network host --name "${IMAGE_NAME}" "${IMAGE_REF}" || true
+
+    # Verify health
+    echo "Verifying deployment..."
+    sleep 2
+    local health
+    health="$(curl -s http://localhost:8000/healthz 2>/dev/null || echo "unreachable")"
+    echo "Health: ${health}"
 }
 
 run_image() {
@@ -149,10 +183,33 @@ run_image() {
 }
 
 sync_version() {
-    # Version is read from APP_VERSION file by main.py and fetched by JS from /healthz
-    # Just ensure the file exists
+    # Update all version locations to match APP_VERSION
     local version="${APP_VERSION}"
-    echo "Version: ${version}"
+    local containerfile="${EDITOR_DIR}/Containerfile"
+    local appjs="${EDITOR_DIR}/static/js/app.js"
+    local repo_changelog="${SCRIPT_DIR}/CHANGELOG.md"
+
+    echo "Syncing version ${version} across all locations..."
+
+    # 1. APP_VERSION file (already written by release_image)
+
+    # 2. Containerfile header comment and build example
+    if [ -f "${containerfile}" ]; then
+        sed -i "s|^# Clusterfile Editor v.*|# Clusterfile Editor v${version}|" "${containerfile}"
+        sed -i "s|quay.io/dds/clusterfile-editor:v[0-9.]*|quay.io/dds/clusterfile-editor:v${version}|" "${containerfile}"
+    fi
+
+    # 3. Repo-level CHANGELOG.md — add version heading if missing
+    if [ -f "${repo_changelog}" ]; then
+        if ! grep -q "^## v${version}" "${repo_changelog}"; then
+            local today
+            today="$(date +%Y-%m-%d)"
+            sed -i "/^## Unreleased$/a\\\\n## v${version} (${today})" "${repo_changelog}"
+        fi
+    fi
+
+    echo "Version ${version} synced to APP_VERSION, Containerfile, CHANGELOG.md"
+    echo "Note: static/changelog.md is updated by update_changelog; app.js CHANGELOG array must be updated manually or by Claude"
 }
 
 update_changelog() {
