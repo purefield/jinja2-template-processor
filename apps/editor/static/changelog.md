@@ -1,7 +1,8 @@
 # Clusterfile Editor Changelog
 
 ## 2.8.4
-- Update tpm disk encryption
+- **TPM Disk Encryption**: Updated MachineConfig with AES-CBC-ESSIV cipher, volume wipe, and XFS root filesystem
+- **ZTP Fix**: Moved `manifestsConfigMapRef` under `provisioning` key
 
 
 ## 2.8.3

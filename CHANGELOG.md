@@ -5,7 +5,8 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 ## v2.8.4 (2026-02-13)
-- **Update tpm disk encryption
+- **tpm-disk-encryption** — Updated MachineConfig with AES-CBC-ESSIV cipher, volume wipe, and XFS root filesystem
+- **ztp-manifestsconfigmapref** — Fix ACM ZTP `manifestsConfigMapRef` moved under `provisioning` key
 
 ## v2.8.3 (2026-02-12)
 

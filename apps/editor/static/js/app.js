@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.4',
+    date: '2026-02-13',
+    changes: [
+      'TPM disk encryption: updated MachineConfig with cipher options and filesystem wipe',
+      'Fix ACM ZTP: moved manifestsConfigMapRef under provisioning key'
+    ]
+  },
+  {
     version: '2.8.3',
     date: '2026-02-12',
     changes: [
