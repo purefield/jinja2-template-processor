@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.8.6
+- **ZTP Fix**: Move `manifestsConfigMapRef` from ClusterDeployment to AgentClusterInstall — `provisioning` and `clusterInstallRef` are mutually exclusive
+
 ## 2.8.5
 - **Release Script**: Updated `clusterfile-editor.sh release` to full ship-it process — syncs all version locations, commits, tags, pushes, builds, deploys, restarts, and verifies health
 

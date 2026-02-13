@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.6',
+    date: '2026-02-13',
+    changes: [
+      'ZTP fix: manifestsConfigMapRef moved from ClusterDeployment to AgentClusterInstall'
+    ]
+  },
+  {
     version: '2.8.5',
     date: '2026-02-13',
     changes: [
