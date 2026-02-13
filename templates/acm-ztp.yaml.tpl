@@ -131,8 +131,9 @@ items:
   spec:
     clusterName: {{ cluster.name }}
     baseDomain: {{ network.domain }}{% if cluster.manifests or cluster.mirrors or enableTPM %}
-    manifestsConfigMapRef:
-      name: extraclustermanifests{% endif %}
+    provisioning:
+      manifestsConfigMapRef:
+        name: extraclustermanifests{% endif %}
     clusterInstallRef:
       version: v1beta1
       kind: AgentClusterInstall
