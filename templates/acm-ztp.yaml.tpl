@@ -78,7 +78,9 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.mirrors %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM %}
+    manifestsConfigMapRef:
+      name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -130,9 +132,7 @@ items:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
   spec:
     clusterName: {{ cluster.name }}
-    baseDomain: {{ network.domain }}{% if cluster.manifests or cluster.mirrors or enableTPM %}
-    manifestsConfigMapRef:
-      name: extraclustermanifests{% endif %}
+    baseDomain: {{ network.domain }}
     clusterInstallRef:
       version: v1beta1
       kind: AgentClusterInstall
