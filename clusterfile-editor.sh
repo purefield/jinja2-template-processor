@@ -129,6 +129,7 @@ release_image() {
     tag_release
     build_image
     push_image
+    echo "Tag and push :latest to ${IMAGE_REGISTRY}"
     ${CONTAINER_RUNTIME} tag "${IMAGE_REF}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
     ${CONTAINER_RUNTIME} push "${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"
 }

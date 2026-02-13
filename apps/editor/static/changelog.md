@@ -1,5 +1,13 @@
 # Clusterfile Editor Changelog
 
+## 2.8.4
+- Update tpm disk encryption
+
+
+## 2.8.4
+- Update tpm disk encryption
+
+
 ## 2.8.3
 - **TPM Install-Time Only**: Removed ManifestWork — LUKS post-install wipes root disks
 - **POC Banner**: Red "Proof of Concept" ConsoleNotification on all managed cluster consoles
