@@ -243,6 +243,12 @@
                 "items": { "$ref": "#/$defs/registryUrl" },
                 "minItems": 1,
                 "description": "Alternative registry locations (tried in order)."
+              },
+              "insecure": {
+                "title": "Insecure",
+                "type": "boolean",
+                "default": false,
+                "description": "Allow insecure connections (HTTP or unverified TLS) to this mirror registry. Sets insecure=true in registries.conf and adds mirrors to image.config.openshift.io insecureRegistries."
               }
             },
             "required": ["source", "mirrors"],

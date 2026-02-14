@@ -26,6 +26,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set enableDisconnected = cluster.disconnected | default(false) -%}
+{%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -79,7 +80,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
 - kind: ConfigMap
@@ -93,7 +94,7 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -132,7 +133,16 @@ items:
         sourceType: grpc
         image: {{ catalog.image }}
         displayName: {{ catalog.displayName | default(catalog.name) }}
-        publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% endif %}
+        publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% if insecureMirrors %}
+    99-insecure-registries.yaml: |
+      apiVersion: config.openshift.io/v1
+      kind: Image
+      metadata:
+        name: cluster
+      spec:
+        registrySources:
+          insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
+            - {{ location }}{% endfor %}{% endfor %}{% endif %}{% endif %}
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:

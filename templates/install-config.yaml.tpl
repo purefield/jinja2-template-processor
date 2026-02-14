@@ -32,6 +32,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
+{%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
 ---
 apiVersion: v1
@@ -113,4 +114,14 @@ spec:
   sourceType: grpc
   image: {{ catalog.image }}
   displayName: {{ catalog.displayName | default(catalog.name) }}
-  publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}
+  publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% if insecureMirrors %}
+---
+# Place in openshift/ directory for ABI/IPI
+apiVersion: config.openshift.io/v1
+kind: Image
+metadata:
+  name: cluster
+spec:
+  registrySources:
+    insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
+      - {{ location }}{% endfor %}{% endfor %}{% endif %}

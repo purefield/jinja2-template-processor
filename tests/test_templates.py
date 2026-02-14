@@ -1339,6 +1339,102 @@ class TestAcmZtpTemplate:
         assert 'Proof of Concept' in cn['spec']['text']
         assert cn['spec']['location'] == 'BannerTop'
 
+    def test_insecure_mirror_registries_conf(self, template_env):
+        """Test that insecure = true appears in registries.conf when mirror has insecure: true."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        data['cluster']['mirrors'] = [
+            {
+                'source': 'quay.io',
+                'prefix': '',
+                'insecure': True,
+                'mirrors': ['internal-registry.tld/quay-io']
+            },
+            {
+                'source': 'registry.redhat.io',
+                'prefix': '',
+                'mirrors': ['internal-registry.tld/redhat-io']
+            }
+        ]
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'mirror-registries-ztp-test')
+        assert cm is not None, "mirror-registries ConfigMap not found"
+        registries_conf = cm['data']['registries.conf']
+        # First mirror (insecure) should have insecure = true
+        assert 'insecure = true' in registries_conf
+        # Check it appears after the insecure mirror location
+        lines = registries_conf.split('\n')
+        found_insecure = False
+        for i, line in enumerate(lines):
+            if 'internal-registry.tld/quay-io' in line:
+                # Next non-empty line should be insecure = true
+                for j in range(i+1, len(lines)):
+                    if lines[j].strip():
+                        assert 'insecure = true' in lines[j], \
+                            f"Expected insecure = true after quay-io mirror, got: {lines[j]}"
+                        found_insecure = True
+                        break
+                break
+        assert found_insecure, "insecure = true not found after insecure mirror location"
+
+    def test_insecure_mirror_image_config(self, template_env):
+        """Test that 99-insecure-registries.yaml appears in extraclustermanifests with correct insecureRegistries."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        data['cluster']['mirrors'] = [
+            {
+                'source': 'quay.io',
+                'prefix': '',
+                'insecure': True,
+                'mirrors': ['internal-registry.tld/quay-io']
+            },
+            {
+                'source': 'registry.redhat.io',
+                'prefix': '',
+                'insecure': True,
+                'mirrors': ['internal-registry.tld/redhat-io']
+            }
+        ]
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-insecure-registries.yaml' in cm['data'], \
+            "99-insecure-registries.yaml key not found in extraclustermanifests"
+        insecure_manifest = cm['data']['99-insecure-registries.yaml']
+        assert 'kind: Image' in insecure_manifest
+        assert 'insecureRegistries' in insecure_manifest
+        assert 'internal-registry.tld/quay-io' in insecure_manifest
+        assert 'internal-registry.tld/redhat-io' in insecure_manifest
+
+    def test_no_insecure_when_false(self, template_env):
+        """Test that no insecure manifests appear when insecure is false or absent."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        data['cluster']['mirrors'] = [
+            {
+                'source': 'quay.io',
+                'prefix': '',
+                'insecure': False,
+                'mirrors': ['internal-registry.tld/quay-io']
+            },
+            {
+                'source': 'registry.redhat.io',
+                'prefix': '',
+                'mirrors': ['internal-registry.tld/redhat-io']
+            }
+        ]
+        result = self.render_template(template_env, data)
+
+        cm = self.get_configmap(result, 'mirror-registries-ztp-test')
+        assert cm is not None, "mirror-registries ConfigMap not found"
+        registries_conf = cm['data']['registries.conf']
+        assert 'insecure = true' not in registries_conf, \
+            "insecure = true should not appear when insecure is false/absent"
+
+        cm_extra = self.get_configmap(result, 'extraclustermanifests')
+        if cm_extra is not None:
+            assert '99-insecure-registries.yaml' not in cm_extra.get('data', {}), \
+                "99-insecure-registries.yaml should not exist when no mirrors are insecure"
+
 
 class TestAcmCapiTemplate:
     """Test the acm-capi-m3.yaml.tpl template."""

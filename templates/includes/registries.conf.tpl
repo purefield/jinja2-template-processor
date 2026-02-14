@@ -6,5 +6,6 @@ short-name-mode = ""{% for mirror in cluster.mirrors %}
   location = "{{ mirror.source }}"
   mirror-by-digest-only = true
   [[registry.mirror]]{% for location in mirror.mirrors %}
-    location = "{{ location }}"{% endfor %}
+    location = "{{ location }}"{% if mirror.insecure | default(false) %}
+    insecure = true{% endif %}{% endfor %}
 {% endfor %}{%- endif -%}

@@ -25,18 +25,22 @@ cluster:
       file: templates/installer/99-set-core-passwd-master.yaml
   mirrors:
     - source: registry.access.redhat.com
+      insecure: true
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-access-redhat-com
     - source: registry.redhat.io
+      insecure: true
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-redhat-io
     - source: quay.io
+      insecure: true
       prefix: ''
       mirrors:
         - internal-registry.tld/quay-io
     - source: registry.connect.redhat.com
+      insecure: true
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-connect-redhat-com
