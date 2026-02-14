@@ -23,9 +23,10 @@ def template_env():
     """Create Jinja2 environment with custom filters."""
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates')
     includes_dir = os.path.join(template_dir, 'includes')
-    plugins_dir  = os.path.join(template_dir, 'plugins')
+    plugins_tpl  = os.path.join(template_dir, 'plugins')
+    plugins_root = os.path.join(os.path.dirname(template_dir), 'plugins')
 
-    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_dir]))
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_tpl, plugins_root]))
 
     # Mock load_file to return test data
     def load_file(path):

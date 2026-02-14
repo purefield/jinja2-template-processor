@@ -128,6 +128,223 @@
       },
       "additionalProperties": true,
       "description": "Machine resource specification."
+    },
+    "operatorCommon": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip installation of this operator."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "description": "OLM subscription channel."
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic"
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        }
+      }
+    },
+    "operatorArgocd": {
+      "title": "ArgoCD / OpenShift GitOps",
+      "description": "Installs openshift-gitops-operator and configures an ArgoCD instance. Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ArgoCD installation." },
+        "channel": { "type": "string", "default": "latest", "description": "OLM subscription channel (e.g. latest, gitops-1.14)." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators", "description": "OLM CatalogSource name." },
+        "ha": { "type": "boolean", "default": false, "description": "Enable HA for ArgoCD components." },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "policy": { "type": "string", "default": "g, system:cluster-admins, role:admin" },
+            "defaultPolicy": { "type": "string", "default": "role:readonly" },
+            "scopes": { "type": "string", "default": "[groups]" }
+          },
+          "additionalProperties": false
+        },
+        "repo": {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "properties": {
+                "cpu": { "type": "string", "default": "1" },
+                "memory": { "type": "string", "default": "1Gi" }
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "notifications": { "type": "boolean", "default": true },
+        "applicationSet": { "type": "boolean", "default": true },
+        "bootstrap": {
+          "title": "Bootstrap Application",
+          "type": "object",
+          "properties": {
+            "repoURL": { "type": "string", "description": "Git repository URL." },
+            "path": { "type": "string", "default": ".", "description": "Path within the repo." },
+            "targetRevision": { "type": "string", "default": "HEAD" },
+            "namespace": { "type": "string", "default": "openshift-gitops" },
+            "autoSync": { "type": "boolean", "default": true }
+          },
+          "required": ["repoURL"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "operatorLvm": {
+      "title": "LVM Storage (LVMS)",
+      "description": "Local volume management for SNO and compact clusters using TopoLVM. Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip LVM installation." },
+        "channel": { "type": "string", "default": "stable", "description": "OLM subscription channel (e.g. stable, stable-4.18)." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators" },
+        "deviceClasses": {
+          "title": "Device Classes",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "default": "vg1", "description": "Volume group name." },
+              "default": { "type": "boolean", "default": true, "description": "Set as default storage class." },
+              "fstype": { "type": "string", "default": "xfs", "enum": ["xfs", "ext4"] },
+              "thinPoolConfig": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "default": "thin-pool-1" },
+                  "sizePercent": { "type": "integer", "default": 90, "minimum": 1, "maximum": 100 },
+                  "overprovisionRatio": { "type": "integer", "default": 10, "minimum": 1 }
+                }
+              },
+              "deviceSelector": {
+                "type": "object",
+                "properties": {
+                  "paths": { "type": "array", "items": { "type": "string" }, "description": "Device paths (e.g. /dev/vdb)." },
+                  "optionalPaths": { "type": "array", "items": { "type": "string" } },
+                  "forceWipeDevicesAndDestroyAllData": { "type": "boolean", "default": false }
+                }
+              }
+            }
+          },
+          "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks."
+        }
+      },
+      "additionalProperties": true
+    },
+    "operatorOdf": {
+      "title": "OpenShift Data Foundation (ODF)",
+      "description": "Ceph-based distributed storage for HA clusters (3+ nodes with data disks). Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ODF installation." },
+        "channel": { "type": "string", "default": "stable-4.18", "description": "OLM subscription channel." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators" },
+        "consolePlugin": { "type": "boolean", "default": true, "description": "Enable odf-console plugin." },
+        "storageCluster": {
+          "title": "Storage Cluster",
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "default": "ocs-storagecluster" },
+            "monDataDirHostPath": { "type": "string", "default": "/var/lib/rook" },
+            "storageDeviceSets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "default": "ocs-deviceset" },
+                  "count": { "type": "integer", "default": 1, "minimum": 1 },
+                  "replica": { "type": "integer", "default": 3, "minimum": 1 },
+                  "storage": { "type": "string", "default": "1Ti", "description": "Storage request per device." },
+                  "storageClassName": { "type": "string", "default": "", "description": "StorageClass for PVCs (empty = default)." }
+                }
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "operatorAcm": {
+      "title": "Advanced Cluster Management (ACM)",
+      "description": "Sets up a full ACM hub for ZTP/CAPI deployments. Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ACM installation." },
+        "channel": { "type": "string", "default": "release-2.14", "description": "OLM subscription channel." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators" },
+        "multiClusterHub": {
+          "title": "MultiClusterHub",
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "default": "multiclusterhub" },
+            "availabilityConfig": { "type": "string", "enum": ["High", "Basic"], "default": "High" }
+          },
+          "additionalProperties": true
+        },
+        "agentServiceConfig": {
+          "title": "AgentServiceConfig",
+          "type": "object",
+          "properties": {
+            "databaseStorage": { "type": "string", "default": "10Gi" },
+            "filesystemStorage": { "type": "string", "default": "100Gi" },
+            "imageStorage": { "type": "string", "default": "50Gi" }
+          },
+          "additionalProperties": true
+        },
+        "provisioning": {
+          "title": "Provisioning",
+          "type": "object",
+          "properties": {
+            "watchAllNamespaces": { "type": "boolean", "default": true }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "operatorCertManager": {
+      "title": "cert-manager Operator",
+      "description": "TLS certificate automation. Install-and-go operator. Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip cert-manager installation." },
+        "channel": { "type": "string", "default": "stable-v1", "description": "OLM subscription channel." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators" }
+      },
+      "additionalProperties": true
+    },
+    "operatorExternalSecrets": {
+      "title": "External Secrets Operator",
+      "description": "Sync secrets from external stores (Vault, AWS SM, etc.). Runs in all-namespaces mode. Specify {} for all defaults.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip external-secrets installation." },
+        "channel": { "type": "string", "default": "stable-v1", "description": "OLM subscription channel." },
+        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
+        "source": { "type": "string", "default": "redhat-operators" }
+      },
+      "additionalProperties": true
     }
   },
   "properties": {
@@ -1656,7 +1873,18 @@
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
         },
         "operators": {
-          "$ref": "plugins/operators/argocd.schema.json"
+          "title": "Operators",
+          "description": "Day-2 operator installation and configuration. Each key is an operator name with its config. Specify an operator key with {} to install with all defaults.",
+          "type": "object",
+          "properties": {
+            "argocd": { "$ref": "#/$defs/operatorArgocd" },
+            "lvm": { "$ref": "#/$defs/operatorLvm" },
+            "odf": { "$ref": "#/$defs/operatorOdf" },
+            "acm": { "$ref": "#/$defs/operatorAcm" },
+            "cert-manager": { "$ref": "#/$defs/operatorCertManager" },
+            "external-secrets": { "$ref": "#/$defs/operatorExternalSecrets" }
+          },
+          "additionalProperties": true
         }
       },
       "additionalProperties": true,

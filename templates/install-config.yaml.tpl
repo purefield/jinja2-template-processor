@@ -126,5 +126,5 @@ spec:
   registrySources:
     insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
       - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if plugins is defined and plugins.operators is defined and plugins.operators.argocd is defined %}
-{%- set operatorManifests %}{% include "plugins/operators/argocd/manifests.yaml.tpl" %}{% endset %}
+{%- set operatorManifests %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endset %}
 {{ operatorManifests }}{% endif %}

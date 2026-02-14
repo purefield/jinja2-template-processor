@@ -112,8 +112,10 @@ def process_template(config_data, template_file, data_file):
     template_dir = os.path.dirname(os.path.abspath(template_file))
     config_dir   = os.path.dirname(os.path.abspath(data_file))
     includes_dir = os.path.join(template_dir, 'includes')
-    plugins_dir  = os.path.join(template_dir, 'plugins')
-    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_dir, config_dir]))
+    plugins_tpl  = os.path.join(template_dir, 'plugins')
+    repo_root    = os.path.dirname(template_dir)
+    plugins_root = os.path.join(repo_root, 'plugins')
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_tpl, plugins_root, config_dir]))
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     try:
