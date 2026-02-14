@@ -99,11 +99,11 @@ items:
     name: extraclustermanifests
     namespace: {{ cluster.name }}
   data:{% if cluster.manifests %}{% for manifest in cluster.manifests %}
-    99-{{ manifest.name }}: |
+    99-{{ manifest.name }}.yaml: |
 {{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if enableTPM %}{%- set tpmManifest %}{% include "includes/tpm-disk-encryption.yaml.tpl" %}{% endset %}
-    99-tpm-disk-encryption: |
+    99-tpm-disk-encryption.yaml: |
 {{ tpmManifest | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
-    99-image-digest-mirror-set: |
+    99-image-digest-mirror-set.yaml: |
       kind: ImageDigestMirrorSet
       apiVersion: config.openshift.io/v1
       metadata:
@@ -111,7 +111,7 @@ items:
       spec:
         imageDigestMirrors:
 {{ sources | indent(10, true)}}
-    99-image-tag-mirror-set: |
+    99-image-tag-mirror-set.yaml: |
       kind: ImageTagMirrorSet
       apiVersion: config.openshift.io/v1
       metadata:
