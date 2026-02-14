@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.9 (2026-02-13)
+- **ztp-troubleshoot** — ZTP troubleshooting template with 15 diagnostic checks for installation progress, resource validation, and assisted-service health
+
 ## v2.8.8 (2026-02-13)
 - **fix-release-script** — Fix `rg` dependency (use `grep`) and push only new release tag instead of all tags
 

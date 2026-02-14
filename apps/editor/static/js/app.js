@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.9',
+    date: '2026-02-13',
+    changes: [
+      'ZTP troubleshoot: comprehensive 15-check diagnostic template for installation progress'
+    ]
+  },
+  {
     version: '2.8.8',
     date: '2026-02-13',
     changes: [

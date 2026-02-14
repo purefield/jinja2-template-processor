@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.8.9
+- **ZTP Troubleshoot**: Comprehensive troubleshooting template — 15 checks for resources, conditions, agents, ISO, sync jobs, and assisted-service health
+
 ## 2.8.8
 - **Release Script Fix**: Use `grep` instead of `rg`, push only new tag
 
