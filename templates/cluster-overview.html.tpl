@@ -208,7 +208,9 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
     <tr><td>Platform</td><td>{{ platformNames[platform] | default(platform) }}</td></tr>
     <tr><td>Version</td><td>{{ cluster.version | default('—') }}</td></tr>{% if cluster.arch is defined %}
     <tr><td>Architecture</td><td>{{ cluster.arch }}</td></tr>{% endif %}{% if cluster.location is defined %}
-    <tr><td>Location</td><td>{{ cluster.location }}</td></tr>{% endif %}
+    <tr><td>Location</td><td>{{ cluster.location }}</td></tr>{% endif %}{% if cluster.tpm | default(false) %}
+    <tr><td>TPM Encryption</td><td>Enabled — LUKS disk encryption with TPM 2.0</td></tr>{% endif %}{% if cluster.disconnected | default(false) %}
+    <tr><td>Disconnected</td><td>Air-gapped — default OperatorHub sources disabled</td></tr>{% endif %}
   </table>
 </section>
 
@@ -371,9 +373,30 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 <section>
   <h2>Registry Mirrors</h2>
   <table>
-    <thead><tr><th>Source</th><th>Mirror</th></tr></thead>
+    <thead><tr><th>Source</th><th>Mirror</th><th>Insecure</th></tr></thead>
     <tbody>{% for mirror in cluster.mirrors %}
-      <tr><td><code>{{ mirror.source }}</code></td><td>{% for m in mirror.mirrors %}<code>{{ m }}</code>{% if not loop.last %}<br>{% endif %}{% endfor %}</td></tr>{% endfor %}
+      <tr><td><code>{{ mirror.source }}</code></td><td>{% for m in mirror.mirrors %}<code>{{ m }}</code>{% if not loop.last %}<br>{% endif %}{% endfor %}</td><td>{% if mirror.insecure | default(false) %}<span style="color:var(--red)">Yes</span>{% else %}No{% endif %}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}{% if cluster.catalogSources is defined and cluster.catalogSources | length > 0 %}
+<section>
+  <h2>Catalog Sources</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:12px">Custom operator catalogs for disconnected OperatorHub.</p>
+  <table>
+    <thead><tr><th>Name</th><th>Image</th><th>Publisher</th></tr></thead>
+    <tbody>{% for catalog in cluster.catalogSources %}
+      <tr><td><code>{{ catalog.name }}</code></td><td><code>{{ catalog.image }}</code></td><td>{{ catalog.publisher | default('Custom') }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}{% if network.secondary is defined and network.secondary | length > 0 %}
+<section>
+  <h2>Secondary Networks</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>VLAN</th><th>Subnet</th><th>Namespace</th></tr></thead>
+    <tbody>{% for net in network.secondary %}
+      <tr><td><code>{{ net.name }}</code></td><td>{{ net.type | default('—') }}</td><td>{% if net.vlan %}{{ net.vlan }}{% else %}—{% endif %}</td><td>{{ net.subnet | default('—') }}</td><td>{{ net.namespace | default('—') }}</td></tr>{% endfor %}
     </tbody>
   </table>
 </section>
@@ -407,6 +430,32 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
       <tr><td><code>api-int.{{ cluster.name }}.{{ network.domain }}</code></td><td>CNAME</td><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td></tr>{% for vip in network.primary.vips.apps | default([]) %}
       <tr><td><code>*.apps.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% endif %}{% for item in detailedHosts %}
       <tr><td><code>{{ item.name }}</code></td><td>A</td><td><code>{{ item.host.network.primary.address }}</code></td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{%- set files = [] -%}
+{%- if account.pullSecret is defined -%}{%- set _ = files.append({'purpose': 'Pull Secret', 'path': account.pullSecret}) -%}{%- endif -%}
+{%- if cluster.sshKeys is defined -%}{%- for key in cluster.sshKeys -%}{%- set _ = files.append({'purpose': 'SSH Public Key', 'path': key}) -%}{%- endfor -%}{%- endif -%}
+{%- if network.trustBundle is defined -%}{%- set _ = files.append({'purpose': 'CA Trust Bundle', 'path': network.trustBundle}) -%}{%- endif -%}
+{%- for name, host in hosts.items() -%}
+{%- if host.bmc is defined and host.bmc.password is defined -%}{%- set _ = files.append({'purpose': 'BMC Password (' ~ name ~ ')', 'path': host.bmc.password}) -%}{%- endif -%}
+{%- endfor -%}
+{%- if cluster.manifests is defined -%}{%- for manifest in cluster.manifests -%}{%- set _ = files.append({'purpose': 'Manifest: ' ~ manifest.name, 'path': manifest.file}) -%}{%- endfor -%}{%- endif -%}
+{%- if plugins is defined -%}
+{%- set platformPlugin = plugins[platform] | default({}) -%}
+{%- if platformPlugin.credentials is defined -%}{%- set _ = files.append({'purpose': 'Platform Credentials', 'path': platformPlugin.credentials}) -%}{%- endif -%}
+{%- if platformPlugin.vcenter is defined and platformPlugin.vcenter.password is defined -%}{%- set _ = files.append({'purpose': 'vCenter Password', 'path': platformPlugin.vcenter.password}) -%}{%- endif -%}
+{%- if platformPlugin.prismCentral is defined and platformPlugin.prismCentral.password is defined -%}{%- set _ = files.append({'purpose': 'Prism Central Password', 'path': platformPlugin.prismCentral.password}) -%}{%- endif -%}
+{%- endif -%}
+{% if files | length > 0 %}
+<section>
+  <h2>Files Required</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:12px">These files must be present when rendering templates.</p>
+  <table>
+    <thead><tr><th>Purpose</th><th>Path</th></tr></thead>
+    <tbody>{% for f in files %}
+      <tr><td>{{ f.purpose }}</td><td><code>{{ f.path }}</code></td></tr>{% endfor %}
     </tbody>
   </table>
 </section>

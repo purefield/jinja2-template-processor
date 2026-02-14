@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 - **insecure-mirrors** — Add per-mirror `insecure` flag for registries with self-signed certs or plain HTTP; sets `insecure = true` in registries.conf and generates `image.config.openshift.io/cluster` with `insecureRegistries` list via ACM ZTP extraclustermanifests, ACM CAPI ManifestWork, and ABI/IPI manifests
+- **cluster-overview-update** — Add TPM, disconnected, insecure mirrors, catalog sources, secondary networks, and files required sections to cluster overview preview
 
 ## v2.9.1 (2026-02-13)
 - **disconnected-operatorhub** — Add `cluster.disconnected` flag and `cluster.catalogSources` for air-gapped clusters; disables default OperatorHub sources and configures custom CatalogSources via ACM ZTP extraclustermanifests, ACM CAPI ManifestWork, and ABI/IPI manifests
