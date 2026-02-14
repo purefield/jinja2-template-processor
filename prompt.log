@@ -1714,3 +1714,9 @@ Implemented SSD udev MachineConfig include for all three install methods, kubevi
 - **ABI/IPI (install-config.yaml.tpl)**: Added as extra manifest document for kubevirt platform (SNO hub)
 - 6 new tests: ZTP kubevirt/baremetal, install-config kubevirt/baremetal, CAPI kubevirt/baremetal
 - All 124 tests pass
+
+### Prompt 97
+
+> ship it
+
+Release v2.13.0: OCP-on-OCP template-driven operators and KubeVirt SSD udev MachineConfig. Updated all 5 version locations, committed, tagged v2.13.0, built and deployed container.

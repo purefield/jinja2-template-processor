@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.13.0',
+    date: '2026-02-14',
+    changes: [
+      'OCP-on-OCP operators: template-driven LVM, ACM, cert-manager, ArgoCD, external-secrets (hub) and ODF (managed clusters)',
+      'KubeVirt SSD udev: install-time MachineConfig forcing virtual disks to report as SSD for ODF — ZTP, CAPI, and ABI',
+      'KubeVirt SNO fix: corrected broken flat network keys in example clusterfile'
+    ]
+  },
+  {
     version: '2.12.0',
     date: '2026-02-14',
     changes: [

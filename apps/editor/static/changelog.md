@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.13.0
+- **OCP-on-OCP Operators**: Template-driven operator deployment for OCP-on-OCP demo — clusterfile operators sections for LVM, ACM, cert-manager, ArgoCD, external-secrets (hub) and ODF (managed clusters); manage-cluster.sh install phases transitioned from step scripts to template rendering
+- **KubeVirt SSD Udev**: Install-time MachineConfig that forces virtual block devices to report as SSDs — included automatically for kubevirt platform via ZTP extraclustermanifests, CAPI ManifestWork, and ABI extra manifests
+- **KubeVirt SNO Fix**: Fix broken flat network keys in kubevirt-sno example clusterfile
+
 ## 2.12.0
 - **SiteConfig Integration**: Bidirectional conversion between clusterfiles and SiteConfig ClusterInstance CRs — `clusterfile2siteconfig.yaml.tpl` generates ClusterInstance + Namespace + Secrets; `siteconfig2clusterfile.yaml.tpl` does the reverse
 - **ClusterInstance Fields**: New schema fields from ClusterInstance data model — clusterType, cpuPartitioningMode, diskEncryption (Tang), holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride
