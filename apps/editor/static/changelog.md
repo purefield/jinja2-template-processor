@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.9.3
+- **Template Consolidation**: Extract shared includes for POC banner ManifestWork and os-images-sync; DRY insecure registries; net -69 lines of duplication
+- **KubeVirt Install Config**: Add kubevirt platform includes for install-config.yaml.tpl — maps to baremetal (VIPs) or none (SNO) for UPI/agent-based installs
+- **Multi-Document YAML**: Fix multi-doc rendering in CLI and UI; wrap multiple documents as YAML list
+- **Graceful Errors**: Pre-render validation for platform compatibility and required fields; actionable error messages for both CLI and UI
+
 ## 2.9.2
 - **Insecure Mirrors**: Per-mirror `insecure` flag for self-signed certs and HTTP mirrors — sets `insecure=true` in registries.conf, generates `image.config.openshift.io/cluster` insecureRegistries across ZTP, CAPI, and ABI/IPI
 - **Cluster Overview Update**: Add TPM encryption, disconnected, insecure mirrors, catalog sources, secondary networks, and files required sections to cluster overview preview

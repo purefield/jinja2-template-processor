@@ -1,6 +1,6 @@
 """Template processor for Jinja2 rendering with YAML output."""
 import yaml
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, UndefinedError
 import os
 import base64
 import yamllint.config
@@ -159,6 +159,46 @@ def process_template(config_data: dict, template_content: str, template_dir: str
     return template.render(config_data)
 
 
+def _resolve_path(data, dotted_path):
+    """Check if a dotted path like 'cluster.name' exists in nested dict."""
+    parts = dotted_path.split('.')
+    cur = data
+    for part in parts:
+        if not isinstance(cur, dict) or part not in cur:
+            return False
+        cur = cur[part]
+    return True
+
+
+def validate_data_for_template(data, meta):
+    """Pre-render validation: check platform compatibility and required fields.
+    Returns (warnings, errors) tuple of string lists.
+    """
+    warnings = []
+    errors = []
+    platform = data.get('cluster', {}).get('platform', 'baremetal') if isinstance(data.get('cluster'), dict) else 'baremetal'
+    supported = meta.get('platforms', [])
+    if supported and platform not in supported:
+        errors.append(
+            f"Platform '{platform}' is not supported by template '{meta.get('name', '?')}'."
+            f" Supported platforms: {', '.join(supported)}."
+            f" Set cluster.platform to one of the above, or use a different template."
+        )
+    requires = meta.get('requires', [])
+    missing = []
+    for req in requires:
+        if req.startswith('hosts.') or req.startswith('plugins.'):
+            continue
+        if not _resolve_path(data, req):
+            missing.append(req)
+    if missing:
+        warnings.append(
+            f"Missing recommended fields: {', '.join(missing)}."
+            f" Template may produce incomplete output."
+        )
+    return warnings, errors
+
+
 def render_template(yaml_text: str, template_name: str, params: list, templates_dir: Path) -> dict:
     """Render a Jinja2 template with YAML data and optional parameter overrides."""
     # Parse YAML input
@@ -191,18 +231,31 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     except Exception as e:
         return {"success": False, "error": f"Failed to read template: {e}", "output": ""}
 
+    # Pre-render validation
+    meta = parse_template_metadata(template_content)
+    val_warnings, val_errors = validate_data_for_template(data, meta)
+    if val_errors:
+        return {"success": False, "error": val_errors[0], "output": "", "warnings": val_warnings}
+
     # Render template
     try:
         processed = process_template(data, template_content, str(templates_dir))
+    except UndefinedError as e:
+        msg = str(e)
+        tpl_name = meta.get('name', template_name)
+        requires = meta.get('requires', [])
+        hint = f" Required fields: {', '.join(requires)}" if requires else ""
+        return {"success": False, "error": f"Error rendering '{tpl_name}': {msg}.{hint}", "output": "", "warnings": val_warnings}
     except Exception as e:
-        return {"success": False, "error": f"Template rendering failed: {e}", "output": ""}
+        return {"success": False, "error": f"Template rendering failed: {e}", "output": "", "warnings": val_warnings}
 
     # Format YAML output if applicable
     if template_name.endswith('.yaml.tpl') or template_name.endswith('.yaml.tmpl'):
         try:
-            output_dict = yaml.safe_load(processed)
+            docs = [d for d in yaml.safe_load_all(processed) if d is not None]
+            output_obj = docs[0] if len(docs) == 1 else docs
             output_yaml = yaml.dump(
-                output_dict,
+                output_obj,
                 width=4096,
                 Dumper=IndentDumper,
                 explicit_start=True,
@@ -216,7 +269,7 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
             # Run yamllint
             config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
             problems = list(yamllint.linter.run(output_yaml, config))
-            warnings = [str(p) for p in problems]
+            warnings = val_warnings + [str(p) for p in problems]
 
             return {
                 "success": True,
@@ -225,9 +278,9 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
                 "error": ""
             }
         except Exception as e:
-            return {"success": False, "error": f"YAML processing failed: {e}", "output": processed}
+            return {"success": False, "error": f"YAML processing failed: {e}", "output": processed, "warnings": val_warnings}
 
-    return {"success": True, "output": processed, "warnings": [], "error": ""}
+    return {"success": True, "output": processed, "warnings": val_warnings, "error": ""}
 
 
 def parse_template_metadata(content: str) -> dict:

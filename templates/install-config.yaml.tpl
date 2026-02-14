@@ -12,6 +12,7 @@ platforms:
   - ibmcloud
   - nutanix
   - baremetal
+  - kubevirt
   - none
 requires:
   - account.pullSecret
@@ -43,13 +44,13 @@ baseDomain: {{ network.domain }}
 
 controlPlane:
   name: master
-  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'none'] %}
+  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
   platform:
 {% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
-    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'none'] %}
+    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
     platform:
 {% include 'includes/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
@@ -89,8 +90,8 @@ imageDigestSources:{% for mirror in cluster.mirrors %}
 
 credentialsMode: Manual
 {%- endif %}
-{#- SNO bootstrap disk for platform: none #}
-{%- if platform == 'none' and controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
+{#- SNO bootstrap disk for platform: none or kubevirt SNO #}
+{%- if platform in ['none', 'kubevirt'] and controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
 {%- set bootstrapDisk = (hosts.values()|first).storage.os %}
 
 bootstrapInPlace:

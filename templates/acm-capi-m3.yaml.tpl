@@ -276,23 +276,17 @@ items:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
-- kind: ManifestWork
-  apiVersion: work.open-cluster-management.io/v1
-  metadata:
-    name: poc-banner
-    namespace: {{ cluster.name }}
-  spec:
-    workload:
-      manifests:
-        - apiVersion: console.openshift.io/v1
-          kind: ConsoleNotification
+{%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
+{{ pocBanner }}{%- set insecureImageManifest %}
+        - apiVersion: config.openshift.io/v1
+          kind: Image
           metadata:
-            name: poc-banner
+            name: cluster
           spec:
-            text: "This is a Proof of Concept and not for production use"
-            location: BannerTop
-            color: "#fff"
-            backgroundColor: "#e00"{% if enableDisconnected %}
+            registrySources:
+              insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
+                - {{ location }}{% endfor %}{% endfor %}
+{%- endset %}{% if enableDisconnected %}
 - kind: ManifestWork
   apiVersion: work.open-cluster-management.io/v1
   metadata:
@@ -317,14 +311,7 @@ items:
             image: {{ catalog.image }}
             displayName: {{ catalog.displayName | default(catalog.name) }}
             publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% if insecureMirrors %}
-        - apiVersion: config.openshift.io/v1
-          kind: Image
-          metadata:
-            name: cluster
-          spec:
-            registrySources:
-              insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-                - {{ location }}{% endfor %}{% endfor %}{% endif %}{% endif %}{% if insecureMirrors and not enableDisconnected %}
+{{ insecureImageManifest }}{% endif %}{% endif %}{% if insecureMirrors and not enableDisconnected %}
 - kind: ManifestWork
   apiVersion: work.open-cluster-management.io/v1
   metadata:
@@ -333,59 +320,7 @@ items:
   spec:
     workload:
       manifests:
-        - apiVersion: config.openshift.io/v1
-          kind: Image
-          metadata:
-            name: cluster
-          spec:
-            registrySources:
-              insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-                - {{ location }}{% endfor %}{% endfor %}{% endif %}
-- kind: ServiceAccount
-  apiVersion: v1
-  metadata:
-    name: os-images-sync
-    namespace: {{ cluster.name }}
-- kind: ClusterRoleBinding
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: os-images-sync-{{ cluster.name }}
-  subjects:
-    - kind: ServiceAccount
-      name: os-images-sync
-      namespace: {{ cluster.name }}
-  roleRef:
-    kind: ClusterRole
-    name: os-images-sync
-    apiGroup: rbac.authorization.k8s.io
-- kind: Job
-  apiVersion: batch/v1
-  metadata:
-    name: os-images-sync
-    namespace: {{ cluster.name }}
-  spec:
-    ttlSecondsAfterFinished: 300
-    backoffLimit: 3
-    template:
-      spec:
-        serviceAccountName: os-images-sync
-        restartPolicy: Never
-        containers:
-          - name: sync
-            image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
-            command:
-              - /bin/sh
-              - -c
-              - |
-                set -e
-                VERSION="{{ cluster.version }}"
-                EXISTS=$(oc get agentserviceconfig agent \
-                  -o go-template='{% raw %}{{range .spec.osImages}}{{if eq .version "{% endraw %}'"$VERSION"'{% raw %}"}}found{{end}}{{end}}{% endraw %}')
-                if [ "$EXISTS" = "found" ]; then
-                  echo "osImage for $VERSION already present, skipping"
-                  exit 0
-                fi
-                oc patch agentserviceconfig agent --type json \
-                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-iso.{{ imageArch }}.iso","rootFSUrl":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ majorMinor }}/latest/rhcos-live-rootfs.{{ imageArch }}.img"}}]'
-                echo "Added osImage for $VERSION"
+{{ insecureImageManifest }}{% endif %}
+{%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
+{{ osImagesSync }}
 

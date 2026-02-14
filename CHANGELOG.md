@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.9.3 (2026-02-14)
+- **template-consolidation** — Extract shared includes for POC banner ManifestWork and os-images-sync (SA + CRB + Job); DRY insecure registries Image config in acm-capi-m3; net -69 lines of duplication
+- **kubevirt-install-config** — Add kubevirt platform includes for install-config.yaml.tpl; maps to baremetal (VIPs) or none (SNO) for UPI/agent-based installs
+- **multi-doc-yaml** — Fix multi-document YAML handling in CLI and web app; wrap multiple documents as a YAML list for single-document output
+- **graceful-errors** — Pre-render validation for platform compatibility and required fields; transform raw Jinja2 UndefinedError into actionable messages with field hints for both CLI and UI
+- **design-principles** — Add DRY, small functions, smart defaults design principles to CLAUDE.md
+
 ## v2.9.2 (2026-02-13)
 - **insecure-mirrors** — Add per-mirror `insecure` flag for registries with self-signed certs or plain HTTP; sets `insecure = true` in registries.conf and generates `image.config.openshift.io/cluster` with `insecureRegistries` list via ACM ZTP extraclustermanifests, ACM CAPI ManifestWork, and ABI/IPI manifests
 - **cluster-overview-update** — Add TPM, disconnected, insecure mirrors, catalog sources, secondary networks, and files required sections to cluster overview preview

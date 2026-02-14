@@ -1,0 +1,143 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.21.0
+  platform: baremetal
+  arch: x86_64
+  name: compact-cluster
+  machine:
+    control:
+      cpus: 16
+      sockets: 2
+      memory: 64
+      storage:
+        os: 200
+        data:
+          - 1000
+          - 1000
+  sshKeys:
+    - 2023/acm/id_rsa.pub
+  location: dc1
+  tpm: true
+  mirrors:
+    - source: registry.access.redhat.com
+      insecure: true
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/registry-access-redhat-com
+    - source: registry.redhat.io
+      insecure: true
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/registry-redhat-io
+    - source: quay.io
+      insecure: true
+      prefix: ''
+      mirrors:
+        - internal-registry.tld/quay-io
+  disconnected: true
+  catalogSources:
+    - name: disconnected-redhat-operators
+      displayName: Red Hat Operators
+      image: internal-registry.tld/redhat/redhat-operator-index:v4.19
+      publisher: Red Hat
+network:
+  domain: base.domain
+  trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
+  proxy:
+    httpProxy: http://proxy.company.tld:8080/
+    httpsProxy: http://proxy.company.tld:8080/
+    noProxy: .cluster.local,.svc,127.0.0.1,localhost,10.128.0.0/14,172.30.0.0/16,10.0.0.0/24
+  ntpservers:
+    - 10.0.0.100
+  nameservers:
+    - 10.0.0.100
+  dnsResolver:
+    search:
+      - base.domain
+  primary:
+    bond: false
+    vlan: false
+    mtu: 9000
+    gateway: 10.0.0.1
+    subnet: 10.0.0.0/24
+    vips:
+      api:
+        - 10.0.0.2
+      apps:
+        - 10.0.0.3
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 22
+  service:
+    subnet: 172.30.0.0/16
+hosts:
+  control01.base.domain:
+    role: control
+    storage:
+      os:
+        wwn: wwn01
+    bmc:
+      vendor: dell
+      version: 9
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.4
+      macAddress: 00:1A:2B:3C:4D:10
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:11
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:12
+      primary:
+        address: 10.0.0.4
+        ports:
+          - eth0
+          - eth1
+  control02.base.domain:
+    role: control
+    storage:
+      os:
+        wwn: wwn02
+    bmc:
+      vendor: dell
+      version: 9
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.5
+      macAddress: 00:1A:2B:3C:4D:20
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:21
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:22
+      primary:
+        address: 10.0.0.5
+        ports:
+          - eth0
+          - eth1
+  control03.base.domain:
+    role: control
+    storage:
+      os:
+        wwn: wwn03
+    bmc:
+      vendor: dell
+      version: 9
+      username: root
+      password: bmc-password.txt
+      address: 10.0.1.6
+      macAddress: 00:1A:2B:3C:4D:30
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: 00:1A:2B:3C:4D:31
+        - name: eth1
+          macAddress: 00:1A:2B:3C:4D:32
+      primary:
+        address: 10.0.0.6
+        ports:
+          - eth0
+          - eth1

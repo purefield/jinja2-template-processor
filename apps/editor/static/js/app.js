@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.9.3',
+    date: '2026-02-14',
+    changes: [
+      'Template consolidation: extract shared includes for POC banner and os-images-sync; DRY insecure registries; -69 lines duplication',
+      'KubeVirt install-config: kubevirt platform includes for UPI/agent-based installs',
+      'Multi-document YAML: fix multi-doc rendering in CLI and UI; wrap as YAML list',
+      'Graceful errors: pre-render platform/field validation with actionable messages for CLI and UI'
+    ]
+  },
+  {
     version: '2.9.2',
     date: '2026-02-13',
     changes: [

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import yaml
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, UndefinedError
 import argparse
 import os
 import sys
@@ -47,6 +47,60 @@ def base64encode(s):
         s = s.encode("utf-8")
     return base64.b64encode(s).decode("utf-8")
 
+def parse_template_meta(template_file):
+    """Parse @meta block from a template file."""
+    meta = {"name": "", "platforms": [], "requires": []}
+    try:
+        with open(template_file, 'r') as f:
+            content = f.read()
+        match = re.search(r'\{#-?\s*@meta\s*\n(.*?)\n\s*-?#\}', content, re.DOTALL)
+        if match:
+            parsed = yaml.safe_load(match.group(1))
+            if isinstance(parsed, dict):
+                meta.update(parsed)
+    except Exception:
+        pass
+    return meta
+
+def _resolve_path(data, dotted_path):
+    """Check if a dotted path like 'cluster.name' exists in nested dict."""
+    parts = dotted_path.split('.')
+    cur = data
+    for part in parts:
+        if not isinstance(cur, dict) or part not in cur:
+            return False
+        cur = cur[part]
+    return True
+
+def validate_data_for_template(data, meta):
+    """Pre-render validation: check platform compatibility and required fields.
+    Returns (warnings, errors) tuple of string lists.
+    """
+    warnings = []
+    errors = []
+    platform = data.get('cluster', {}).get('platform', 'baremetal') if isinstance(data.get('cluster'), dict) else 'baremetal'
+    supported = meta.get('platforms', [])
+    if supported and platform not in supported:
+        errors.append(
+            f"Platform '{platform}' is not supported by template '{meta.get('name', '?')}'.\n"
+            f"  Supported platforms: {', '.join(supported)}\n"
+            f"  Set cluster.platform to one of the above, or use a different template."
+        )
+    requires = meta.get('requires', [])
+    missing = []
+    for req in requires:
+        if req.startswith('hosts.') or req.startswith('plugins.'):
+            continue
+        if not _resolve_path(data, req):
+            missing.append(req)
+    if missing:
+        warnings.append(
+            f"Missing recommended fields for '{meta.get('name', '?')}':\n"
+            + "".join(f"  - {m}\n" for m in missing)
+            + "  Template may produce incomplete output."
+        )
+    return warnings, errors
+
 def process_template(config_data, template_file, data_file):
     """
     Processes a Jinja2 template with data loaded from a YAML file.
@@ -63,7 +117,7 @@ def process_template(config_data, template_file, data_file):
     env.filters["base64encode"] = base64encode
     try:
         template = env.get_template(os.path.basename(template_file))
-    except jinja2.exceptions.TemplateNotFound:
+    except TemplateNotFound:
         raise FileNotFoundError(f"Error: Template file '{template_file}' not found.")
     return template.render(config_data)
 
@@ -275,20 +329,40 @@ if __name__ == "__main__":
 
     config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
 
+    # Pre-render validation: check platform and required fields
+    meta = parse_template_meta(args.template_file)
+    val_warnings, val_errors = validate_data_for_template(data, meta)
+    for w in val_warnings:
+        print(w, file=sys.stderr)
+    if val_errors:
+        for e in val_errors:
+            print(e, file=sys.stderr)
+        sys.exit(1)
+
     try:
         processedTemplate = process_template(data, args.template_file, args.data_file)
+    except UndefinedError as e:
+        msg = str(e)
+        tpl_name = meta.get('name', os.path.basename(args.template_file))
+        print(f"Error rendering '{tpl_name}': {msg}", file=sys.stderr)
+        requires = meta.get('requires', [])
+        if requires:
+            print(f"This template requires: {', '.join(requires)}", file=sys.stderr)
+        sys.exit(1)
     except (FileNotFoundError, ValueError) as e:
-        print(e)
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
     if args.template_file.endswith('yaml.tpl') or args.template_file.endswith('yaml.tmpl'):
-        outputDict = {}
         try:
-            outputDict = yaml.safe_load(processedTemplate)
+            docs = [d for d in yaml.safe_load_all(processedTemplate) if d is not None]
         except Exception as e:
             print(e)
+            sys.exit(1)
 
+        outputObj = docs[0] if len(docs) == 1 else docs
         outputYaml = yaml.dump(
-            outputDict,
+            outputObj,
             width=4096,
             Dumper=IndentDumper,
             explicit_start=True,
