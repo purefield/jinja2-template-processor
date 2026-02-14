@@ -1568,3 +1568,18 @@ Open questions for later:
 > (Context continuation — session resumed after context window compaction)
 
 Resumed session, ran test suite (1 failure due to missing bmc.version in test data), fixed, all 69 tests pass. Committed operator work in 4 logical commits with tags per CLAUDE.md rules. Updated prompt.log and CHANGELOG.
+
+### Prompt 83
+
+> each operator should have it's own schema and template in a schema/plugin/operator and template/plugin/operator folder, also a sibling folder platform for plugin/platform in both. clear isolation and plug-in architecture independent from one another and only included when specified. I could see plug-ins be different repos in the future too. use policy with ACM as it works for ZTP and CAPI. use manifests for ABI. Need to come up with a way to bootstrap further operators via argocd maybe
+
+1. **Plugin restructuring**: Moved all plugins into isolated directories:
+   - `templates/includes/operators/` → `templates/plugins/operators/`
+   - `templates/includes/platforms/` → `templates/plugins/platforms/`
+   - `schema/plugins/operators.schema.json` → `schema/plugins/operators/argocd.schema.json`
+   - Added `templates/plugins/` to FileSystemLoader search paths everywhere
+   - 72 tests pass after restructuring
+
+2. **ArgoCD bootstrap**: Added app-of-apps pattern — when `bootstrap.repoURL` is set, generates an ArgoCD Application CR that manages further operators from a git repo. Works in both standalone manifests (ABI) and ACM Policy (ZTP/CAPI). Supports autoSync with self-heal/pruning.
+
+Commits: plugin-restructure, argocd-bootstrap

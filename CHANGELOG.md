@@ -8,6 +8,8 @@ All notable changes to this project are documented in this file.
 - **operator-argocd-templates** — ArgoCD DRY includes: manifests.yaml.tpl (Namespace, OperatorGroup, Subscription, ArgoCD CR) and policy.yaml.tpl (ACM Policy + ConfigurationPolicy + PlacementBinding)
 - **operator-integration** — ArgoCD operator integrated into install-config.yaml.tpl (extra manifests), acm-ztp.yaml.tpl and acm-capi-m3.yaml.tpl (ACM Policy); standalone operators.yaml.tpl for direct apply
 - **operator-tests** — 8 new tests for ArgoCD operator plugin covering defaults, customization, RBAC, disabled state, install-config, and ACM ZTP policy
+- **plugin-restructure** — Move operators and platforms into `templates/plugins/` and `schema/plugins/` for clear isolation; each plugin self-contained in its own directory, ready for future extraction into separate repos
+- **argocd-bootstrap** — App-of-apps pattern: ArgoCD Application CR that bootstraps further operators from a git repo; works in standalone manifests (ABI) and ACM Policy (ZTP/CAPI); supports autoSync with self-heal and pruning
 
 ## v2.9.3 (2026-02-14)
 - **template-consolidation** — Extract shared includes for POC banner ManifestWork and os-images-sync (SA + CRB + Job); DRY insecure registries Image config in acm-capi-m3; net -69 lines of duplication
