@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 2.9.2
+- **Insecure Mirrors**: Per-mirror `insecure` flag for self-signed certs and HTTP mirrors — sets `insecure=true` in registries.conf, generates `image.config.openshift.io/cluster` insecureRegistries across ZTP, CAPI, and ABI/IPI
+- **Cluster Overview Update**: Add TPM encryption, disconnected, insecure mirrors, catalog sources, secondary networks, and files required sections to cluster overview preview
+
 ## 2.9.1
 - **Disconnected Clusters**: Add `cluster.disconnected` flag and `cluster.catalogSources` for air-gapped installations — disables default OperatorHub sources, configures custom CatalogSources across all install methods (ZTP, CAPI, ABI/IPI)
 

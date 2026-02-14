@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.9.2',
+    date: '2026-02-13',
+    changes: [
+      'Insecure mirrors: per-mirror insecure flag for self-signed certs and HTTP mirrors',
+      'Cluster overview: add TPM, disconnected, insecure, catalog sources, secondary networks, and files required sections'
+    ]
+  },
+  {
     version: '2.9.1',
     date: '2026-02-13',
     changes: [

@@ -4,6 +4,7 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.9.2 (2026-02-13)
 - **insecure-mirrors** — Add per-mirror `insecure` flag for registries with self-signed certs or plain HTTP; sets `insecure = true` in registries.conf and generates `image.config.openshift.io/cluster` with `insecureRegistries` list via ACM ZTP extraclustermanifests, ACM CAPI ManifestWork, and ABI/IPI manifests
 - **cluster-overview-update** — Add TPM, disconnected, insecure mirrors, catalog sources, secondary networks, and files required sections to cluster overview preview
 
