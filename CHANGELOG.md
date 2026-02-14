@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.9.0 (2026-02-13)
+- **manifest-yaml-ext** — Add `.yaml` extension to extraclustermanifests ConfigMap data keys; assisted-service requires `.json`, `.yaml`, or `.yml` extensions on manifest filenames
+
 ## v2.8.9 (2026-02-13)
 - **ztp-troubleshoot** — ZTP troubleshooting template with 15 diagnostic checks for installation progress, resource validation, and assisted-service health
 

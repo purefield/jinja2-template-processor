@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.9.0
+- **Manifest Filename Fix**: Add `.yaml` extension to extraclustermanifests ConfigMap keys — assisted-service requires valid file extensions
+
 ## 2.8.9
 - **ZTP Troubleshoot**: Comprehensive troubleshooting template — 15 checks for resources, conditions, agents, ISO, sync jobs, and assisted-service health
 

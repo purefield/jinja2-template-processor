@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.9.0',
+    date: '2026-02-13',
+    changes: [
+      'Manifest filename fix: add .yaml extension to extraclustermanifests ConfigMap keys for assisted-service validation'
+    ]
+  },
+  {
     version: '2.8.9',
     date: '2026-02-13',
     changes: [
