@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.8 (2026-02-13)
+- **fix-release-script** — Fix `rg` dependency (use `grep`) and push only new release tag instead of all tags
+
 ## v2.8.7 (2026-02-13)
 - **mirrors-fix** — For mirrors, always use mirror in imageContentSource template
 - **release-script-fix** — Fix `rg` dependency (use `grep`), push only new tag instead of all tags

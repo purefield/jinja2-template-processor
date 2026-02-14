@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.8',
+    date: '2026-02-13',
+    changes: [
+      'Release script fix: use grep instead of rg, push only new release tag'
+    ]
+  },
+  {
     version: '2.8.7',
     date: '2026-02-13',
     changes: [

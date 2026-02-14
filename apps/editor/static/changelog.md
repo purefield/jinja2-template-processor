@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.8.8
+- **Release Script Fix**: Use `grep` instead of `rg`, push only new tag
+
 ## 2.8.7
 - For mirrors, always use mirror
 
