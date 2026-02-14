@@ -62,6 +62,9 @@ cluster:
       displayName: Certified Operators
       image: internal-registry.tld/redhat/certified-operator-index:v4.19
       publisher: Red Hat
+plugins:
+  operators:
+    argocd: {}
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem

@@ -1722,5 +1722,111 @@ class TestDisconnectedOperatorHub:
         assert cm is None, "extraclustermanifests should not exist when disconnected is false"
 
 
+class TestOperatorsPlugin:
+    """Tests for operator plugin architecture — ArgoCD."""
+
+    def operator_data(self, argocd_config=None):
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
+        if argocd_config is not None:
+            data['plugins'] = {'operators': {'argocd': argocd_config}}
+        return data
+
+    def test_argocd_standalone_defaults(self, template_env):
+        """Test standalone operators template with all ArgoCD defaults."""
+        data = self.operator_data({})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = list(yaml.safe_load_all(rendered))
+        docs = [d for d in docs if d is not None]
+
+        kinds = [d['kind'] for d in docs]
+        assert 'Namespace' in kinds
+        assert 'OperatorGroup' in kinds
+        assert 'Subscription' in kinds
+        assert 'ArgoCD' in kinds
+
+        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        assert sub['spec']['channel'] == 'latest'
+        assert sub['spec']['source'] == 'redhat-operators'
+        assert sub['spec']['installPlanApproval'] == 'Automatic'
+
+    def test_argocd_custom_channel(self, template_env):
+        """Test ArgoCD with custom channel and HA."""
+        data = self.operator_data({'channel': 'gitops-1.14', 'ha': True})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        assert sub['spec']['channel'] == 'gitops-1.14'
+
+        argo = next(d for d in docs if d['kind'] == 'ArgoCD')
+        assert argo['spec']['ha']['enabled'] is True
+
+    def test_argocd_rbac_policy(self, template_env):
+        """Test ArgoCD with custom RBAC policy."""
+        policy = "g, system:cluster-admins, role:admin\np, role:dev, applications, *, */*, allow"
+        data = self.operator_data({'rbac': {'policy': policy, 'defaultPolicy': 'role:admin'}})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        argo = next(d for d in docs if d['kind'] == 'ArgoCD')
+        assert 'role:dev' in argo['spec']['rbac']['policy']
+        assert argo['spec']['rbac']['defaultPolicy'] == 'role:admin'
+
+    def test_argocd_disabled(self, template_env):
+        """Test ArgoCD with enabled: false produces no output."""
+        data = self.operator_data({'enabled': False})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        # Should produce no YAML docs
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        assert len(docs) == 0
+
+    def test_no_operators_plugin(self, template_env):
+        """Test templates work fine without operators plugin."""
+        data = self.operator_data(None)  # no operators plugin
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        # Should have install-config but no operator resources
+        kinds = [d.get('kind', '') for d in docs]
+        assert 'Subscription' not in kinds
+        assert 'ArgoCD' not in kinds
+
+    def test_argocd_in_install_config(self, template_env):
+        """Test ArgoCD manifests appear in install-config output."""
+        data = self.operator_data({})
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        kinds = [d.get('kind', '') for d in docs]
+        assert 'Subscription' in kinds
+        assert 'ArgoCD' in kinds
+
+    def test_argocd_acm_ztp_policy(self, template_env):
+        """Test ArgoCD generates ACM Policy in ZTP template."""
+        data = self.operator_data({})
+        data['cluster']['version'] = '4.21.0'
+        data['cluster']['arch'] = 'x86_64'
+        for hostname, host in data['hosts'].items():
+            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
+            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
+            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-argocd']
+        assert len(policies) == 1, "Expected one ArgoCD Policy"
+
+        bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-argocd']
+        assert len(bindings) == 1, "Expected one ArgoCD PlacementBinding"
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
