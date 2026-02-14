@@ -1,194 +1,389 @@
-# python jinja2-template-processor
-## YAML Jinja Template Processor Setup
-This script renders Jinja2 templates using YAML input data and parameters in jsonpath format.
-When the template is producing yaml, it validates the result with `yamllint`.
+# Clusterfile Template Processor
 
-## 🧰 Requirements
-- Python 3.6+
-- pip (Python package manager)
+A Jinja2 template engine for generating OpenShift and Kubernetes configuration from declarative YAML clusterfiles. One data file describes your entire cluster — the processor renders installation manifests, ACM policies, operator subscriptions, and pre-flight checks.
 
-## 📦 Install Dependencies
-```bash
-pip install -r requirements.txt
+**Web editor**: [quay.io/dds/clusterfile-editor](https://quay.io/repository/dds/clusterfile-editor) — schema-driven, offline-first UI for editing clusterfiles in a browser.
+
+## How it works
+
+```
+clusterfile (YAML)  +  template (.yaml.tpl)  →  rendered output
 ```
 
-## 📦 Use as container image
-Create container image
-```bash
-podman build -t quay.io/dds/process:latest -f Containerfile
-podman login quay.io/dds
-podman push quay.io/dds/process:latest
-```
-Use wrapper script with container image (all path need to be inside the working directory)
-```bash
-process.sh [data-file] [-p ""]* [template file]
-```
-
-## Clusterfile Editor
-The editor is a small web UI served from a container image in `apps/editor/`.
-
-### Quick start (local)
-```bash
-./clusterfile-editor.sh build
-./clusterfile-editor.sh
-```
-
-### Versioned builds
-The version tag comes from `apps/editor/APP_VERSION`. The build step syncs:
-- `apps/editor/app/main.py` (FastAPI version)
-- `apps/editor/static/index.html` (UI version badge)
+A **clusterfile** contains all cluster parameters: name, version, platform, networking, hosts, storage, BMC credentials, operator plugins. A **template** consumes the clusterfile and produces Kubernetes-ready YAML — install configs, agent configs, ACM resources, operator manifests, shell scripts.
 
 ```bash
-echo "1.0.1" > apps/editor/APP_VERSION
-./clusterfile-editor.sh build
-./clusterfile-editor.sh push
+# Render an install-config.yaml for agent-based install
+./process.py data/baremetal-bond-vlan.clusterfile templates/install-config.yaml.tpl
+
+# Render ACM ZTP manifests for managed cluster provisioning
+./process.py data/baremetal.clusterfile templates/acm-ztp.yaml.tpl
+
+# Render all operator manifests for post-install
+./process.py data/acm-hub-sno.clusterfile templates/operators.yaml.tpl
 ```
 
-Notes:
-- The deployment file `../2023/apps/clusterfile-editor/app.yaml` is updated manually.
-- Override the tag without changing the file: `IMAGE_TAG=dev-20250221 ./clusterfile-editor.sh build`.
+## Quick start
 
+### Requirements
 
-# Examples
-## Agent Based Installer
-### Render agent-config.yaml
+- Python 3.8+
+- pip
+
+### Install
+
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl > agent-config.yaml
-cat agent-config.yaml
+pip install jinja2 pyyaml yamllint jsonpath-ng jsonschema
 ```
-### Render install-config.yaml
+
+### Render your first template
+
+```bash
+# Clone and enter the repo
+git clone https://github.com/purefield/jinja2-template-processor.git
+cd jinja2-template-processor
+
+# Render an install-config for a baremetal cluster
+./process.py data/baremetal.clusterfile templates/install-config.yaml.tpl
+```
+
+## Use cases
+
+### Agent-Based Install (ABI)
+
+Generate `install-config.yaml` and `agent-config.yaml` for the OpenShift agent-based installer:
+
 ```bash
 ./process.py data/baremetal-bond-vlan.clusterfile templates/install-config.yaml.tpl > install-config.yaml
-cat install-config.yaml
-```
-### Render install-config.yaml for IPI platforms
-```bash
-# vSphere IPI with static IPs
-./process.py data/ipi-vsphere.clusterfile templates/install-config.yaml.tpl > install-config.yaml
-
-# AWS IPI
-./process.py data/ipi-aws.clusterfile templates/install-config.yaml.tpl > install-config.yaml
-
-# Nutanix IPI
-./process.py data/ipi-nutanix.clusterfile templates/install-config.yaml.tpl > install-config.yaml
-```
-### Render mirror-registry-config.yaml
-```bash
-mkdir openshift
-./process.py data/baremetal-bond-vlan.clusterfile templates/mirror-registry-config.yaml.tpl > openshift/mirror-registry-config.yaml
-cat openshift/mirror-registry-config.yaml
+./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl > agent-config.yaml
 ```
 
-## Advanced Cluster Management Host Inventory ZTP Installation
-### Render acm-ztp.yaml
-Configuration file for ACM zero touch provisioning
+### IPI (Installer Provisioned Infrastructure)
+
+Generate platform-specific install configs for cloud providers:
+
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/acm-ztp.yaml.tpl > acm-ztp.yaml
-cat acm-ztp.yaml
+# AWS
+./process.py data/ipi-aws.clusterfile templates/install-config.yaml.tpl
+
+# vSphere with static IPs
+./process.py data/ipi-vsphere.clusterfile templates/install-config.yaml.tpl
+
+# Azure, GCP, Nutanix, OpenStack, IBM Cloud — same pattern
+./process.py data/ipi-azure.clusterfile templates/install-config.yaml.tpl
 ```
 
-## CAPI+Metal3 Installation using MCE
-### Render acm-capi-m3.yaml
-Configuration file for ACM zero touch provisioning
+### ACM Zero Touch Provisioning (ZTP)
+
+Generate all resources for ACM-managed bare metal provisioning — Namespace, Secrets, AgentClusterInstall, ClusterDeployment, BareMetalHosts, NMState configs, InfraEnv:
+
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
-cat acm-capi-m3.yaml
+./process.py data/baremetal.clusterfile templates/acm-ztp.yaml.tpl > acm-ztp.yaml
+oc apply -f acm-ztp.yaml
 ```
 
-### Render acm-asc.yaml
-Configuration file for ACM Agent Service Config
+### ACM CAPI + Metal3
+
+Generate Cluster API resources with the Metal3 provider:
+
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/acm-asc.yaml.tpl > acm-asc.yaml
-cat acm-asc.yaml
-```
-## Render acm-creds.yaml.tpl
-This generates the hostinventory credentials for ACM
-```bash
-./process.py data/baremetal.clusterfile templates/acm-creds.yaml.tpl > acm-creds.yaml
-cat acm-creds.yaml
+./process.py data/baremetal.clusterfile templates/acm-capi-m3.yaml.tpl > acm-capi-m3.yaml
+oc apply -f acm-capi-m3.yaml
 ```
 
-## Render test-dns.sh
-Create forward and reverse DNS verification script
-```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/test-dns.sh.tpl | bash
-```
-## Render infinidat-setup.yaml.tpl
-This generates the infinidat machine, operator, driver configuration files with the configured content
-```bash
-./process.py data/infinidat.yaml templates/infinidat-setup.yaml.tpl
-```
-## Render secondary-network-setup.yaml.tpl
-This generates secondary network configuration based on network.secondary list
-```bash
-./process.py data/infinidat.yaml templates/secondary-network-setup.yaml.tpl
-```
-### any reason to prever ovn vs linux bridge?
-* if micro-segmentation comes up AND/OR any type of firewalling for VLAN based networks use OVNK localnet + MultiNetworkPolicy (linux-bridge does not support it)
-* If possible avoid creating bridge mappings for br-ex bridge and use dedicated NICs/bonds (dont pollute OCP control plane traffic with VM dataplane)
-* If VMs need to be attached to the same VLAN as machineNetwork, must use ONK localnet with br-ex bridge mappings
-* Always advocate for bonds VS single NICs for VM dataplane traffic
-* live migration network should use a dedicated NIC and preferably a macvlan (it offers best perfomance)
-* if VM guest tagging is required must use linux-bridge (it allows disabling mac spoofing where as OVNK localnet does not)
-* if there is no DHCP available but they want to auto assign IPs to VMs, must use linux-bridge (only linux-bridge supports openshift ipam with whereabouts)
-* For VNF use cases with service-chaining must use linux-bridge (when routing is required only linux-bridge allows disabling mac spoofing where as OVNK localnet does not)
+### Day-2 Operators
 
-## Data Models
-**Baremetal/Agent-based:**
-- `baremetal.clusterfile` - Standard baremetal
-- `baremetal-vlan.clusterfile` - VLAN only
-- `baremetal-bond.clusterfile` - Bond only
-- `baremetal-bond-vlan.clusterfile` - Bond + VLAN
-- `agent-nutanix.clusterfile` - Agent-based on Nutanix
-- `sno.clusterfile` - Single Node OpenShift
+Generate operator installation manifests for post-install application:
 
-**IPI (Installer Provisioned Infrastructure):**
-- `ipi-aws.clusterfile` - AWS
-- `ipi-azure.clusterfile` - Azure
-- `ipi-gcp.clusterfile` - GCP
-- `ipi-ibmcloud.clusterfile` - IBM Cloud
-- `ipi-nutanix.clusterfile` - Nutanix
-- `ipi-openstack.clusterfile` - OpenStack
-- `ipi-vsphere.clusterfile` - vSphere (with static IP support)
----
-
-## JSON/CLI Data Sources
-
-### Inline JSON as `data_file`
-You can pass inline JSON instead of a file:
 ```bash
-./process.py '{"cluster":{"name":"inline"}}' templates/console-notification.yaml.tmpl -p color=red
+# All configured operators as standalone manifests
+./process.py data/acm-hub-sno.clusterfile templates/operators.yaml.tpl > operators.yaml
+oc apply -f operators.yaml
 ```
 
-If it parses as JSON, it will be used directly; otherwise it is treated as a filename.
+Operators are also automatically included as:
+- **ABI extra manifests** in `install-config.yaml.tpl`
+- **ACM Policies** in `acm-ztp.yaml.tpl` and `acm-capi-m3.yaml.tpl`
 
-### No file, only `-p`
-If you omit `data_file`, an empty object is created and seeded from `-p`:
+### KubeVirt (OpenShift Virtualization)
+
+Generate VirtualMachine resources for OpenShift Virtualization clusters:
+
 ```bash
-./process.py templates/console-notification.yaml.tmpl -p cluster.name=foo -p color=red
+./process.py data/kubevirt.clusterfile templates/kubevirt-cluster.yaml.tpl
 ```
 
-## Create-if-missing overrides
-`-p` supports creating missing paths using dotted keys and `[index]`:
+### Pre-flight Checks
+
+Generate validation scripts for DNS, NTP, BMC, network, and registry connectivity:
+
 ```bash
-./process.py '{}' templates/console-notification.yaml.tmpl -p cluster.name=foo -p items[0].key=value
+# All checks
+./process.py data/baremetal.clusterfile templates/pre-check.sh.tpl | bash
+
+# Individual checks
+./process.py data/baremetal.clusterfile templates/pre-check-dns.sh.tpl | bash
+./process.py data/baremetal.clusterfile templates/pre-check-bmc.sh.tpl | bash
+```
+
+## Clusterfile anatomy
+
+A clusterfile has four main sections:
+
+```yaml
+account:
+  pullSecret: path/to/pull-secret.json    # Red Hat pull secret
+
+cluster:
+  name: my-cluster
+  version: "4.21.0"
+  platform: baremetal                       # baremetal, none, aws, azure, gcp, vsphere, ...
+  arch: x86_64
+  sshKeys:
+    - path/to/id_rsa.pub
+  location: dc1
+
+network:
+  domain: example.com
+  primary:
+    gateway: 10.0.0.1
+    subnet: 10.0.0.0/24
+  cluster:
+    subnet: 10.128.0.0/14
+  service:
+    subnet: 172.30.0.0/16
+
+hosts:
+  node1.example.com:
+    role: control                           # control or worker
+    storage:
+      os: { deviceName: /dev/sda }
+    bmc:
+      vendor: dell
+      address: 10.0.1.1
+      username: root
+      password: bmc-password.txt
+    network:
+      interfaces:
+        - name: eno1
+          macAddress: "00:1A:2B:3C:4D:01"
+      primary:
+        address: 10.0.0.10
+        ports: [eno1]
+```
+
+### Optional sections
+
+```yaml
+cluster:
+  disconnected: true                        # Air-gapped installation
+  tpm: true                                 # TPM disk encryption
+  mirrors:                                  # Registry mirrors for disconnected
+    - source: registry.redhat.io
+      mirrors: [mirror.local/redhat]
+  catalogSources:                           # Custom operator catalogs
+    - name: custom-operators
+      image: mirror.local/catalog:v4.21
+
+network:
+  proxy:                                    # Cluster-wide proxy
+    httpProxy: http://proxy:8080
+    httpsProxy: http://proxy:8080
+    noProxy: .cluster.local,10.0.0.0/8
+  trustBundle: /path/to/ca-bundle.pem       # Additional trust CA
+  secondary:                                # Secondary networks (SR-IOV, bridges)
+    - name: storage-net
+      type: linux-bridge
+      vlan: 100
+      ports: [eth1]
+      subnet: 192.168.1.0/24
+
+plugins:
+  kubevirt:                                 # Platform plugin (KubeVirt example)
+    storageClass:
+      default: ocs-storagecluster-ceph-rbd
+      performance: lvms-vg1
+    network:
+      type: cudn
+  operators:                                # Day-2 operator plugins
+    argocd: {}                              # {} = all defaults
+    lvm: {}
+    acm:
+      multiClusterHub:
+        availabilityConfig: Basic
+    cert-manager: {}
+    external-secrets: {}
+```
+
+## Operator plugins
+
+Each operator is configured under `plugins.operators.<name>`. Specify `{}` for all defaults, or override individual settings:
+
+| Operator | Key | Default Channel | What it installs |
+|----------|-----|-----------------|-----------------|
+| [ArgoCD](plugins/operators/argocd/) | `argocd` | `latest` | GitOps operator + ArgoCD instance + optional bootstrap Application |
+| [LVM Storage](plugins/operators/lvm/) | `lvm` | `stable` | LVMS operator + LVMCluster with deviceClasses |
+| [ODF](plugins/operators/odf/) | `odf` | `stable-4.18` | ODF operator + StorageCluster + ConsolePlugin |
+| [ACM](plugins/operators/acm/) | `acm` | `release-2.14` | ACM operator + MultiClusterHub + AgentServiceConfig + Provisioning |
+| [cert-manager](plugins/operators/cert-manager/) | `cert-manager` | `stable-v1` | cert-manager operator (install-and-go) |
+| [external-secrets](plugins/operators/external-secrets/) | `external-secrets` | `stable-v1` | external-secrets operator (global scope) |
+
+Every operator supports these common overrides:
+
+```yaml
+plugins:
+  operators:
+    lvm:
+      channel: stable-4.19        # OLM subscription channel
+      source: my-catalog           # Catalog source (disconnected)
+      approval: Manual             # InstallPlan approval (Automatic/Manual)
+```
+
+Each operator generates two template files:
+- **`manifests.yaml.tpl`** — standalone YAML for `oc apply` or ABI extra manifests
+- **`policy.yaml.tpl`** — ACM Policy + PlacementBinding for ZTP/CAPI managed clusters
+
+See each operator's README for full configuration reference.
+
+## Platform plugins
+
+Platform plugins configure cloud-specific settings in `install-config.yaml`. They live in `templates/plugins/platforms/` and are selected automatically based on `cluster.platform`:
+
+| Platform | Plugin Config | Templates |
+|----------|--------------|-----------|
+| AWS | `plugins.aws` | platform, controlPlane, compute, creds |
+| Azure | `plugins.azure` | platform, controlPlane, compute, creds |
+| GCP | `plugins.gcp` | platform, controlPlane, compute, creds |
+| vSphere | `plugins.vsphere` | platform, controlPlane, compute, creds |
+| OpenStack | `plugins.openstack` | platform, controlPlane, compute, creds |
+| IBM Cloud | `plugins.ibmcloud` | platform, controlPlane, compute, creds |
+| Nutanix | `plugins.nutanix` | platform, controlPlane, compute, creds |
+| KubeVirt | `plugins.kubevirt` | platform |
+| Baremetal | — | platform |
+| None (SNO) | — | platform |
+
+## CLI reference
+
+```
+./process.py [data-file] [template-file] [options]
+```
+
+| Flag | Description |
+|------|-------------|
+| `-p key=value` | Override or create a field (dotted path: `-p cluster.name=foo`) |
+| `-s schema.json` | Validate input against JSON Schema |
+| `-S` | Validate both input and after `-p` overrides |
+
+### Inline JSON
+
+```bash
+./process.py '{"cluster":{"name":"inline"}}' templates/install-config.yaml.tpl
+```
+
+### Parameter-only mode
+
+```bash
+./process.py templates/install-config.yaml.tpl -p cluster.name=test -p cluster.version=4.21.0
+```
+
+## Web editor
+
+The Clusterfile Editor is a browser-based UI for editing clusterfiles with schema-driven forms, live YAML preview, and template rendering.
+
+### Run from container
+
+```bash
+podman run -d --name clusterfile-editor -p 8000:8000 quay.io/dds/clusterfile-editor:latest
+# Open http://localhost:8000
+```
+
+### Build from source
+
+```bash
+# From repo root
+podman build -t clusterfile-editor -f apps/editor/Containerfile .
+podman run -d --name clusterfile-editor -p 8000:8000 clusterfile-editor
+```
+
+### Development mode
+
+```bash
+cd apps/editor
+pip install fastapi[standard] jinja2 yamllint jsonpath-ng jsonschema pyyaml uvicorn
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## Container image (CLI)
+
+Use the CLI processor as a container:
+
+```bash
+# Build
+podman build -t quay.io/dds/process:latest -f Containerfile .
+
+# Run (mount your data directory)
+podman run --rm -v ./data:/data:Z quay.io/dds/process:latest \
+  /data/baremetal.clusterfile templates/install-config.yaml.tpl
+```
+
+## Example clusterfiles
+
+| File | Description |
+|------|-------------|
+| `data/sno.clusterfile` | Single Node OpenShift with LVM + ArgoCD, disconnected, mirrors |
+| `data/acm-hub-sno.clusterfile` | ACM hub on SNO with all 6 operators |
+| `data/baremetal.clusterfile` | Standard 3-node baremetal cluster |
+| `data/baremetal-bond-vlan.clusterfile` | Baremetal with bonded NICs + VLANs |
+| `data/baremetal-compact.clusterfile` | 3-node compact cluster (no workers) |
+| `data/kubevirt.clusterfile` | KubeVirt cluster with CUDN networking |
+| `data/kubevirt-sno.clusterfile` | KubeVirt SNO |
+| `data/ipi-aws.clusterfile` | AWS IPI |
+| `data/ipi-vsphere.clusterfile` | vSphere IPI with static IPs |
+| `data/ipi-nutanix.clusterfile` | Nutanix IPI |
+
+## Project structure
+
+```
+.
+├── process.py                          # CLI template processor
+├── schema/
+│   └── clusterfile.schema.json         # JSON Schema for clusterfile validation
+├── data/                               # Example clusterfiles
+├── templates/                          # Jinja2 templates (.yaml.tpl)
+│   ├── includes/                       # Reusable template fragments (nmstate, bmc, etc.)
+│   └── plugins/platforms/              # Platform-specific includes (aws, vsphere, etc.)
+├── plugins/
+│   └── operators/                      # Operator plugins (co-located schema + templates)
+│       ├── argocd/                     # ArgoCD operator
+│       ├── lvm/                        # LVM Storage operator
+│       ├── odf/                        # OpenShift Data Foundation
+│       ├── acm/                        # Advanced Cluster Management
+│       ├── cert-manager/               # cert-manager operator
+│       └── external-secrets/           # external-secrets operator
+├── apps/
+│   └── editor/                         # Web editor (FastAPI + vanilla JS)
+└── tests/
+    └── test_templates.py               # 95 pytest tests
 ```
 
 ## Schema validation
 
-You can validate input data against a JSON Schema using `-s` / `--schema`.
-To validate both the original data and again after applying `-p` overrides, use the `-S` flag (no argument) or the long form `--validate-scope data+params`.
+The clusterfile schema (`schema/clusterfile.schema.json`) validates all sections including operator plugins. The web editor uses it for form generation; the CLI uses it with `-s`:
 
-Validate data only:
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl -s schema/clusterfile.schema.json
+./process.py data/sno.clusterfile templates/install-config.yaml.tpl \
+  -s schema/clusterfile.schema.json -S
 ```
 
-Validate data and overrides (shortcut `-S`):
+## Tests
+
 ```bash
-./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl -s schema/clusterfile.schema.json -S
+pip install pytest
+python3 -m pytest tests/ -v
 ```
 
-Notes:
-- `-s` accepts a path to a JSON or YAML schema file.
-- `-S` is a shortcut flag equivalent to `--validate-scope data+params`.
+95 tests covering install-config, agent-config, credentials, platform includes, KubeVirt, ACM ZTP, ACM CAPI, disconnected mode, TPM, insecure mirrors, and all 6 operator plugins.
+
+## License
+
+MIT

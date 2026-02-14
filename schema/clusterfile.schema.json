@@ -161,45 +161,145 @@
       "title": "ArgoCD / OpenShift GitOps",
       "description": "Installs openshift-gitops-operator and configures an ArgoCD instance. Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://docs.openshift.com/gitops/latest/understanding_openshift_gitops/about-redhat-openshift-gitops.html",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ArgoCD installation." },
-        "channel": { "type": "string", "default": "latest", "description": "OLM subscription channel (e.g. latest, gitops-1.14)." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators", "description": "OLM CatalogSource name." },
-        "ha": { "type": "boolean", "default": false, "description": "Enable HA for ArgoCD components." },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip ArgoCD installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "latest",
+          "description": "OLM subscription channel (e.g. latest, gitops-1.14).",
+          "x-doc-url": "https://docs.openshift.com/gitops/latest/installing_gitops/installing-openshift-gitops.html"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        },
+        "ha": {
+          "title": "High Availability",
+          "type": "boolean",
+          "default": false,
+          "description": "Enable HA for ArgoCD components (multiple replicas for server, repo, and controller).",
+          "x-doc-url": "https://docs.openshift.com/gitops/latest/argocd_instance/setting-up-argocd-instance.html"
+        },
         "rbac": {
+          "title": "RBAC",
           "type": "object",
+          "description": "ArgoCD role-based access control configuration.",
+          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/",
           "properties": {
-            "policy": { "type": "string", "default": "g, system:cluster-admins, role:admin" },
-            "defaultPolicy": { "type": "string", "default": "role:readonly" },
-            "scopes": { "type": "string", "default": "[groups]" }
+            "policy": {
+              "title": "Policy CSV",
+              "type": "string",
+              "default": "g, system:cluster-admins, role:admin",
+              "description": "ArgoCD RBAC policy in CSV format. Maps groups/users to ArgoCD roles."
+            },
+            "defaultPolicy": {
+              "title": "Default Policy",
+              "type": "string",
+              "default": "role:readonly",
+              "description": "Default role for authenticated users not matching any policy rule."
+            },
+            "scopes": {
+              "title": "Scopes",
+              "type": "string",
+              "default": "[groups]",
+              "description": "OIDC scopes used for RBAC group matching."
+            }
           },
           "additionalProperties": false
         },
         "repo": {
+          "title": "Repo Server",
           "type": "object",
+          "description": "ArgoCD repo server configuration for Git repository operations.",
+          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-repo-server/",
           "properties": {
             "resources": {
+              "title": "Resources",
               "type": "object",
+              "description": "CPU and memory resource limits for the repo server.",
               "properties": {
-                "cpu": { "type": "string", "default": "1" },
-                "memory": { "type": "string", "default": "1Gi" }
+                "cpu": {
+                  "title": "CPU Limit",
+                  "type": "string",
+                  "default": "1",
+                  "description": "CPU limit for the repo server container (e.g. 1, 500m, 2)."
+                },
+                "memory": {
+                  "title": "Memory Limit",
+                  "type": "string",
+                  "default": "1Gi",
+                  "description": "Memory limit for the repo server container (e.g. 512Mi, 1Gi, 2Gi)."
+                }
               }
             }
           },
           "additionalProperties": true
         },
-        "notifications": { "type": "boolean", "default": true },
-        "applicationSet": { "type": "boolean", "default": true },
+        "notifications": {
+          "title": "Notifications",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the ArgoCD notifications controller for event-driven alerts (Slack, email, webhooks).",
+          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/"
+        },
+        "applicationSet": {
+          "title": "ApplicationSet",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the ApplicationSet controller for templated multi-cluster Application generation.",
+          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/"
+        },
         "bootstrap": {
           "title": "Bootstrap Application",
           "type": "object",
+          "description": "App-of-apps bootstrap Application that manages further operators and configuration from a Git repository.",
+          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/",
           "properties": {
-            "repoURL": { "type": "string", "description": "Git repository URL." },
-            "path": { "type": "string", "default": ".", "description": "Path within the repo." },
-            "targetRevision": { "type": "string", "default": "HEAD" },
-            "namespace": { "type": "string", "default": "openshift-gitops" },
-            "autoSync": { "type": "boolean", "default": true }
+            "repoURL": {
+              "title": "Repository URL",
+              "type": "string",
+              "description": "Git repository URL containing the app-of-apps manifests."
+            },
+            "path": {
+              "title": "Path",
+              "type": "string",
+              "default": ".",
+              "description": "Path within the repository to the Application manifests."
+            },
+            "targetRevision": {
+              "title": "Target Revision",
+              "type": "string",
+              "default": "HEAD",
+              "description": "Git reference to track: branch name, tag, or commit SHA."
+            },
+            "namespace": {
+              "title": "Destination Namespace",
+              "type": "string",
+              "default": "openshift-gitops",
+              "description": "Kubernetes namespace where bootstrapped resources are created."
+            },
+            "autoSync": {
+              "title": "Auto Sync",
+              "type": "boolean",
+              "default": true,
+              "description": "Enable automated sync with pruning and self-heal. When true, changes in Git are automatically applied."
+            }
           },
           "required": ["repoURL"],
           "additionalProperties": false
@@ -211,39 +311,117 @@
       "title": "LVM Storage (LVMS)",
       "description": "Local volume management for SNO and compact clusters using TopoLVM. Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip LVM installation." },
-        "channel": { "type": "string", "default": "stable", "description": "OLM subscription channel (e.g. stable, stable-4.18)." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators" },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip LVM installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "stable",
+          "description": "OLM subscription channel (e.g. stable, stable-4.18).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#install-lvms-operator-cli_logical-volume-manager-storage"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        },
         "deviceClasses": {
           "title": "Device Classes",
           "type": "array",
+          "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string", "default": "vg1", "description": "Volume group name." },
-              "default": { "type": "boolean", "default": true, "description": "Set as default storage class." },
-              "fstype": { "type": "string", "default": "xfs", "enum": ["xfs", "ext4"] },
+              "name": {
+                "title": "Name",
+                "type": "string",
+                "default": "vg1",
+                "description": "Volume group name. Creates a StorageClass named lvms-<name>."
+              },
+              "default": {
+                "title": "Default",
+                "type": "boolean",
+                "default": true,
+                "description": "Set as the default StorageClass for the cluster."
+              },
+              "fstype": {
+                "title": "Filesystem Type",
+                "type": "string",
+                "default": "xfs",
+                "enum": ["xfs", "ext4"],
+                "description": "Default filesystem type for volumes in this device class."
+              },
               "thinPoolConfig": {
+                "title": "Thin Pool Config",
                 "type": "object",
+                "description": "Thin provisioning configuration. Enables overprovisioning of storage capacity.",
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
                 "properties": {
-                  "name": { "type": "string", "default": "thin-pool-1" },
-                  "sizePercent": { "type": "integer", "default": 90, "minimum": 1, "maximum": 100 },
-                  "overprovisionRatio": { "type": "integer", "default": 10, "minimum": 1 }
+                  "name": {
+                    "title": "Pool Name",
+                    "type": "string",
+                    "default": "thin-pool-1",
+                    "description": "Name of the thin pool logical volume."
+                  },
+                  "sizePercent": {
+                    "title": "Size Percent",
+                    "type": "integer",
+                    "default": 90,
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Percentage of the volume group capacity to allocate to the thin pool (1-100)."
+                  },
+                  "overprovisionRatio": {
+                    "title": "Overprovision Ratio",
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 1,
+                    "description": "How much the thin pool can be overprovisioned relative to its physical size."
+                  }
                 }
               },
               "deviceSelector": {
+                "title": "Device Selector",
                 "type": "object",
+                "description": "Select specific block devices for this volume group. If omitted, all available disks are used.",
                 "properties": {
-                  "paths": { "type": "array", "items": { "type": "string" }, "description": "Device paths (e.g. /dev/vdb)." },
-                  "optionalPaths": { "type": "array", "items": { "type": "string" } },
-                  "forceWipeDevicesAndDestroyAllData": { "type": "boolean", "default": false }
+                  "paths": {
+                    "title": "Device Paths",
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Required device paths to include in the volume group (e.g. /dev/vdb, /dev/nvme0n1)."
+                  },
+                  "optionalPaths": {
+                    "title": "Optional Paths",
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Optional device paths included if present on the node. Does not fail if absent."
+                  },
+                  "forceWipeDevicesAndDestroyAllData": {
+                    "title": "Force Wipe Devices",
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Wipe all data on selected devices before adding to the volume group. Destructive operation."
+                  }
                 }
               }
             }
-          },
-          "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks."
+          }
         }
       },
       "additionalProperties": true
@@ -252,28 +430,97 @@
       "title": "OpenShift Data Foundation (ODF)",
       "description": "Ceph-based distributed storage for HA clusters (3+ nodes with data disks). Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ODF installation." },
-        "channel": { "type": "string", "default": "stable-4.18", "description": "OLM subscription channel." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators" },
-        "consolePlugin": { "type": "boolean", "default": true, "description": "Enable odf-console plugin." },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip ODF installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "stable-4.18",
+          "description": "OLM subscription channel. Version-pinned (e.g. stable-4.18, stable-4.19).",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        },
+        "consolePlugin": {
+          "title": "Console Plugin",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the ODF console plugin for storage management in the OpenShift web console."
+        },
         "storageCluster": {
           "title": "Storage Cluster",
           "type": "object",
+          "description": "StorageCluster CR configuration for Ceph-based storage pools, block devices, and replication.",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm",
           "properties": {
-            "name": { "type": "string", "default": "ocs-storagecluster" },
-            "monDataDirHostPath": { "type": "string", "default": "/var/lib/rook" },
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "default": "ocs-storagecluster",
+              "description": "StorageCluster resource name."
+            },
+            "monDataDirHostPath": {
+              "title": "Monitor Data Directory",
+              "type": "string",
+              "default": "/var/lib/rook",
+              "description": "Host path for Ceph monitor data persistence."
+            },
             "storageDeviceSets": {
+              "title": "Storage Device Sets",
               "type": "array",
+              "description": "Storage device set configurations. Each set defines a group of block devices with replication.",
               "items": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string", "default": "ocs-deviceset" },
-                  "count": { "type": "integer", "default": 1, "minimum": 1 },
-                  "replica": { "type": "integer", "default": 3, "minimum": 1 },
-                  "storage": { "type": "string", "default": "1Ti", "description": "Storage request per device." },
-                  "storageClassName": { "type": "string", "default": "", "description": "StorageClass for PVCs (empty = default)." }
+                  "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "default": "ocs-deviceset",
+                    "description": "Device set name identifier."
+                  },
+                  "count": {
+                    "title": "Count",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 1,
+                    "description": "Number of devices per storage node in this set."
+                  },
+                  "replica": {
+                    "title": "Replica",
+                    "type": "integer",
+                    "default": 3,
+                    "minimum": 1,
+                    "description": "Number of storage nodes providing replicas. Typically 3 for Ceph reliability."
+                  },
+                  "storage": {
+                    "title": "Storage Size",
+                    "type": "string",
+                    "default": "1Ti",
+                    "description": "PVC storage request per device (e.g. 500Gi, 1Ti, 2Ti)."
+                  },
+                  "storageClassName": {
+                    "title": "Storage Class",
+                    "type": "string",
+                    "default": "",
+                    "description": "StorageClass for the underlying PVCs. Empty uses the cluster default."
+                  }
                 }
               }
             }
@@ -287,35 +534,95 @@
       "title": "Advanced Cluster Management (ACM)",
       "description": "Sets up a full ACM hub for ZTP/CAPI deployments. Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip ACM installation." },
-        "channel": { "type": "string", "default": "release-2.14", "description": "OLM subscription channel." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators" },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip ACM installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "release-2.14",
+          "description": "OLM subscription channel. Version-pinned (e.g. release-2.13, release-2.14).",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        },
         "multiClusterHub": {
           "title": "MultiClusterHub",
           "type": "object",
+          "description": "MultiClusterHub instance configuration. The central management component of ACM.",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online",
           "properties": {
-            "name": { "type": "string", "default": "multiclusterhub" },
-            "availabilityConfig": { "type": "string", "enum": ["High", "Basic"], "default": "High" }
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "default": "multiclusterhub",
+              "description": "MultiClusterHub resource name."
+            },
+            "availabilityConfig": {
+              "title": "Availability Config",
+              "type": "string",
+              "enum": ["High", "Basic"],
+              "default": "High",
+              "description": "High for production (multiple replicas); Basic for SNO or lab environments (single replica)."
+            }
           },
           "additionalProperties": true
         },
         "agentServiceConfig": {
           "title": "AgentServiceConfig",
           "type": "object",
+          "description": "Assisted-service storage configuration for cluster installation management. Controls PVC sizes for databases, ISOs, and OS images.",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
           "properties": {
-            "databaseStorage": { "type": "string", "default": "10Gi" },
-            "filesystemStorage": { "type": "string", "default": "100Gi" },
-            "imageStorage": { "type": "string", "default": "50Gi" }
+            "databaseStorage": {
+              "title": "Database Storage",
+              "type": "string",
+              "default": "10Gi",
+              "description": "PVC size for the assisted-service database (cluster state, host inventory)."
+            },
+            "filesystemStorage": {
+              "title": "Filesystem Storage",
+              "type": "string",
+              "default": "100Gi",
+              "description": "PVC size for filesystem storage (discovery ISOs, installation logs)."
+            },
+            "imageStorage": {
+              "title": "Image Storage",
+              "type": "string",
+              "default": "50Gi",
+              "description": "PVC size for OS image storage (RHCOS images for cluster provisioning)."
+            }
           },
           "additionalProperties": true
         },
         "provisioning": {
           "title": "Provisioning",
           "type": "object",
+          "description": "Bare metal provisioning configuration (Ironic). Controls which namespaces can provision bare metal hosts.",
+          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
           "properties": {
-            "watchAllNamespaces": { "type": "boolean", "default": true }
+            "watchAllNamespaces": {
+              "title": "Watch All Namespaces",
+              "type": "boolean",
+              "default": true,
+              "description": "Allow bare metal provisioning (BareMetalHost resources) in all namespaces, not just openshift-machine-api."
+            }
           },
           "additionalProperties": true
         }
@@ -324,25 +631,71 @@
     },
     "operatorCertManager": {
       "title": "cert-manager Operator",
-      "description": "TLS certificate automation. Install-and-go operator. Specify {} for all defaults.",
+      "description": "TLS certificate automation. Install-and-go operator with no additional CRs needed for base install. Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/index.html",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip cert-manager installation." },
-        "channel": { "type": "string", "default": "stable-v1", "description": "OLM subscription channel." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators" }
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip cert-manager installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "stable-v1",
+          "description": "OLM subscription channel (e.g. stable-v1).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/cert-manager-operator-install.html"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        }
       },
       "additionalProperties": true
     },
     "operatorExternalSecrets": {
       "title": "External Secrets Operator",
-      "description": "Sync secrets from external stores (Vault, AWS SM, etc.). Runs in all-namespaces mode. Specify {} for all defaults.",
+      "description": "Sync secrets from external stores (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). Runs in all-namespaces mode via openshift-operators. Specify {} for all defaults.",
       "type": "object",
+      "x-doc-url": "https://external-secrets.io/latest/",
       "properties": {
-        "enabled": { "type": "boolean", "default": true, "description": "Set false to skip external-secrets installation." },
-        "channel": { "type": "string", "default": "stable-v1", "description": "OLM subscription channel." },
-        "approval": { "type": "string", "enum": ["Automatic", "Manual"], "default": "Automatic" },
-        "source": { "type": "string", "default": "redhat-operators" }
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to skip external-secrets installation."
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string",
+          "default": "stable-v1",
+          "description": "OLM subscription channel (e.g. stable-v1).",
+          "x-doc-url": "https://external-secrets.io/latest/introduction/getting-started/"
+        },
+        "approval": {
+          "title": "Install Plan Approval",
+          "type": "string",
+          "enum": ["Automatic", "Manual"],
+          "default": "Automatic",
+          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+        },
+        "source": {
+          "title": "Catalog Source",
+          "type": "string",
+          "default": "redhat-operators",
+          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        }
       },
       "additionalProperties": true
     }

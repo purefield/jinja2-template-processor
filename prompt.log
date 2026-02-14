@@ -1629,3 +1629,15 @@ Continuing implementation autonomously through all phases.
 > ship it
 
 Released v2.11.0: Operator plugin expansion with 6 operators. Updated all 5 version locations, committed, tagged v2.11.0, pushed, built container, deployed, verified.
+
+### Prompt 89
+
+> Update the readme to a rich overview with examples, use cases, step by step build instructions, one sub page for each plugin and operator - added to each of the plugin folders.
+
+Rewrote main README.md with comprehensive overview: How it works, Quick start, Use cases (ABI, IPI, ZTP, CAPI, Operators, KubeVirt, Pre-flight), Clusterfile anatomy, Operator plugins table, Platform plugins table, CLI reference, Web editor, Container image, Example clusterfiles, Project structure, Schema validation, Tests. Created README.md sub-pages for all 6 operator plugin folders: argocd, lvm, odf, acm, cert-manager, external-secrets — each with quick start, what gets installed, full configuration reference, examples, and render commands.
+
+### Prompt 90
+
+> To all fields for the operator add description, help text, documentation link and title.
+
+Enhanced all 6 operator schema definitions in schema/clusterfile.schema.json: added title, description, and x-doc-url to every field at every nesting level. Expanded compact single-line field definitions to full objects with descriptive help text and links to official OpenShift/Red Hat documentation. All 95 tests pass.
