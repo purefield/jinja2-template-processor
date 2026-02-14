@@ -1583,3 +1583,9 @@ Resumed session, ran test suite (1 failure due to missing bmc.version in test da
 2. **ArgoCD bootstrap**: Added app-of-apps pattern — when `bootstrap.repoURL` is set, generates an ArgoCD Application CR that manages further operators from a git repo. Works in both standalone manifests (ABI) and ACM Policy (ZTP/CAPI). Supports autoSync with self-heal/pruning.
 
 Commits: plugin-restructure, argocd-bootstrap
+
+### Prompt 84
+
+> ship it
+
+Released v2.10.0: Operator plugin architecture with ArgoCD. Merged feature/operator-plugins to main, updated all 5 version locations, committed, tagged v2.10.0, pushed, built container, deployed, verified.

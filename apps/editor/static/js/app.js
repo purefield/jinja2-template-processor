@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.10.0',
+    date: '2026-02-14',
+    changes: [
+      'Operator plugin architecture: plugins.operators with ArgoCD as first operator — argocd: {} for full setup with smart defaults',
+      'Plugin isolation: operators and platforms in templates/plugins/ and schema/plugins/ — each self-contained, ready for separate repos',
+      'ArgoCD ACM Policy for managed clusters (ZTP + CAPI); extra manifests for standalone (ABI)',
+      'ArgoCD bootstrap: app-of-apps pattern for managing further operators from a git repo'
+    ]
+  },
+  {
     version: '2.9.3',
     date: '2026-02-14',
     changes: [

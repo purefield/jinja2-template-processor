@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.10.0
+- **Operator Plugin Architecture**: New `plugins.operators` section with ArgoCD as first operator — just `argocd: {}` for full setup with smart defaults
+- **Plugin Isolation**: Operators and platforms restructured into `templates/plugins/` and `schema/plugins/` — each plugin self-contained, ready for separate repos
+- **ArgoCD ACM Policy**: Managed clusters get ArgoCD via ACM Policy (ZTP + CAPI); standalone clusters via extra manifests (ABI)
+- **ArgoCD Bootstrap**: App-of-apps pattern — ArgoCD Application CR that manages further operators from a git repo with auto-sync, self-heal, and pruning
+
 ## 2.9.3
 - **Template Consolidation**: Extract shared includes for POC banner ManifestWork and os-images-sync; DRY insecure registries; net -69 lines of duplication
 - **KubeVirt Install Config**: Add kubevirt platform includes for install-config.yaml.tpl — maps to baremetal (VIPs) or none (SNO) for UPI/agent-based installs
