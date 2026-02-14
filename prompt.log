@@ -1673,3 +1673,25 @@ Quality review of all SiteConfig integration work. Found and fixed:
 > ship it
 
 Release v2.12.0: SiteConfig ClusterInstance integration with bidirectional conversion, schema enrichment, and template fixes. Updated all 5 version locations, committed, tagged v2.12.0, built and deployed container.
+
+### Prompt 94
+
+> Implement the following plan: Enhance OCP-on-OCP Demo with Template-Driven Operators & Configuration
+>
+> (Full plan covering clusterfile changes, script changes, and kubevirt-sno fix)
+
+Implemented all plan items:
+
+**Clusterfile changes:**
+- `ocp-acm.clusterfile`: Fixed network from flat `bridge: bridge-1410` to nested `network.type: cudn` + `vlan: 1410`; bumped sockets to 2; added operators section (lvm, acm with hub config, cert-manager, argocd, external-secrets)
+- `ocp-cluster2.clusterfile`: Added `plugins.operators.odf` with storageCluster config (3 replicas, 345Gi)
+- `ocp-cluster3.clusterfile`: Same ODF operators section as cluster2
+
+**Script changes:**
+- `sno.setup.sh`: Added operator manifest rendering step after ISO creation
+- `manage-cluster.sh`: ocp-acm install — replaced `acm-create-storage-lvm.sh` and `acm-create-advanced-cluster-management.sh` with two-pass template rendering (subscriptions first, wait for CRDs, then CRs); ocp-cluster install — removed 5 storage step scripts, ODF now delivered via ACM Policy; ocp-acm config — removed redundant cert-manager step (now in operators template)
+
+**Repo fix:**
+- `data/kubevirt-sno.clusterfile`: Fixed broken flat `networkType`/`physicalNetwork` keys to nested `network.type: cudn`
+
+**Verification:** All 118 tests pass, all template renderings succeed (kubevirt-cluster, operators, install-config for all clusterfiles).

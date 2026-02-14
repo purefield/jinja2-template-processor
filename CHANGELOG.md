@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+- **ocp-on-ocp-operators** — Enhance OCP-on-OCP demo with template-driven operators: add operators sections to ocp-acm (LVM, ACM, cert-manager, ArgoCD, external-secrets), ocp-cluster2/3 (ODF); fix ocp-acm network from flat bridge to CUDN; transition manage-cluster.sh install phases from step scripts to template rendering; add operator manifest rendering to sno.setup.sh; fix kubevirt-sno.clusterfile broken flat network keys
+
 ## v2.12.0 (2026-02-14)
 - **siteconfig-schema** — Add ClusterInstance-inspired fields to clusterfile schema: cluster.clusterType, cluster.cpuPartitioningMode, cluster.diskEncryption (Tang), cluster.installConfigOverrides, cluster.holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride
 - **siteconfig-templates** — Bidirectional conversion templates: clusterfile2siteconfig.yaml.tpl (generates ClusterInstance CR + Namespace + Secrets) and siteconfig2clusterfile.yaml.tpl (reverse mapping). Tang disk encryption MachineConfig include
