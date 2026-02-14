@@ -1641,3 +1641,15 @@ Rewrote main README.md with comprehensive overview: How it works, Quick start, U
 > To all fields for the operator add description, help text, documentation link and title.
 
 Enhanced all 6 operator schema definitions in schema/clusterfile.schema.json: added title, description, and x-doc-url to every field at every nesting level. Expanded compact single-line field definitions to full objects with descriptive help text and links to official OpenShift/Red Hat documentation. All 95 tests pass.
+
+### Prompt 91
+
+> Implement the following plan: Incorporate SiteConfig/ClusterInstance Learnings (7 phases)
+
+Implemented full SiteConfig/ClusterInstance integration:
+- **Schema enrichment**: Added cluster-level fields (clusterType, cpuPartitioningMode, diskEncryption with Tang, installConfigOverrides, holdInstallation, External platform) and per-host fields (bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride)
+- **Template updates**: acm-ztp.yaml.tpl (configurable per-host BMH fields, holdInstallation, Tang encryption), acm-capi-m3.yaml.tpl (same per-host fields), install-config.yaml.tpl (cpuPartitioningMode), tang-machineconfig.yaml.tpl include
+- **Conversion templates**: clusterfile2siteconfig.yaml.tpl (generates ClusterInstance CR + Namespace + Secrets) and siteconfig2clusterfile.yaml.tpl (reverse mapping)
+- **Tests**: 23 new tests (118 total, all passing)
+- **Examples**: Updated sno/baremetal clusterfiles, new siteconfig-sno.clusterfile
+- **Documentation**: README with ClusterInstance use case, ACM README with SiteConfig reference

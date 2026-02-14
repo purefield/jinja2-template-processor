@@ -40,7 +40,9 @@ apiVersion: v1
 metadata:
   name: {{ cluster.name }}
 
-baseDomain: {{ network.domain }}
+baseDomain: {{ network.domain }}{% if cluster.cpuPartitioningMode is defined and cluster.cpuPartitioningMode != "None" %}
+
+cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}{% endif %}
 
 controlPlane:
   name: master

@@ -105,6 +105,25 @@ Operators are also automatically included as:
 - **ABI extra manifests** in `install-config.yaml.tpl`
 - **ACM Policies** in `acm-ztp.yaml.tpl` and `acm-capi-m3.yaml.tpl`
 
+### SiteConfig ClusterInstance
+
+Generate a [ClusterInstance](https://github.com/stolostron/siteconfig) CR for the SiteConfig operator. This bridges our clusterfile with the ACM SiteConfig provisioning workflow:
+
+```bash
+# Clusterfile → ClusterInstance CR (Namespace, Secrets, ClusterInstance)
+./process.py data/siteconfig-sno.clusterfile templates/clusterfile2siteconfig.yaml.tpl
+
+# Reverse: ClusterInstance CR → clusterfile
+./process.py clusterinstance.yaml templates/siteconfig2clusterfile.yaml.tpl
+```
+
+New fields from the ClusterInstance data model:
+- `cluster.clusterType` — SNO, HighlyAvailable, HighlyAvailableArbiter
+- `cluster.cpuPartitioningMode` — None, AllNodes (workload partitioning)
+- `cluster.diskEncryption` — structured disk encryption (TPM2, Tang)
+- `cluster.holdInstallation` — pause provisioning for pre-flight checks
+- Per-host: `bootMode`, `nodeLabels`, `automatedCleaningMode`, `ironicInspect`, `installerArgs`, `ignitionConfigOverride`
+
 ### KubeVirt (OpenShift Virtualization)
 
 Generate VirtualMachine resources for OpenShift Virtualization clusters:

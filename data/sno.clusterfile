@@ -5,6 +5,8 @@ cluster:
   platform: none
   arch: x86_64
   name: cluster
+  clusterType: SNO
+  cpuPartitioningMode: AllNodes
   machine:
     control:
       cpus: 16

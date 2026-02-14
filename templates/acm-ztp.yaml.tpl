@@ -25,6 +25,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
+{%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set enableDisconnected = cluster.disconnected | default(false) -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 apiVersion: v1
@@ -55,7 +56,8 @@ items:
     namespace: {{ cluster.name }}
     labels:
       cluster-name: {{ cluster.name }}
-  spec:{%- if network.proxy %}
+  spec:{%- if cluster.holdInstallation | default(false) %}
+    holdInstallation: true{% endif %}{%- if network.proxy %}
     proxy: {{ network.proxy }}{% endif %}
     clusterDeploymentRef:
       name: {{ cluster.name }}
@@ -80,7 +82,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected or insecureMirrors %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
 - kind: ConfigMap
@@ -94,7 +96,7 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected or insecureMirrors %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -104,7 +106,9 @@ items:
     99-{{ manifest.name }}.yaml: |
 {{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if enableTPM %}{%- set tpmManifest %}{% include "includes/tpm-disk-encryption.yaml.tpl" %}{% endset %}
     99-tpm-disk-encryption.yaml: |
-{{ tpmManifest | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+{{ tpmManifest | indent(8, true) }}{% endif %}{% if enableTang %}{%- set tangManifest %}{% include "includes/tang-machineconfig.yaml.tpl" %}{% endset %}
+    99-tang-disk-encryption.yaml: |
+{{ tangManifest | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
     99-image-digest-mirror-set.yaml: |
       kind: ImageDigestMirrorSet
       apiVersion: config.openshift.io/v1
@@ -235,16 +239,19 @@ items:
   kind: BareMetalHost
   metadata:
     annotations:
-      bmac.agent-install.openshift.io/hostname: {{ name }} 
+      bmac.agent-install.openshift.io/hostname: {{ name }}
       bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}
-      inspect.metal3.io: disabled
+      inspect.metal3.io: {{ host.ironicInspect if host.ironicInspect is defined else "disabled" }}{% if host.installerArgs is defined %}
+      bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
+      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
     labels:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
-    rootDeviceHints:  {{ host.storage.os }}
-    automatedCleaningMode: metadata{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    rootDeviceHints:  {{ host.storage.os }}{% if host.bootMode is defined %}
+    bootMode: {{ host.bootMode }}{% endif %}
+    automatedCleaningMode: {{ host.automatedCleaningMode | default("metadata") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}

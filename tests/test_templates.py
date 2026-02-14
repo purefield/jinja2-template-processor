@@ -2292,5 +2292,540 @@ class TestMultipleOperators:
         assert 'operator-argocd' not in policy_names
 
 
+class TestSiteConfigFields:
+    """Tests for SiteConfig/ClusterInstance fields added to schema and templates."""
+
+    def render_install_config(self, env, data):
+        template = env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def test_cpu_partitioning_mode_in_install_config(self, template_env):
+        """Test cpuPartitioningMode renders as top-level field in install-config."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'none'
+        data['cluster']['cpuPartitioningMode'] = 'AllNodes'
+        data['hosts'] = {'sno.example.com': {'role': 'control', 'storage': {'os': '/dev/sda'}}}
+
+        result = self.render_install_config(template_env, data)
+
+        assert result['cpuPartitioningMode'] == 'AllNodes'
+
+    def test_cpu_partitioning_mode_absent_when_none(self, template_env):
+        """Test cpuPartitioningMode is omitted when set to None (default)."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'none'
+        data['cluster']['cpuPartitioningMode'] = 'None'
+        data['hosts'] = {'sno.example.com': {'role': 'control', 'storage': {'os': '/dev/sda'}}}
+
+        result = self.render_install_config(template_env, data)
+
+        assert 'cpuPartitioningMode' not in result
+
+    def test_cpu_partitioning_absent_when_not_set(self, template_env):
+        """Test cpuPartitioningMode is omitted when not in data at all."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['network']['primary'] = baremetal_vips_data()['primary']
+
+        result = self.render_install_config(template_env, data)
+
+        assert 'cpuPartitioningMode' not in result
+
+
+class TestZtpPerHostFields:
+    """Tests for new per-host fields in ACM ZTP template."""
+
+    def acm_ztp_data_with_host(self, host_overrides=None):
+        """Return minimal ZTP data with one host that can be customized."""
+        data = {
+            'account': {'pullSecret': 'secrets/pull-secret.json'},
+            'cluster': {
+                'name': 'host-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub']
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False, 'vlan': False,
+                    'gateway': '10.0.0.1', 'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {'api': ['10.0.0.2'], 'apps': ['10.0.0.3']}
+                },
+                'cluster': {'subnet': '10.128.0.0/14', 'hostPrefix': 23},
+                'service': {'subnet': '172.30.0.0/16'}
+            },
+            'hosts': {
+                'node1.host-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                },
+                'node2.host-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}],
+                        'primary': {'address': '10.0.0.5', 'ports': ['eth0']}
+                    }
+                },
+                'node3.host-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}],
+                        'primary': {'address': '10.0.0.6', 'ports': ['eth0']}
+                    }
+                }
+            },
+            'plugins': {}
+        }
+        if host_overrides:
+            for key, val in host_overrides.items():
+                data['hosts']['node1.host-test.example.com'][key] = val
+        return data
+
+    def render_ztp(self, env, data):
+        template = env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def get_bmh(self, result, name='node1.host-test.example.com'):
+        """Find a BareMetalHost by name."""
+        for item in result['items']:
+            if item.get('kind') == 'BareMetalHost' and item['metadata']['name'] == name:
+                return item
+        return None
+
+    def test_boot_mode_in_bmh(self, template_env):
+        """Test bootMode renders in BareMetalHost spec."""
+        data = self.acm_ztp_data_with_host({'bootMode': 'UEFISecureBoot'})
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        assert bmh['spec']['bootMode'] == 'UEFISecureBoot'
+
+    def test_boot_mode_absent_by_default(self, template_env):
+        """Test bootMode is absent when not set."""
+        data = self.acm_ztp_data_with_host()
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert 'bootMode' not in bmh['spec']
+
+    def test_automated_cleaning_mode_configurable(self, template_env):
+        """Test automatedCleaningMode is configurable per host."""
+        data = self.acm_ztp_data_with_host({'automatedCleaningMode': 'disabled'})
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh['spec']['automatedCleaningMode'] == 'disabled'
+
+    def test_automated_cleaning_mode_default(self, template_env):
+        """Test automatedCleaningMode defaults to metadata."""
+        data = self.acm_ztp_data_with_host()
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh['spec']['automatedCleaningMode'] == 'metadata'
+
+    def test_ironic_inspect_configurable(self, template_env):
+        """Test ironicInspect annotation is configurable (empty string enables inspection)."""
+        data = self.acm_ztp_data_with_host({'ironicInspect': ''})
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        # Empty string in YAML loads as None; the key exists with empty/null value
+        assert 'inspect.metal3.io' in bmh['metadata']['annotations']
+        assert bmh['metadata']['annotations']['inspect.metal3.io'] in ('', None)
+
+    def test_ironic_inspect_default(self, template_env):
+        """Test ironicInspect defaults to disabled."""
+        data = self.acm_ztp_data_with_host()
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh['metadata']['annotations']['inspect.metal3.io'] == 'disabled'
+
+    def test_installer_args_annotation(self, template_env):
+        """Test installerArgs renders as BareMetalHost annotation."""
+        args = '[\"--append-karg\", \"ip=dhcp\"]'
+        data = self.acm_ztp_data_with_host({'installerArgs': args})
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert 'bmac.agent-install.openshift.io/installer-args' in bmh['metadata']['annotations']
+        assert bmh['metadata']['annotations']['bmac.agent-install.openshift.io/installer-args'] == args
+
+    def test_ignition_config_override_annotation(self, template_env):
+        """Test ignitionConfigOverride renders as BareMetalHost annotation."""
+        override = '{"ignition":{"version":"3.1.0"}}'
+        data = self.acm_ztp_data_with_host({'ignitionConfigOverride': override})
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' in bmh['metadata']['annotations']
+
+    def test_hold_installation_in_aci(self, template_env):
+        """Test holdInstallation renders in AgentClusterInstall spec."""
+        data = self.acm_ztp_data_with_host()
+        data['cluster']['holdInstallation'] = True
+        result = self.render_ztp(template_env, data)
+
+        aci = None
+        for item in result['items']:
+            if item.get('kind') == 'AgentClusterInstall':
+                aci = item
+                break
+        assert aci is not None
+        assert aci['spec']['holdInstallation'] is True
+
+    def test_no_hold_installation_by_default(self, template_env):
+        """Test holdInstallation is absent when not set."""
+        data = self.acm_ztp_data_with_host()
+        result = self.render_ztp(template_env, data)
+
+        aci = None
+        for item in result['items']:
+            if item.get('kind') == 'AgentClusterInstall':
+                aci = item
+                break
+        assert 'holdInstallation' not in aci['spec']
+
+
+class TestTangDiskEncryption:
+    """Tests for Tang network-bound disk encryption."""
+
+    def acm_ztp_data_with_tang(self):
+        """Return ZTP data with Tang disk encryption configured."""
+        data = {
+            'account': {'pullSecret': 'secrets/pull-secret.json'},
+            'cluster': {
+                'name': 'tang-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub'],
+                'diskEncryption': {
+                    'type': 'tang',
+                    'tang': [
+                        {'url': 'http://tang.example.com:7500', 'thumbprint': 'abc123'},
+                        {'url': 'http://tang2.example.com:7500', 'thumbprint': 'def456'}
+                    ]
+                }
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False, 'vlan': False,
+                    'gateway': '10.0.0.1', 'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {'api': ['10.0.0.2'], 'apps': ['10.0.0.3']}
+                },
+                'cluster': {'subnet': '10.128.0.0/14', 'hostPrefix': 23},
+                'service': {'subnet': '172.30.0.0/16'}
+            },
+            'hosts': {
+                'node1.tang-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                },
+                'node2.tang-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}],
+                        'primary': {'address': '10.0.0.5', 'ports': ['eth0']}
+                    }
+                },
+                'node3.tang-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}],
+                        'primary': {'address': '10.0.0.6', 'ports': ['eth0']}
+                    }
+                }
+            },
+            'plugins': {}
+        }
+        return data
+
+    def get_configmap(self, result, name):
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == name:
+                return item
+        return None
+
+    def test_tang_manifest_in_extraclustermanifests(self, template_env):
+        """Test Tang MachineConfig appears in extraclustermanifests."""
+        data = self.acm_ztp_data_with_tang()
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-tang-disk-encryption.yaml' in cm['data']
+        tang_manifest = cm['data']['99-tang-disk-encryption.yaml']
+        assert 'tang' in tang_manifest
+        assert 'tang.example.com' in tang_manifest
+        assert 'abc123' in tang_manifest
+        assert 'tang2.example.com' in tang_manifest
+
+    def test_no_tang_when_tpm(self, template_env):
+        """Test no Tang manifest appears when using TPM encryption."""
+        data = self.acm_ztp_data_with_tang()
+        data['cluster']['diskEncryption'] = {'type': 'tpm2'}
+        data['cluster']['tpm'] = True
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None
+        assert '99-tpm-disk-encryption.yaml' in cm['data']
+        assert '99-tang-disk-encryption.yaml' not in cm['data']
+
+
+class TestClusterInstanceTemplate:
+    """Tests for the clusterfile2siteconfig.yaml.tpl template."""
+
+    def siteconfig_data(self, sno=False, extra_cluster=None, extra_host=None):
+        """Return data for ClusterInstance template rendering."""
+        if sno:
+            hosts = {
+                'sno.sc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                }
+            }
+        else:
+            hosts = {
+                'node1.sc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                },
+                'node2.sc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}],
+                        'primary': {'address': '10.0.0.5', 'ports': ['eth0']}
+                    }
+                },
+                'node3.sc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}],
+                        'primary': {'address': '10.0.0.6', 'ports': ['eth0']}
+                    }
+                }
+            }
+        if extra_host:
+            first_key = next(iter(hosts))
+            for k, v in extra_host.items():
+                hosts[first_key][k] = v
+
+        data = {
+            'account': {'pullSecret': 'secrets/pull-secret.json'},
+            'cluster': {
+                'name': 'sc-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'none' if sno else 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub']
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False, 'vlan': False,
+                    'gateway': '10.0.0.1', 'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes'
+                },
+                'cluster': {'subnet': '10.128.0.0/14', 'hostPrefix': 23},
+                'service': {'subnet': '172.30.0.0/16'}
+            },
+            'hosts': hosts,
+            'plugins': {}
+        }
+        if not sno:
+            data['network']['primary']['vips'] = {'api': ['10.0.0.2'], 'apps': ['10.0.0.3']}
+        if extra_cluster:
+            data['cluster'].update(extra_cluster)
+        return data
+
+    def render_siteconfig(self, env, data):
+        template = env.get_template('clusterfile2siteconfig.yaml.tpl')
+        rendered = template.render(data)
+        docs = list(yaml.safe_load_all(rendered))
+        return [d for d in docs if d is not None]
+
+    def get_cluster_instance(self, docs):
+        for doc in docs:
+            if doc.get('kind') == 'ClusterInstance':
+                return doc
+        return None
+
+    def test_sno_cluster_instance(self, template_env):
+        """Test SNO renders a ClusterInstance with platformType None."""
+        data = self.siteconfig_data(sno=True)
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert ci is not None
+        assert ci['spec']['clusterName'] == 'sc-test'
+        assert ci['spec']['baseDomain'] == 'example.com'
+        assert ci['spec']['platformType'] == 'None'
+        assert ci['spec']['clusterType'] == 'SNO'
+        assert len(ci['spec']['nodes']) == 1
+        assert ci['spec']['nodes'][0]['role'] == 'master'
+
+    def test_ha_cluster_instance(self, template_env):
+        """Test HA cluster renders with VIPs and platformType BareMetal."""
+        data = self.siteconfig_data(sno=False)
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert ci is not None
+        assert ci['spec']['platformType'] == 'BareMetal'
+        assert ci['spec']['clusterType'] == 'HighlyAvailable'
+        assert ci['spec']['apiVIPs'] == ['10.0.0.2']
+        assert ci['spec']['ingressVIPs'] == ['10.0.0.3']
+        assert len(ci['spec']['nodes']) == 3
+
+    def test_cpu_partitioning_in_cluster_instance(self, template_env):
+        """Test cpuPartitioningMode renders in ClusterInstance."""
+        data = self.siteconfig_data(sno=True, extra_cluster={'cpuPartitioningMode': 'AllNodes'})
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert ci['spec']['cpuPartitioningMode'] == 'AllNodes'
+
+    def test_hold_installation_in_cluster_instance(self, template_env):
+        """Test holdInstallation renders in ClusterInstance."""
+        data = self.siteconfig_data(sno=True, extra_cluster={'holdInstallation': True})
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert ci['spec']['holdInstallation'] is True
+
+    def test_boot_mode_in_cluster_instance_node(self, template_env):
+        """Test bootMode renders per-node in ClusterInstance."""
+        data = self.siteconfig_data(sno=True, extra_host={'bootMode': 'UEFISecureBoot'})
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert ci['spec']['nodes'][0]['bootMode'] == 'UEFISecureBoot'
+
+    def test_node_labels_in_cluster_instance(self, template_env):
+        """Test nodeLabels render per-node in ClusterInstance."""
+        data = self.siteconfig_data(sno=True, extra_host={'nodeLabels': {'node-role.kubernetes.io/infra': ''}})
+        docs = self.render_siteconfig(template_env, data)
+        ci = self.get_cluster_instance(docs)
+
+        assert 'nodeLabels' in ci['spec']['nodes'][0]
+        assert 'node-role.kubernetes.io/infra' in ci['spec']['nodes'][0]['nodeLabels']
+
+    def test_bmc_secrets_generated(self, template_env):
+        """Test per-host BMC secrets are generated."""
+        data = self.siteconfig_data(sno=True)
+        docs = self.render_siteconfig(template_env, data)
+
+        secrets = [d for d in docs if d.get('kind') == 'Secret' and 'bmc-secret' in d['metadata']['name']]
+        assert len(secrets) == 1
+
+    def test_namespace_generated(self, template_env):
+        """Test Namespace is generated."""
+        data = self.siteconfig_data(sno=True)
+        docs = self.render_siteconfig(template_env, data)
+
+        ns = [d for d in docs if d.get('kind') == 'Namespace']
+        assert len(ns) == 1
+        assert ns[0]['metadata']['name'] == 'sc-test'
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

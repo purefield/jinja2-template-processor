@@ -1,0 +1,59 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.21.0
+  platform: none
+  arch: x86_64
+  name: edge-sno-01
+  clusterType: SNO
+  cpuPartitioningMode: AllNodes
+  holdInstallation: false
+  sshKeys:
+    - 2023/acm/id_rsa.pub
+  location: edge-dc1
+  tpm: true
+plugins:
+  operators:
+    lvm: {}
+network:
+  domain: edge.example.com
+  ntpservers:
+    - 10.10.0.1
+  nameservers:
+    - 10.10.0.1
+  primary:
+    bond: false
+    vlan: false
+    gateway: 10.10.0.1
+    subnet: 10.10.0.0/24
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+hosts:
+  sno.edge.example.com:
+    role: control
+    bootMode: UEFI
+    automatedCleaningMode: metadata
+    nodeLabels:
+      node-role.kubernetes.io/infra: ""
+      topology.kubernetes.io/zone: "edge-dc1"
+    storage:
+      os:
+        deviceName: /dev/sda
+    bmc:
+      vendor: dell
+      version: 9
+      username: root
+      password: bmc-password.txt
+      address: 10.10.1.4
+      macAddress: 00:1A:2B:3C:4D:10
+    network:
+      interfaces:
+        - name: eno1
+          macAddress: 00:1A:2B:3C:4D:11
+      primary:
+        address: 10.10.0.4
+        ports:
+          - eno1

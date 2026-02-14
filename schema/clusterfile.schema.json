@@ -876,7 +876,7 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "kubevirt", "none"],
+              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "kubevirt", "none", "external"],
               "description": "Supported infrastructure platform."
             },
             {
@@ -911,6 +911,68 @@
           "type": "boolean",
           "default": false,
           "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs."
+        },
+        "clusterType": {
+          "title": "Cluster Type",
+          "type": "string",
+          "enum": ["SNO", "HighlyAvailable", "HighlyAvailableArbiter"],
+          "description": "Cluster topology. Auto-detected from host count if not set (1 host = SNO, 3+ controls = HighlyAvailable).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
+        },
+        "cpuPartitioningMode": {
+          "title": "CPU Partitioning",
+          "type": "string",
+          "enum": ["None", "AllNodes"],
+          "default": "None",
+          "description": "Workload partitioning mode. AllNodes enables management workload isolation on all nodes (typically for SNO).",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/scalability_and_performance/ztp_far_edge/ztp-reference-cluster-configuration-for-vdu.html"
+        },
+        "diskEncryption": {
+          "title": "Disk Encryption",
+          "type": "object",
+          "properties": {
+            "type": {
+              "title": "Encryption Type",
+              "type": "string",
+              "enum": ["none", "tpm2", "tang"],
+              "default": "none",
+              "description": "Disk encryption method. tpm2 uses local TPM hardware; tang uses network-bound encryption."
+            },
+            "tang": {
+              "title": "Tang Servers",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "title": "URL",
+                    "type": "string",
+                    "description": "Tang server URL."
+                  },
+                  "thumbprint": {
+                    "title": "Thumbprint",
+                    "type": "string",
+                    "description": "Tang server thumbprint."
+                  }
+                },
+                "required": ["url", "thumbprint"]
+              },
+              "description": "Tang server configurations for network-bound disk encryption."
+            }
+          },
+          "description": "Structured disk encryption configuration. Use cluster.tpm as shorthand for TPM2.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/install_config/installing-customizing.html"
+        },
+        "installConfigOverrides": {
+          "title": "Install Config Overrides",
+          "type": "string",
+          "description": "Raw JSON string merged into install-config.yaml. For edge cases not covered by the schema."
+        },
+        "holdInstallation": {
+          "title": "Hold Installation",
+          "type": "boolean",
+          "default": false,
+          "description": "Pause cluster provisioning. The cluster is defined but not installed until this is set to false."
         }
       },
       "required": ["name", "version"],
@@ -1447,6 +1509,45 @@
               "title": "Machine Resources",
               "$ref": "#/$defs/machineSpec",
               "description": "Per-host resource override. Takes precedence over cluster.machine role defaults."
+            },
+            "bootMode": {
+              "title": "Boot Mode",
+              "type": "string",
+              "enum": ["UEFI", "UEFISecureBoot", "legacy"],
+              "default": "UEFI",
+              "description": "Host boot mode for BareMetalHost provisioning.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
+            },
+            "nodeLabels": {
+              "title": "Node Labels",
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Custom Kubernetes labels applied to the node."
+            },
+            "automatedCleaningMode": {
+              "title": "Automated Cleaning Mode",
+              "type": "string",
+              "enum": ["disabled", "metadata"],
+              "default": "metadata",
+              "description": "BareMetalHost disk cleaning mode before provisioning.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
+            },
+            "ironicInspect": {
+              "title": "Ironic Inspect",
+              "type": "string",
+              "enum": ["", "disabled"],
+              "default": "disabled",
+              "description": "Ironic hardware inspection mode. Disabled skips inspection for faster provisioning."
+            },
+            "installerArgs": {
+              "title": "Installer Arguments",
+              "type": "string",
+              "description": "Custom coreos-installer arguments for this node (JSON string)."
+            },
+            "ignitionConfigOverride": {
+              "title": "Ignition Config Override",
+              "type": "string",
+              "description": "Raw ignition config JSON merged during provisioning for this host."
             }
           },
           "required": ["role"],

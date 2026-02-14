@@ -22,7 +22,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {#- openshift-machine-api.metal3.metal3-ironic, kubevirt-redfish.kubevirt-redfish - logs -#}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
-{%- set automatedCleaningMode = "disabled" -%}
+{%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
 {%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
 {%- set imageUrl="" -%}
@@ -131,7 +131,7 @@ items:
         hostSelector:
           matchLabels:
             role: controller
-        automatedCleaningMode: {{ automatedCleaningMode }}
+        automatedCleaningMode: disabled
         dataTemplate:
           name: {{ cluster.name }}-machine-template-controller{% if imageUrl %}
         image:
@@ -160,7 +160,7 @@ items:
         hostSelector:
           matchLabels:
             role: worker
-        automatedCleaningMode: {{ automatedCleaningMode }}
+        automatedCleaningMode: disabled
         dataTemplate:
           name: {{ cluster.name }}-machine-template-worker{% if imageUrl %}
         image:
@@ -262,16 +262,18 @@ items:
   apiVersion: metal3.io/v1alpha1
   metadata:
     annotations:
-      inspect.metal3.io: disabled
+      inspect.metal3.io: {{ host.ironicInspect if host.ironicInspect is defined else "disabled" }}{% if host.ignitionConfigOverride is defined %}
+      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
     labels:
-      node: {{ shortname }} 
+      node: {{ shortname }}
       role: {{ 'controller' if host.role == 'control' else 'worker' }}
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
     preprovisioningNetworkDataName: {{ shortname }}-provisioning-nmstate
-    rootDeviceHints:  {{ host.storage.os }}
-    automatedCleaningMode: {{ automatedCleaningMode }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    rootDeviceHints:  {{ host.storage.os }}{% if host.bootMode is defined %}
+    bootMode: {{ host.bootMode }}{% endif %}
+    automatedCleaningMode: {{ host.automatedCleaningMode | default("disabled") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}

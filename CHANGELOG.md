@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+- **siteconfig-schema** — Add ClusterInstance-inspired fields to clusterfile schema: cluster.clusterType, cluster.cpuPartitioningMode, cluster.diskEncryption (Tang), cluster.installConfigOverrides, cluster.holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride
+- **siteconfig-templates** — Bidirectional conversion templates: clusterfile2siteconfig.yaml.tpl (generates ClusterInstance CR + Namespace + Secrets) and siteconfig2clusterfile.yaml.tpl (reverse mapping). Tang disk encryption MachineConfig include
+- **siteconfig-template-updates** — ACM ZTP/CAPI templates consume new per-host fields (bootMode, configurable automatedCleaningMode/ironicInspect, installerArgs, ignitionConfigOverride annotations); holdInstallation in AgentClusterInstall; cpuPartitioningMode in install-config.yaml.tpl
+- **siteconfig-tests** — 23 new tests: cpuPartitioningMode in install-config, per-host bootMode/automatedCleaningMode/ironicInspect/installerArgs/ignitionConfigOverride in ZTP BareMetalHost, holdInstallation in ACI, Tang disk encryption, ClusterInstance template (SNO, HA, fields, secrets)
+- **siteconfig-examples** — SNO clusterfile with clusterType/cpuPartitioningMode; baremetal with bootMode/nodeLabels; new siteconfig-sno.clusterfile example; README + ACM README updated with ClusterInstance use case
 
 ## v2.11.0 (2026-02-14)
 - **plugin-colocation** — Restructure operator plugins: move schema + templates from scattered `schema/plugins/` and `templates/plugins/` to co-located `plugins/operators/<name>/` directory. Each operator is self-contained with schema.json, manifests.yaml.tpl, and policy.yaml.tpl

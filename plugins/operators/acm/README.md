@@ -117,6 +117,16 @@ plugins:
 ./process.py data/acm-hub-sno.clusterfile templates/install-config.yaml.tpl
 ```
 
+## SiteConfig / ClusterInstance
+
+For provisioning managed clusters using the SiteConfig operator (stolostron/siteconfig), use the `clusterfile2siteconfig.yaml.tpl` template to generate a ClusterInstance CR from a clusterfile:
+
+```bash
+./process.py data/siteconfig-sno.clusterfile templates/clusterfile2siteconfig.yaml.tpl
+```
+
+This generates a complete set of resources (Namespace, pull-secret, BMC Secrets, ClusterInstance CR) ready for `oc apply` on an ACM hub.
+
 ## ACM Policy note
 
 The `policy.yaml.tpl` for ACM is a stub. ACM hub is self-managed and should not be pushed to clusters via ACM Policy. The file exists for architectural consistency with other operators but produces no output.

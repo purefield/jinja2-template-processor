@@ -118,6 +118,9 @@ network:
 hosts:
   control01.base.domain:
     role: control
+    bootMode: UEFI
+    nodeLabels:
+      topology.kubernetes.io/zone: "zone-a"
     storage:
       os:
         wwn: wwn01
