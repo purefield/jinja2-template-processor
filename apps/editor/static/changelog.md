@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.11.0
+- **6 Operator Plugins**: LVM, ODF, ACM, cert-manager, external-secrets join ArgoCD — each with smart defaults, optional channel/source/approval overrides, standalone manifests (ABI) and ACM Policy (ZTP/CAPI)
+- **Plugin Co-location**: Operators restructured to `plugins/operators/<name>/` — schema, manifests, and policy templates co-located per operator
+- **Operators UI**: New operators sub-section in Plugins tab with collapsible enable/disable fieldsets — check to enable, expand to configure
+- **ACM Hub Example**: Full ACM hub SNO clusterfile with LVM + ACM + cert-manager + ArgoCD (bootstrap) + external-secrets
+
 ## 2.10.0
 - **Operator Plugin Architecture**: New `plugins.operators` section with ArgoCD as first operator — just `argocd: {}` for full setup with smart defaults
 - **Plugin Isolation**: Operators and platforms restructured into `templates/plugins/` and `schema/plugins/` — each plugin self-contained, ready for separate repos

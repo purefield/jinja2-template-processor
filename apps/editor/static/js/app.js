@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.11.0',
+    date: '2026-02-14',
+    changes: [
+      '6 operator plugins: LVM, ODF, ACM, cert-manager, external-secrets join ArgoCD — smart defaults, optional channel/source/approval',
+      'Plugin co-location: operators restructured to plugins/operators/<name>/ with co-located schema + templates',
+      'Operators UI: collapsible enable/disable fieldsets per operator in Plugins tab',
+      'ACM hub example: full SNO clusterfile with LVM + ACM + cert-manager + ArgoCD (bootstrap) + external-secrets'
+    ]
+  },
+  {
     version: '2.10.0',
     date: '2026-02-14',
     changes: [
