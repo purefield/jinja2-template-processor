@@ -322,5 +322,7 @@ items:
       manifests:
 {{ insecureImageManifest }}{% endif %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}
+{{ osImagesSync }}{% if plugins is defined and plugins.operators is defined and plugins.operators.argocd is defined %}
+{%- set argoPolicy %}{% include "includes/operators/argocd/policy.yaml.tpl" %}{% endset %}
+{{ argoPolicy }}{% endif %}
 
