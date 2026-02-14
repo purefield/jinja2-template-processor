@@ -1653,3 +1653,17 @@ Implemented full SiteConfig/ClusterInstance integration:
 - **Tests**: 23 new tests (118 total, all passing)
 - **Examples**: Updated sno/baremetal clusterfiles, new siteconfig-sno.clusterfile
 - **Documentation**: README with ClusterInstance use case, ACM README with SiteConfig reference
+
+### Prompt 92
+
+> double check your for for simplifications, template formatting and overal maintainabiility, user documentation and release automation.
+
+Quality review of all SiteConfig integration work. Found and fixed:
+- **CRITICAL**: `regex_replace` filter doesn't exist in Jinja2 — siteconfig2clusterfile.yaml.tpl crashed at runtime. Replaced with `imgRef[3:]` + `.split("-")[0]` for version extraction
+- **CRITICAL**: Missing `external` platform include — schema allowed `external` but install-config.yaml.tpl would crash. Created `templates/plugins/platforms/external/platform.yaml.tpl` and added `external` to controlPlane/compute exclude lists
+- **DRY**: BMC address URL logic duplicated between `clusterfile2siteconfig.yaml.tpl` and `includes/bmc.yaml.tpl`. Extracted shared `includes/bmc-url.yaml.tpl`, updated both consumers
+- **Bug**: `bmc.yaml.tpl` had `host.bmc.version >= 9` without default filter (crashes if version missing). Fixed via shared include with `| default(9)`
+- **Cleanup**: Removed `holdInstallation: false` from siteconfig-sno.clusterfile (unnecessary default per smart-defaults principle)
+- **Formatting**: Fixed `{% if s.nodes %}` on standalone line in siteconfig2clusterfile.yaml.tpl
+- Added graceful `spec if spec is defined` guard in siteconfig2clusterfile.yaml.tpl
+- All 118 tests pass

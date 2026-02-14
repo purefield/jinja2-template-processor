@@ -7,7 +7,6 @@ cluster:
   name: edge-sno-01
   clusterType: SNO
   cpuPartitioningMode: AllNodes
-  holdInstallation: false
   sshKeys:
     - 2023/acm/id_rsa.pub
   location: edge-dc1

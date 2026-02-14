@@ -13,16 +13,19 @@ relatedTemplates:
   - clusterfile2siteconfig.yaml.tpl
 docs: https://github.com/stolostron/siteconfig
 -#}
-{%- set s = spec -%}
+{%- set s = spec if spec is defined else {} -%}
 {%- set platformMap = {"BareMetal": "baremetal", "None": "none", "VSphere": "vsphere", "AWS": "aws", "Azure": "azure", "GCP": "gcp", "External": "external"} -%}
 {%- set platform = platformMap[s.platformType | default("BareMetal")] | default(s.platformType | default("baremetal") | lower) -%}
+{%- set imgRef = s.clusterImageSetNameRef | default("4.18.0") -%}
+{%- set versionStr = imgRef[3:] if imgRef.startswith("img") else imgRef -%}
+{%- set versionStr = versionStr.split("-")[0] -%}
 # Clusterfile generated from ClusterInstance {{ s.clusterName }}
 account:
   pullSecret: pull-secret.json
 
 cluster:
   name: {{ s.clusterName }}
-  version: "{{ s.clusterImageSetNameRef | default("4.18.0") | regex_replace('^img', '') | regex_replace('-.*$', '') }}"
+  version: "{{ versionStr }}"
   platform: {{ platform }}{% if s.cpuArchitecture is defined %}
   arch: {{ s.cpuArchitecture }}{% endif %}{% if s.sshPublicKey is defined %}
   sshKeys:
@@ -57,8 +60,7 @@ network:
     httpsProxy: {{ s.proxy.httpsProxy }}{% endif %}{% if s.proxy.noProxy is defined %}
     noProxy: {{ s.proxy.noProxy }}{% endif %}{% endif %}{% if s.additionalNTPSources is defined %}
   ntpservers:{% for ntp in s.additionalNTPSources %}
-    - {{ ntp }}{% endfor %}{% endif %}
-{% if s.nodes is defined %}
+    - {{ ntp }}{% endfor %}{% endif %}{% if s.nodes is defined %}
 hosts:{% for node in s.nodes %}
   {{ node.hostName }}:
     role: {{ 'control' if node.role == 'master' else node.role }}{% if node.rootDeviceHints is defined %}

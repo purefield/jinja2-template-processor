@@ -46,13 +46,13 @@ cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}{% endif %}
 
 controlPlane:
   name: master
-  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
+  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
   platform:
 {% include 'plugins/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
-    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
+    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
     platform:
 {% include 'plugins/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
