@@ -1281,8 +1281,8 @@ class TestAcmZtpTemplate:
 
         cm = self.get_configmap(result, 'extraclustermanifests')
         assert cm is not None, "extraclustermanifests ConfigMap not found"
-        assert '99-tpm-disk-encryption' in cm['data']
-        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption']
+        assert '99-tpm-disk-encryption.yaml' in cm['data']
+        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption.yaml']
 
     def test_tpm_manifest_kubevirt(self, template_env):
         """Test that TPM manifest appears in extraclustermanifests for kubevirt with cluster.tpm: true."""
@@ -1291,8 +1291,8 @@ class TestAcmZtpTemplate:
 
         cm = self.get_configmap(result, 'extraclustermanifests')
         assert cm is not None, "extraclustermanifests ConfigMap not found"
-        assert '99-tpm-disk-encryption' in cm['data']
-        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption']
+        assert '99-tpm-disk-encryption.yaml' in cm['data']
+        assert 'tpm2: true' in cm['data']['99-tpm-disk-encryption.yaml']
 
     def test_no_tpm_manifest_when_disabled(self, template_env):
         """Test that TPM manifest is absent when cluster.tpm is false."""
@@ -1445,6 +1445,185 @@ class TestAcmCapiTemplate:
         cn = banner['spec']['workload']['manifests'][0]
         assert cn['kind'] == 'ConsoleNotification'
         assert 'Proof of Concept' in cn['spec']['text']
+
+
+class TestDisconnectedOperatorHub:
+    """Test cluster.disconnected flag for air-gapped clusters."""
+
+    def disconnected_ztp_data(self, disconnected=True, catalogs=True):
+        """Return data for testing disconnected feature in ZTP template."""
+        data = {
+            'account': {
+                'pullSecret': 'secrets/pull-secret.json'
+            },
+            'cluster': {
+                'name': 'disc-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub'],
+                'disconnected': disconnected
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'primary': {
+                    'bond': False,
+                    'vlan': False,
+                    'gateway': '10.0.0.1',
+                    'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {
+                        'api': ['10.0.0.2'],
+                        'apps': ['10.0.0.3']
+                    }
+                },
+                'cluster': {
+                    'subnet': '10.128.0.0/14',
+                    'hostPrefix': 23
+                },
+                'service': {
+                    'subnet': '172.30.0.0/16'
+                }
+            },
+            'hosts': {
+                'node1.disc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                },
+                'node2.disc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.5'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:02'}],
+                        'primary': {'address': '10.0.0.5', 'ports': ['eth0']}
+                    }
+                },
+                'node3.disc-test.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.6'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:03'}],
+                        'primary': {'address': '10.0.0.6', 'ports': ['eth0']}
+                    }
+                }
+            },
+            'plugins': {}
+        }
+        if catalogs:
+            data['cluster']['catalogSources'] = [
+                {
+                    'name': 'disconnected-redhat-operators',
+                    'displayName': 'Red Hat Operators',
+                    'image': 'internal-registry.tld/redhat/redhat-operator-index:v4.19',
+                    'publisher': 'Red Hat'
+                },
+                {
+                    'name': 'disconnected-certified-operators',
+                    'displayName': 'Certified Operators',
+                    'image': 'internal-registry.tld/redhat/certified-operator-index:v4.19',
+                    'publisher': 'Red Hat'
+                }
+            ]
+        return data
+
+    def get_configmap(self, result, name):
+        """Find a ConfigMap by name in the rendered List."""
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == name:
+                return item
+        return None
+
+    def test_disconnected_acm_ztp(self, template_env):
+        """Test extraclustermanifests has 99-operatorhub.yaml + 99-catalogsource-*.yaml."""
+        data = self.disconnected_ztp_data(disconnected=True, catalogs=True)
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-operatorhub.yaml' in cm['data'], "99-operatorhub.yaml key not found"
+        assert 'disableAllDefaultSources: true' in cm['data']['99-operatorhub.yaml']
+        assert '99-catalogsource-disconnected-redhat-operators.yaml' in cm['data']
+        assert '99-catalogsource-disconnected-certified-operators.yaml' in cm['data']
+        assert 'redhat-operator-index:v4.19' in cm['data']['99-catalogsource-disconnected-redhat-operators.yaml']
+
+    def test_disconnected_install_config(self, template_env):
+        """Test install-config output includes OperatorHub + CatalogSource docs."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['cluster']['disconnected'] = True
+        data['cluster']['catalogSources'] = [
+            {
+                'name': 'test-operators',
+                'image': 'registry.example.com/operators:v4.19',
+                'displayName': 'Test Operators',
+                'publisher': 'Test'
+            }
+        ]
+        data['network']['primary'] = baremetal_vips_data()['primary']
+
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        docs = list(yaml.safe_load_all(rendered))
+
+        # First doc is install-config, then OperatorHub, then CatalogSource(s)
+        assert len(docs) >= 3, f"Expected at least 3 YAML docs, got {len(docs)}"
+        operatorhub = docs[1]
+        assert operatorhub['kind'] == 'OperatorHub'
+        assert operatorhub['spec']['disableAllDefaultSources'] is True
+        catalogsource = docs[2]
+        assert catalogsource['kind'] == 'CatalogSource'
+        assert catalogsource['metadata']['name'] == 'test-operators'
+        assert catalogsource['spec']['image'] == 'registry.example.com/operators:v4.19'
+
+    def test_disconnected_without_catalogs(self, template_env):
+        """Test that disconnected without catalogSources just disables OperatorHub."""
+        data = self.disconnected_ztp_data(disconnected=True, catalogs=False)
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-operatorhub.yaml' in cm['data']
+        # No catalogsource keys
+        catalog_keys = [k for k in cm['data'] if 'catalogsource' in k]
+        assert len(catalog_keys) == 0, f"Expected no catalogsource keys, got {catalog_keys}"
+
+    def test_not_disconnected(self, template_env):
+        """Test no disconnected manifests when flag is false/absent."""
+        data = self.disconnected_ztp_data(disconnected=False, catalogs=False)
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        # No manifests, mirrors, TPM, or disconnected — ConfigMap should not exist
+        assert cm is None, "extraclustermanifests should not exist when disconnected is false"
 
 
 if __name__ == '__main__':

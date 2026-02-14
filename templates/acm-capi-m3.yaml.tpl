@@ -27,6 +27,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
 {%- set imageUrl="" -%}
 {%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
+{%- set enableDisconnected = cluster.disconnected | default(false) -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
@@ -290,7 +291,31 @@ items:
             text: "This is a Proof of Concept and not for production use"
             location: BannerTop
             color: "#fff"
-            backgroundColor: "#e00"
+            backgroundColor: "#e00"{% if enableDisconnected %}
+- kind: ManifestWork
+  apiVersion: work.open-cluster-management.io/v1
+  metadata:
+    name: disconnected-operatorhub
+    namespace: {{ cluster.name }}
+  spec:
+    workload:
+      manifests:
+        - apiVersion: config.openshift.io/v1
+          kind: OperatorHub
+          metadata:
+            name: cluster
+          spec:
+            disableAllDefaultSources: true{% if cluster.catalogSources is defined %}{% for catalog in cluster.catalogSources %}
+        - apiVersion: operators.coreos.com/v1alpha1
+          kind: CatalogSource
+          metadata:
+            name: {{ catalog.name }}
+            namespace: openshift-marketplace
+          spec:
+            sourceType: grpc
+            image: {{ catalog.image }}
+            displayName: {{ catalog.displayName | default(catalog.name) }}
+            publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% endif %}
 - kind: ServiceAccount
   apiVersion: v1
   metadata:

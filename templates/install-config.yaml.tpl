@@ -94,4 +94,23 @@ credentialsMode: Manual
 
 bootstrapInPlace:
   installationDisk: {{ bootstrapDisk if bootstrapDisk is string else bootstrapDisk.deviceName }}
-{%- endif %}
+{%- endif %}{% if cluster.disconnected | default(false) %}
+---
+# Place in openshift/ directory for ABI/IPI
+apiVersion: config.openshift.io/v1
+kind: OperatorHub
+metadata:
+  name: cluster
+spec:
+  disableAllDefaultSources: true{% endif %}{% if cluster.catalogSources is defined %}{% for catalog in cluster.catalogSources %}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: {{ catalog.name }}
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: {{ catalog.image }}
+  displayName: {{ catalog.displayName | default(catalog.name) }}
+  publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}

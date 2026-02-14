@@ -251,6 +251,50 @@
           "description": "Registry mirrors for disconnected installations.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/installing-mirroring-disconnected.html"
         },
+        "disconnected": {
+          "title": "Disconnected",
+          "type": "boolean",
+          "default": false,
+          "description": "Air-gapped cluster: disables default OperatorHub catalog sources and enables custom CatalogSources from mirrored operator indexes.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html"
+        },
+        "catalogSources": {
+          "title": "Catalog Sources",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "Name",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$",
+                "description": "CatalogSource resource name (DNS subdomain format)."
+              },
+              "image": {
+                "title": "Index Image",
+                "type": "string",
+                "minLength": 1,
+                "description": "Container image for the operator index (e.g., internal-registry.tld/redhat/redhat-operator-index:v4.19)."
+              },
+              "displayName": {
+                "title": "Display Name",
+                "type": "string",
+                "description": "Human-readable name shown in OperatorHub UI."
+              },
+              "publisher": {
+                "title": "Publisher",
+                "type": "string",
+                "description": "Publisher name shown in OperatorHub UI."
+              }
+            },
+            "required": ["name", "image"],
+            "additionalProperties": true
+          },
+          "description": "Custom operator catalog sources for disconnected installations. Requires cluster.disconnected: true.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/installing-mirroring-disconnected.html"
+        },
         "platform": {
           "title": "Platform",
           "anyOf": [

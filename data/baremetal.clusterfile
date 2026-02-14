@@ -48,6 +48,16 @@ cluster:
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-connect-redhat-com
+  disconnected: true
+  catalogSources:
+    - name: disconnected-redhat-operators
+      displayName: Red Hat Operators
+      image: internal-registry.tld/redhat/redhat-operator-index:v4.19
+      publisher: Red Hat
+    - name: disconnected-certified-operators
+      displayName: Certified Operators
+      image: internal-registry.tld/redhat/certified-operator-index:v4.19
+      publisher: Red Hat
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem

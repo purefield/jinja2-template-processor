@@ -25,6 +25,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
+{%- set enableDisconnected = cluster.disconnected | default(false) -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -78,7 +79,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
 - kind: ConfigMap
@@ -92,7 +93,7 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableDisconnected %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -118,7 +119,20 @@ items:
         name: mirror-registries
       spec:
         imageTagMirrors:
-{{ sources | indent(10, true)}}{% endif %}{% endif %}
+{{ sources | indent(10, true)}}{% endif %}{% if enableDisconnected %}{%- set operatorHub %}{% include "includes/disconnected.yaml.tpl" %}{% endset %}
+    99-operatorhub.yaml: |
+{{ operatorHub | indent(8, true) }}{% endif %}{% if cluster.catalogSources is defined %}{% for catalog in cluster.catalogSources %}
+    99-catalogsource-{{ catalog.name }}.yaml: |
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: {{ catalog.name }}
+        namespace: openshift-marketplace
+      spec:
+        sourceType: grpc
+        image: {{ catalog.image }}
+        displayName: {{ catalog.displayName | default(catalog.name) }}
+        publisher: {{ catalog.publisher | default("Custom") }}{% endfor %}{% endif %}{% endif %}
 - kind: ClusterDeployment
   apiVersion: hive.openshift.io/v1
   metadata:
