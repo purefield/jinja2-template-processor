@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 2.8.7
+- For mirrors, always use mirror
+
+
 ## 2.8.6
 - **ZTP Fix**: Move `manifestsConfigMapRef` from ClusterDeployment to AgentClusterInstall — `provisioning` and `clusterInstallRef` are mutually exclusive
 

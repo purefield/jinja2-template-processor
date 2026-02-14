@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.8.7 (2026-02-13)
+
 ## v2.8.6 (2026-02-13)
 - **fix-manifestsconfigmapref** — Move `manifestsConfigMapRef` from ClusterDeployment to AgentClusterInstall; `provisioning` and `clusterInstallRef` are mutually exclusive in the Hive CRD
 
