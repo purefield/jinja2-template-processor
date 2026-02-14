@@ -1654,6 +1654,9 @@
           "additionalProperties": true,
           "description": "KubeVirt / OpenShift Virtualization settings for VM-based cluster provisioning.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
+        },
+        "operators": {
+          "$ref": "plugins/operators.schema.json"
         }
       },
       "additionalProperties": true,
