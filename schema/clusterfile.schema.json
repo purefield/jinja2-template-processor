@@ -1656,7 +1656,7 @@
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
         },
         "operators": {
-          "$ref": "plugins/operators.schema.json"
+          "$ref": "plugins/operators/argocd.schema.json"
         }
       },
       "additionalProperties": true,

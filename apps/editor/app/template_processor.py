@@ -147,9 +147,12 @@ def apply_params(data: dict, params: list) -> dict:
 def process_template(config_data: dict, template_content: str, template_dir: str) -> str:
     """Process a Jinja2 template with the given configuration data."""
     includes_dir = os.path.join(template_dir, 'includes')
+    plugins_dir  = os.path.join(template_dir, 'plugins')
     loader_paths = [template_dir]
     if os.path.exists(includes_dir):
         loader_paths.append(includes_dir)
+    if os.path.exists(plugins_dir):
+        loader_paths.append(plugins_dir)
 
     env = Environment(loader=FileSystemLoader(loader_paths))
     env.globals["load_file"] = load_file

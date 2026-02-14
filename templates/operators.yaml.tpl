@@ -20,4 +20,4 @@ docs: https://docs.openshift.com/container-platform/latest/operators/admin/olm-a
 -#}
 {#- Standalone operator manifests for post-install: oc apply -f operators.yaml #}
 {%- set ops = plugins.operators | default({}) if plugins is defined else {} -%}
-{%- if ops.argocd is defined %}{% include "includes/operators/argocd/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops.argocd is defined %}{% include "plugins/operators/argocd/manifests.yaml.tpl" %}{% endif -%}

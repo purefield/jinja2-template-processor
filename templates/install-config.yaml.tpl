@@ -46,13 +46,13 @@ controlPlane:
   name: master
   replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
   platform:
-{% include 'includes/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
+{% include 'plugins/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
     replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none'] %}
     platform:
-{% include 'includes/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
+{% include 'plugins/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
 proxy:
   httpProxy: {{ network.proxy.httpProxy }}
@@ -71,7 +71,7 @@ networking:
     - {{ network.service.subnet }}
 
 platform:
-{% include 'includes/platforms/' ~ platform ~ '/platform.yaml.tpl' %}
+{% include 'plugins/platforms/' ~ platform ~ '/platform.yaml.tpl' %}
 
 publish: External
 pullSecret: '{{ load_file(account.pullSecret) | trim }}'
@@ -126,5 +126,5 @@ spec:
   registrySources:
     insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
       - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if plugins is defined and plugins.operators is defined and plugins.operators.argocd is defined %}
-{%- set operatorManifests %}{% include "includes/operators/argocd/manifests.yaml.tpl" %}{% endset %}
+{%- set operatorManifests %}{% include "plugins/operators/argocd/manifests.yaml.tpl" %}{% endset %}
 {{ operatorManifests }}{% endif %}

@@ -49,8 +49,9 @@ def create_template_env():
     """Create Jinja2 environment with custom filters."""
     template_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates')
     includes_dir = os.path.join(template_dir, 'includes')
+    plugins_dir  = os.path.join(template_dir, 'plugins')
 
-    env = Environment(loader=FileSystemLoader([template_dir, includes_dir]))
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_dir]))
 
     def load_file(path):
         if not path or not isinstance(path, str):
