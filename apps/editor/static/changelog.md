@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.9.1
+- **Disconnected Clusters**: Add `cluster.disconnected` flag and `cluster.catalogSources` for air-gapped installations — disables default OperatorHub sources, configures custom CatalogSources across all install methods (ZTP, CAPI, ABI/IPI)
+
 ## 2.9.0
 - **Manifest Filename Fix**: Add `.yaml` extension to extraclustermanifests ConfigMap keys — assisted-service requires valid file extensions
 

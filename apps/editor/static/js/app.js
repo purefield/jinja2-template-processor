@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.9.1',
+    date: '2026-02-13',
+    changes: [
+      'Disconnected clusters: add cluster.disconnected flag and catalogSources for air-gapped installations',
+      'Disables default OperatorHub sources, configures custom CatalogSources across ZTP, CAPI, and ABI/IPI'
+    ]
+  },
+  {
     version: '2.9.0',
     date: '2026-02-13',
     changes: [

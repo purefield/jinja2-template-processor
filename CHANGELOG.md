@@ -4,6 +4,7 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v2.9.1 (2026-02-13)
 - **disconnected-operatorhub** — Add `cluster.disconnected` flag and `cluster.catalogSources` for air-gapped clusters; disables default OperatorHub sources and configures custom CatalogSources via ACM ZTP extraclustermanifests, ACM CAPI ManifestWork, and ABI/IPI manifests
 - **fix-tpm-test-keys** — Fix pre-existing test assertions for v2.9.0 `.yaml` extension on ConfigMap keys
 
