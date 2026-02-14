@@ -2827,5 +2827,87 @@ class TestClusterInstanceTemplate:
         assert ns[0]['metadata']['name'] == 'sc-test'
 
 
+class TestKubevirtSsdUdev:
+    """Tests for the kubevirt SSD udev MachineConfig include across all install methods."""
+
+    def test_ssd_udev_in_ztp_kubevirt(self, template_env):
+        """SSD udev rule appears in ZTP extraclustermanifests for kubevirt platform."""
+        data = TestAcmZtpTemplate().acm_ztp_data(platform='kubevirt', tpm=False)
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        result = yaml.safe_load(template.render(data))
+
+        cm = None
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == 'extraclustermanifests':
+                cm = item
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-ssd-rotational.yaml' in cm['data']
+        assert '99-master-ssd-rotational' in cm['data']['99-ssd-rotational.yaml']
+        assert 'ssd-rotational.rules' in cm['data']['99-ssd-rotational.yaml']
+
+    def test_no_ssd_udev_in_ztp_baremetal(self, template_env):
+        """SSD udev rule absent in ZTP extraclustermanifests for baremetal platform."""
+        data = TestAcmZtpTemplate().acm_ztp_data(platform='baremetal', tpm=False)
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        result = yaml.safe_load(template.render(data))
+
+        cm = None
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == 'extraclustermanifests':
+                cm = item
+        # No ConfigMap at all when baremetal without TPM/mirrors/etc
+        assert cm is None
+
+    def test_ssd_udev_in_install_config_kubevirt(self, template_env):
+        """SSD udev MachineConfig appears in install-config output for kubevirt platform."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'kubevirt'
+        data['hosts'] = {
+            'node1.test.example.com': {
+                'role': 'control',
+                'storage': {'os': {'deviceName': '/dev/vda'}},
+                'network': {
+                    'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                    'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                }
+            }
+        }
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        docs = list(yaml.safe_load_all(rendered))
+        mc = [d for d in docs if d and d.get('kind') == 'MachineConfig' and 'ssd' in d['metadata']['name']]
+        assert len(mc) == 1, "SSD udev MachineConfig should appear for kubevirt"
+        assert mc[0]['metadata']['name'] == '99-master-ssd-rotational'
+
+    def test_no_ssd_udev_in_install_config_baremetal(self, template_env):
+        """SSD udev MachineConfig absent in install-config output for baremetal platform."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['network']['primary']['vips'] = {'api': ['10.0.0.2'], 'apps': ['10.0.0.3']}
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        assert 'ssd-rotational' not in rendered
+
+    def test_ssd_udev_in_capi_kubevirt(self, template_env):
+        """SSD udev ManifestWork appears in CAPI template for kubevirt platform."""
+        data = TestAcmZtpTemplate().acm_ztp_data(platform='kubevirt', tpm=False)
+        template = template_env.get_template('acm-capi-m3.yaml.tpl')
+        result = yaml.safe_load(template.render(data))
+
+        mw = [item for item in result['items']
+              if item['kind'] == 'ManifestWork' and item['metadata']['name'] == 'kubevirt-ssd-udev']
+        assert len(mw) == 1, "SSD udev ManifestWork should appear for kubevirt"
+        manifest = mw[0]['spec']['workload']['manifests'][0]
+        assert manifest['kind'] == 'MachineConfig'
+        assert manifest['metadata']['name'] == '99-master-ssd-rotational'
+
+    def test_no_ssd_udev_in_capi_baremetal(self, template_env):
+        """SSD udev ManifestWork absent in CAPI template for baremetal platform."""
+        data = TestAcmZtpTemplate().acm_ztp_data(platform='baremetal', tpm=False)
+        template = template_env.get_template('acm-capi-m3.yaml.tpl')
+        rendered = template.render(data)
+        assert 'kubevirt-ssd-udev' not in rendered
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

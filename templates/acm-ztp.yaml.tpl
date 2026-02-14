@@ -26,6 +26,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
+{%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
 {%- set enableDisconnected = cluster.disconnected | default(false) -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 apiVersion: v1
@@ -82,7 +83,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or enableDisconnected or insecureMirrors %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
 - kind: ConfigMap
@@ -96,7 +97,7 @@ items:
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or enableDisconnected or insecureMirrors %}
+{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -108,7 +109,9 @@ items:
     99-tpm-disk-encryption.yaml: |
 {{ tpmManifest | indent(8, true) }}{% endif %}{% if enableTang %}{%- set tangManifest %}{% include "includes/tang-machineconfig.yaml.tpl" %}{% endset %}
     99-tang-disk-encryption.yaml: |
-{{ tangManifest | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
+{{ tangManifest | indent(8, true) }}{% endif %}{% if isKubevirt %}{%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
+    99-ssd-rotational.yaml: |
+{{ ssdUdev | indent(8, true) }}{% endif %}{% if cluster.mirrors %}{%- set sources %}{% include "includes/imageContentSource.yaml.tpl" %}{% endset %}
     99-image-digest-mirror-set.yaml: |
       kind: ImageDigestMirrorSet
       apiVersion: config.openshift.io/v1

@@ -127,7 +127,10 @@ metadata:
 spec:
   registrySources:
     insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if plugins is defined and plugins.operators is defined %}
+      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if platform == "kubevirt" %}{%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
+---
+# Place in openshift/ directory for ABI/IPI — forces virtual disks to report as SSD
+{{ ssdUdev }}{% endif %}{% if plugins is defined and plugins.operators is defined %}
 {%- set ops = plugins.operators -%}
 {%- if ops.argocd is defined %}{%- set operatorManifests %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endset %}
 {{ operatorManifests }}{% endif -%}

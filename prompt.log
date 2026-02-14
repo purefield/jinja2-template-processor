@@ -1695,3 +1695,22 @@ Implemented all plan items:
 - `data/kubevirt-sno.clusterfile`: Fixed broken flat `networkType`/`physicalNetwork` keys to nested `network.type: cudn`
 
 **Verification:** All 118 tests pass, all template renderings succeed (kubevirt-cluster, operators, install-config for all clusterfiles).
+
+### Prompt 95
+
+> ./steps/common-create-storage-ssd.sh do we cover this and is this part of the installation, early to avoid node restarts?
+
+Analyzed the SSD udev step script. It creates a MachineConfig (`99-ssd-rotational`) with udev rules to force `/dev/sd*` and `/dev/vd*` to report `rotational=0` (SSD). This is needed because KubeVirt virtual disks report as rotational HDDs, which causes ODF/Ceph to misclassify them. It triggers node restarts (MachineConfig), so it must be applied early. It was NOT covered by the template-driven transition — only needed for kubevirt, not baremetal.
+
+### Prompt 96
+
+> yes, option 1 — add it as an extraclustermanifests MachineConfig, only if platform is kubevirt as baremetal would not need it
+> and for ABI as ACM needs it on the SNO cluster too
+
+Implemented SSD udev MachineConfig include for all three install methods, kubevirt-only:
+- Created `templates/includes/kubevirt-ssd-udev.yaml.tpl` with MachineConfig + base64-encoded udev rules
+- **ACM ZTP**: Added `isKubevirt` flag; SSD udev included in `extraclustermanifests` ConfigMap (install-time, no post-install reboot)
+- **ACM CAPI**: Added ManifestWork `kubevirt-ssd-udev` for managed clusters
+- **ABI/IPI (install-config.yaml.tpl)**: Added as extra manifest document for kubevirt platform (SNO hub)
+- 6 new tests: ZTP kubevirt/baremetal, install-config kubevirt/baremetal, CAPI kubevirt/baremetal
+- All 124 tests pass

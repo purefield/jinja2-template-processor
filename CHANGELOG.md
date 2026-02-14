@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 - **ocp-on-ocp-operators** — Enhance OCP-on-OCP demo with template-driven operators: add operators sections to ocp-acm (LVM, ACM, cert-manager, ArgoCD, external-secrets), ocp-cluster2/3 (ODF); fix ocp-acm network from flat bridge to CUDN; transition manage-cluster.sh install phases from step scripts to template rendering; add operator manifest rendering to sno.setup.sh; fix kubevirt-sno.clusterfile broken flat network keys
+- **kubevirt-ssd-udev** — SSD udev MachineConfig for KubeVirt VMs: forces virtual block devices to report as SSDs (rotational=0) so ODF/Ceph classifies them correctly. Included at install time via ZTP extraclustermanifests, CAPI ManifestWork, and ABI/IPI extra manifests — only when platform is kubevirt. 6 new tests
 
 ## v2.12.0 (2026-02-14)
 - **siteconfig-schema** — Add ClusterInstance-inspired fields to clusterfile schema: cluster.clusterType, cluster.cpuPartitioningMode, cluster.diskEncryption (Tang), cluster.installConfigOverrides, cluster.holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride

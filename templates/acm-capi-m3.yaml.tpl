@@ -23,6 +23,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
+{%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
 {%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
 {%- set imageUrl="" -%}
@@ -279,7 +280,17 @@ items:
     bootMACAddress: {{ bootNic.macAddress }}
     online: false{% endfor %}
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
-{{ pocBanner }}{%- set insecureImageManifest %}
+{{ pocBanner }}{% if isKubevirt %}
+- kind: ManifestWork
+  apiVersion: work.open-cluster-management.io/v1
+  metadata:
+    name: kubevirt-ssd-udev
+    namespace: {{ cluster.name }}
+  spec:
+    workload:
+      manifests:
+        - {%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
+{{ ssdUdev | indent(10, true) }}{% endif %}{%- set insecureImageManifest %}
         - apiVersion: config.openshift.io/v1
           kind: Image
           metadata:
