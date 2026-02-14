@@ -21,3 +21,8 @@ docs: https://docs.openshift.com/container-platform/latest/operators/admin/olm-a
 {#- Standalone operator manifests for post-install: oc apply -f operators.yaml #}
 {%- set ops = plugins.operators | default({}) if plugins is defined else {} -%}
 {%- if ops.argocd is defined %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops.lvm is defined %}{% include "operators/lvm/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops.odf is defined %}{% include "operators/odf/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops.acm is defined %}{% include "operators/acm/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops['cert-manager'] is defined %}{% include "operators/cert-manager/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops['external-secrets'] is defined %}{% include "operators/external-secrets/manifests.yaml.tpl" %}{% endif -%}

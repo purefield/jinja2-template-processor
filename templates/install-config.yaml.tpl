@@ -125,6 +125,18 @@ metadata:
 spec:
   registrySources:
     insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if plugins is defined and plugins.operators is defined and plugins.operators.argocd is defined %}
-{%- set operatorManifests %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif %}
+      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if plugins is defined and plugins.operators is defined %}
+{%- set ops = plugins.operators -%}
+{%- if ops.argocd is defined %}{%- set operatorManifests %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{%- if ops.lvm is defined %}{%- set operatorManifests %}{% include "operators/lvm/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{%- if ops.odf is defined %}{%- set operatorManifests %}{% include "operators/odf/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{%- if ops.acm is defined %}{%- set operatorManifests %}{% include "operators/acm/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{%- if ops['cert-manager'] is defined %}{%- set operatorManifests %}{% include "operators/cert-manager/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{%- if ops['external-secrets'] is defined %}{%- set operatorManifests %}{% include "operators/external-secrets/manifests.yaml.tpl" %}{% endset %}
+{{ operatorManifests }}{% endif -%}
+{% endif %}

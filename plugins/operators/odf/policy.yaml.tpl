@@ -1,0 +1,115 @@
+{%- set odf = plugins.operators.odf -%}
+{%- set odfEnabled = odf.enabled | default(true) -%}
+{%- set sc = odf.storageCluster | default({}) -%}
+{%- if odfEnabled %}
+- kind: Policy
+  apiVersion: policy.open-cluster-management.io/v1
+  metadata:
+    name: operator-odf
+    namespace: {{ cluster.name }}
+    annotations:
+      policy.open-cluster-management.io/standards: NIST SP 800-53
+      policy.open-cluster-management.io/categories: CM Configuration Management
+      policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+  spec:
+    remediationAction: enforce
+    disabled: false
+    policy-templates:
+      - objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: odf-subscription
+          spec:
+            remediationAction: enforce
+            severity: high
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: v1
+                  kind: Namespace
+                  metadata:
+                    name: openshift-storage
+                    labels:
+                      openshift.io/cluster-monitoring: "true"
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: operators.coreos.com/v1
+                  kind: OperatorGroup
+                  metadata:
+                    name: openshift-storage-operatorgroup
+                    namespace: openshift-storage
+                  spec:
+                    targetNamespaces:
+                      - openshift-storage
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: operators.coreos.com/v1alpha1
+                  kind: Subscription
+                  metadata:
+                    name: odf-operator
+                    namespace: openshift-storage
+                  spec:
+                    channel: {{ odf.channel | default("stable-4.18") }}
+                    installPlanApproval: {{ odf.approval | default("Automatic") }}
+                    name: odf-operator
+                    source: {{ odf.source | default("redhat-operators") }}
+                    sourceNamespace: openshift-marketplace
+      - objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: odf-storagecluster
+          spec:
+            remediationAction: enforce
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: ocs.openshift.io/v1
+                  kind: StorageCluster
+                  metadata:
+                    name: {{ sc.name | default("ocs-storagecluster") }}
+                    namespace: openshift-storage
+                  spec:
+                    monDataDirHostPath: {{ sc.monDataDirHostPath | default("/var/lib/rook") }}
+                    storageDeviceSets:{% if sc.storageDeviceSets is defined %}{% for sds in sc.storageDeviceSets %}
+                      - name: {{ sds.name | default("ocs-deviceset") }}
+                        count: {{ sds.count | default(1) }}
+                        replica: {{ sds.replica | default(3) }}
+                        portable: true
+                        dataPVCTemplate:
+                          spec:
+                            accessModes:
+                              - ReadWriteOnce{% if sds.storageClassName is defined and sds.storageClassName %}
+                            storageClassName: {{ sds.storageClassName }}{% endif %}
+                            resources:
+                              requests:
+                                storage: {{ sds.storage | default("1Ti") }}
+                            volumeMode: Block{% endfor %}{% else %}
+                      - name: ocs-deviceset
+                        count: 1
+                        replica: 3
+                        portable: true
+                        dataPVCTemplate:
+                          spec:
+                            accessModes:
+                              - ReadWriteOnce
+                            resources:
+                              requests:
+                                storage: 1Ti
+                            volumeMode: Block{% endif %}
+- kind: PlacementBinding
+  apiVersion: policy.open-cluster-management.io/v1
+  metadata:
+    name: operator-odf
+    namespace: {{ cluster.name }}
+  placementRef:
+    name: {{ cluster.name }}
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+  subjects:
+    - name: operator-odf
+      kind: Policy
+      apiGroup: policy.open-cluster-management.io
+{%- endif -%}

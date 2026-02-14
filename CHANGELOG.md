@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+- **plugin-colocation** — Restructure operator plugins: move schema + templates from scattered `schema/plugins/` and `templates/plugins/` to co-located `plugins/operators/<name>/` directory. Each operator is self-contained with schema.json, manifests.yaml.tpl, and policy.yaml.tpl
+- **operator-lvm** — LVM Storage (LVMS) operator plugin: Namespace, OperatorGroup, Subscription, LVMCluster CR with configurable deviceClasses, thinPoolConfig, deviceSelector. ACM Policy template for managed clusters
+- **operator-odf** — OpenShift Data Foundation operator plugin: Subscription, StorageCluster CR with configurable storageDeviceSets, ConsolePlugin. ACM Policy template for managed clusters
+- **operator-acm** — Advanced Cluster Management hub operator plugin: Namespace, OperatorGroup, Subscription, MultiClusterHub, AgentServiceConfig (storage sizes), Provisioning CR
+- **operator-cert-manager** — cert-manager operator plugin: Namespace, OperatorGroup, Subscription. ACM Policy template for managed clusters
+- **operator-external-secrets** — external-secrets operator plugin: Subscription (global scope, openshift-operators). ACM Policy template for managed clusters
+- **operator-integration** — All 5 new operators integrated into operators.yaml.tpl (standalone), install-config.yaml.tpl (ABI/IPI extra manifests), acm-ztp.yaml.tpl and acm-capi-m3.yaml.tpl (ACM Policy). All operators support optional channel, source, and approval override
+- **operator-tests** — 23 new tests covering all operators: defaults, custom channels/sources, disabled state, device classes (LVM), storage clusters (ODF), ACM hub config, ACM ZTP policies, multi-operator rendering
 
 ## v2.10.0 (2026-02-14)
 - **operator-schema** — Operator plugin schema (`schema/plugins/operators/argocd.schema.json`) with ArgoCD properties and smart defaults; referenced from main clusterfile schema

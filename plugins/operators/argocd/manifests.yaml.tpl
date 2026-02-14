@@ -3,7 +3,7 @@
 {%- set argoRbac = argo.rbac | default({}) -%}
 {%- set argoRepo = argo.repo | default({}) -%}
 {%- set argoRepoRes = argoRepo.resources | default({}) -%}
-{%- if argoEnabled -%}
+{%- if argoEnabled %}
 ---
 apiVersion: v1
 kind: Namespace

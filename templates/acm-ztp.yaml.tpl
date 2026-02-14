@@ -289,6 +289,16 @@ items:
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
 {{ pocBanner }}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}{% if plugins is defined and plugins.operators is defined and plugins.operators.argocd is defined %}
-{%- set argoPolicy %}{% include "operators/argocd/policy.yaml.tpl" %}{% endset %}
-{{ argoPolicy }}{% endif %}
+{{ osImagesSync }}{% if plugins is defined and plugins.operators is defined %}
+{%- set ops = plugins.operators -%}
+{%- if ops.argocd is defined %}{%- set opPolicy %}{% include "operators/argocd/policy.yaml.tpl" %}{% endset %}
+{{ opPolicy }}{% endif -%}
+{%- if ops.lvm is defined %}{%- set opPolicy %}{% include "operators/lvm/policy.yaml.tpl" %}{% endset %}
+{{ opPolicy }}{% endif -%}
+{%- if ops.odf is defined %}{%- set opPolicy %}{% include "operators/odf/policy.yaml.tpl" %}{% endset %}
+{{ opPolicy }}{% endif -%}
+{%- if ops['cert-manager'] is defined %}{%- set opPolicy %}{% include "operators/cert-manager/policy.yaml.tpl" %}{% endset %}
+{{ opPolicy }}{% endif -%}
+{%- if ops['external-secrets'] is defined %}{%- set opPolicy %}{% include "operators/external-secrets/policy.yaml.tpl" %}{% endset %}
+{{ opPolicy }}{% endif -%}
+{% endif %}
