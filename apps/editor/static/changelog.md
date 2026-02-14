@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 2.12.0
+- **SiteConfig Integration**: Bidirectional conversion between clusterfiles and SiteConfig ClusterInstance CRs — `clusterfile2siteconfig.yaml.tpl` generates ClusterInstance + Namespace + Secrets; `siteconfig2clusterfile.yaml.tpl` does the reverse
+- **ClusterInstance Fields**: New schema fields from ClusterInstance data model — clusterType, cpuPartitioningMode, diskEncryption (Tang), holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride
+- **Template Enrichment**: ACM ZTP/CAPI templates consume all new per-host fields; install-config supports cpuPartitioningMode; Tang disk encryption MachineConfig include
+- **DRY BMC URLs**: Shared `bmc-url.yaml.tpl` include for vendor-specific Redfish URL construction across all templates
+
 ## 2.11.0
 - **6 Operator Plugins**: LVM, ODF, ACM, cert-manager, external-secrets join ArgoCD — each with smart defaults, optional channel/source/approval overrides, standalone manifests (ABI) and ACM Policy (ZTP/CAPI)
 - **Plugin Co-location**: Operators restructured to `plugins/operators/<name>/` — schema, manifests, and policy templates co-located per operator

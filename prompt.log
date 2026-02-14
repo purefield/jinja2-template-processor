@@ -1667,3 +1667,9 @@ Quality review of all SiteConfig integration work. Found and fixed:
 - **Formatting**: Fixed `{% if s.nodes %}` on standalone line in siteconfig2clusterfile.yaml.tpl
 - Added graceful `spec if spec is defined` guard in siteconfig2clusterfile.yaml.tpl
 - All 118 tests pass
+
+### Prompt 93
+
+> ship it
+
+Release v2.12.0: SiteConfig ClusterInstance integration with bidirectional conversion, schema enrichment, and template fixes. Updated all 5 version locations, committed, tagged v2.12.0, built and deployed container.

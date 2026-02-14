@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.12.0',
+    date: '2026-02-14',
+    changes: [
+      'SiteConfig integration: bidirectional clusterfile ↔ ClusterInstance CR conversion templates',
+      'ClusterInstance fields: clusterType, cpuPartitioningMode, diskEncryption (Tang), holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect',
+      'Template enrichment: ACM ZTP/CAPI consume new per-host fields; install-config cpuPartitioningMode; Tang MachineConfig',
+      'DRY BMC URLs: shared bmc-url.yaml.tpl include for vendor-specific Redfish URL construction'
+    ]
+  },
+  {
     version: '2.11.0',
     date: '2026-02-14',
     changes: [

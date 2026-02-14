@@ -3,6 +3,8 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+
+## v2.12.0 (2026-02-14)
 - **siteconfig-schema** — Add ClusterInstance-inspired fields to clusterfile schema: cluster.clusterType, cluster.cpuPartitioningMode, cluster.diskEncryption (Tang), cluster.installConfigOverrides, cluster.holdInstallation, External platform; per-host bootMode, nodeLabels, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride
 - **siteconfig-templates** — Bidirectional conversion templates: clusterfile2siteconfig.yaml.tpl (generates ClusterInstance CR + Namespace + Secrets) and siteconfig2clusterfile.yaml.tpl (reverse mapping). Tang disk encryption MachineConfig include
 - **siteconfig-template-updates** — ACM ZTP/CAPI templates consume new per-host fields (bootMode, configurable automatedCleaningMode/ironicInspect, installerArgs, ignitionConfigOverride annotations); holdInstallation in AgentClusterInstall; cpuPartitioningMode in install-config.yaml.tpl
