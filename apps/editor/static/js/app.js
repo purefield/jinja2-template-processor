@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.8.7',
+    date: '2026-02-13',
+    changes: [
+      'For mirrors, always use mirror in imageContentSource template'
+    ]
+  },
+  {
     version: '2.8.6',
     date: '2026-02-13',
     changes: [

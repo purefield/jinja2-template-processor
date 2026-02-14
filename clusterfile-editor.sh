@@ -147,7 +147,7 @@ release_image() {
     if command -v git >/dev/null 2>&1; then
         echo "Pushing to remote..."
         git -C "${SCRIPT_DIR}" push
-        git -C "${SCRIPT_DIR}" push --tags
+        git -C "${SCRIPT_DIR}" push origin "v${APP_VERSION}"
     fi
 
     build_image
@@ -230,7 +230,7 @@ update_changelog() {
         range="HEAD"
     fi
 
-    if [ -f "${changelog}" ] && rg -q "^## ${APP_VERSION}$" "${changelog}"; then
+    if [ -f "${changelog}" ] && grep -q "^## ${APP_VERSION}$" "${changelog}"; then
         echo "Changelog already contains version ${APP_VERSION}"
         return
     fi
