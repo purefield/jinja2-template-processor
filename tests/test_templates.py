@@ -1828,6 +1828,40 @@ class TestOperatorsPlugin:
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-argocd']
         assert len(bindings) == 1, "Expected one ArgoCD PlacementBinding"
 
+    def test_argocd_bootstrap_application(self, template_env):
+        """Test ArgoCD bootstrap creates an Application CR for app-of-apps."""
+        data = self.operator_data({'bootstrap': {'repoURL': 'https://git.example.com/cluster-config.git', 'path': 'operators', 'targetRevision': 'main'}})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        apps = [d for d in docs if d.get('kind') == 'Application']
+        assert len(apps) == 1
+        app = apps[0]
+        assert app['metadata']['name'] == 'cluster-bootstrap'
+        assert app['spec']['source']['repoURL'] == 'https://git.example.com/cluster-config.git'
+        assert app['spec']['source']['path'] == 'operators'
+        assert app['spec']['source']['targetRevision'] == 'main'
+        assert app['spec']['syncPolicy']['automated']['selfHeal'] is True
+
+    def test_argocd_bootstrap_no_sync(self, template_env):
+        """Test ArgoCD bootstrap with autoSync disabled omits syncPolicy."""
+        data = self.operator_data({'bootstrap': {'repoURL': 'https://git.example.com/config.git', 'autoSync': False}})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        apps = [d for d in docs if d.get('kind') == 'Application']
+        assert len(apps) == 1
+        assert 'syncPolicy' not in apps[0]['spec']
+
+    def test_argocd_no_bootstrap_without_config(self, template_env):
+        """Test no bootstrap Application when bootstrap is not configured."""
+        data = self.operator_data({})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        apps = [d for d in docs if d.get('kind') == 'Application']
+        assert len(apps) == 0
+
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

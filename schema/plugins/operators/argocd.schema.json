@@ -84,6 +84,44 @@
           "type": "boolean",
           "default": true,
           "description": "Enable ApplicationSet controller."
+        },
+        "bootstrap": {
+          "title": "Bootstrap Application",
+          "description": "GitOps bootstrap: an ArgoCD Application that manages further operators and cluster config from a git repo (app-of-apps pattern).",
+          "type": "object",
+          "properties": {
+            "repoURL": {
+              "title": "Repository URL",
+              "type": "string",
+              "description": "Git repository URL containing operator/config manifests."
+            },
+            "path": {
+              "title": "Path",
+              "type": "string",
+              "default": ".",
+              "description": "Path within the repo to the manifests directory."
+            },
+            "targetRevision": {
+              "title": "Target Revision",
+              "type": "string",
+              "default": "HEAD",
+              "description": "Git branch, tag, or commit (e.g. main, v1.0, HEAD)."
+            },
+            "namespace": {
+              "title": "Destination Namespace",
+              "type": "string",
+              "default": "openshift-gitops",
+              "description": "Namespace where bootstrapped resources are created."
+            },
+            "autoSync": {
+              "title": "Auto Sync",
+              "type": "boolean",
+              "default": true,
+              "description": "Enable automated sync with self-healing and pruning."
+            }
+          },
+          "required": ["repoURL"],
+          "additionalProperties": false
         }
       },
       "additionalProperties": true

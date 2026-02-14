@@ -114,7 +114,40 @@
                           memory: 1Gi
                         requests:
                           cpu: 250m
-                          memory: 512Mi
+                          memory: 512Mi{% if argo.bootstrap is defined and argo.bootstrap.repoURL is defined %}
+      - objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: argocd-bootstrap
+          spec:
+            remediationAction: enforce
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: cluster-bootstrap
+                    namespace: openshift-gitops
+                    finalizers:
+                      - resources-finalizer.argocd.argoproj.io
+                  spec:
+                    project: default
+                    source:
+                      repoURL: {{ argo.bootstrap.repoURL }}
+                      path: {{ argo.bootstrap.path | default(".") }}
+                      targetRevision: {{ argo.bootstrap.targetRevision | default("HEAD") }}
+                    destination:
+                      server: https://kubernetes.default.svc
+                      namespace: {{ argo.bootstrap.namespace | default("openshift-gitops") }}{% if argo.bootstrap.autoSync | default(true) %}
+                    syncPolicy:
+                      automated:
+                        prune: true
+                        selfHeal: true
+                      syncOptions:
+                        - CreateNamespace=true{% endif %}{% endif %}
 - kind: PlacementBinding
   apiVersion: policy.open-cluster-management.io/v1
   metadata:
