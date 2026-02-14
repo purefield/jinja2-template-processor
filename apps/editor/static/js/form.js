@@ -175,10 +175,32 @@ const PLATFORM_TO_PLUGIN = {
  * Render plugins section - only shows the plugin matching the selected platform
  */
 function renderPluginsSection(container, schema) {
+  const resolvedPluginsSchema = safeResolveSchema(schema, getRootSchema());
+
+  // --- Platform subsection ---
+  renderPlatformSubsection(container, resolvedPluginsSchema);
+
+  // --- Operators subsection ---
+  renderOperatorsSubsection(container, resolvedPluginsSchema);
+}
+
+/**
+ * Render platform plugin subsection
+ */
+function renderPlatformSubsection(container, pluginsSchema) {
   const platform = State.state.currentObject?.cluster?.platform;
   const pluginName = PLATFORM_TO_PLUGIN[platform];
 
-  // No platform selected
+  const subtitle = document.createElement('h3');
+  subtitle.className = 'form-section__subtitle';
+  subtitle.textContent = 'Platform';
+  subtitle.style.marginTop = '8px';
+  subtitle.style.marginBottom = '12px';
+  subtitle.style.color = 'var(--pf-global--Color--100)';
+  subtitle.style.fontSize = '1rem';
+  subtitle.style.fontWeight = '600';
+  container.appendChild(subtitle);
+
   if (!platform) {
     const notice = document.createElement('div');
     notice.className = 'empty-state';
@@ -197,47 +219,26 @@ function renderPluginsSection(container, schema) {
     return;
   }
 
-  // Platform doesn't have a plugin (baremetal, none)
   if (pluginName === null) {
+    const platformBadge = document.createElement('div');
+    platformBadge.className = 'plugin-platform-badge';
+    platformBadge.innerHTML = `
+      <span class="plugin-platform-badge__label">Platform:</span>
+      <span class="plugin-platform-badge__value">${Help.escapeHtml(platform)}</span>
+    `;
+    container.appendChild(platformBadge);
     const notice = document.createElement('div');
     notice.className = 'empty-state';
-    notice.innerHTML = `
-      <div class="empty-state__icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22,4 12,14.01 9,11.01"/>
-        </svg>
-      </div>
-      <div class="empty-state__title">No plugin required</div>
-      <div class="empty-state__description">The <strong>${Help.escapeHtml(platform)}</strong> platform does not require additional plugin configuration.</div>
-    `;
+    notice.style.padding = '12px 0';
+    notice.innerHTML = `<div class="empty-state__description">The <strong>${Help.escapeHtml(platform)}</strong> platform does not require additional plugin configuration.</div>`;
     container.appendChild(notice);
     return;
   }
 
-  // Check if plugin schema exists (resolve $ref on the plugins schema first)
-  const resolvedPluginsSchema = safeResolveSchema(schema, getRootSchema());
-  const rawPluginSchema = resolvedPluginsSchema?.properties?.[pluginName];
+  const rawPluginSchema = pluginsSchema?.properties?.[pluginName];
   const pluginSchema = rawPluginSchema ? safeResolveSchema(rawPluginSchema, getRootSchema()) : null;
-  if (!pluginSchema) {
-    const notice = document.createElement('div');
-    notice.className = 'empty-state';
-    notice.innerHTML = `
-      <div class="empty-state__icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-      </div>
-      <div class="empty-state__title">Plugin not available</div>
-      <div class="empty-state__description">No schema defined for the <strong>${Help.escapeHtml(pluginName)}</strong> plugin.</div>
-    `;
-    container.appendChild(notice);
-    return;
-  }
+  if (!pluginSchema) return;
 
-  // Show platform indicator with link back to Cluster section
   const platformBadge = document.createElement('a');
   platformBadge.className = 'plugin-platform-badge plugin-platform-badge--link';
   platformBadge.href = '#';
@@ -254,28 +255,111 @@ function renderPluginsSection(container, schema) {
   `;
   platformBadge.addEventListener('click', (e) => {
     e.preventDefault();
-    // Navigate to cluster section - use global function if available
     if (window.ClusterfileEditor?.navigateToSection) {
       window.ClusterfileEditor.navigateToSection('cluster');
     }
   });
   container.appendChild(platformBadge);
 
-  // Render plugin title as subsection
-  const pluginTitle = document.createElement('h3');
-  pluginTitle.className = 'form-section__subtitle';
-  pluginTitle.textContent = pluginSchema.title || pluginName;
-  pluginTitle.style.marginTop = '16px';
-  pluginTitle.style.marginBottom = '12px';
-  pluginTitle.style.color = 'var(--pf-global--Color--100)';
-  pluginTitle.style.fontSize = '1rem';
-  pluginTitle.style.fontWeight = '600';
-  container.appendChild(pluginTitle);
-
-  // Render plugin fields
   const pluginData = State.state.currentObject?.plugins?.[pluginName] || {};
   const path = `plugins.${pluginName}`;
   renderObjectFields(container, pluginSchema, path, pluginData);
+}
+
+/**
+ * Render operators subsection with collapsible enable/disable fieldsets
+ */
+function renderOperatorsSubsection(container, pluginsSchema) {
+  const rawOperatorsSchema = pluginsSchema?.properties?.operators;
+  if (!rawOperatorsSchema) return;
+  const operatorsSchema = safeResolveSchema(rawOperatorsSchema, getRootSchema());
+  if (!operatorsSchema?.properties) return;
+
+  const subtitle = document.createElement('h3');
+  subtitle.className = 'form-section__subtitle';
+  subtitle.textContent = 'Operators';
+  subtitle.style.marginTop = '24px';
+  subtitle.style.marginBottom = '12px';
+  subtitle.style.color = 'var(--pf-global--Color--100)';
+  subtitle.style.fontSize = '1rem';
+  subtitle.style.fontWeight = '600';
+  container.appendChild(subtitle);
+
+  const operatorsData = State.state.currentObject?.plugins?.operators || {};
+
+  for (const [opName, rawOpSchema] of Object.entries(operatorsSchema.properties)) {
+    const opSchema = safeResolveSchema(rawOpSchema, getRootSchema());
+    if (!opSchema || opSchema.type !== 'object') continue;
+
+    const isEnabled = opName in operatorsData;
+    const opData = operatorsData[opName] || {};
+
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'form-fieldset';
+    if (!isEnabled) fieldset.classList.add('form-fieldset--collapsed');
+
+    const legend = document.createElement('legend');
+    legend.className = 'form-fieldset__legend';
+
+    // Checkbox to enable/disable
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = isEnabled;
+    checkbox.style.marginRight = '8px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.addEventListener('change', (e) => {
+      e.stopPropagation();
+      if (checkbox.checked) {
+        // Ensure plugins.operators path exists
+        if (!State.state.currentObject.plugins) State.state.currentObject.plugins = {};
+        if (!State.state.currentObject.plugins.operators) State.state.currentObject.plugins.operators = {};
+        State.setNestedValue(State.state.currentObject, `plugins.operators.${opName}`, {});
+        fieldset.classList.remove('form-fieldset--collapsed');
+      } else {
+        State.deleteNestedValue(State.state.currentObject, `plugins.operators.${opName}`);
+        fieldset.classList.add('form-fieldset--collapsed');
+      }
+      triggerFormChange();
+      // Re-render to show/hide operator fields
+      setTimeout(() => {
+        const container = document.getElementById('form-content');
+        if (container) renderSection('plugins', container);
+      }, 150);
+    });
+
+    legend.appendChild(checkbox);
+
+    const toggleSpan = document.createElement('span');
+    toggleSpan.className = 'form-fieldset__toggle';
+    toggleSpan.textContent = '\u25BC';
+    legend.appendChild(toggleSpan);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = ` ${opSchema.title || opName}`;
+    legend.appendChild(labelSpan);
+
+    if (Help.createHelpIcon && opSchema.description) {
+      legend.appendChild(Help.createHelpIcon(opSchema, opName));
+    }
+
+    legend.addEventListener('click', (e) => {
+      if (e.target === checkbox) return;
+      fieldset.classList.toggle('form-fieldset--collapsed');
+    });
+
+    fieldset.appendChild(legend);
+
+    const content = document.createElement('div');
+    content.className = 'form-fieldset__content';
+    if (isEnabled && opSchema.properties) {
+      // Filter out 'enabled' from displayed fields (handled by checkbox)
+      const filteredSchema = { ...opSchema, properties: { ...opSchema.properties } };
+      delete filteredSchema.properties.enabled;
+      renderObjectFields(content, filteredSchema, `plugins.operators.${opName}`, opData);
+    }
+    fieldset.appendChild(content);
+    container.appendChild(fieldset);
+  }
 }
 
 /**
