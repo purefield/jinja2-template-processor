@@ -1539,3 +1539,32 @@ Also completed in this session:
   - UndefinedError: transformed from raw traceback to actionable message with required fields hint
 - Created `data/baremetal-compact.clusterfile` — 3 control, 0 workers, with disconnected/mirrors/TPM features
 - All 110 tests pass (62 template + 48 web app)
+
+### Prompt 81
+
+> Ship it. Then: we need to add a new section operators to fully install any operator on the cluster, using the plugin architecture with their own includes and separate schema (should have a schema for each plugin.platform also). plugin.operator.argocd should be the first one we can build that fully sets up argoCD with the least amount of user provided input and common configuration options for customization. Now ACM can also push argoCD into a cluster, if we use ACM, it should be a policy to setup using the plugin information, otherwise, extra manifests. This is not firm, plan the best approach, create a new branch and have at it, I will be back in an hour and want to see it done, not stuck on a confirmation. Make sound choices and document question we can revisit to pivot later if needed. Follow all principles we discussed in Claude.md. keep capturing prompts and such too. Review our history to make sure other rules are also applied.
+
+Shipped v2.9.3 (updated all 5 version locations, committed, tagged, built container, pushed, restarted, verified).
+
+Then created `feature/operator-plugins` branch and implemented the full operator plugin architecture:
+
+1. **Schema** (`schema/plugins/operators.schema.json`): ArgoCD with smart defaults for channel, approval, ha, rbac, repo resources. Referenced from main schema.
+2. **DRY includes**: `templates/includes/operators/argocd/manifests.yaml.tpl` (Namespace + OperatorGroup + Subscription + ArgoCD CR) and `policy.yaml.tpl` (ACM Policy + ConfigurationPolicy + PlacementBinding).
+3. **Standalone template**: `templates/operators.yaml.tpl` for direct `oc apply`.
+4. **Integration**: install-config appends operator manifests as extra list items; acm-ztp and acm-capi-m3 include ArgoCD Policy for managed clusters.
+5. **Tests**: 8 new tests in TestOperatorsPlugin — all 69 tests pass.
+6. **Sample data**: Added `plugins.operators.argocd: {}` to baremetal.clusterfile.
+
+Commits: operator-schema, operator-argocd-templates, operator-integration, operator-tests.
+
+Open questions for later:
+- Platform-specific operator schemas (e.g., different defaults per platform)?
+- Generic operator framework (Jinja2 macro for any operator) vs per-operator templates?
+- Should operators be restricted to certain platforms or truly cross-platform?
+- ManifestWork vs Policy for ACM — currently using Policy (more powerful, self-remediating)
+
+### Prompt 82
+
+> (Context continuation — session resumed after context window compaction)
+
+Resumed session, ran test suite (1 failure due to missing bmc.version in test data), fixed, all 69 tests pass. Committed operator work in 4 logical commits with tags per CLAUDE.md rules. Updated prompt.log and CHANGELOG.

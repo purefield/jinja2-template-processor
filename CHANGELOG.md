@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+- **operator-schema** — Operator plugin schema (`schema/plugins/operators.schema.json`) with ArgoCD properties and smart defaults; referenced from main clusterfile schema
+- **operator-argocd-templates** — ArgoCD DRY includes: manifests.yaml.tpl (Namespace, OperatorGroup, Subscription, ArgoCD CR) and policy.yaml.tpl (ACM Policy + ConfigurationPolicy + PlacementBinding)
+- **operator-integration** — ArgoCD operator integrated into install-config.yaml.tpl (extra manifests), acm-ztp.yaml.tpl and acm-capi-m3.yaml.tpl (ACM Policy); standalone operators.yaml.tpl for direct apply
+- **operator-tests** — 8 new tests for ArgoCD operator plugin covering defaults, customization, RBAC, disabled state, install-config, and ACM ZTP policy
+
 ## v2.9.3 (2026-02-14)
 - **template-consolidation** — Extract shared includes for POC banner ManifestWork and os-images-sync (SA + CRB + Job); DRY insecure registries Image config in acm-capi-m3; net -69 lines of duplication
 - **kubevirt-install-config** — Add kubevirt platform includes for install-config.yaml.tpl; maps to baremetal (VIPs) or none (SNO) for UPI/agent-based installs
