@@ -1,0 +1,69 @@
+account:
+  pullSecret: 2023/pull-secret.json
+cluster:
+  version: 4.21.0
+  platform: none
+  arch: x86_64
+  name: acm-hub
+  machine:
+    control:
+      cpus: 16
+      sockets: 2
+      memory: 64
+      storage:
+        os: 200
+        data:
+          - 500
+  sshKeys:
+    - 2023/acm/id_rsa.pub
+  location: dc1
+plugins:
+  operators:
+    lvm: {}
+    acm:
+      multiClusterHub:
+        availabilityConfig: Basic
+      agentServiceConfig:
+        databaseStorage: 20Gi
+        filesystemStorage: 200Gi
+        imageStorage: 100Gi
+    cert-manager: {}
+    argocd:
+      bootstrap:
+        repoURL: https://gitea.example.com/infra/cluster-config.git
+        path: operators
+    external-secrets: {}
+network:
+  domain: example.com
+  ntpservers:
+    - pool.ntp.org
+  nameservers:
+    - 10.0.0.1
+  dnsResolver:
+    search:
+      - example.com
+  primary:
+    bond: false
+    vlan: false
+    mtu: 1500
+    gateway: 10.0.0.1
+    subnet: 10.0.0.0/24
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+hosts:
+  acm-hub.example.com:
+    role: control
+    storage:
+      os:
+        deviceName: /dev/sda
+    network:
+      interfaces:
+        - name: eno1
+          macAddress: 00:1A:2B:3C:4D:01
+      primary:
+        address: 10.0.0.10
+        ports:
+          - eno1

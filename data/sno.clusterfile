@@ -44,6 +44,7 @@ cluster:
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-connect-redhat-com
+  tpm: false
   disconnected: true
   catalogSources:
     - name: disconnected-redhat-operators
@@ -54,6 +55,10 @@ cluster:
       displayName: Certified Operators
       image: internal-registry.tld/redhat/certified-operator-index:v4.19
       publisher: Red Hat
+plugins:
+  operators:
+    lvm: {}
+    argocd: {}
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
