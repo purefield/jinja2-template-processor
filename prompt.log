@@ -1770,3 +1770,15 @@ Release v2.15.0: Updated all 5 version locations. Committed, tagged v2.15.0, pus
 > Wrap multi-document YAML in Kubernetes List kind
 
 Wrapped multi-doc YAML output in `kind: List` resource for `kubectl apply -f` compatibility. Changed one line each in `process.py` and `apps/editor/app/template_processor.py` — multi-doc templates now produce `{"apiVersion": "v1", "kind": "List", "items": docs}` instead of a bare array. Single-doc templates unchanged. Added test in `TestClusterInstanceTemplate`. Updated CHANGELOG.md. Committed and tagged `kubernetes-list-wrapper`.
+
+### Prompt 105
+
+> any other templates impacted
+
+Identified impacted templates: `clusterfile2siteconfig.yaml.tpl` (always multi-doc), `install-config.yaml.tpl` (conditionally multi-doc when disconnected/catalogSources/insecureMirrors/kubevirt/operators), `agent-config.yaml.tpl` (single doc, not impacted). Explained the positive side effect for install-config.
+
+### Prompt 106
+
+> ship it as 3.0.0
+
+Release v3.0.0: Updated all 5 version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.0.0, pushed. Built and pushed container image. Restarted app, verified healthz.

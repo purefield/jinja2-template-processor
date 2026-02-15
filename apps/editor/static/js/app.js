@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.0.0',
+    date: '2026-02-15',
+    changes: [
+      'Kubernetes List wrapper: multi-document YAML output wrapped in kind: List for kubectl apply compatibility'
+    ]
+  },
+  {
     version: '2.15.0',
     date: '2026-02-15',
     changes: [

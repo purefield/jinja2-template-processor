@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.0.0
+- **Kubernetes List Wrapper**: Multi-document YAML output (siteconfig, disconnected install-config) now wrapped in `kind: List` resource — output is directly `kubectl apply -f` / `oc apply -f` compatible. Single-doc templates unchanged
+
 ## 2.15.0
 - **Platform Plugin Move**: Platform templates (aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix, baremetal, kubevirt, none, external) moved from `templates/plugins/platforms/` to `plugins/platforms/` — all plugins now co-located under `plugins/`
 

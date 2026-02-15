@@ -3,6 +3,8 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+
+## v3.0.0 (2026-02-15)
 - **kubernetes-list-wrapper** — Wrap multi-document YAML output in `kind: List` resource for `kubectl apply -f` compatibility. Single-doc templates unchanged
 
 ## v2.15.0 (2026-02-15)
