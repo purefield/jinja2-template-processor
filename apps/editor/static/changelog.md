@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 2.15.0
+- **Platform Plugin Move**: Platform templates (aws, azure, gcp, vsphere, openstack, ibmcloud, nutanix, baremetal, kubevirt, none, external) moved from `templates/plugins/platforms/` to `plugins/platforms/` — all plugins now co-located under `plugins/`
+
 ## 2.14.0
 - **Extract Plugin Schemas**: Operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secrets) extracted from monolithic schema to `plugins/operators/<name>/schema.json` — auto-discovered and merged at load time
 - **cert-manager LetsEncrypt**: Template-driven LetsEncrypt configuration with ExternalSecret, ClusterIssuer, and Certificate resources for DNS-01 validation via Route53

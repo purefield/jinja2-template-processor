@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.15.0',
+    date: '2026-02-15',
+    changes: [
+      'Platform plugin move: all platform templates relocated to plugins/platforms/ alongside operator plugins'
+    ]
+  },
+  {
     version: '2.14.0',
     date: '2026-02-15',
     changes: [

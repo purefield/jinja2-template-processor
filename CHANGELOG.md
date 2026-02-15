@@ -3,6 +3,8 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+
+## v2.15.0 (2026-02-15)
 - **platform-plugin-move** — Move platform plugins from `templates/plugins/platforms/` to `plugins/platforms/`, co-locating all plugins under `plugins/`. Update template include paths and README
 
 ## v2.14.0 (2026-02-15)
