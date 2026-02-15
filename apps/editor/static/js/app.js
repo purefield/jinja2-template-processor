@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '2.14.0',
+    date: '2026-02-15',
+    changes: [
+      'Extract plugin schemas: 6 operator schemas moved to plugins/operators/<name>/schema.json — auto-discovered and merged at load time',
+      'cert-manager LetsEncrypt: template-driven ExternalSecret, ClusterIssuer, and Certificate for DNS-01 via Route53',
+      'SecretStore bootstrap: Vault ClusterSecretStore script with Kubernetes auth'
+    ]
+  },
+  {
     version: '2.13.0',
     date: '2026-02-14',
     changes: [

@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 2.14.0
+- **Extract Plugin Schemas**: Operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secrets) extracted from monolithic schema to `plugins/operators/<name>/schema.json` — auto-discovered and merged at load time
+- **cert-manager LetsEncrypt**: Template-driven LetsEncrypt configuration with ExternalSecret, ClusterIssuer, and Certificate resources for DNS-01 validation via Route53
+- **SecretStore Bootstrap**: Vault ClusterSecretStore bootstrap script with Kubernetes auth
+
 ## 2.13.0
 - **OCP-on-OCP Operators**: Template-driven operator deployment for OCP-on-OCP demo — clusterfile operators sections for LVM, ACM, cert-manager, ArgoCD, external-secrets (hub) and ODF (managed clusters); manage-cluster.sh install phases transitioned from step scripts to template rendering
 - **KubeVirt SSD Udev**: Install-time MachineConfig that forces virtual block devices to report as SSDs — included automatically for kubevirt platform via ZTP extraclustermanifests, CAPI ManifestWork, and ABI extra manifests
