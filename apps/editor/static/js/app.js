@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.1.0',
+    date: '2026-02-15',
+    changes: [
+      'SiteConfig KubeVirt: kubevirt platform supported in siteconfig template, maps to BareMetal platformType'
+    ]
+  },
+  {
     version: '3.0.0',
     date: '2026-02-15',
     changes: [

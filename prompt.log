@@ -1788,3 +1788,9 @@ Release v3.0.0: Updated all 5 version locations (APP_VERSION, static/changelog.m
 > Error rendering template — Platform 'kubevirt' is not supported by template 'clusterfile2siteconfig.yaml'. Should be supported as kubevirt is emulating baremetal.
 
 Added `kubevirt` to siteconfig template: platforms metadata list (passes pre-render validation) and platformMap (maps to `BareMetal` for ClusterInstance CR). Committed and tagged `siteconfig-kubevirt-platform`.
+
+### Prompt 108
+
+> ship it
+
+Release v3.1.0: Updated all 5 version locations. Committed, tagged v3.1.0, pushed. Built and pushed container image. Restarted app, verified healthz.

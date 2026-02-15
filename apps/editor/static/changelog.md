@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.1.0
+- **SiteConfig KubeVirt**: KubeVirt platform now supported in siteconfig template — maps to BareMetal platformType in ClusterInstance CR
+
 ## 3.0.0
 - **Kubernetes List Wrapper**: Multi-document YAML output (siteconfig, disconnected install-config) now wrapped in `kind: List` resource — output is directly `kubectl apply -f` / `oc apply -f` compatible. Single-doc templates unchanged
 

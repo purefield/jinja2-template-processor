@@ -3,6 +3,8 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+
+## v3.1.0 (2026-02-15)
 - **siteconfig-kubevirt-platform** — Allow kubevirt platform in siteconfig template, mapping to BareMetal platformType in ClusterInstance CR
 
 ## v3.0.0 (2026-02-15)
