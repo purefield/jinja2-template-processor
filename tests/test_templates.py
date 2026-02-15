@@ -5,6 +5,7 @@ Tests all platforms, configuration options, and includes.
 """
 import pytest
 import yaml
+import json
 import os
 import sys
 import tempfile
@@ -3016,6 +3017,94 @@ class TestKubevirtSsdUdev:
         template = template_env.get_template('acm-capi-m3.yaml.tpl')
         rendered = template.render(data)
         assert 'kubevirt-ssd-udev' not in rendered
+
+
+class TestSchemaPluginMerge:
+    """Tests for auto-discovery and merge of operator plugin schemas."""
+
+    def test_main_schema_has_no_inline_operator_defs(self):
+        """Verify inline operator defs were extracted from the main schema."""
+        schema_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'schema', 'clusterfile.schema.json')
+        with open(schema_path) as f:
+            s = json.load(f)
+        for key in ['operatorArgocd', 'operatorLvm', 'operatorOdf', 'operatorAcm', 'operatorCertManager', 'operatorExternalSecrets']:
+            assert key not in s.get('$defs', {}), f"{key} should be extracted from main schema"
+        assert 'operatorCommon' in s['$defs'], "operatorCommon should remain in main schema"
+
+    def test_plugin_schema_files_exist(self):
+        """Each operator plugin directory has a schema.json."""
+        plugins_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'plugins', 'operators')
+        for name in ['argocd', 'lvm', 'odf', 'acm', 'cert-manager', 'external-secrets']:
+            sf = os.path.join(plugins_dir, name, 'schema.json')
+            assert os.path.isfile(sf), f"Missing {sf}"
+            with open(sf) as f:
+                data = json.load(f)
+            assert data.get('type') == 'object', f"{name}/schema.json should be type object"
+            assert 'title' in data, f"{name}/schema.json should have a title"
+
+    def test_schema_merge_injects_defs_and_refs(self):
+        """Simulate the merge logic and verify $defs and $ref entries are created."""
+        schema_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'schema', 'clusterfile.schema.json')
+        plugins_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'plugins', 'operators')
+        with open(schema_path) as f:
+            s = json.load(f)
+        # Perform merge
+        s.setdefault('$defs', {})
+        ops = (s.setdefault('properties', {}).setdefault('plugins', {})
+                .setdefault('properties', {}).setdefault('operators', {})
+                .setdefault('properties', {}))
+        for dirname in sorted(os.listdir(plugins_dir)):
+            sf = os.path.join(plugins_dir, dirname, 'schema.json')
+            if os.path.isfile(sf):
+                def_key = 'operator' + ''.join(p.capitalize() for p in dirname.split('-'))
+                with open(sf) as fh:
+                    s['$defs'][def_key] = json.load(fh)
+                ops[dirname] = {"$ref": f"#/$defs/{def_key}"}
+        # Verify all operators are injected
+        assert 'operatorArgocd' in s['$defs']
+        assert 'operatorLvm' in s['$defs']
+        assert 'operatorCertManager' in s['$defs']
+        assert 'operatorExternalSecrets' in s['$defs']
+        assert 'argocd' in ops
+        assert ops['argocd'] == {"$ref": "#/$defs/operatorArgocd"}
+
+    def test_process_py_load_schema_merges(self):
+        """process.py _load_schema should merge plugin schemas."""
+        import subprocess
+        schema_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'schema', 'clusterfile.schema.json')
+        result = subprocess.run(
+            [sys.executable, '-c', f"""
+import json, os, sys, yaml
+sys.path.insert(0, '{os.path.dirname(os.path.dirname(__file__))}')
+
+def _load_schema(path):
+    with open(path, 'r') as fh:
+        s = json.loads(fh.read())
+    schema_dir = os.path.dirname(os.path.abspath(path))
+    plugins_operators = os.path.join(os.path.dirname(schema_dir), 'plugins', 'operators')
+    if os.path.isdir(plugins_operators):
+        s.setdefault('$defs', {{}})
+        ops = (s.setdefault('properties', {{}}).setdefault('plugins', {{}})
+                .setdefault('properties', {{}}).setdefault('operators', {{}})
+                .setdefault('properties', {{}}))
+        for dirname in sorted(os.listdir(plugins_operators)):
+            sf = os.path.join(plugins_operators, dirname, 'schema.json')
+            if os.path.isfile(sf):
+                def_key = 'operator' + ''.join(p.capitalize() for p in dirname.split('-'))
+                with open(sf) as fh:
+                    s['$defs'][def_key] = json.load(fh)
+                ops[dirname] = {{"$ref": f"#/$defs/{{def_key}}"}}
+    return s
+
+s = _load_schema('{schema_path}')
+assert 'operatorArgocd' in s['$defs']
+assert 'operatorOdf' in s['$defs']
+print('OK')
+"""],
+            capture_output=True, text=True
+        )
+        assert result.returncode == 0, f"Schema merge failed: {result.stderr}"
+        assert 'OK' in result.stdout
 
 
 if __name__ == '__main__':

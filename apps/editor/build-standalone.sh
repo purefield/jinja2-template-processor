@@ -73,9 +73,27 @@ $(cat "${js_file}")"
     fi
 done
 
-# Collect schema
+# Collect schema (with auto-discovered operator plugin schemas merged)
 echo "Collecting schema..."
-SCHEMA_JSON=$(cat "${REPO_ROOT}/schema/clusterfile.schema.json")
+SCHEMA_JSON=$(python3 -c "
+import json, os
+with open('${REPO_ROOT}/schema/clusterfile.schema.json') as f:
+    s = json.load(f)
+plugins_dir = '${REPO_ROOT}/plugins/operators'
+if os.path.isdir(plugins_dir):
+    s.setdefault('\$defs', {})
+    ops = (s.setdefault('properties', {}).setdefault('plugins', {})
+            .setdefault('properties', {}).setdefault('operators', {})
+            .setdefault('properties', {}))
+    for d in sorted(os.listdir(plugins_dir)):
+        sf = os.path.join(plugins_dir, d, 'schema.json')
+        if os.path.isfile(sf):
+            k = 'operator' + ''.join(p.capitalize() for p in d.split('-'))
+            with open(sf) as fh:
+                s['\$defs'][k] = json.load(fh)
+            ops[d] = {'\$ref': f'#/\$defs/{k}'}
+print(json.dumps(s))
+")
 
 # Collect samples with content
 echo "Collecting samples..."

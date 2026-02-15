@@ -13,8 +13,12 @@
     },
     "ipAddress": {
       "anyOf": [
-        { "$ref": "#/$defs/ipv4" },
-        { "$ref": "#/$defs/ipv6" }
+        {
+          "$ref": "#/$defs/ipv4"
+        },
+        {
+          "$ref": "#/$defs/ipv6"
+        }
       ]
     },
     "cidrv4": {
@@ -27,8 +31,12 @@
     },
     "cidr": {
       "anyOf": [
-        { "$ref": "#/$defs/cidrv4" },
-        { "$ref": "#/$defs/cidrv6" }
+        {
+          "$ref": "#/$defs/cidrv4"
+        },
+        {
+          "$ref": "#/$defs/cidrv6"
+        }
       ]
     },
     "macAddress": {
@@ -67,7 +75,15 @@
     },
     "bondMode": {
       "type": "string",
-      "enum": ["balance-rr", "active-backup", "balance-xor", "broadcast", "802.3ad", "balance-tlb", "balance-alb"]
+      "enum": [
+        "balance-rr",
+        "active-backup",
+        "balance-xor",
+        "broadcast",
+        "802.3ad",
+        "balance-tlb",
+        "balance-alb"
+      ]
     },
     "vlanId": {
       "type": "integer",
@@ -76,7 +92,10 @@
     },
     "mtuPreset": {
       "type": "integer",
-      "enum": [1500, 9000]
+      "enum": [
+        1500,
+        9000
+      ]
     },
     "mtuCustom": {
       "type": "integer",
@@ -97,7 +116,7 @@
           "type": "integer",
           "minimum": 1,
           "default": 1,
-          "description": "Number of CPU sockets. Total vCPUs = cpus × sockets."
+          "description": "Number of CPU sockets. Total vCPUs = cpus \u00d7 sockets."
         },
         "memory": {
           "title": "Memory",
@@ -118,7 +137,10 @@
             "data": {
               "title": "Data Disks",
               "type": "array",
-              "items": { "type": "integer", "minimum": 1 },
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
               "description": "Data disk sizes in GiB."
             }
           },
@@ -146,7 +168,10 @@
         "approval": {
           "title": "Install Plan Approval",
           "type": "string",
-          "enum": ["Automatic", "Manual"],
+          "enum": [
+            "Automatic",
+            "Manual"
+          ],
           "default": "Automatic"
         },
         "source": {
@@ -156,598 +181,6 @@
           "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
         }
       }
-    },
-    "operatorArgocd": {
-      "title": "ArgoCD / OpenShift GitOps",
-      "description": "Installs openshift-gitops-operator and configures an ArgoCD instance. Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://docs.openshift.com/gitops/latest/understanding_openshift_gitops/about-redhat-openshift-gitops.html",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip ArgoCD installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "latest",
-          "description": "OLM subscription channel (e.g. latest, gitops-1.14).",
-          "x-doc-url": "https://docs.openshift.com/gitops/latest/installing_gitops/installing-openshift-gitops.html"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        },
-        "ha": {
-          "title": "High Availability",
-          "type": "boolean",
-          "default": false,
-          "description": "Enable HA for ArgoCD components (multiple replicas for server, repo, and controller).",
-          "x-doc-url": "https://docs.openshift.com/gitops/latest/argocd_instance/setting-up-argocd-instance.html"
-        },
-        "rbac": {
-          "title": "RBAC",
-          "type": "object",
-          "description": "ArgoCD role-based access control configuration.",
-          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/",
-          "properties": {
-            "policy": {
-              "title": "Policy CSV",
-              "type": "string",
-              "default": "g, system:cluster-admins, role:admin",
-              "description": "ArgoCD RBAC policy in CSV format. Maps groups/users to ArgoCD roles."
-            },
-            "defaultPolicy": {
-              "title": "Default Policy",
-              "type": "string",
-              "default": "role:readonly",
-              "description": "Default role for authenticated users not matching any policy rule."
-            },
-            "scopes": {
-              "title": "Scopes",
-              "type": "string",
-              "default": "[groups]",
-              "description": "OIDC scopes used for RBAC group matching."
-            }
-          },
-          "additionalProperties": false
-        },
-        "repo": {
-          "title": "Repo Server",
-          "type": "object",
-          "description": "ArgoCD repo server configuration for Git repository operations.",
-          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-repo-server/",
-          "properties": {
-            "resources": {
-              "title": "Resources",
-              "type": "object",
-              "description": "CPU and memory resource limits for the repo server.",
-              "properties": {
-                "cpu": {
-                  "title": "CPU Limit",
-                  "type": "string",
-                  "default": "1",
-                  "description": "CPU limit for the repo server container (e.g. 1, 500m, 2)."
-                },
-                "memory": {
-                  "title": "Memory Limit",
-                  "type": "string",
-                  "default": "1Gi",
-                  "description": "Memory limit for the repo server container (e.g. 512Mi, 1Gi, 2Gi)."
-                }
-              }
-            }
-          },
-          "additionalProperties": true
-        },
-        "notifications": {
-          "title": "Notifications",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable the ArgoCD notifications controller for event-driven alerts (Slack, email, webhooks).",
-          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/"
-        },
-        "applicationSet": {
-          "title": "ApplicationSet",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable the ApplicationSet controller for templated multi-cluster Application generation.",
-          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/"
-        },
-        "bootstrap": {
-          "title": "Bootstrap Application",
-          "type": "object",
-          "description": "App-of-apps bootstrap Application that manages further operators and configuration from a Git repository.",
-          "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/",
-          "properties": {
-            "repoURL": {
-              "title": "Repository URL",
-              "type": "string",
-              "description": "Git repository URL containing the app-of-apps manifests."
-            },
-            "path": {
-              "title": "Path",
-              "type": "string",
-              "default": ".",
-              "description": "Path within the repository to the Application manifests."
-            },
-            "targetRevision": {
-              "title": "Target Revision",
-              "type": "string",
-              "default": "HEAD",
-              "description": "Git reference to track: branch name, tag, or commit SHA."
-            },
-            "namespace": {
-              "title": "Destination Namespace",
-              "type": "string",
-              "default": "openshift-gitops",
-              "description": "Kubernetes namespace where bootstrapped resources are created."
-            },
-            "autoSync": {
-              "title": "Auto Sync",
-              "type": "boolean",
-              "default": true,
-              "description": "Enable automated sync with pruning and self-heal. When true, changes in Git are automatically applied."
-            }
-          },
-          "required": ["repoURL"],
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": true
-    },
-    "operatorLvm": {
-      "title": "LVM Storage (LVMS)",
-      "description": "Local volume management for SNO and compact clusters using TopoLVM. Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip LVM installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "stable",
-          "description": "OLM subscription channel (e.g. stable, stable-4.18).",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#install-lvms-operator-cli_logical-volume-manager-storage"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        },
-        "deviceClasses": {
-          "title": "Device Classes",
-          "type": "array",
-          "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "title": "Name",
-                "type": "string",
-                "default": "vg1",
-                "description": "Volume group name. Creates a StorageClass named lvms-<name>."
-              },
-              "default": {
-                "title": "Default",
-                "type": "boolean",
-                "default": true,
-                "description": "Set as the default StorageClass for the cluster."
-              },
-              "fstype": {
-                "title": "Filesystem Type",
-                "type": "string",
-                "default": "xfs",
-                "enum": ["xfs", "ext4"],
-                "description": "Default filesystem type for volumes in this device class."
-              },
-              "thinPoolConfig": {
-                "title": "Thin Pool Config",
-                "type": "object",
-                "description": "Thin provisioning configuration. Enables overprovisioning of storage capacity.",
-                "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
-                "properties": {
-                  "name": {
-                    "title": "Pool Name",
-                    "type": "string",
-                    "default": "thin-pool-1",
-                    "description": "Name of the thin pool logical volume."
-                  },
-                  "sizePercent": {
-                    "title": "Size Percent",
-                    "type": "integer",
-                    "default": 90,
-                    "minimum": 1,
-                    "maximum": 100,
-                    "description": "Percentage of the volume group capacity to allocate to the thin pool (1-100)."
-                  },
-                  "overprovisionRatio": {
-                    "title": "Overprovision Ratio",
-                    "type": "integer",
-                    "default": 10,
-                    "minimum": 1,
-                    "description": "How much the thin pool can be overprovisioned relative to its physical size."
-                  }
-                }
-              },
-              "deviceSelector": {
-                "title": "Device Selector",
-                "type": "object",
-                "description": "Select specific block devices for this volume group. If omitted, all available disks are used.",
-                "properties": {
-                  "paths": {
-                    "title": "Device Paths",
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Required device paths to include in the volume group (e.g. /dev/vdb, /dev/nvme0n1)."
-                  },
-                  "optionalPaths": {
-                    "title": "Optional Paths",
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Optional device paths included if present on the node. Does not fail if absent."
-                  },
-                  "forceWipeDevicesAndDestroyAllData": {
-                    "title": "Force Wipe Devices",
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Wipe all data on selected devices before adding to the volume group. Destructive operation."
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "additionalProperties": true
-    },
-    "operatorOdf": {
-      "title": "OpenShift Data Foundation (ODF)",
-      "description": "Ceph-based distributed storage for HA clusters (3+ nodes with data disks). Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip ODF installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "stable-4.18",
-          "description": "OLM subscription channel. Version-pinned (e.g. stable-4.18, stable-4.19).",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        },
-        "consolePlugin": {
-          "title": "Console Plugin",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable the ODF console plugin for storage management in the OpenShift web console."
-        },
-        "storageCluster": {
-          "title": "Storage Cluster",
-          "type": "object",
-          "description": "StorageCluster CR configuration for Ceph-based storage pools, block devices, and replication.",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "type": "string",
-              "default": "ocs-storagecluster",
-              "description": "StorageCluster resource name."
-            },
-            "monDataDirHostPath": {
-              "title": "Monitor Data Directory",
-              "type": "string",
-              "default": "/var/lib/rook",
-              "description": "Host path for Ceph monitor data persistence."
-            },
-            "storageDeviceSets": {
-              "title": "Storage Device Sets",
-              "type": "array",
-              "description": "Storage device set configurations. Each set defines a group of block devices with replication.",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "title": "Name",
-                    "type": "string",
-                    "default": "ocs-deviceset",
-                    "description": "Device set name identifier."
-                  },
-                  "count": {
-                    "title": "Count",
-                    "type": "integer",
-                    "default": 1,
-                    "minimum": 1,
-                    "description": "Number of devices per storage node in this set."
-                  },
-                  "replica": {
-                    "title": "Replica",
-                    "type": "integer",
-                    "default": 3,
-                    "minimum": 1,
-                    "description": "Number of storage nodes providing replicas. Typically 3 for Ceph reliability."
-                  },
-                  "storage": {
-                    "title": "Storage Size",
-                    "type": "string",
-                    "default": "1Ti",
-                    "description": "PVC storage request per device (e.g. 500Gi, 1Ti, 2Ti)."
-                  },
-                  "storageClassName": {
-                    "title": "Storage Class",
-                    "type": "string",
-                    "default": "",
-                    "description": "StorageClass for the underlying PVCs. Empty uses the cluster default."
-                  }
-                }
-              }
-            }
-          },
-          "additionalProperties": true
-        }
-      },
-      "additionalProperties": true
-    },
-    "operatorAcm": {
-      "title": "Advanced Cluster Management (ACM)",
-      "description": "Sets up a full ACM hub for ZTP/CAPI deployments. Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip ACM installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "release-2.14",
-          "description": "OLM subscription channel. Version-pinned (e.g. release-2.13, release-2.14).",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        },
-        "multiClusterHub": {
-          "title": "MultiClusterHub",
-          "type": "object",
-          "description": "MultiClusterHub instance configuration. The central management component of ACM.",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online",
-          "properties": {
-            "name": {
-              "title": "Name",
-              "type": "string",
-              "default": "multiclusterhub",
-              "description": "MultiClusterHub resource name."
-            },
-            "availabilityConfig": {
-              "title": "Availability Config",
-              "type": "string",
-              "enum": ["High", "Basic"],
-              "default": "High",
-              "description": "High for production (multiple replicas); Basic for SNO or lab environments (single replica)."
-            }
-          },
-          "additionalProperties": true
-        },
-        "agentServiceConfig": {
-          "title": "AgentServiceConfig",
-          "type": "object",
-          "description": "Assisted-service storage configuration for cluster installation management. Controls PVC sizes for databases, ISOs, and OS images.",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
-          "properties": {
-            "databaseStorage": {
-              "title": "Database Storage",
-              "type": "string",
-              "default": "10Gi",
-              "description": "PVC size for the assisted-service database (cluster state, host inventory)."
-            },
-            "filesystemStorage": {
-              "title": "Filesystem Storage",
-              "type": "string",
-              "default": "100Gi",
-              "description": "PVC size for filesystem storage (discovery ISOs, installation logs)."
-            },
-            "imageStorage": {
-              "title": "Image Storage",
-              "type": "string",
-              "default": "50Gi",
-              "description": "PVC size for OS image storage (RHCOS images for cluster provisioning)."
-            }
-          },
-          "additionalProperties": true
-        },
-        "provisioning": {
-          "title": "Provisioning",
-          "type": "object",
-          "description": "Bare metal provisioning configuration (Ironic). Controls which namespaces can provision bare metal hosts.",
-          "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
-          "properties": {
-            "watchAllNamespaces": {
-              "title": "Watch All Namespaces",
-              "type": "boolean",
-              "default": true,
-              "description": "Allow bare metal provisioning (BareMetalHost resources) in all namespaces, not just openshift-machine-api."
-            }
-          },
-          "additionalProperties": true
-        }
-      },
-      "additionalProperties": true
-    },
-    "operatorCertManager": {
-      "title": "cert-manager Operator",
-      "description": "TLS certificate automation. Install-and-go operator with no additional CRs needed for base install. Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/index.html",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip cert-manager installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "stable-v1",
-          "description": "OLM subscription channel (e.g. stable-v1).",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/cert-manager-operator-install.html"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        },
-        "letsencrypt": {
-          "title": "LetsEncrypt Configuration",
-          "description": "Configure cert-manager with LetsEncrypt DNS-01 validation via Route53. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
-          "type": "object",
-          "required": ["email", "route53"],
-          "properties": {
-            "email": {
-              "title": "ACME Email",
-              "type": "string",
-              "format": "email",
-              "description": "Contact email for LetsEncrypt account registration."
-            },
-            "route53": {
-              "title": "Route53 DNS-01 Configuration",
-              "type": "object",
-              "required": ["hostedZoneID", "role", "remoteRef"],
-              "properties": {
-                "hostedZoneID": {
-                  "title": "Hosted Zone ID",
-                  "type": "string",
-                  "description": "AWS Route53 hosted zone ID for DNS-01 challenge records."
-                },
-                "region": {
-                  "title": "AWS Region",
-                  "type": "string",
-                  "default": "us-east-1",
-                  "description": "AWS region for Route53 API calls."
-                },
-                "role": {
-                  "title": "IAM Role ARN",
-                  "type": "string",
-                  "description": "AWS IAM role ARN for Route53 access."
-                },
-                "secretStore": {
-                  "title": "ClusterSecretStore Name",
-                  "type": "string",
-                  "default": "aws-secretsmanager",
-                  "description": "Name of the ClusterSecretStore for Route53 credentials."
-                },
-                "remoteRef": {
-                  "title": "Remote Secret Key",
-                  "type": "string",
-                  "description": "Key in the external secret store containing aws-access-key-id and aws-secret-access-key."
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": true
-    },
-    "operatorExternalSecrets": {
-      "title": "External Secrets Operator",
-      "description": "Sync secrets from external stores (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). Runs in all-namespaces mode via openshift-operators. Specify {} for all defaults.",
-      "type": "object",
-      "x-doc-url": "https://external-secrets.io/latest/",
-      "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip external-secrets installation."
-        },
-        "channel": {
-          "title": "Channel",
-          "type": "string",
-          "default": "stable-v1",
-          "description": "OLM subscription channel (e.g. stable-v1).",
-          "x-doc-url": "https://external-secrets.io/latest/introduction/getting-started/"
-        },
-        "approval": {
-          "title": "Install Plan Approval",
-          "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic",
-          "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
-        },
-        "source": {
-          "title": "Catalog Source",
-          "type": "string",
-          "default": "redhat-operators",
-          "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
-        }
-      },
-      "additionalProperties": true
     }
   },
   "properties": {
@@ -764,7 +197,9 @@
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-obtaining-installer_installing-bare-metal"
         }
       },
-      "required": ["pullSecret"],
+      "required": [
+        "pullSecret"
+      ],
       "additionalProperties": true,
       "description": "Red Hat account credentials for cluster registration."
     },
@@ -777,7 +212,16 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["4.14.0", "4.15.0", "4.16.0", "4.17.0", "4.18.0", "4.19.0", "4.20.0", "4.21.0"],
+              "enum": [
+                "4.14.0",
+                "4.15.0",
+                "4.16.0",
+                "4.17.0",
+                "4.18.0",
+                "4.19.0",
+                "4.20.0",
+                "4.21.0"
+              ],
               "description": "Select a supported OpenShift release."
             },
             {
@@ -835,7 +279,10 @@
                 "x-is-file": true
               }
             },
-            "required": ["name", "file"],
+            "required": [
+              "name",
+              "file"
+            ],
             "additionalProperties": true
           },
           "description": "Extra Kubernetes manifests to apply during installation.",
@@ -860,7 +307,9 @@
               "mirrors": {
                 "title": "Mirror URLs",
                 "type": "array",
-                "items": { "$ref": "#/$defs/registryUrl" },
+                "items": {
+                  "$ref": "#/$defs/registryUrl"
+                },
                 "minItems": 1,
                 "description": "Alternative registry locations (tried in order)."
               },
@@ -871,7 +320,10 @@
                 "description": "Allow insecure connections (HTTP or unverified TLS) to this mirror registry. Sets insecure=true in registries.conf and adds mirrors to image.config.openshift.io insecureRegistries."
               }
             },
-            "required": ["source", "mirrors"],
+            "required": [
+              "source",
+              "mirrors"
+            ],
             "additionalProperties": true
           },
           "description": "Registry mirrors for disconnected installations.",
@@ -915,7 +367,10 @@
                 "description": "Publisher name shown in OperatorHub UI."
               }
             },
-            "required": ["name", "image"],
+            "required": [
+              "name",
+              "image"
+            ],
             "additionalProperties": true
           },
           "description": "Custom operator catalog sources for disconnected installations. Requires cluster.disconnected: true.",
@@ -926,7 +381,19 @@
           "anyOf": [
             {
               "type": "string",
-              "enum": ["baremetal", "vsphere", "aws", "azure", "gcp", "openstack", "ibmcloud", "nutanix", "kubevirt", "none", "external"],
+              "enum": [
+                "baremetal",
+                "vsphere",
+                "aws",
+                "azure",
+                "gcp",
+                "openstack",
+                "ibmcloud",
+                "nutanix",
+                "kubevirt",
+                "none",
+                "external"
+              ],
               "description": "Supported infrastructure platform."
             },
             {
@@ -941,7 +408,12 @@
         "arch": {
           "title": "Architecture",
           "type": "string",
-          "enum": ["x86_64", "aarch64", "ppc64le", "s390x"],
+          "enum": [
+            "x86_64",
+            "aarch64",
+            "ppc64le",
+            "s390x"
+          ],
           "default": "x86_64",
           "description": "CPU architecture.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
@@ -950,8 +422,14 @@
           "title": "Machine Resources",
           "type": "object",
           "properties": {
-            "control": { "$ref": "#/$defs/machineSpec", "description": "Control plane node defaults." },
-            "worker":  { "$ref": "#/$defs/machineSpec", "description": "Worker node defaults." }
+            "control": {
+              "$ref": "#/$defs/machineSpec",
+              "description": "Control plane node defaults."
+            },
+            "worker": {
+              "$ref": "#/$defs/machineSpec",
+              "description": "Worker node defaults."
+            }
           },
           "additionalProperties": true,
           "description": "Default machine resource specifications per role. Individual hosts can override via hosts.<name>.machine."
@@ -965,14 +443,21 @@
         "clusterType": {
           "title": "Cluster Type",
           "type": "string",
-          "enum": ["SNO", "HighlyAvailable", "HighlyAvailableArbiter"],
+          "enum": [
+            "SNO",
+            "HighlyAvailable",
+            "HighlyAvailableArbiter"
+          ],
           "description": "Cluster topology. Auto-detected from host count if not set (1 host = SNO, 3+ controls = HighlyAvailable).",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
         },
         "cpuPartitioningMode": {
           "title": "CPU Partitioning",
           "type": "string",
-          "enum": ["None", "AllNodes"],
+          "enum": [
+            "None",
+            "AllNodes"
+          ],
           "default": "None",
           "description": "Workload partitioning mode. AllNodes enables management workload isolation on all nodes (typically for SNO).",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/scalability_and_performance/ztp_far_edge/ztp-reference-cluster-configuration-for-vdu.html"
@@ -984,7 +469,11 @@
             "type": {
               "title": "Encryption Type",
               "type": "string",
-              "enum": ["none", "tpm2", "tang"],
+              "enum": [
+                "none",
+                "tpm2",
+                "tang"
+              ],
               "default": "none",
               "description": "Disk encryption method. tpm2 uses local TPM hardware; tang uses network-bound encryption."
             },
@@ -1005,7 +494,10 @@
                     "description": "Tang server thumbprint."
                   }
                 },
-                "required": ["url", "thumbprint"]
+                "required": [
+                  "url",
+                  "thumbprint"
+                ]
               },
               "description": "Tang server configurations for network-bound disk encryption."
             }
@@ -1025,7 +517,10 @@
           "description": "Pause cluster provisioning. The cluster is defined but not installed until this is set to false."
         }
       },
-      "required": ["name", "version"],
+      "required": [
+        "name",
+        "version"
+      ],
       "additionalProperties": true,
       "description": "Cluster-level configuration for installation.",
       "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
@@ -1033,7 +528,9 @@
     "network": {
       "title": "Network",
       "type": "object",
-      "required": ["domain"],
+      "required": [
+        "domain"
+      ],
       "properties": {
         "domain": {
           "title": "Base Domain",
@@ -1082,8 +579,12 @@
           "type": "array",
           "items": {
             "anyOf": [
-              { "$ref": "#/$defs/ipAddress" },
-              { "$ref": "#/$defs/fqdn" }
+              {
+                "$ref": "#/$defs/ipAddress"
+              },
+              {
+                "$ref": "#/$defs/fqdn"
+              }
             ]
           },
           "description": "NTP servers for time synchronization (IP or FQDN).",
@@ -1092,7 +593,9 @@
         "nameservers": {
           "title": "DNS Servers",
           "type": "array",
-          "items": { "$ref": "#/$defs/ipAddress" },
+          "items": {
+            "$ref": "#/$defs/ipAddress"
+          },
           "minItems": 1,
           "maxItems": 3,
           "description": "DNS server IPs (1-3 recommended).",
@@ -1105,7 +608,9 @@
             "search": {
               "title": "Search Domains",
               "type": "array",
-              "items": { "$ref": "#/$defs/fqdn" },
+              "items": {
+                "$ref": "#/$defs/fqdn"
+              },
               "maxItems": 6,
               "description": "DNS search domains (max 6).",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
@@ -1122,8 +627,13 @@
             "bond": {
               "title": "Bond Mode",
               "oneOf": [
-                { "$ref": "#/$defs/bondMode" },
-                { "type": "boolean", "const": false }
+                {
+                  "$ref": "#/$defs/bondMode"
+                },
+                {
+                  "type": "boolean",
+                  "const": false
+                }
               ],
               "description": "Linux bonding mode. Use false to disable bonding.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -1131,8 +641,13 @@
             "vlan": {
               "title": "VLAN ID",
               "oneOf": [
-                { "$ref": "#/$defs/vlanId" },
-                { "type": "boolean", "const": false }
+                {
+                  "$ref": "#/$defs/vlanId"
+                },
+                {
+                  "type": "boolean",
+                  "const": false
+                }
               ],
               "description": "VLAN tag (1-4094). Use false for untagged.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -1140,9 +655,16 @@
             "mtu": {
               "title": "MTU",
               "anyOf": [
-                { "$ref": "#/$defs/mtuPreset" },
-                { "$ref": "#/$defs/mtuCustom" },
-                { "type": "boolean", "const": false }
+                {
+                  "$ref": "#/$defs/mtuPreset"
+                },
+                {
+                  "$ref": "#/$defs/mtuCustom"
+                },
+                {
+                  "type": "boolean",
+                  "const": false
+                }
               ],
               "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
@@ -1166,10 +688,14 @@
                 "api": {
                   "title": "API VIP",
                   "oneOf": [
-                    { "$ref": "#/$defs/ipAddress" },
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
                     {
                       "type": "array",
-                      "items": { "$ref": "#/$defs/ipAddress" },
+                      "items": {
+                        "$ref": "#/$defs/ipAddress"
+                      },
                       "minItems": 1,
                       "maxItems": 2
                     }
@@ -1180,10 +706,14 @@
                 "apps": {
                   "title": "Ingress VIP",
                   "oneOf": [
-                    { "$ref": "#/$defs/ipAddress" },
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
                     {
                       "type": "array",
-                      "items": { "$ref": "#/$defs/ipAddress" },
+                      "items": {
+                        "$ref": "#/$defs/ipAddress"
+                      },
                       "minItems": 1,
                       "maxItems": 2
                     }
@@ -1192,7 +722,10 @@
                   "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
                 }
               },
-              "required": ["api", "apps"],
+              "required": [
+                "api",
+                "apps"
+              ],
               "additionalProperties": true,
               "description": "Virtual IPs for API and ingress endpoints.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
@@ -1259,14 +792,24 @@
               "type": {
                 "title": "Network Type",
                 "type": "string",
-                "enum": ["linux-bridge", "bond", "vlan", "ethernet", "ovs-bridge"],
+                "enum": [
+                  "linux-bridge",
+                  "bond",
+                  "vlan",
+                  "ethernet",
+                  "ovs-bridge"
+                ],
                 "description": "NMState interface type.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "state": {
                 "title": "State",
                 "type": "string",
-                "enum": ["up", "down", "absent"],
+                "enum": [
+                  "up",
+                  "down",
+                  "absent"
+                ],
                 "default": "up",
                 "description": "Desired operational state."
               },
@@ -1278,8 +821,13 @@
               "vlan": {
                 "title": "VLAN ID",
                 "oneOf": [
-                  { "$ref": "#/$defs/vlanId" },
-                  { "type": "boolean", "const": false }
+                  {
+                    "$ref": "#/$defs/vlanId"
+                  },
+                  {
+                    "type": "boolean",
+                    "const": false
+                  }
                 ],
                 "description": "VLAN tag (1-4094). Use false for untagged.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -1287,15 +835,22 @@
               "ports": {
                 "title": "Ports",
                 "type": "array",
-                "items": { "$ref": "#/$defs/interfaceName" },
+                "items": {
+                  "$ref": "#/$defs/interfaceName"
+                },
                 "minItems": 1,
                 "description": "Physical interfaces (e.g., eth1, eth2)."
               },
               "subnet": {
                 "title": "Subnet",
                 "anyOf": [
-                  { "$ref": "#/$defs/cidr" },
-                  { "type": "string", "const": "dhcp" }
+                  {
+                    "$ref": "#/$defs/cidr"
+                  },
+                  {
+                    "type": "string",
+                    "const": "dhcp"
+                  }
                 ],
                 "description": "Network CIDR or 'dhcp' for dynamic.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -1308,8 +863,13 @@
               "bond": {
                 "title": "Bond Mode",
                 "oneOf": [
-                  { "$ref": "#/$defs/bondMode" },
-                  { "type": "boolean", "const": false }
+                  {
+                    "$ref": "#/$defs/bondMode"
+                  },
+                  {
+                    "type": "boolean",
+                    "const": false
+                  }
                 ],
                 "description": "Linux bonding mode. Use false to disable.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -1317,15 +877,24 @@
               "mtu": {
                 "title": "MTU",
                 "anyOf": [
-                  { "$ref": "#/$defs/mtuPreset" },
-                  { "$ref": "#/$defs/mtuCustom" },
-                  { "type": "boolean", "const": false }
+                  {
+                    "$ref": "#/$defs/mtuPreset"
+                  },
+                  {
+                    "$ref": "#/$defs/mtuCustom"
+                  },
+                  {
+                    "type": "boolean",
+                    "const": false
+                  }
                 ],
                 "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
               }
             },
-            "required": ["name"],
+            "required": [
+              "name"
+            ],
             "additionalProperties": true
           },
           "description": "Additional networks (storage, OOB, provisioning).",
@@ -1348,7 +917,11 @@
               "title": "Role",
               "type": "string",
               "description": "Node role: control (control-plane), worker, or bootstrap.",
-              "enum": ["control", "worker", "bootstrap"],
+              "enum": [
+                "control",
+                "worker",
+                "bootstrap"
+              ],
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
             "storage": {
@@ -1420,7 +993,9 @@
                         "paths": {
                           "title": "Candidate Paths",
                           "type": "array",
-                          "items": { "$ref": "#/$defs/devicePath" },
+                          "items": {
+                            "$ref": "#/$defs/devicePath"
+                          },
                           "minItems": 1,
                           "description": "List of candidate device paths."
                         }
@@ -1446,14 +1021,31 @@
                 "vendor": {
                   "title": "Vendor",
                   "type": "string",
-                  "enum": ["dell", "hp", "hpe", "supermicro", "lenovo", "cisco", "fujitsu", "ksushy", "kubevirt-redfish", "other"],
+                  "enum": [
+                    "dell",
+                    "hp",
+                    "hpe",
+                    "supermicro",
+                    "lenovo",
+                    "cisco",
+                    "fujitsu",
+                    "ksushy",
+                    "kubevirt-redfish",
+                    "other"
+                  ],
                   "description": "BMC vendor."
                 },
                 "version": {
                   "title": "Version",
                   "anyOf": [
-                    { "type": "integer", "minimum": 0 },
-                    { "type": "string", "pattern": "^[0-9.]+$" }
+                    {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9.]+$"
+                    }
                   ],
                   "description": "BMC/iDRAC/iLO firmware version."
                 },
@@ -1479,8 +1071,12 @@
                       "pattern": "^(idrac-virtualmedia|redfish-virtualmedia|redfish|ipmi|ilo5-virtualmedia)://.+$",
                       "description": "BMC URI with protocol."
                     },
-                    { "$ref": "#/$defs/ipAddress" },
-                    { "$ref": "#/$defs/fqdn" }
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
+                    {
+                      "$ref": "#/$defs/fqdn"
+                    }
                   ],
                   "description": "BMC endpoint (IP, FQDN, or protocol://host).",
                   "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
@@ -1522,7 +1118,10 @@
                         "description": "Interface MAC address."
                       }
                     },
-                    "required": ["name", "macAddress"],
+                    "required": [
+                      "name",
+                      "macAddress"
+                    ],
                     "additionalProperties": true
                   },
                   "minItems": 1,
@@ -1541,12 +1140,16 @@
                     "ports": {
                       "title": "Ports",
                       "type": "array",
-                      "items": { "$ref": "#/$defs/interfaceName" },
+                      "items": {
+                        "$ref": "#/$defs/interfaceName"
+                      },
                       "minItems": 1,
                       "description": "Interface names for primary network."
                     }
                   },
-                  "required": ["address"],
+                  "required": [
+                    "address"
+                  ],
                   "additionalProperties": true,
                   "description": "Primary network assignment for this host."
                 }
@@ -1563,7 +1166,11 @@
             "bootMode": {
               "title": "Boot Mode",
               "type": "string",
-              "enum": ["UEFI", "UEFISecureBoot", "legacy"],
+              "enum": [
+                "UEFI",
+                "UEFISecureBoot",
+                "legacy"
+              ],
               "default": "UEFI",
               "description": "Host boot mode for BareMetalHost provisioning.",
               "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
@@ -1571,13 +1178,18 @@
             "nodeLabels": {
               "title": "Node Labels",
               "type": "object",
-              "additionalProperties": { "type": "string" },
+              "additionalProperties": {
+                "type": "string"
+              },
               "description": "Custom Kubernetes labels applied to the node."
             },
             "automatedCleaningMode": {
               "title": "Automated Cleaning Mode",
               "type": "string",
-              "enum": ["disabled", "metadata"],
+              "enum": [
+                "disabled",
+                "metadata"
+              ],
               "default": "metadata",
               "description": "BareMetalHost disk cleaning mode before provisioning.",
               "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
@@ -1585,7 +1197,10 @@
             "ironicInspect": {
               "title": "Ironic Inspect",
               "type": "string",
-              "enum": ["", "disabled"],
+              "enum": [
+                "",
+                "disabled"
+              ],
               "default": "disabled",
               "description": "Ironic hardware inspection mode. Disabled skips inspection for faster provisioning."
             },
@@ -1600,7 +1215,9 @@
               "description": "Raw ignition config JSON merged during provisioning for this host."
             }
           },
-          "required": ["role"],
+          "required": [
+            "role"
+          ],
           "additionalProperties": true,
           "description": "Host configuration keyed by hostname."
         }
@@ -1629,8 +1246,12 @@
                 "endpoint": {
                   "title": "Endpoint",
                   "anyOf": [
-                    { "$ref": "#/$defs/ipAddress" },
-                    { "$ref": "#/$defs/fqdn" }
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
+                    {
+                      "$ref": "#/$defs/fqdn"
+                    }
                   ],
                   "description": "Prism Central hostname or IP."
                 },
@@ -1680,8 +1301,12 @@
                 "server": {
                   "title": "Server",
                   "anyOf": [
-                    { "$ref": "#/$defs/ipAddress" },
-                    { "$ref": "#/$defs/fqdn" }
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
+                    {
+                      "$ref": "#/$defs/fqdn"
+                    }
                   ],
                   "description": "vCenter Server hostname or IP address."
                 },
@@ -1727,7 +1352,14 @@
                   "description": "Resource pool path (optional, defaults to cluster root)."
                 }
               },
-              "required": ["server", "username", "password", "datacenter", "defaultDatastore", "cluster"],
+              "required": [
+                "server",
+                "username",
+                "password",
+                "datacenter",
+                "defaultDatastore",
+                "cluster"
+              ],
               "description": "vCenter Server connection and resource settings."
             },
             "network": {
@@ -1791,8 +1423,12 @@
                   "server": {
                     "title": "vCenter Server",
                     "anyOf": [
-                      { "$ref": "#/$defs/ipAddress" },
-                      { "$ref": "#/$defs/fqdn" }
+                      {
+                        "$ref": "#/$defs/ipAddress"
+                      },
+                      {
+                        "$ref": "#/$defs/fqdn"
+                      }
                     ],
                     "description": "vCenter for this failure domain (if different from primary)."
                   },
@@ -1827,13 +1463,20 @@
                     "description": "VM folder path."
                   }
                 },
-                "required": ["name", "region", "zone"],
+                "required": [
+                  "name",
+                  "region",
+                  "zone"
+                ],
                 "additionalProperties": true
               },
               "description": "Failure domains for multi-zone deployments."
             }
           },
-          "required": ["vcenter", "network"],
+          "required": [
+            "vcenter",
+            "network"
+          ],
           "additionalProperties": true,
           "description": "vSphere IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html"
@@ -1857,7 +1500,10 @@
             "subnets": {
               "title": "Subnets",
               "type": "array",
-              "items": { "type": "string", "pattern": "^subnet-[a-f0-9]+$" },
+              "items": {
+                "type": "string",
+                "pattern": "^subnet-[a-f0-9]+$"
+              },
               "description": "Existing subnet IDs for cluster deployment."
             },
             "hostedZone": {
@@ -1871,10 +1517,20 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string", "description": "AWS service name." },
-                  "url": { "type": "string", "format": "uri", "description": "Custom endpoint URL." }
+                  "name": {
+                    "type": "string",
+                    "description": "AWS service name."
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Custom endpoint URL."
+                  }
                 },
-                "required": ["name", "url"]
+                "required": [
+                  "name",
+                  "url"
+                ]
               },
               "description": "Custom AWS service endpoints for private deployments."
             },
@@ -1891,16 +1547,37 @@
                 "zones": {
                   "title": "Availability Zones",
                   "type": "array",
-                  "items": { "type": "string" },
+                  "items": {
+                    "type": "string"
+                  },
                   "description": "Availability zones for control plane (e.g., us-east-1a)."
                 },
                 "rootVolume": {
                   "title": "Root Volume",
                   "type": "object",
                   "properties": {
-                    "size": { "type": "integer", "minimum": 120, "default": 120, "description": "Volume size in GiB." },
-                    "type": { "type": "string", "enum": ["gp3", "gp2", "io1", "io2"], "default": "gp3", "description": "EBS volume type." },
-                    "iops": { "type": "integer", "minimum": 3000, "description": "IOPS (for io1/io2/gp3)." }
+                    "size": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 120,
+                      "description": "Volume size in GiB."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "gp3",
+                        "gp2",
+                        "io1",
+                        "io2"
+                      ],
+                      "default": "gp3",
+                      "description": "EBS volume type."
+                    },
+                    "iops": {
+                      "type": "integer",
+                      "minimum": 3000,
+                      "description": "IOPS (for io1/io2/gp3)."
+                    }
                   }
                 }
               },
@@ -1919,22 +1596,39 @@
                 "zones": {
                   "title": "Availability Zones",
                   "type": "array",
-                  "items": { "type": "string" },
+                  "items": {
+                    "type": "string"
+                  },
                   "description": "Availability zones for workers."
                 },
                 "rootVolume": {
                   "title": "Root Volume",
                   "type": "object",
                   "properties": {
-                    "size": { "type": "integer", "minimum": 120, "default": 120 },
-                    "type": { "type": "string", "enum": ["gp3", "gp2", "io1", "io2"], "default": "gp3" }
+                    "size": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 120
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "gp3",
+                        "gp2",
+                        "io1",
+                        "io2"
+                      ],
+                      "default": "gp3"
+                    }
                   }
                 }
               },
               "description": "Worker instance configuration."
             }
           },
-          "required": ["region"],
+          "required": [
+            "region"
+          ],
           "additionalProperties": true,
           "description": "AWS IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_aws/ipi/installing-aws-customizations.html"
@@ -1982,14 +1676,22 @@
             "outboundType": {
               "title": "Outbound Type",
               "type": "string",
-              "enum": ["Loadbalancer", "UserDefinedRouting"],
+              "enum": [
+                "Loadbalancer",
+                "UserDefinedRouting"
+              ],
               "default": "Loadbalancer",
               "description": "Outbound routing type for cluster egress."
             },
             "cloudName": {
               "title": "Cloud Name",
               "type": "string",
-              "enum": ["AzurePublicCloud", "AzureUSGovernmentCloud", "AzureChinaCloud", "AzureGermanCloud"],
+              "enum": [
+                "AzurePublicCloud",
+                "AzureUSGovernmentCloud",
+                "AzureChinaCloud",
+                "AzureGermanCloud"
+              ],
               "default": "AzurePublicCloud",
               "description": "Azure cloud environment."
             },
@@ -1997,13 +1699,35 @@
               "title": "Control Plane",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "Standard_D8s_v3", "description": "VM size for control plane." },
-                "zones": { "type": "array", "items": { "type": "string" }, "description": "Availability zones." },
+                "type": {
+                  "type": "string",
+                  "default": "Standard_D8s_v3",
+                  "description": "VM size for control plane."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Availability zones."
+                },
                 "osDisk": {
                   "type": "object",
                   "properties": {
-                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 1024 },
-                    "diskType": { "type": "string", "enum": ["Premium_LRS", "StandardSSD_LRS", "Standard_LRS"], "default": "Premium_LRS" }
+                    "diskSizeGB": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 1024
+                    },
+                    "diskType": {
+                      "type": "string",
+                      "enum": [
+                        "Premium_LRS",
+                        "StandardSSD_LRS",
+                        "Standard_LRS"
+                      ],
+                      "default": "Premium_LRS"
+                    }
                   }
                 }
               }
@@ -2012,19 +1736,43 @@
               "title": "Compute",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "Standard_D4s_v3", "description": "VM size for workers." },
-                "zones": { "type": "array", "items": { "type": "string" } },
+                "type": {
+                  "type": "string",
+                  "default": "Standard_D4s_v3",
+                  "description": "VM size for workers."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "osDisk": {
                   "type": "object",
                   "properties": {
-                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
-                    "diskType": { "type": "string", "enum": ["Premium_LRS", "StandardSSD_LRS", "Standard_LRS"], "default": "Premium_LRS" }
+                    "diskSizeGB": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 128
+                    },
+                    "diskType": {
+                      "type": "string",
+                      "enum": [
+                        "Premium_LRS",
+                        "StandardSSD_LRS",
+                        "Standard_LRS"
+                      ],
+                      "default": "Premium_LRS"
+                    }
                   }
                 }
               }
             }
           },
-          "required": ["region", "baseDomainResourceGroupName"],
+          "required": [
+            "region",
+            "baseDomainResourceGroupName"
+          ],
           "additionalProperties": true,
           "description": "Azure IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_azure/ipi/installing-azure-customizations.html"
@@ -2069,13 +1817,35 @@
               "title": "Control Plane",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "n2-standard-4", "description": "Machine type for control plane." },
-                "zones": { "type": "array", "items": { "type": "string" }, "description": "Zones (e.g., us-central1-a)." },
+                "type": {
+                  "type": "string",
+                  "default": "n2-standard-4",
+                  "description": "Machine type for control plane."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Zones (e.g., us-central1-a)."
+                },
                 "osDisk": {
                   "type": "object",
                   "properties": {
-                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
-                    "diskType": { "type": "string", "enum": ["pd-ssd", "pd-standard", "pd-balanced"], "default": "pd-ssd" }
+                    "diskSizeGB": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 128
+                    },
+                    "diskType": {
+                      "type": "string",
+                      "enum": [
+                        "pd-ssd",
+                        "pd-standard",
+                        "pd-balanced"
+                      ],
+                      "default": "pd-ssd"
+                    }
                   }
                 }
               }
@@ -2084,19 +1854,42 @@
               "title": "Compute",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "n2-standard-4" },
-                "zones": { "type": "array", "items": { "type": "string" } },
+                "type": {
+                  "type": "string",
+                  "default": "n2-standard-4"
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "osDisk": {
                   "type": "object",
                   "properties": {
-                    "diskSizeGB": { "type": "integer", "minimum": 120, "default": 128 },
-                    "diskType": { "type": "string", "enum": ["pd-ssd", "pd-standard", "pd-balanced"], "default": "pd-ssd" }
+                    "diskSizeGB": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 128
+                    },
+                    "diskType": {
+                      "type": "string",
+                      "enum": [
+                        "pd-ssd",
+                        "pd-standard",
+                        "pd-balanced"
+                      ],
+                      "default": "pd-ssd"
+                    }
                   }
                 }
               }
             }
           },
-          "required": ["projectID", "region"],
+          "required": [
+            "projectID",
+            "region"
+          ],
           "additionalProperties": true,
           "description": "GCP IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_gcp/ipi/installing-gcp-customizations.html"
@@ -2135,16 +1928,26 @@
             "apiFloatingIP": {
               "title": "API Floating IP",
               "anyOf": [
-                { "$ref": "#/$defs/ipv4" },
-                { "type": "string", "const": "" }
+                {
+                  "$ref": "#/$defs/ipv4"
+                },
+                {
+                  "type": "string",
+                  "const": ""
+                }
               ],
               "description": "Pre-allocated floating IP for API endpoint."
             },
             "ingressFloatingIP": {
               "title": "Ingress Floating IP",
               "anyOf": [
-                { "$ref": "#/$defs/ipv4" },
-                { "type": "string", "const": "" }
+                {
+                  "$ref": "#/$defs/ipv4"
+                },
+                {
+                  "type": "string",
+                  "const": ""
+                }
               ],
               "description": "Pre-allocated floating IP for ingress."
             },
@@ -2166,7 +1969,10 @@
               "description": "UUID of existing subnet for nodes."
             }
           },
-          "required": ["cloud", "externalNetwork"],
+          "required": [
+            "cloud",
+            "externalNetwork"
+          ],
           "additionalProperties": true,
           "description": "OpenStack IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_openstack/installing-openstack-installer-custom.html"
@@ -2199,25 +2005,43 @@
             "controlPlaneSubnets": {
               "title": "Control Plane Subnets",
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Existing subnet names for control plane."
             },
             "computeSubnets": {
               "title": "Compute Subnets",
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Existing subnet names for workers."
             },
             "controlPlane": {
               "title": "Control Plane",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "bx2-4x16", "description": "Instance profile for control plane." },
-                "zones": { "type": "array", "items": { "type": "string" }, "description": "Zones (e.g., us-south-1)." },
+                "type": {
+                  "type": "string",
+                  "default": "bx2-4x16",
+                  "description": "Instance profile for control plane."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Zones (e.g., us-south-1)."
+                },
                 "bootVolume": {
                   "type": "object",
                   "properties": {
-                    "size": { "type": "integer", "minimum": 120, "default": 120 }
+                    "size": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 120
+                    }
                   }
                 }
               }
@@ -2226,18 +2050,33 @@
               "title": "Compute",
               "type": "object",
               "properties": {
-                "type": { "type": "string", "default": "bx2-4x16" },
-                "zones": { "type": "array", "items": { "type": "string" } },
+                "type": {
+                  "type": "string",
+                  "default": "bx2-4x16"
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "bootVolume": {
                   "type": "object",
                   "properties": {
-                    "size": { "type": "integer", "minimum": 120, "default": 120 }
+                    "size": {
+                      "type": "integer",
+                      "minimum": 120,
+                      "default": 120
+                    }
                   }
                 }
               }
             }
           },
-          "required": ["region", "resourceGroupName"],
+          "required": [
+            "region",
+            "resourceGroupName"
+          ],
           "additionalProperties": true,
           "description": "IBM Cloud IPI platform settings.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_ibm_cloud/ipi/installing-ibm-cloud-customizations.html"
@@ -2266,7 +2105,10 @@
               "additionalProperties": true,
               "description": "Storage class tiers. 'default' for bulk/capacity, 'performance' for fast I/O (etcd, data disks).",
               "x-render": "tier-map",
-              "x-tier-options": ["default", "performance"]
+              "x-tier-options": [
+                "default",
+                "performance"
+              ]
             },
             "network": {
               "title": "VM Network",
@@ -2275,7 +2117,11 @@
                 "type": {
                   "title": "Network Type",
                   "type": "string",
-                  "enum": ["cudn", "linux-bridge", "nad"],
+                  "enum": [
+                    "cudn",
+                    "linux-bridge",
+                    "nad"
+                  ],
                   "default": "cudn",
                   "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition by name."
                 },
@@ -2313,7 +2159,9 @@
                   "description": "Placeholder for NAD-specific options. Use network.name for the NAD name."
                 }
               },
-              "required": ["type"],
+              "required": [
+                "type"
+              ],
               "additionalProperties": false,
               "description": "VM network configuration. Choose a type and fill in the corresponding options."
             },
@@ -2380,14 +2228,7 @@
           "title": "Operators",
           "description": "Day-2 operator installation and configuration. Each key is an operator name with its config. Specify an operator key with {} to install with all defaults.",
           "type": "object",
-          "properties": {
-            "argocd": { "$ref": "#/$defs/operatorArgocd" },
-            "lvm": { "$ref": "#/$defs/operatorLvm" },
-            "odf": { "$ref": "#/$defs/operatorOdf" },
-            "acm": { "$ref": "#/$defs/operatorAcm" },
-            "cert-manager": { "$ref": "#/$defs/operatorCertManager" },
-            "external-secrets": { "$ref": "#/$defs/operatorExternalSecrets" }
-          },
+          "properties": {},
           "additionalProperties": true
         }
       },
@@ -2398,5 +2239,10 @@
   },
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "required": ["account", "cluster", "network", "hosts"]
+  "required": [
+    "account",
+    "cluster",
+    "network",
+    "hosts"
+  ]
 }

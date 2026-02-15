@@ -262,6 +262,21 @@ if __name__ == "__main__":
                 s = yaml.safe_load(txt)
             except Exception as e:
                 raise ValueError(f"Could not parse schema file '{path}': {e}")
+        # Auto-discover operator plugin schemas
+        schema_dir = os.path.dirname(os.path.abspath(path))
+        plugins_operators = os.path.join(os.path.dirname(schema_dir), 'plugins', 'operators')
+        if os.path.isdir(plugins_operators):
+            s.setdefault('$defs', {})
+            ops = (s.setdefault('properties', {}).setdefault('plugins', {})
+                    .setdefault('properties', {}).setdefault('operators', {})
+                    .setdefault('properties', {}))
+            for dirname in sorted(os.listdir(plugins_operators)):
+                sf = os.path.join(plugins_operators, dirname, 'schema.json')
+                if os.path.isfile(sf):
+                    def_key = 'operator' + ''.join(p.capitalize() for p in dirname.split('-'))
+                    with open(sf) as fh:
+                        s['$defs'][def_key] = json.load(fh)
+                    ops[dirname] = {"$ref": f"#/$defs/{def_key}"}
         return s
 
     def _validate_against_schema(obj, schema_path):

@@ -1,130 +1,154 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Operators Plugin",
-  "description": "Day-2 operator installation and configuration. Each key is an operator name with its config. Specify an operator key with {} to install with all defaults.",
+  "title": "ArgoCD / OpenShift GitOps",
+  "description": "Installs openshift-gitops-operator and configures an ArgoCD instance. Specify {} for all defaults.",
   "type": "object",
+  "x-doc-url": "https://docs.openshift.com/gitops/latest/understanding_openshift_gitops/about-redhat-openshift-gitops.html",
   "properties": {
-    "argocd": {
-      "title": "ArgoCD / OpenShift GitOps",
-      "description": "Installs openshift-gitops-operator and configures an ArgoCD instance. Specify {} for all defaults.",
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip ArgoCD installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "latest",
+      "description": "OLM subscription channel (e.g. latest, gitops-1.14).",
+      "x-doc-url": "https://docs.openshift.com/gitops/latest/installing_gitops/installing-openshift-gitops.html"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "ha": {
+      "title": "High Availability",
+      "type": "boolean",
+      "default": false,
+      "description": "Enable HA for ArgoCD components (multiple replicas for server, repo, and controller).",
+      "x-doc-url": "https://docs.openshift.com/gitops/latest/argocd_instance/setting-up-argocd-instance.html"
+    },
+    "rbac": {
+      "title": "RBAC",
       "type": "object",
+      "description": "ArgoCD role-based access control configuration.",
+      "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/",
       "properties": {
-        "enabled": {
-          "title": "Enabled",
-          "type": "boolean",
-          "default": true,
-          "description": "Set false to skip ArgoCD installation."
-        },
-        "channel": {
-          "title": "Channel",
+        "policy": {
+          "title": "Policy CSV",
           "type": "string",
-          "default": "latest",
-          "description": "OLM subscription channel (e.g. latest, gitops-1.14)."
+          "default": "g, system:cluster-admins, role:admin",
+          "description": "ArgoCD RBAC policy in CSV format. Maps groups/users to ArgoCD roles."
         },
-        "approval": {
-          "title": "Install Plan Approval",
+        "defaultPolicy": {
+          "title": "Default Policy",
           "type": "string",
-          "enum": ["Automatic", "Manual"],
-          "default": "Automatic"
+          "default": "role:readonly",
+          "description": "Default role for authenticated users not matching any policy rule."
         },
-        "ha": {
-          "title": "High Availability",
-          "type": "boolean",
-          "default": false,
-          "description": "Enable HA for ArgoCD components (repo-server, application-controller)."
-        },
-        "rbac": {
-          "title": "RBAC Configuration",
+        "scopes": {
+          "title": "Scopes",
+          "type": "string",
+          "default": "[groups]",
+          "description": "OIDC scopes used for RBAC group matching."
+        }
+      },
+      "additionalProperties": false
+    },
+    "repo": {
+      "title": "Repo Server",
+      "type": "object",
+      "description": "ArgoCD repo server configuration for Git repository operations.",
+      "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-repo-server/",
+      "properties": {
+        "resources": {
+          "title": "Resources",
           "type": "object",
+          "description": "CPU and memory resource limits for the repo server.",
           "properties": {
-            "policy": {
-              "title": "Policy CSV",
+            "cpu": {
+              "title": "CPU Limit",
               "type": "string",
-              "default": "g, system:cluster-admins, role:admin",
-              "description": "ArgoCD RBAC policy CSV. Default grants admin to cluster-admins group."
+              "default": "1",
+              "description": "CPU limit for the repo server container (e.g. 1, 500m, 2)."
             },
-            "defaultPolicy": {
-              "title": "Default Policy",
+            "memory": {
+              "title": "Memory Limit",
               "type": "string",
-              "default": "role:readonly",
-              "description": "Default role for authenticated users without explicit policy."
-            },
-            "scopes": {
-              "title": "Scopes",
-              "type": "string",
-              "default": "[groups]",
-              "description": "OIDC scopes to use for RBAC."
+              "default": "1Gi",
+              "description": "Memory limit for the repo server container (e.g. 512Mi, 1Gi, 2Gi)."
             }
-          },
-          "additionalProperties": false
-        },
-        "repo": {
-          "title": "Repo Server",
-          "type": "object",
-          "properties": {
-            "resources": {
-              "title": "Resource Limits",
-              "type": "object",
-              "properties": {
-                "cpu": { "type": "string", "default": "1" },
-                "memory": { "type": "string", "default": "1Gi" }
-              }
-            }
-          },
-          "additionalProperties": true
-        },
-        "notifications": {
-          "title": "Notifications",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable ArgoCD notifications controller."
-        },
-        "applicationSet": {
-          "title": "ApplicationSet",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable ApplicationSet controller."
-        },
-        "bootstrap": {
-          "title": "Bootstrap Application",
-          "description": "GitOps bootstrap: an ArgoCD Application that manages further operators and cluster config from a git repo (app-of-apps pattern).",
-          "type": "object",
-          "properties": {
-            "repoURL": {
-              "title": "Repository URL",
-              "type": "string",
-              "description": "Git repository URL containing operator/config manifests."
-            },
-            "path": {
-              "title": "Path",
-              "type": "string",
-              "default": ".",
-              "description": "Path within the repo to the manifests directory."
-            },
-            "targetRevision": {
-              "title": "Target Revision",
-              "type": "string",
-              "default": "HEAD",
-              "description": "Git branch, tag, or commit (e.g. main, v1.0, HEAD)."
-            },
-            "namespace": {
-              "title": "Destination Namespace",
-              "type": "string",
-              "default": "openshift-gitops",
-              "description": "Namespace where bootstrapped resources are created."
-            },
-            "autoSync": {
-              "title": "Auto Sync",
-              "type": "boolean",
-              "default": true,
-              "description": "Enable automated sync with self-healing and pruning."
-            }
-          },
-          "required": ["repoURL"],
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": true
+    },
+    "notifications": {
+      "title": "Notifications",
+      "type": "boolean",
+      "default": true,
+      "description": "Enable the ArgoCD notifications controller for event-driven alerts (Slack, email, webhooks).",
+      "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/"
+    },
+    "applicationSet": {
+      "title": "ApplicationSet",
+      "type": "boolean",
+      "default": true,
+      "description": "Enable the ApplicationSet controller for templated multi-cluster Application generation.",
+      "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/"
+    },
+    "bootstrap": {
+      "title": "Bootstrap Application",
+      "type": "object",
+      "description": "App-of-apps bootstrap Application that manages further operators and configuration from a Git repository.",
+      "x-doc-url": "https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/",
+      "properties": {
+        "repoURL": {
+          "title": "Repository URL",
+          "type": "string",
+          "description": "Git repository URL containing the app-of-apps manifests."
+        },
+        "path": {
+          "title": "Path",
+          "type": "string",
+          "default": ".",
+          "description": "Path within the repository to the Application manifests."
+        },
+        "targetRevision": {
+          "title": "Target Revision",
+          "type": "string",
+          "default": "HEAD",
+          "description": "Git reference to track: branch name, tag, or commit SHA."
+        },
+        "namespace": {
+          "title": "Destination Namespace",
+          "type": "string",
+          "default": "openshift-gitops",
+          "description": "Kubernetes namespace where bootstrapped resources are created."
+        },
+        "autoSync": {
+          "title": "Auto Sync",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automated sync with pruning and self-heal. When true, changes in Git are automatically applied."
+        }
+      },
+      "required": [
+        "repoURL"
+      ],
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

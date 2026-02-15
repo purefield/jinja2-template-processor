@@ -4,6 +4,7 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 - **cert-manager-letsencrypt** — Template-driven LetsEncrypt configuration: ExternalSecret (Route53 credentials via external-secrets), ClusterIssuer (ACME DNS-01 with Route53), Certificate (auto-derived dnsNames from cluster.name + network.domain). Eliminates DNS zone-swap hack via permanent BIND delegation. Schema addition for letsencrypt config under cert-manager operator. 5 new tests
+- **extract-plugin-schemas** — Extract 6 operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secrets) from monolithic clusterfile.schema.json to `plugins/operators/<name>/schema.json`. Auto-discover and merge at load time in process.py, editor API, and standalone build. Shrinks main schema ~600 lines. 4 new tests
 
 ## v2.13.0 (2026-02-14)
 - **ocp-on-ocp-operators** — Enhance OCP-on-OCP demo with template-driven operators: add operators sections to ocp-acm (LVM, ACM, cert-manager, ArgoCD, external-secrets), ocp-cluster2/3 (ODF); fix ocp-acm network from flat bridge to CUDN; transition manage-cluster.sh install phases from step scripts to template rendering; add operator manifest rendering to sno.setup.sh; fix kubevirt-sno.clusterfile broken flat network keys

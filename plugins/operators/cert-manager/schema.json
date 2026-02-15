@@ -1,0 +1,95 @@
+{
+  "title": "cert-manager Operator",
+  "description": "TLS certificate automation. Install-and-go operator with no additional CRs needed for base install. Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/index.html",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip cert-manager installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "stable-v1",
+      "description": "OLM subscription channel (e.g. stable-v1).",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/cert-manager-operator-install.html"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "letsencrypt": {
+      "title": "LetsEncrypt Configuration",
+      "description": "Configure cert-manager with LetsEncrypt DNS-01 validation via Route53. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
+      "type": "object",
+      "required": [
+        "email",
+        "route53"
+      ],
+      "properties": {
+        "email": {
+          "title": "ACME Email",
+          "type": "string",
+          "format": "email",
+          "description": "Contact email for LetsEncrypt account registration."
+        },
+        "route53": {
+          "title": "Route53 DNS-01 Configuration",
+          "type": "object",
+          "required": [
+            "hostedZoneID",
+            "role",
+            "remoteRef"
+          ],
+          "properties": {
+            "hostedZoneID": {
+              "title": "Hosted Zone ID",
+              "type": "string",
+              "description": "AWS Route53 hosted zone ID for DNS-01 challenge records."
+            },
+            "region": {
+              "title": "AWS Region",
+              "type": "string",
+              "default": "us-east-1",
+              "description": "AWS region for Route53 API calls."
+            },
+            "role": {
+              "title": "IAM Role ARN",
+              "type": "string",
+              "description": "AWS IAM role ARN for Route53 access."
+            },
+            "secretStore": {
+              "title": "ClusterSecretStore Name",
+              "type": "string",
+              "default": "aws-secretsmanager",
+              "description": "Name of the ClusterSecretStore for Route53 credentials."
+            },
+            "remoteRef": {
+              "title": "Remote Secret Key",
+              "type": "string",
+              "description": "Key in the external secret store containing aws-access-key-id and aws-secret-access-key."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

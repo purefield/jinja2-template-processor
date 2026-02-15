@@ -1,0 +1,105 @@
+{
+  "title": "Advanced Cluster Management (ACM)",
+  "description": "Sets up a full ACM hub for ZTP/CAPI deployments. Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip ACM installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "release-2.14",
+      "description": "OLM subscription channel. Version-pinned (e.g. release-2.13, release-2.14).",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "multiClusterHub": {
+      "title": "MultiClusterHub",
+      "type": "object",
+      "description": "MultiClusterHub instance configuration. The central management component of ACM.",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/install/installing#installing-while-connected-online",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "multiclusterhub",
+          "description": "MultiClusterHub resource name."
+        },
+        "availabilityConfig": {
+          "title": "Availability Config",
+          "type": "string",
+          "enum": [
+            "High",
+            "Basic"
+          ],
+          "default": "High",
+          "description": "High for production (multiple replicas); Basic for SNO or lab environments (single replica)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "agentServiceConfig": {
+      "title": "AgentServiceConfig",
+      "type": "object",
+      "description": "Assisted-service storage configuration for cluster installation management. Controls PVC sizes for databases, ISOs, and OS images.",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
+      "properties": {
+        "databaseStorage": {
+          "title": "Database Storage",
+          "type": "string",
+          "default": "10Gi",
+          "description": "PVC size for the assisted-service database (cluster state, host inventory)."
+        },
+        "filesystemStorage": {
+          "title": "Filesystem Storage",
+          "type": "string",
+          "default": "100Gi",
+          "description": "PVC size for filesystem storage (discovery ISOs, installation logs)."
+        },
+        "imageStorage": {
+          "title": "Image Storage",
+          "type": "string",
+          "default": "50Gi",
+          "description": "PVC size for OS image storage (RHCOS images for cluster provisioning)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "provisioning": {
+      "title": "Provisioning",
+      "type": "object",
+      "description": "Bare metal provisioning configuration (Ironic). Controls which namespaces can provision bare metal hosts.",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
+      "properties": {
+        "watchAllNamespaces": {
+          "title": "Watch All Namespaces",
+          "type": "boolean",
+          "default": true,
+          "description": "Allow bare metal provisioning (BareMetalHost resources) in all namespaces, not just openshift-machine-api."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

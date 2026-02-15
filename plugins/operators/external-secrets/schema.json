@@ -1,0 +1,38 @@
+{
+  "title": "External Secrets Operator",
+  "description": "Sync secrets from external stores (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). Runs in all-namespaces mode via openshift-operators. Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://external-secrets.io/latest/",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip external-secrets installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "stable-v1",
+      "description": "OLM subscription channel (e.g. stable-v1).",
+      "x-doc-url": "https://external-secrets.io/latest/introduction/getting-started/"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    }
+  },
+  "additionalProperties": true
+}

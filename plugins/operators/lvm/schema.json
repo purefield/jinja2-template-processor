@@ -1,0 +1,129 @@
+{
+  "title": "LVM Storage (LVMS)",
+  "description": "Local volume management for SNO and compact clusters using TopoLVM. Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip LVM installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "stable",
+      "description": "OLM subscription channel (e.g. stable, stable-4.18).",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#install-lvms-operator-cli_logical-volume-manager-storage"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "deviceClasses": {
+      "title": "Device Classes",
+      "type": "array",
+      "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks.",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "default": "vg1",
+            "description": "Volume group name. Creates a StorageClass named lvms-<name>."
+          },
+          "default": {
+            "title": "Default",
+            "type": "boolean",
+            "default": true,
+            "description": "Set as the default StorageClass for the cluster."
+          },
+          "fstype": {
+            "title": "Filesystem Type",
+            "type": "string",
+            "default": "xfs",
+            "enum": [
+              "xfs",
+              "ext4"
+            ],
+            "description": "Default filesystem type for volumes in this device class."
+          },
+          "thinPoolConfig": {
+            "title": "Thin Pool Config",
+            "type": "object",
+            "description": "Thin provisioning configuration. Enables overprovisioning of storage capacity.",
+            "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
+            "properties": {
+              "name": {
+                "title": "Pool Name",
+                "type": "string",
+                "default": "thin-pool-1",
+                "description": "Name of the thin pool logical volume."
+              },
+              "sizePercent": {
+                "title": "Size Percent",
+                "type": "integer",
+                "default": 90,
+                "minimum": 1,
+                "maximum": 100,
+                "description": "Percentage of the volume group capacity to allocate to the thin pool (1-100)."
+              },
+              "overprovisionRatio": {
+                "title": "Overprovision Ratio",
+                "type": "integer",
+                "default": 10,
+                "minimum": 1,
+                "description": "How much the thin pool can be overprovisioned relative to its physical size."
+              }
+            }
+          },
+          "deviceSelector": {
+            "title": "Device Selector",
+            "type": "object",
+            "description": "Select specific block devices for this volume group. If omitted, all available disks are used.",
+            "properties": {
+              "paths": {
+                "title": "Device Paths",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Required device paths to include in the volume group (e.g. /dev/vdb, /dev/nvme0n1)."
+              },
+              "optionalPaths": {
+                "title": "Optional Paths",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional device paths included if present on the node. Does not fail if absent."
+              },
+              "forceWipeDevicesAndDestroyAllData": {
+                "title": "Force Wipe Devices",
+                "type": "boolean",
+                "default": false,
+                "description": "Wipe all data on selected devices before adding to the volume group. Destructive operation."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

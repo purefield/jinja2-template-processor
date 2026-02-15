@@ -76,6 +76,7 @@ STATIC_DIR = BASE_DIR / "static"
 SAMPLES_DIR = Path(os.environ.get("SAMPLES_DIR", str(REPO_ROOT / "samples")))
 TEMPLATES_DIR = Path(os.environ.get("TEMPLATES_DIR", str(REPO_ROOT / "templates")))
 SCHEMA_DIR = Path(os.environ.get("SCHEMA_DIR", str(REPO_ROOT / "schema")))
+PLUGINS_DIR = Path(os.environ.get("PLUGINS_DIR", str(REPO_ROOT / "plugins")))
 
 
 @app.get("/healthz")
@@ -86,12 +87,27 @@ async def healthz():
 
 @app.get("/api/schema")
 async def get_schema():
-    """Return the clusterfile JSON schema."""
+    """Return the clusterfile JSON schema with auto-discovered operator plugins."""
     schema_path = SCHEMA_DIR / "clusterfile.schema.json"
     if not schema_path.exists():
         raise HTTPException(status_code=404, detail="Schema not found")
     with open(schema_path, "r") as f:
-        return JSONResponse(content=json.load(f))
+        schema = json.load(f)
+    # Auto-discover operator plugin schemas
+    plugins_operators = PLUGINS_DIR / "operators"
+    if plugins_operators.is_dir():
+        schema.setdefault("$defs", {})
+        ops = (schema.setdefault("properties", {}).setdefault("plugins", {})
+                .setdefault("properties", {}).setdefault("operators", {})
+                .setdefault("properties", {}))
+        for d in sorted(plugins_operators.iterdir()):
+            sf = d / "schema.json"
+            if sf.is_file():
+                def_key = "operator" + "".join(p.capitalize() for p in d.name.split("-"))
+                with open(sf) as fh:
+                    schema["$defs"][def_key] = json.load(fh)
+                ops[d.name] = {"$ref": f"#/$defs/{def_key}"}
+    return JSONResponse(content=schema)
 
 
 @app.get("/api/samples")

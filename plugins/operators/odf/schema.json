@@ -1,0 +1,107 @@
+{
+  "title": "OpenShift Data Foundation (ODF)",
+  "description": "Ceph-based distributed storage for HA clusters (3+ nodes with data disks). Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip ODF installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "stable-4.18",
+      "description": "OLM subscription channel. Version-pinned (e.g. stable-4.18, stable-4.19).",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm"
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "consolePlugin": {
+      "title": "Console Plugin",
+      "type": "boolean",
+      "default": true,
+      "description": "Enable the ODF console plugin for storage management in the OpenShift web console."
+    },
+    "storageCluster": {
+      "title": "Storage Cluster",
+      "type": "object",
+      "description": "StorageCluster CR configuration for Ceph-based storage pools, block devices, and replication.",
+      "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.18/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/deploy-using-local-storage-devices-bm",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "ocs-storagecluster",
+          "description": "StorageCluster resource name."
+        },
+        "monDataDirHostPath": {
+          "title": "Monitor Data Directory",
+          "type": "string",
+          "default": "/var/lib/rook",
+          "description": "Host path for Ceph monitor data persistence."
+        },
+        "storageDeviceSets": {
+          "title": "Storage Device Sets",
+          "type": "array",
+          "description": "Storage device set configurations. Each set defines a group of block devices with replication.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "Name",
+                "type": "string",
+                "default": "ocs-deviceset",
+                "description": "Device set name identifier."
+              },
+              "count": {
+                "title": "Count",
+                "type": "integer",
+                "default": 1,
+                "minimum": 1,
+                "description": "Number of devices per storage node in this set."
+              },
+              "replica": {
+                "title": "Replica",
+                "type": "integer",
+                "default": 3,
+                "minimum": 1,
+                "description": "Number of storage nodes providing replicas. Typically 3 for Ceph reliability."
+              },
+              "storage": {
+                "title": "Storage Size",
+                "type": "string",
+                "default": "1Ti",
+                "description": "PVC storage request per device (e.g. 500Gi, 1Ti, 2Ti)."
+              },
+              "storageClassName": {
+                "title": "Storage Class",
+                "type": "string",
+                "default": "",
+                "description": "StorageClass for the underlying PVCs. Empty uses the cluster default."
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

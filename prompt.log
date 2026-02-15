@@ -1740,3 +1740,9 @@ Implemented template-driven cert-manager LetsEncrypt configuration:
 > remind me later: configure image registry and secret servers on the acm hub cluster for kubevirt and the new acm hub cluster for the demo.
 
 Noted reminder: Configure image registry and secret servers on the ACM hub cluster for kubevirt and the new ACM hub cluster for the demo.
+
+### Prompt 100
+
+> Implement the plan: Extract Plugin Schemas + Registry/SecretStore Scripts + File List
+
+Extracted 6 operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secrets) from `schema/clusterfile.schema.json` `$defs` to individual `plugins/operators/<name>/schema.json` files. Stripped the main schema of those inline definitions and `$ref` entries. Added auto-discover merge logic to `process.py` `_load_schema()`, `apps/editor/app/main.py` `get_schema()`, and `apps/editor/build-standalone.sh`. Created `/home/inference/tmp/steps/common-create-secretstore-config.sh` for Vault ClusterSecretStore bootstrap. Added 4 schema merge tests. All 133 tests pass. Committed and tagged `extract-plugin-schemas`.
