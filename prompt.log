@@ -1720,3 +1720,23 @@ Implemented SSD udev MachineConfig include for all three install methods, kubevi
 > ship it
 
 Release v2.13.0: OCP-on-OCP template-driven operators and KubeVirt SSD udev MachineConfig. Updated all 5 version locations, committed, tagged v2.13.0, built and deployed container.
+
+### Prompt 98
+
+> Implement the following plan: Template-Driven cert-manager LetsEncrypt Configuration
+
+Implemented template-driven cert-manager LetsEncrypt configuration:
+- Created `plugins/operators/cert-manager/config.yaml.tpl` — renders ExternalSecret (Route53 credentials via ClusterSecretStore), ClusterIssuer (ACME DNS-01 with Route53 solver), Certificate (dnsNames auto-derived from cluster.name + network.domain, placed in openshift-ingress namespace)
+- Updated `schema/clusterfile.schema.json` — added `letsencrypt` object under `operatorCertManager` with email, route53 (hostedZoneID, region, role, secretStore, remoteRef); smart defaults for region (us-east-1) and secretStore (aws-secretsmanager)
+- Updated `templates/operators.yaml.tpl` — conditional include for config.yaml.tpl when letsencrypt is defined
+- Updated `/home/inference/tmp/templates/ocp-on-ocp/ocp-acm.clusterfile` — added letsencrypt config under cert-manager
+- Updated `/home/inference/tmp/manage-cluster.sh` — replaced `common-create-cert-manager-config.sh` with IngressController patch
+- Added 5 new tests: ClusterIssuer rendering, Certificate dnsNames, ExternalSecret refs, absent-without-letsencrypt, smart-defaults
+- Fixed whitespace trimming bug where config template's `---` was gluing to manifests template's last line
+- All 129 tests pass
+
+### Prompt 99
+
+> remind me later: configure image registry and secret servers on the acm hub cluster for kubevirt and the new acm hub cluster for the demo.
+
+Noted reminder: Configure image registry and secret servers on the ACM hub cluster for kubevirt and the new ACM hub cluster for the demo.

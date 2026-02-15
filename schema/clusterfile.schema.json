@@ -660,6 +660,56 @@
           "type": "string",
           "default": "redhat-operators",
           "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+        },
+        "letsencrypt": {
+          "title": "LetsEncrypt Configuration",
+          "description": "Configure cert-manager with LetsEncrypt DNS-01 validation via Route53. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
+          "type": "object",
+          "required": ["email", "route53"],
+          "properties": {
+            "email": {
+              "title": "ACME Email",
+              "type": "string",
+              "format": "email",
+              "description": "Contact email for LetsEncrypt account registration."
+            },
+            "route53": {
+              "title": "Route53 DNS-01 Configuration",
+              "type": "object",
+              "required": ["hostedZoneID", "role", "remoteRef"],
+              "properties": {
+                "hostedZoneID": {
+                  "title": "Hosted Zone ID",
+                  "type": "string",
+                  "description": "AWS Route53 hosted zone ID for DNS-01 challenge records."
+                },
+                "region": {
+                  "title": "AWS Region",
+                  "type": "string",
+                  "default": "us-east-1",
+                  "description": "AWS region for Route53 API calls."
+                },
+                "role": {
+                  "title": "IAM Role ARN",
+                  "type": "string",
+                  "description": "AWS IAM role ARN for Route53 access."
+                },
+                "secretStore": {
+                  "title": "ClusterSecretStore Name",
+                  "type": "string",
+                  "default": "aws-secretsmanager",
+                  "description": "Name of the ClusterSecretStore for Route53 credentials."
+                },
+                "remoteRef": {
+                  "title": "Remote Secret Key",
+                  "type": "string",
+                  "description": "Key in the external secret store containing aws-access-key-id and aws-secret-access-key."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true

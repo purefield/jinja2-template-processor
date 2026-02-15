@@ -25,4 +25,5 @@ docs: https://docs.openshift.com/container-platform/latest/operators/admin/olm-a
 {%- if ops.odf is defined %}{% include "operators/odf/manifests.yaml.tpl" %}{% endif -%}
 {%- if ops.acm is defined %}{% include "operators/acm/manifests.yaml.tpl" %}{% endif -%}
 {%- if ops['cert-manager'] is defined %}{% include "operators/cert-manager/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops['cert-manager'] is defined and ops['cert-manager'].letsencrypt is defined %}{% include "operators/cert-manager/config.yaml.tpl" %}{% endif -%}
 {%- if ops['external-secrets'] is defined %}{% include "operators/external-secrets/manifests.yaml.tpl" %}{% endif -%}

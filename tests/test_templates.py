@@ -2113,6 +2113,115 @@ class TestCertManagerOperator:
         assert len(bindings) == 1
 
 
+class TestCertManagerConfig:
+    """Tests for cert-manager LetsEncrypt config template."""
+
+    def letsencrypt_data(self, le_config=None):
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['cluster']['name'] = 'ocp-acm'
+        data['network']['domain'] = 'ola.purefield.nl'
+        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
+        cm = {}
+        if le_config is not None:
+            cm['letsencrypt'] = le_config
+        data['plugins'] = {'operators': {'cert-manager': cm}}
+        return data
+
+    def full_letsencrypt(self):
+        return {
+            'email': 'test@example.com',
+            'route53': {
+                'hostedZoneID': 'Z0123456789ABCDEF',
+                'region': 'us-east-1',
+                'role': 'arn:aws:iam::123456789:role/test-role',
+                'secretStore': 'aws-secretsmanager',
+                'remoteRef': 'route53/credentials',
+            }
+        }
+
+    def test_certmanager_config_renders_clusterissuer(self, template_env):
+        """Test letsencrypt config renders ClusterIssuer with Route53 solver."""
+        data = self.letsencrypt_data(self.full_letsencrypt())
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        issuers = [d for d in docs if d['kind'] == 'ClusterIssuer']
+        assert len(issuers) == 1
+        issuer = issuers[0]
+        assert issuer['metadata']['name'] == 'letsencrypt-prod'
+        assert issuer['spec']['acme']['email'] == 'test@example.com'
+        solver = issuer['spec']['acme']['solvers'][0]['dns01']['route53']
+        assert solver['hostedZoneID'] == 'Z0123456789ABCDEF'
+        assert solver['region'] == 'us-east-1'
+        assert solver['role'] == 'arn:aws:iam::123456789:role/test-role'
+
+    def test_certmanager_config_renders_certificate(self, template_env):
+        """Test Certificate dnsNames derived from cluster.name + network.domain."""
+        data = self.letsencrypt_data(self.full_letsencrypt())
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        certs = [d for d in docs if d['kind'] == 'Certificate']
+        assert len(certs) == 1
+        cert = certs[0]
+        assert cert['metadata']['name'] == 'ocp-acm-ingress-cert'
+        assert cert['metadata']['namespace'] == 'openshift-ingress'
+        assert cert['spec']['secretName'] == 'letsencrypt-cert'
+        assert 'api.ocp-acm.ola.purefield.nl' in cert['spec']['dnsNames']
+        assert '*.apps.ocp-acm.ola.purefield.nl' in cert['spec']['dnsNames']
+
+    def test_certmanager_config_renders_externalsecret(self, template_env):
+        """Test ExternalSecret with secretStore and remoteRef."""
+        data = self.letsencrypt_data(self.full_letsencrypt())
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        es = [d for d in docs if d['kind'] == 'ExternalSecret']
+        assert len(es) == 1
+        ext = es[0]
+        assert ext['metadata']['namespace'] == 'cert-manager'
+        assert ext['spec']['secretStoreRef']['name'] == 'aws-secretsmanager'
+        assert ext['spec']['secretStoreRef']['kind'] == 'ClusterSecretStore'
+        keys = [item['remoteRef']['key'] for item in ext['spec']['data']]
+        assert all(k == 'route53/credentials' for k in keys)
+
+    def test_certmanager_config_absent_without_letsencrypt(self, template_env):
+        """Test no config output when letsencrypt key is absent."""
+        data = self.letsencrypt_data()
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        kinds = [d['kind'] for d in docs]
+        assert 'ClusterIssuer' not in kinds
+        assert 'Certificate' not in kinds
+        assert 'ExternalSecret' not in kinds
+
+    def test_certmanager_config_smart_defaults(self, template_env):
+        """Test only email + route53 required fields needed; rest uses defaults."""
+        minimal = {
+            'email': 'admin@example.com',
+            'route53': {
+                'hostedZoneID': 'ZMINIMAL',
+                'role': 'arn:aws:iam::111:role/minimal',
+                'remoteRef': 'creds/key',
+            }
+        }
+        data = self.letsencrypt_data(minimal)
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        issuer = next(d for d in docs if d['kind'] == 'ClusterIssuer')
+        assert issuer['spec']['acme']['solvers'][0]['dns01']['route53']['region'] == 'us-east-1'
+        ext = next(d for d in docs if d['kind'] == 'ExternalSecret')
+        assert ext['spec']['secretStoreRef']['name'] == 'aws-secretsmanager'
+
+
 class TestAcmOperator:
     """Tests for ACM operator plugin."""
 
