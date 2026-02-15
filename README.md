@@ -266,7 +266,7 @@ See each operator's README for full configuration reference.
 
 ## Platform plugins
 
-Platform plugins configure cloud-specific settings in `install-config.yaml`. They live in `templates/plugins/platforms/` and are selected automatically based on `cluster.platform`:
+Platform plugins configure cloud-specific settings in `install-config.yaml`. They live in `plugins/platforms/` and are selected automatically based on `cluster.platform`:
 
 | Platform | Plugin Config | Templates |
 |----------|--------------|-----------|
@@ -370,9 +370,9 @@ podman run --rm -v ./data:/data:Z quay.io/dds/process:latest \
 ├── data/                               # Example clusterfiles
 ├── templates/                          # Jinja2 templates (.yaml.tpl)
 │   ├── includes/                       # Reusable template fragments (nmstate, bmc, etc.)
-│   └── plugins/platforms/              # Platform-specific includes (aws, vsphere, etc.)
 ├── plugins/
-│   └── operators/                      # Operator plugins (co-located schema + templates)
+│   ├── operators/                      # Operator plugins (co-located schema + templates)
+│   └── platforms/                      # Platform-specific includes (aws, vsphere, etc.)
 │       ├── argocd/                     # ArgoCD operator
 │       ├── lvm/                        # LVM Storage operator
 │       ├── odf/                        # OpenShift Data Foundation

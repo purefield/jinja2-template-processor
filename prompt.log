@@ -1752,3 +1752,9 @@ Extracted 6 operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secr
 > ship it
 
 Release v2.14.0: Updated all 5 version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG, CHANGELOG.md, Containerfile). Committed, tagged v2.14.0, pushed. Built and pushed container image. Restarted app, verified healthz.
+
+### Prompt 102
+
+> did we move the platform plugins into the plugins/platforms yet? ... move the platform plugins to plugins/platforms
+
+Moved platform plugins from `templates/plugins/platforms/` to `plugins/platforms/`. Updated 4 Jinja2 include paths in `install-config.yaml.tpl` and `creds.yaml.tpl` from `plugins/platforms/` to `platforms/` (resolved via `plugins_root` in FileSystemLoader). Removed empty `templates/plugins/` directory. Updated README. All 133 tests pass. Committed and tagged `platform-plugin-move`.

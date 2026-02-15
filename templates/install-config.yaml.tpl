@@ -48,13 +48,13 @@ controlPlane:
   name: master
   replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
   platform:
-{% include 'plugins/platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
+{% include 'platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
     replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
     platform:
-{% include 'plugins/platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
+{% include 'platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
 proxy:
   httpProxy: {{ network.proxy.httpProxy }}
@@ -73,7 +73,7 @@ networking:
     - {{ network.service.subnet }}
 
 platform:
-{% include 'plugins/platforms/' ~ platform ~ '/platform.yaml.tpl' %}
+{% include 'platforms/' ~ platform ~ '/platform.yaml.tpl' %}
 
 publish: External
 pullSecret: '{{ load_file(account.pullSecret) | trim }}'

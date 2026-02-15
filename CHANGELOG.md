@@ -3,6 +3,7 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+- **platform-plugin-move** — Move platform plugins from `templates/plugins/platforms/` to `plugins/platforms/`, co-locating all plugins under `plugins/`. Update template include paths and README
 
 ## v2.14.0 (2026-02-15)
 - **extract-plugin-schemas** — Extract 6 operator schemas (ArgoCD, LVM, ODF, ACM, cert-manager, external-secrets) from monolithic clusterfile.schema.json to `plugins/operators/<name>/schema.json`. Auto-discover and merge at load time in process.py, editor API, and standalone build. Shrinks main schema ~600 lines. 4 new tests

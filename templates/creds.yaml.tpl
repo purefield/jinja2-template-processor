@@ -21,5 +21,5 @@ docs: https://docs.openshift.com/container-platform/latest/authentication/managi
 {%- set platform = cluster.platform | default('baremetal', true) -%}
 {%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
 {%- if platformPlugin.credentials is defined or platform in ['vsphere', 'nutanix', 'openstack'] -%}
-{% include 'plugins/platforms/' ~ platform ~ '/creds.yaml.tpl' %}
+{% include 'platforms/' ~ platform ~ '/creds.yaml.tpl' %}
 {%- endif -%}
