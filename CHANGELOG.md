@@ -3,6 +3,7 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
+- **kubernetes-list-wrapper** — Wrap multi-document YAML output in `kind: List` resource for `kubectl apply -f` compatibility. Single-doc templates unchanged
 
 ## v2.15.0 (2026-02-15)
 - **platform-plugin-move** — Move platform plugins from `templates/plugins/platforms/` to `plugins/platforms/`, co-locating all plugins under `plugins/`. Update template include paths and README

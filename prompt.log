@@ -1764,3 +1764,9 @@ Moved platform plugins from `templates/plugins/platforms/` to `plugins/platforms
 > ship it
 
 Release v2.15.0: Updated all 5 version locations. Committed, tagged v2.15.0, pushed. Built and pushed container image. Restarted app, verified healthz.
+
+### Prompt 104
+
+> Wrap multi-document YAML in Kubernetes List kind
+
+Wrapped multi-doc YAML output in `kind: List` resource for `kubectl apply -f` compatibility. Changed one line each in `process.py` and `apps/editor/app/template_processor.py` — multi-doc templates now produce `{"apiVersion": "v1", "kind": "List", "items": docs}` instead of a bare array. Single-doc templates unchanged. Added test in `TestClusterInstanceTemplate`. Updated CHANGELOG.md. Committed and tagged `kubernetes-list-wrapper`.

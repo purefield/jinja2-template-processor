@@ -259,7 +259,7 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     if template_name.endswith('.yaml.tpl') or template_name.endswith('.yaml.tmpl'):
         try:
             docs = [d for d in yaml.safe_load_all(processed) if d is not None]
-            output_obj = docs[0] if len(docs) == 1 else docs
+            output_obj = docs[0] if len(docs) == 1 else {"apiVersion": "v1", "kind": "List", "items": docs}
             output_yaml = yaml.dump(
                 output_obj,
                 width=4096,

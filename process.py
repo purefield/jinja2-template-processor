@@ -378,7 +378,7 @@ if __name__ == "__main__":
             print(e)
             sys.exit(1)
 
-        outputObj = docs[0] if len(docs) == 1 else docs
+        outputObj = docs[0] if len(docs) == 1 else {"apiVersion": "v1", "kind": "List", "items": docs}
         outputYaml = yaml.dump(
             outputObj,
             width=4096,

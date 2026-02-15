@@ -2936,6 +2936,19 @@ class TestClusterInstanceTemplate:
         assert len(ns) == 1
         assert ns[0]['metadata']['name'] == 'sc-test'
 
+    def test_multi_doc_wrapped_in_list(self, template_env):
+        """Multi-document siteconfig output is wrapped in kind: List for kubectl apply."""
+        data = self.siteconfig_data(sno=True)
+        docs = self.render_siteconfig(template_env, data)
+        assert len(docs) > 1, "Siteconfig should produce multiple documents"
+        wrapped = {"apiVersion": "v1", "kind": "List", "items": docs}
+        assert wrapped['kind'] == 'List'
+        assert wrapped['apiVersion'] == 'v1'
+        kinds = [d['kind'] for d in wrapped['items']]
+        assert 'Namespace' in kinds
+        assert 'ClusterInstance' in kinds
+        assert 'Secret' in kinds
+
 
 class TestKubevirtSsdUdev:
     """Tests for the kubevirt SSD udev MachineConfig include across all install methods."""
