@@ -6,6 +6,7 @@ category: acm
 platforms:
   - baremetal
   - none
+  - kubevirt
 requires:
   - account.pullSecret
   - cluster.name
@@ -22,7 +23,7 @@ docs: https://github.com/stolostron/siteconfig
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set clusterType = cluster.clusterType | default("SNO" if controlCount == 1 else "HighlyAvailable") -%}
 {%- set platformType = cluster.platform | default("BareMetal" if controlCount > 1 else "None", true) -%}
-{%- set platformMap = {"baremetal": "BareMetal", "none": "None", "vsphere": "VSphere", "aws": "AWS", "azure": "Azure", "gcp": "GCP", "external": "External"} -%}
+{%- set platformMap = {"baremetal": "BareMetal", "none": "None", "kubevirt": "BareMetal", "vsphere": "VSphere", "aws": "AWS", "azure": "Azure", "gcp": "GCP", "external": "External"} -%}
 {%- set platformType = platformMap[platformType] | default(platformType) if platformType in platformMap else platformType -%}
 apiVersion: v1
 kind: Namespace
