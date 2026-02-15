@@ -1794,3 +1794,21 @@ Added `kubevirt` to siteconfig template: platforms metadata list (passes pre-ren
 > ship it
 
 Release v3.1.0: Updated all 5 version locations. Committed, tagged v3.1.0, pushed. Built and pushed container image. Restarted app, verified healthz.
+
+### Prompt 109
+
+> verify the siteconfig output with a kubevirt clusterfile in the editor
+
+Verified via editor API (`POST /api/render`) with `kubevirt.clusterfile` + `clusterfile2siteconfig.yaml.tpl`. Output confirmed: `kind: List` wrapper, `platformType: BareMetal` mapped from kubevirt, 5 nodes with kubevirt-redfish BMC addresses, TPM disk encryption, `clusterType: HighlyAvailable`. No errors.
+
+### Prompt 110
+
+> ship it
+
+Nothing to ship — v3.1.0 already the latest commit, tagged, pushed, deployed, and verified.
+
+### Prompt 111
+
+> update the prompt.log with the verification
+
+Updated prompt.log with prompts 109–111.
