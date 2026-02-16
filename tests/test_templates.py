@@ -2220,7 +2220,7 @@ class TestCertManagerConfig:
         issuer = next(d for d in docs if d['kind'] == 'ClusterIssuer')
         assert issuer['spec']['acme']['solvers'][0]['dns01']['route53']['region'] == 'us-east-1'
         ext = next(d for d in docs if d['kind'] == 'ExternalSecret')
-        assert ext['spec']['secretStoreRef']['name'] == 'aws-secretsmanager'
+        assert ext['spec']['secretStoreRef']['name'] == 'vault'
 
 
 class TestAcmOperator:

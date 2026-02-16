@@ -27,3 +27,4 @@ docs: https://docs.openshift.com/container-platform/latest/operators/admin/olm-a
 {%- if ops['cert-manager'] is defined %}{% include "operators/cert-manager/manifests.yaml.tpl" %}{% endif -%}
 {%- if ops['cert-manager'] is defined and ops['cert-manager'].letsencrypt is defined %}{% include "operators/cert-manager/config.yaml.tpl" %}{% endif -%}
 {%- if ops['external-secrets'] is defined %}{% include "operators/external-secrets/manifests.yaml.tpl" %}{% endif -%}
+{%- if ops['external-secrets'] is defined and ops['external-secrets'].vault is defined %}{% include "operators/external-secrets/config.yaml.tpl" %}{% endif -%}

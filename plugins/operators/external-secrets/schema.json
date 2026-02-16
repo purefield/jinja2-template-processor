@@ -32,6 +32,44 @@
       "type": "string",
       "default": "redhat-operators",
       "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "vault": {
+      "title": "Vault Backend",
+      "type": "object",
+      "description": "Configure a ClusterSecretStore backed by HashiCorp Vault or OpenBao with Kubernetes auth.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "vault",
+          "description": "ClusterSecretStore resource name."
+        },
+        "server": {
+          "type": "string",
+          "default": "https://vault.vault.svc.cluster.local:8200",
+          "description": "Vault server URL. Use in-cluster service for co-located Vault."
+        },
+        "path": {
+          "type": "string",
+          "default": "secret",
+          "description": "KV v2 secrets engine mount path."
+        },
+        "role": {
+          "type": "string",
+          "default": "external-secrets",
+          "description": "Vault Kubernetes auth role name."
+        },
+        "serviceAccount": {
+          "type": "string",
+          "default": "external-secrets",
+          "description": "Service account name for Kubernetes auth."
+        },
+        "serviceAccountNamespace": {
+          "type": "string",
+          "default": "openshift-operators",
+          "description": "Namespace of the service account."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

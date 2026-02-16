@@ -32,7 +32,8 @@ plugins:
       bootstrap:
         repoURL: https://gitea.example.com/infra/cluster-config.git
         path: operators
-    external-secrets: {}
+    external-secrets:
+      vault: {}
 network:
   domain: example.com
   ntpservers:

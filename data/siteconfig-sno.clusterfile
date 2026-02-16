@@ -14,6 +14,7 @@ cluster:
 plugins:
   operators:
     lvm: {}
+    external-secrets: {}
 network:
   domain: edge.example.com
   ntpservers:

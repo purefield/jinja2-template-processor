@@ -22,7 +22,7 @@ metadata:
   namespace: cert-manager
 spec:
   secretStoreRef:
-    name: {{ r53.secretStore | default("aws-secretsmanager") }}
+    name: {{ r53.secretStore | default("vault") }}
     kind: ClusterSecretStore
   target:
     name: route53-credentials

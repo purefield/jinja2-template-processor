@@ -61,6 +61,7 @@ plugins:
   operators:
     lvm: {}
     argocd: {}
+    external-secrets: {}
 network:
   domain: base.domain
   trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
