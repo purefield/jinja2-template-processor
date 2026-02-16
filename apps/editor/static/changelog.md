@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.2.0
+- **cert-manager Self-Check**: CertManager CR with `--dns01-recursive-nameservers-only` and recursive nameservers (default 8.8.8.8, 1.1.1.1) for reliable DNS-01 preflight checks. Conditional `cnameStrategy: Follow` on ClusterIssuer solver
+
 ## 3.1.0
 - **SiteConfig KubeVirt**: KubeVirt platform now supported in siteconfig template — maps to BareMetal platformType in ClusterInstance CR
 

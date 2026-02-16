@@ -2,7 +2,8 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.2.0 (2026-02-16)
+- **cert-manager-selfcheck** — Add CertManager CR with recursive nameserver defaults (8.8.8.8:53, 1.1.1.1:53) for DNS-01 self-check; conditional cnameStrategy flag on ClusterIssuer solver
 
 ## v3.1.0 (2026-02-15)
 - **siteconfig-kubevirt-platform** — Allow kubevirt platform in siteconfig template, mapping to BareMetal platformType in ClusterInstance CR

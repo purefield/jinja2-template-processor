@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.2.0',
+    date: '2026-02-16',
+    changes: [
+      'cert-manager self-check: CertManager CR with recursive nameserver defaults (8.8.8.8, 1.1.1.1) for DNS-01 preflight; conditional cnameStrategy on ClusterIssuer'
+    ]
+  },
+  {
     version: '3.1.0',
     date: '2026-02-15',
     changes: [
