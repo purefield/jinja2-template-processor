@@ -15,7 +15,7 @@ spec:
       - --dns01-recursive-nameservers-only
       - --dns01-recursive-nameservers={{ nameservers | join(',') }}
 ---
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: route53-credentials

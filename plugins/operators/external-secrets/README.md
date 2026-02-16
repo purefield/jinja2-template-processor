@@ -55,7 +55,7 @@ plugins:
 After the operator is installed, create a ClusterSecretStore and ExternalSecret (day-2 config, not part of this plugin):
 
 ```yaml
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ClusterSecretStore
 metadata:
   name: vault
@@ -69,7 +69,7 @@ spec:
           mountPath: kubernetes
           role: external-secrets
 ---
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: my-secret
