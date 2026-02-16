@@ -1,7 +1,19 @@
 {%- set cm = plugins.operators['cert-manager'] -%}
 {%- set le = cm.letsencrypt -%}
 {%- set r53 = le.route53 -%}
+{%- set selfCheck = cm.selfCheck | default({}) -%}
+{%- set nameservers = selfCheck.nameservers | default(["8.8.8.8:53", "1.1.1.1:53"]) -%}
 {%- set clusterDomain = cluster.name ~ '.' ~ network.domain %}
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: CertManager
+metadata:
+  name: cluster
+spec:
+  controllerConfig:
+    overrideArgs:
+      - --dns01-recursive-nameservers-only
+      - --dns01-recursive-nameservers={{ nameservers | join(',') }}
 ---
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
@@ -35,7 +47,8 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-acme-account-key
     solvers:
-      - dns01:
+      - dns01:{% if le.cnameStrategy is defined %}
+          cnameStrategy: {{ le.cnameStrategy }}{% endif %}
           route53:
             region: {{ r53.region | default("us-east-1") }}
             hostedZoneID: {{ r53.hostedZoneID }}
