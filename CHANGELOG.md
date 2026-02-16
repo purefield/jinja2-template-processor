@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **eso-vault-config** — Add Vault ClusterSecretStore config template to ESO plugin with Kubernetes auth defaults; change cert-manager secretStore default to vault; enable ESO on all example clusterfiles
+
 ## v3.2.1 (2026-02-16)
 - **kubevirt-cpu-request** — Increase KubeVirt VM CPU request from 2 to 4 to reduce resource contention
 
