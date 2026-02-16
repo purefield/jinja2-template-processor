@@ -1842,3 +1842,52 @@ Released v3.2.0: updated all 5 version locations, committed, tagged `v3.2.0`, pu
 > update the prompt.log (should always be done without extra step!)
 
 Updated prompt.log with prompts 112–116. Note: prompt.log updates should be included in every release commit going forward.
+
+### Prompt 117
+
+> Create an SVG diagram that shows the secrets management pipeline overview. The diagram should show all components, dependencies, and actions in the flow from Bitwarden → Vault → ExternalSecrets → Kubernetes Secrets. [Full specification of components, relationships, field mappings, and 12-step flow provided.]
+
+Created comprehensive SVG diagram at `/home/inference/tmp/docs/secrets-pipeline-overview.svg` (1200x800px). The diagram includes:
+- Color-coded sections: purple (Bitwarden), orange (Scripts/Tools), green (ACM Hub components), blue (External Services)
+- All 5 Bitwarden secret items with their types
+- Scripts section with field mapping transformation details
+- ACM Hub with Vault, ESO, cert-manager, and K8s Secrets subsections
+- External Services (AWS Route53, Let's Encrypt, BIND)
+- Numbered flow arrows (1-12) showing the complete pipeline
+- Legend with flow step descriptions and color key
+
+### Prompt 118
+
+> lets use a configuration section/file for the mapping. folder/secretname: { srcfield: targetfield, ..}
+
+Replaced hardcoded `rename_fields()` case statement with config-driven `bitwarden-to-vault.map.json`. Script loads the JSON map and applies renames via jq `with_entries`. Unmapped fields pass through unchanged.
+
+### Prompt 119
+
+> let's add a dry-run flag to dump the data instead of inserting it into vault
+
+Updated `--dry-run` to dump full JSON data per item (was only showing key names). Output format: `--- vault/path` followed by pretty-printed JSON.
+
+### Prompt 120
+
+> test it with a dry run
+
+Attempted dry run — script failed on `bitwarden-login.sh` unbound variable. Fixed by initializing `BW_SESSION` before sourcing. Full test requires interactive Bitwarden login with YubiKey.
+
+### Prompt 121
+
+> can you figure out a way to re-use the session and allow to sync bitwarden?
+
+Added three-tier session handling: (1) reuse saved `~/.bw_session` if unlocked, (2) `bw unlock` if locked (master password only, no YubiKey), (3) full `bw login` if unauthenticated. Added `--sync` flag for `bw sync` before reading items.
+
+### Prompt 122
+
+> kubevirt vms are super resource constraint with 2 cpu requested, set it to 4
+
+Changed KubeVirt VM CPU request from 2 to 4 in `templates/kubevirt-cluster.yaml.tpl:207`.
+
+### Prompt 123
+
+> commit just that change and ship it
+
+Released v3.2.1: KubeVirt VM CPU request increased to 4. Updated all 5 version locations, committed, tagged, pushed, built container, deployed, verified.

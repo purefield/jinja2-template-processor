@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.2.1',
+    date: '2026-02-16',
+    changes: [
+      'KubeVirt CPU request: increase VM CPU request from 2 to 4 to reduce resource contention'
+    ]
+  },
+  {
     version: '3.2.0',
     date: '2026-02-16',
     changes: [

@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.2.1 (2026-02-16)
+- **kubevirt-cpu-request** — Increase KubeVirt VM CPU request from 2 to 4 to reduce resource contention
+
 ## v3.2.0 (2026-02-16)
 - **cert-manager-selfcheck** — Add CertManager CR with recursive nameserver defaults (8.8.8.8:53, 1.1.1.1:53) for DNS-01 self-check; conditional cnameStrategy flag on ClusterIssuer solver
 

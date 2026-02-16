@@ -204,7 +204,7 @@ items:
             overcommitGuestOverhead: true
             requests:
               memory: {{ (memory / 2) | int }}Gi
-              cpu: 2
+              cpu: 4
             limits:
               memory: {{ memory }}Gi
               cpu: {{ cores * sockets }}

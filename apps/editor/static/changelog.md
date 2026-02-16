@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.2.1
+- **KubeVirt CPU Request**: Increase VM CPU request from 2 to 4 to reduce resource contention
+
 ## 3.2.0
 - **cert-manager Self-Check**: CertManager CR with `--dns01-recursive-nameservers-only` and recursive nameservers (default 8.8.8.8, 1.1.1.1) for reliable DNS-01 preflight checks. Conditional `cnameStrategy: Follow` on ClusterIssuer solver
 
