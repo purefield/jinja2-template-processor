@@ -1921,3 +1921,35 @@ Created `plugins/operators/external-secrets/config.yaml.tpl` for Vault ClusterSe
 > commit this
 
 Committed and tagged (see Prompt 127).
+
+### Prompt 129
+
+> ship it
+
+Released v3.3.0: ESO Vault ClusterSecretStore config plugin. All 5 version locations updated, committed, tagged `v3.3.0`, pushed, container built/pushed, deployed, healthz verified.
+
+### Prompt 130
+
+> let's continue testing vault on the acm hub
+
+Testing sequence on ACM hub. Discovered: (1) ESO `community-operators` Red Hat operator v0.1.0 is broken — CSV succeeds but no controller pods deploy. (2) `openshift-external-secrets-operator` from `redhat-operators` only has `tech-preview-v0.1` channel, same broken operator. (3) Installed ESO via Helm (`external-secrets/external-secrets`) — works immediately. (4) API version is `external-secrets.io/v1` not `v1beta1`. (5) In-cluster Vault service is `vault-openbao` (not `vault`) and HTTP (not HTTPS — route is edge-terminated). (6) ClusterSecretStore went Valid/ReadWrite/True. (7) ExternalSecret synced, `test-route53` Secret created with 2 keys. Full pipeline verified: Bitwarden → Vault → ESO → k8s Secret.
+
+Updated all templates and defaults: API `v1`, HTTP, `vault-openbao` service name. Committed `806527e`, tagged `eso-validated-defaults`.
+
+### Prompt 131
+
+> should we keep the vault-keys in a different folder or exclude them
+
+Already handled in Prompt 124 (added skip logic for `vault-keys` in `bitwarden-to-vault.sh`).
+
+### Prompt 132
+
+> put a bow on it, make it repeatable within manage-cluster.sh using steps and the jinja work
+
+Created step scripts: `common-create-external-secrets.sh` (Helm install + CRD wait), `common-create-vault-sync.sh` (Bitwarden → Vault wrapper). Wired into manage-cluster.sh ocp-acm install phase: Vault deploy → ESO Helm install → Bitwarden sync → template apply (includes ClusterSecretStore). Full repeatable flow.
+
+### Prompt 133
+
+> How do I protect this secret on clusters where others are clusteradmin
+
+Explained: cluster-admin can see all Secrets — no RBAC override. Options: (1) scoped roles instead of cluster-admin, (2) Vault Agent sidecar injection (secrets never become k8s Secrets), (3) short-lived STS credentials, (4) OPA/Gatekeeper admission policies.
