@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.3.0
+- **ESO Vault Config**: ClusterSecretStore config template for Vault/OpenBao backend with Kubernetes auth. Default cert-manager secretStore changed to vault. ESO enabled on all example clusterfiles
+
 ## 3.2.1
 - **KubeVirt CPU Request**: Increase VM CPU request from 2 to 4 to reduce resource contention
 

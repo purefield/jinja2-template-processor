@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.3.0',
+    date: '2026-02-16',
+    changes: [
+      'ESO Vault config: ClusterSecretStore template for Vault/OpenBao with Kubernetes auth defaults',
+      'Default cert-manager secretStore changed from aws-secretsmanager to vault',
+      'External Secrets Operator enabled on all example clusterfiles'
+    ]
+  },
+  {
     version: '3.2.1',
     date: '2026-02-16',
     changes: [
