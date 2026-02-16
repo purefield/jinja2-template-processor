@@ -1812,3 +1812,33 @@ Nothing to ship — v3.1.0 already the latest commit, tagged, pushed, deployed, 
 > update the prompt.log with the verification
 
 Updated prompt.log with prompts 109–111.
+
+### Prompt 112
+
+> commit the cert-manager change behind a flag, also expose the self check dns configuration with defaults to 8.8.8.8 and 1.1.1.1
+
+Updated `plugins/operators/cert-manager/config.yaml.tpl`: added CertManager CR with `--dns01-recursive-nameservers-only` and `--dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53` (configurable via `cm.selfCheck.nameservers`). Made `cnameStrategy` conditional on `le.cnameStrategy` being defined. Committed and tagged `cert-manager-selfcheck`.
+
+### Prompt 113
+
+> render the cert-manager config with the acm clusterfile
+
+Rendered `config.yaml.tpl` with `ocp-acm.clusterfile`. Output: 4 resources in List wrapper — CertManager CR (recursive nameservers), ExternalSecret (route53 creds), ClusterIssuer (no cnameStrategy since not in clusterfile), Certificate (ingress).
+
+### Prompt 114
+
+> add cnameStrategy: Follow to the acm clusterfile and render again
+
+Added `cnameStrategy: Follow` under `letsencrypt` in `ocp-acm.clusterfile`. Re-rendered — `cnameStrategy: Follow` now appears in ClusterIssuer solver output.
+
+### Prompt 115
+
+> ship it
+
+Released v3.2.0: updated all 5 version locations, committed, tagged `v3.2.0`, pushed to GitHub and quay.io, restarted app, verified healthz returns 3.2.0.
+
+### Prompt 116
+
+> update the prompt.log (should always be done without extra step!)
+
+Updated prompt.log with prompts 112–116. Note: prompt.log updates should be included in every release commit going forward.
