@@ -1965,3 +1965,9 @@ Reviewed workstation git status. Identified files to keep (Vault/ESO pipeline st
 > back to regular development with logging and all
 
 Resumed regular development flow with prompt logging.
+
+### Prompt 136
+
+> pause for now
+
+Session paused. Current state: v3.3.0 released. ESO Vault pipeline validated end-to-end on ACM hub. Templates updated with correct defaults (API v1, HTTP, vault-openbao). manage-cluster.sh wired with Vault/ESO steps. Workstation cleanup pending (delete test artifacts, commit new steps/tools).
