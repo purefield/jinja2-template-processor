@@ -3,7 +3,8 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
-- **collateral-kit** — Add executive one-pager, 11-slide presentation deck, 5-minute demo script, SVG architecture diagram, and tool comparison matrix to `~/tmp/collateral/` (2026-02-17)
+- **collateral-file-externalization** — Highlight file externalization (pull secrets, SSH keys, certs, credentials are file paths loaded at render time) and correct ESO role (day-2 on-cluster operator, not part of rendering) across all collateral; move collateral into `docs/collateral/` (2026-02-17)
+- **collateral-kit** — Add executive one-pager, 11-slide presentation deck, 5-minute demo script, SVG architecture diagram, and tool comparison matrix (2026-02-17)
 
 ## v3.3.0 (2026-02-16)
 - **eso-vault-config** — Add Vault ClusterSecretStore config template to ESO plugin with Kubernetes auth defaults; change cert-manager secretStore default to vault; enable ESO on all example clusterfiles

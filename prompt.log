@@ -1990,3 +1990,15 @@ Created five collateral documents in `~/tmp/collateral/`:
 5. **comparison.md** — Feature comparison matrix: Clusterfile vs Helm vs Kustomize vs Ansible vs SiteConfig across 16 capabilities. Includes when-to-use guidance and complementary-use diagram
 
 All claims verified against actual codebase: 102 templates, 11 platforms, 6 operators, 134 tests, 19 example clusterfiles, v3.3.0. Committed and tagged as `collateral-kit`.
+
+### Prompt 139
+
+> Highlight that large content such as manifest, pull-secret, certificates, secrets and so on in the clusterfile are externalized into text files. the external secret operator is relevant for the created cluster not the creation process or the clusterfile content at all. Add the content to the docs in the project.
+
+Two corrections applied across all five collateral documents:
+
+1. **File externalization highlighted** — All documents now explain that pull secrets, SSH keys, CA certificates, BMC passwords, cloud credentials, and extra manifests are externalized as file paths in the clusterfile. The processor reads them via `load_file()` at render time. The clusterfile itself contains no inline secrets or large blobs. Added to: one-pager (solution, how-it-works, architecture sections), deck (slide 4 + new slide 8), demo-script (step 1 talking points, step 3, new Q&A), comparison matrix (new row), architecture SVG (center box + bottom-right section).
+
+2. **ESO role corrected** — ESO is now clearly described as a day-2 operator deployed TO the created cluster for that cluster's own secrets management. It is not part of the clusterfile rendering/creation process. The old "Bitwarden → Vault → ESO → K8s Secrets" pipeline framing (which implied ESO was part of rendering) is replaced with a clear build-time vs. runtime split. The architecture SVG bottom-right panel now shows two sections: build-time file references and day-2 on-cluster ESO.
+
+3. **Moved into project** — All five files moved from `~/tmp/collateral/` to `docs/collateral/` in the repository. Committed and tagged as `collateral-file-externalization`.

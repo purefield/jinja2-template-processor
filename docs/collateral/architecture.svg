@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="centerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a73e8"/>
+      <stop offset="100%" style="stop-color:#0d47a1"/>
+    </linearGradient>
+    <linearGradient id="editorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4caf50"/>
+      <stop offset="100%" style="stop-color:#2e7d32"/>
+    </linearGradient>
+    <linearGradient id="cliGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff9800"/>
+      <stop offset="100%" style="stop-color:#e65100"/>
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e3f2fd"/>
+      <stop offset="100%" style="stop-color:#bbdefb"/>
+    </linearGradient>
+    <linearGradient id="pluginGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff3e0"/>
+      <stop offset="100%" style="stop-color:#ffe0b2"/>
+    </linearGradient>
+    <linearGradient id="secretsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7b1fa2"/>
+      <stop offset="100%" style="stop-color:#4a148c"/>
+    </linearGradient>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1565c0"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#757575"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7b1fa2"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="700" fill="#fafafa" rx="8"/>
+
+  <!-- Title -->
+  <text x="500" y="35" text-anchor="middle" font-size="22" font-weight="700" fill="#212121">Clusterfile Architecture</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#757575">One definition, every deployment method</text>
+
+  <!-- ═══════════════ CENTER: Clusterfile ═══════════════ -->
+  <rect x="370" y="255" width="260" height="110" rx="12" fill="url(#centerGrad)" filter="url(#shadow)"/>
+  <text x="500" y="290" text-anchor="middle" font-size="18" font-weight="700" fill="white">clusterfile.yaml</text>
+  <text x="500" y="312" text-anchor="middle" font-size="11" fill="#bbdefb">cluster | network | hosts | plugins</text>
+  <text x="500" y="328" text-anchor="middle" font-size="11" fill="#bbdefb">file refs for secrets, certs, manifests</text>
+  <text x="500" y="350" text-anchor="middle" font-size="10" fill="#90caf9">Schema-validated (99KB JSON Schema)</text>
+
+  <!-- ═══════════════ TOP-LEFT: Web Editor ═══════════════ -->
+  <rect x="60" y="80" width="200" height="80" rx="10" fill="url(#editorGrad)" filter="url(#shadow)"/>
+  <text x="160" y="112" text-anchor="middle" font-size="15" font-weight="600" fill="white">Web Editor</text>
+  <text x="160" y="130" text-anchor="middle" font-size="10" fill="#c8e6c9">v3.3.0 — Schema-driven UI</text>
+  <text x="160" y="145" text-anchor="middle" font-size="10" fill="#c8e6c9">Offline-first, no telemetry</text>
+  <!-- Arrow: Editor → Clusterfile -->
+  <line x1="260" y1="135" x2="370" y2="280" stroke="#2e7d32" stroke-width="2" marker-end="url(#arrowGray)" stroke-dasharray="6,3"/>
+  <text x="295" y="195" font-size="9" fill="#616161" transform="rotate(-28, 295, 195)">edit &amp; validate</text>
+
+  <!-- ═══════════════ TOP-RIGHT: CLI ═══════════════ -->
+  <rect x="740" y="80" width="200" height="80" rx="10" fill="url(#cliGrad)" filter="url(#shadow)"/>
+  <text x="840" y="112" text-anchor="middle" font-size="15" font-weight="600" fill="white">CLI (process.py)</text>
+  <text x="840" y="130" text-anchor="middle" font-size="10" fill="#ffe0b2">402 lines of Python</text>
+  <text x="840" y="145" text-anchor="middle" font-size="10" fill="#ffe0b2">Jinja2 + PyYAML</text>
+  <!-- Arrow: CLI → Clusterfile -->
+  <line x1="740" y1="135" x2="630" y2="280" stroke="#e65100" stroke-width="2" marker-end="url(#arrowGray)" stroke-dasharray="6,3"/>
+  <text x="705" y="195" font-size="9" fill="#616161" transform="rotate(28, 705, 195)">render templates</text>
+
+  <!-- ═══════════════ LEFT: Template Library ═══════════════ -->
+  <rect x="30" y="240" width="280" height="140" rx="10" fill="url(#outputGrad)" stroke="#90caf9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="170" y="265" text-anchor="middle" font-size="14" font-weight="600" fill="#1565c0">Template Library (102)</text>
+  <text x="50" y="288" font-size="10" fill="#424242">33 Core Templates</text>
+  <text x="50" y="304" font-size="9" fill="#616161">  install-config, agent-config, ACM ZTP,</text>
+  <text x="50" y="318" font-size="9" fill="#616161">  CAPI, SiteConfig, pre-checks, overview</text>
+  <text x="50" y="338" font-size="10" fill="#424242">17 Reusable Includes</text>
+  <text x="50" y="354" font-size="9" fill="#616161">  NMState, BMC, disconnected, disk encryption</text>
+  <text x="50" y="370" font-size="9" fill="#616161">  registries, tang, TPM, os-images</text>
+  <!-- Arrow: Templates → Clusterfile -->
+  <line x1="310" y1="310" x2="370" y2="310" stroke="#1565c0" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- ═══════════════ RIGHT: Outputs ═══════════════ -->
+  <rect x="690" y="220" width="280" height="185" rx="10" fill="url(#outputGrad)" stroke="#90caf9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="830" y="245" text-anchor="middle" font-size="14" font-weight="600" fill="#1565c0">Rendered Outputs</text>
+
+  <text x="710" y="268" font-size="10" fill="#424242" font-weight="600">Installation</text>
+  <text x="710" y="283" font-size="9" fill="#616161">install-config.yaml, agent-config.yaml</text>
+
+  <text x="710" y="303" font-size="10" fill="#424242" font-weight="600">ACM / ZTP</text>
+  <text x="710" y="318" font-size="9" fill="#616161">InfraEnv, ClusterDeployment, BareMetalHost</text>
+
+  <text x="710" y="338" font-size="10" fill="#424242" font-weight="600">SiteConfig</text>
+  <text x="710" y="353" font-size="9" fill="#616161">ClusterInstance CR (bidirectional)</text>
+
+  <text x="710" y="373" font-size="10" fill="#424242" font-weight="600">Day-2</text>
+  <text x="710" y="388" font-size="9" fill="#616161">operators.yaml, creds.yaml, pre-check.sh</text>
+
+  <!-- Arrow: Clusterfile → Outputs -->
+  <line x1="630" y1="310" x2="690" y2="310" stroke="#1565c0" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- ═══════════════ BOTTOM-LEFT: Platform Plugins ═══════════════ -->
+  <rect x="60" y="440" width="250" height="180" rx="10" fill="url(#pluginGrad)" stroke="#ffcc80" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="465" text-anchor="middle" font-size="14" font-weight="600" fill="#e65100">Platform Plugins (11)</text>
+
+  <text x="80" y="490" font-size="10" fill="#424242">Public Cloud</text>
+  <rect x="80" y="497" width="38" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="99" y="510" text-anchor="middle" font-size="8" fill="#e65100">AWS</text>
+  <rect x="124" y="497" width="43" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="145" y="510" text-anchor="middle" font-size="8" fill="#e65100">Azure</text>
+  <rect x="173" y="497" width="38" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="192" y="510" text-anchor="middle" font-size="8" fill="#e65100">GCP</text>
+  <rect x="217" y="497" width="38" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="236" y="510" text-anchor="middle" font-size="8" fill="#e65100">IBM</text>
+
+  <text x="80" y="537" font-size="10" fill="#424242">On-Premises</text>
+  <rect x="80" y="544" width="55" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="107" y="557" text-anchor="middle" font-size="8" fill="#e65100">vSphere</text>
+  <rect x="141" y="544" width="55" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="168" y="557" text-anchor="middle" font-size="8" fill="#e65100">Nutanix</text>
+  <rect x="202" y="544" width="65" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="234" y="557" text-anchor="middle" font-size="8" fill="#e65100">OpenStack</text>
+
+  <text x="80" y="584" font-size="10" fill="#424242">Specialized</text>
+  <rect x="80" y="591" width="70" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="115" y="604" text-anchor="middle" font-size="8" fill="#e65100">Baremetal</text>
+  <rect x="156" y="591" width="60" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="186" y="604" text-anchor="middle" font-size="8" fill="#e65100">KubeVirt</text>
+  <rect x="222" y="591" width="60" height="18" rx="4" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="252" y="604" text-anchor="middle" font-size="8" fill="#e65100">SNO/Ext</text>
+
+  <!-- Arrow: Platform Plugins → Clusterfile -->
+  <line x1="260" y1="440" x2="430" y2="365" stroke="#e65100" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <text x="320" y="410" font-size="9" fill="#616161">platform config</text>
+
+  <!-- ═══════════════ BOTTOM-CENTER: Operator Plugins ═══════════════ -->
+  <rect x="370" y="440" width="260" height="180" rx="10" fill="url(#pluginGrad)" stroke="#ffcc80" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="500" y="465" text-anchor="middle" font-size="14" font-weight="600" fill="#e65100">Operator Plugins (6)</text>
+
+  <rect x="390" y="480" width="100" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="440" y="495" text-anchor="middle" font-size="9" fill="#e65100">ArgoCD</text>
+  <rect x="500" y="480" width="110" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="555" y="495" text-anchor="middle" font-size="9" fill="#e65100">LVM Storage</text>
+
+  <rect x="390" y="510" width="100" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="440" y="525" text-anchor="middle" font-size="9" fill="#e65100">ODF</text>
+  <rect x="500" y="510" width="110" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="555" y="525" text-anchor="middle" font-size="9" fill="#e65100">ACM</text>
+
+  <rect x="390" y="540" width="100" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="440" y="555" text-anchor="middle" font-size="9" fill="#e65100">cert-manager</text>
+  <rect x="500" y="540" width="110" height="22" rx="5" fill="#fff8e1" stroke="#ffb74d" stroke-width="1"/>
+  <text x="555" y="555" text-anchor="middle" font-size="9" fill="#e65100">external-secrets</text>
+
+  <text x="500" y="590" text-anchor="middle" font-size="9" fill="#616161">Each: manifests.yaml + policy.yaml + schema.json</text>
+  <text x="500" y="605" text-anchor="middle" font-size="9" fill="#616161">Smart defaults, auto-discovered schemas</text>
+
+  <!-- Arrow: Operator Plugins → Clusterfile -->
+  <line x1="500" y1="440" x2="500" y2="365" stroke="#e65100" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- ═══════════════ BOTTOM-RIGHT: File Externalization + Day-2 ═══════════════ -->
+  <rect x="690" y="440" width="280" height="180" rx="10" fill="#f3e5f5" stroke="#ce93d8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="830" y="462" text-anchor="middle" font-size="13" font-weight="600" fill="#6a1b9a">Secrets &amp; Large Content</text>
+
+  <!-- BUILD-TIME section -->
+  <text x="710" y="483" font-size="10" fill="#4a148c" font-weight="600">Build-time (file references)</text>
+  <text x="710" y="498" font-size="8" fill="#616161">pullSecret: ~/pull-secret.json</text>
+  <text x="710" y="510" font-size="8" fill="#616161">sshKeys: ~/.ssh/id_ed25519.pub</text>
+  <text x="710" y="522" font-size="8" fill="#616161">trustBundle: ~/ca-bundle.pem</text>
+  <text x="710" y="534" font-size="8" fill="#616161">bmc.password: ~/bmc.pass</text>
+  <text x="710" y="546" font-size="8" fill="#616161">credentials: ~/cloud-creds.json</text>
+  <rect x="900" y="490" width="55" height="50" rx="4" fill="url(#secretsGrad)"/>
+  <text x="927" y="510" text-anchor="middle" font-size="7" fill="white" font-weight="600">load_file()</text>
+  <text x="927" y="522" text-anchor="middle" font-size="7" fill="#e1bee7">at render</text>
+  <text x="927" y="534" text-anchor="middle" font-size="7" fill="#e1bee7">time</text>
+  <!-- Arrow from paths to load_file -->
+  <line x1="890" y1="515" x2="900" y2="515" stroke="#7b1fa2" stroke-width="1"/>
+
+  <!-- Divider -->
+  <line x1="710" y1="555" x2="950" y2="555" stroke="#ce93d8" stroke-width="0.5" stroke-dasharray="4,3"/>
+
+  <!-- DAY-2 section -->
+  <text x="710" y="572" font-size="10" fill="#4a148c" font-weight="600">Day-2 (on created cluster)</text>
+  <rect x="710" y="579" width="110" height="22" rx="4" fill="url(#secretsGrad)"/>
+  <text x="765" y="594" text-anchor="middle" font-size="8" fill="white" font-weight="600">Vault / OpenBao</text>
+  <line x1="820" y1="590" x2="835" y2="590" stroke="#7b1fa2" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <rect x="837" y="579" width="60" height="22" rx="4" fill="url(#secretsGrad)"/>
+  <text x="867" y="594" text-anchor="middle" font-size="8" fill="white" font-weight="600">ESO</text>
+  <line x1="897" y1="590" x2="908" y2="590" stroke="#7b1fa2" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
+  <rect x="910" y="579" width="50" height="22" rx="4" fill="#e1bee7" stroke="#ce93d8" stroke-width="1"/>
+  <text x="935" y="594" text-anchor="middle" font-size="7" fill="#4a148c" font-weight="600">K8s Sec</text>
+  <text x="830" y="612" text-anchor="middle" font-size="7" fill="#9e9e9e">Templates generate ESO manifests; ESO runs on the cluster</text>
+
+  <!-- Arrow: Secrets → Clusterfile -->
+  <line x1="730" y1="440" x2="570" y2="365" stroke="#7b1fa2" stroke-width="2" marker-end="url(#arrowGray)" stroke-dasharray="6,3"/>
+  <text x="670" y="410" font-size="9" fill="#616161">file refs + operator config</text>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <text x="500" y="670" text-anchor="middle" font-size="11" fill="#9e9e9e">Clusterfile v3.3.0 — 102 templates | 11 platforms | 6 operators | 134 tests</text>
+  <text x="500" y="688" text-anchor="middle" font-size="10" fill="#bdbdbd">quay.io/dds/clusterfile-editor:latest</text>
+</svg>
