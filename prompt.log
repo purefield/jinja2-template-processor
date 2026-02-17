@@ -1953,3 +1953,15 @@ Created step scripts: `common-create-external-secrets.sh` (Helm install + CRD wa
 > How do I protect this secret on clusters where others are clusteradmin
 
 Explained: cluster-admin can see all Secrets — no RBAC override. Options: (1) scoped roles instead of cluster-admin, (2) Vault Agent sidecar injection (secrets never become k8s Secrets), (3) short-lived STS credentials, (4) OPA/Gatekeeper admission policies.
+
+### Prompt 134
+
+> clean up the test-route53 externalsecret and commit the prompt log, review git changes and let me know what files we don't need anymore
+
+Reviewed workstation git status. Identified files to keep (Vault/ESO pipeline steps, tools, manage-cluster.sh) and files to delete (test-externalsecret.yaml, common-create-secretstore-config.sh superseded by template, troubleshooting logs/scripts, debug-vm-network.sh). Reminded to `oc delete externalsecret test-route53 -n cert-manager`.
+
+### Prompt 135
+
+> back to regular development with logging and all
+
+Resumed regular development flow with prompt logging.
