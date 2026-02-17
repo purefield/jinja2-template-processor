@@ -1977,3 +1977,16 @@ Session paused. Current state: v3.3.0 released. ESO Vault pipeline validated end
 > I cleaned up workstation files
 
 Noted. Workstation cleanup complete.
+
+### Prompt 138
+
+> Implement the following plan: Clusterfile Collateral Kit — create executive one-pager, slide deck, demo script, architecture diagram (SVG), and comparison matrix.
+
+Created five collateral documents in `~/tmp/collateral/`:
+1. **one-pager.md** — Executive summary: problem, insight, solution, by-the-numbers, differentiators, architecture, production validation
+2. **deck.md** — 11-slide presentation deck: title, problem (config sprawl), insight, solution, architecture, editor demo, template coverage matrix, secrets pipeline, production validation, roadmap, call to action
+3. **demo-script.md** — 5-minute live demo walkthrough: load sample, change platform, enable operators, render install-config/operators/SiteConfig, CLI pipe to oc apply. Includes backup demos and Q&A
+4. **architecture.svg** — SVG architecture diagram: clusterfile (center) with connections to web editor, CLI, template library, rendered outputs, platform plugins (11), operator plugins (6), secrets pipeline (Bitwarden → Vault → ESO → K8s Secrets)
+5. **comparison.md** — Feature comparison matrix: Clusterfile vs Helm vs Kustomize vs Ansible vs SiteConfig across 16 capabilities. Includes when-to-use guidance and complementary-use diagram
+
+All claims verified against actual codebase: 102 templates, 11 platforms, 6 operators, 134 tests, 19 example clusterfiles, v3.3.0. Committed and tagged as `collateral-kit`.
