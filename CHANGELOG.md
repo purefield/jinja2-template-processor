@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **video-font-sizes** — Scale all video slide fonts to minimum 28px, simplify crowded layouts (fewer boxes/bars/steps), add cursor + click ripple animation on demo slides 06-11 (2026-02-17)
+- **video-cli-demo** — Add CLI demo slide (terminal-style process.py usage), fix KubeVirt TTS pronunciation (2026-02-17)
+
 ## v3.6.0 (2026-02-17)
 - **collateral-video** — Add narrated video presentation: 16-slide MP4 with real editor screenshots (Playwright), TTS narration (edge-tts), Pillow slides, moviepy assembly; 3.6 minutes, 1920x1080 (2026-02-17)
 
