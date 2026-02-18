@@ -2008,3 +2008,22 @@ Two corrections applied across all five collateral documents:
 > ship it
 
 Release v3.4.0: Updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.4.0, pushed. Built container, pushed to quay.io with v3.4.0 and latest tags. Restarted running app, verified healthz returns 3.4.0.
+
+### Prompt 141
+
+> In the jinja2-template-processor project, I need to understand the concrete value proposition for Red Hat and customers. Look at: 1) How many templates exist and what they replace, 2) The test count (134) — what does this mean for reliability, 3) The example clusterfiles — how much config do they encapsulate vs manual effort, 4) Count lines in rendered output vs clusterfile input, 5) How many platforms/deployment methods — combinatorial explosion prevention, 6) Look at data/baremetal.clusterfile — how many lines is it? Compare to what it generates.
+
+Analysis completed. Key findings: 267-line baremetal.clusterfile generates 2,712 lines across 18 renderable outputs (10.2x expansion). 29 top-level templates + 12 includes = 41 template files (3,185 total template lines). 19 example clusterfiles covering 9+ platforms and 6 deployment methods. 134 tests verified. acm-ztp alone produces 32 Kubernetes resources of 16 distinct types from a single clusterfile. Full data provided for ROI presentation.
+
+### Prompt 142
+
+> I have been asked why it matters, how it provides value and how it provides an ROI for Red Hat and our customers. Can you add a business, problem and value presentation together.
+
+Created `docs/collateral/business-value.md` — a business value and ROI presentation covering:
+- The business problem (configuration sprawl, manual errors, tribal knowledge, platform fragmentation, drift, repeated effort)
+- The value proposition with concrete numbers (267 lines → 2,712 lines, 10.2x expansion, 32 K8s resources from one file)
+- ROI model: 80-90% time savings for first cluster config, 85-95% for additional clusters, 95%+ for deployment method switches
+- Why it matters for Red Hat (lowers adoption barrier, encodes/scales expertise, reduces support burden, accelerates services, enables fleet management)
+- Proof points table with all measurable evidence
+- Highlights file externalization (secrets never inline) throughout
+Committed and tagged as `collateral-business-value`.

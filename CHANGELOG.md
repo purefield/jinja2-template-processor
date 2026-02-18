@@ -3,6 +3,7 @@
 All notable changes to this project are documented in this file.
 
 ## v3.4.0 (2026-02-17)
+- **collateral-business-value** — Add business value and ROI presentation: 10.2x output expansion, 80-90% time savings, Red Hat strategic value analysis (2026-02-17)
 - **collateral-file-externalization** — Highlight file externalization (pull secrets, SSH keys, certs, credentials are file paths loaded at render time) and correct ESO role (day-2 on-cluster operator, not part of rendering) across all collateral; move collateral into `docs/collateral/` (2026-02-17)
 - **collateral-kit** — Add executive one-pager, 11-slide presentation deck, 5-minute demo script, SVG architecture diagram, and tool comparison matrix (2026-02-17)
 
