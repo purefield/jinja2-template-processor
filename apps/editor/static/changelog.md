@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.8.0
+- **Operator Policy Ordering**: Fix ACM Policy race condition — add `extraDependencies` with CSV readiness gate to ODF, LVM, and ArgoCD policies so CRs are only created after the operator is installed
+
 ## 3.7.1
 - **Video Regenerated**: Full pipeline rebuilt — 17 slides, 3.8 min MP4 with all font/layout/CLI/cursor improvements baked in
 

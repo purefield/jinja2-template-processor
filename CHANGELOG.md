@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.8.0 (2026-02-18)
 - **operator-policy-ordering** — Fix ACM Policy race condition: add `extraDependencies` with CSV readiness gate to ODF, LVM, and ArgoCD policy templates so operator CRs are only created after the operator is fully installed (2026-02-18)
 
 ## v3.3.0 (2026-02-16)

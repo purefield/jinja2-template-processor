@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.8.0',
+    date: '2026-02-18',
+    changes: [
+      'Fix ACM Policy race: add extraDependencies CSV readiness gate to ODF, LVM, ArgoCD policies'
+    ]
+  },
+  {
     version: '3.7.1',
     date: '2026-02-18',
     changes: [
