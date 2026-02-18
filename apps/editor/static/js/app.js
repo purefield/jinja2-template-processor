@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.5.0',
+    date: '2026-02-17',
+    changes: [
+      'Infographic: field counts, expansion charts, time/cost analysis (92% savings), cross-platform comparison',
+      'Business value: ROI presentation — 187 fields in, 1,049 out (5.6x), 56 K8s resources from one file',
+      'Collateral kit: one-pager, slide deck, demo script, architecture SVG, comparison matrix',
+      'File externalization and ESO role documented across all collateral'
+    ]
+  },
+  {
     version: '3.4.0',
     date: '2026-02-17',
     changes: [

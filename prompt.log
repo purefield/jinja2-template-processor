@@ -2069,3 +2069,9 @@ Fixed the Time &amp; Cost section in `docs/collateral/infographic.svg`:
 - Shifted expansion ratio section and footer down to accommodate
 - Increased viewBox from 1800 to 1870 for total canvas height
 Committed and tagged as `collateral-infographic-fix`.
+
+### Prompt 145
+
+> ship it
+
+Release v3.5.0: Updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.5.0, pushed. Built container, pushed to quay.io with v3.5.0 and latest tags. Restarted running app, verified healthz returns 3.5.0.

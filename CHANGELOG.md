@@ -2,7 +2,8 @@
 
 All notable changes to this project are documented in this file.
 
-## v3.4.0 (2026-02-17)
+## v3.5.0 (2026-02-17)
+- **collateral-infographic-fix** — Fix Time & Cost table layout: proper grid columns, shorter labels, alternating row backgrounds, no text cutoff (2026-02-17)
 - **collateral-infographic** — Add SVG infographic with field counts, line expansion charts, cross-platform comparison, time/cost analysis (92% savings), and expansion ratio visuals (2026-02-17)
 - **collateral-business-value** — Add business value and ROI presentation: 10.2x output expansion, 80-90% time savings, Red Hat strategic value analysis (2026-02-17)
 - **collateral-file-externalization** — Highlight file externalization (pull secrets, SSH keys, certs, credentials are file paths loaded at render time) and correct ESO role (day-2 on-cluster operator, not part of rendering) across all collateral; move collateral into `docs/collateral/` (2026-02-17)

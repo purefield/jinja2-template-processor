@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 3.5.0
+- **Infographic**: SVG infographic with field counts, expansion charts, cross-platform comparison, time/cost analysis (92% savings at $150/hr), and expansion ratio visuals
+- **Business Value**: ROI presentation with concrete numbers: 187 input fields produce 1,049 output fields (5.6x), 267 lines produce 2,579 lines (9.7x), 56 K8s resources from one clusterfile
+- **Collateral Kit**: Executive one-pager, 11-slide deck, demo script, architecture SVG, comparison matrix
+- **File Externalization**: Pull secrets, SSH keys, certs, credentials are file paths loaded at render time. ESO is a day-2 on-cluster operator
+
 ## 3.4.0
 - **Collateral Kit**: Executive one-pager, 11-slide deck, demo script, architecture SVG, and comparison matrix in `docs/collateral/`
 - **File Externalization Docs**: Collateral highlights that pull secrets, SSH keys, certificates, and credentials are externalized as file paths loaded at render time
