@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.6.0
+- **Video Presentation**: Narrated MP4 video (3.6 min, 1920x1080) with real editor screenshots (Playwright), TTS narration (edge-tts), data slides, and full value story walkthrough
+
 ## 3.5.0
 - **Infographic**: SVG infographic with field counts, expansion charts, cross-platform comparison, time/cost analysis (92% savings at $150/hr), and expansion ratio visuals
 - **Business Value**: ROI presentation with concrete numbers: 187 input fields produce 1,049 output fields (5.6x), 267 lines produce 2,579 lines (9.7x), 56 K8s resources from one clusterfile

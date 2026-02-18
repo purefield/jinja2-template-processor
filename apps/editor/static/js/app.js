@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.6.0',
+    date: '2026-02-17',
+    changes: [
+      'Video presentation: narrated 3.6-min MP4 with real editor screenshots, TTS narration, and data slides'
+    ]
+  },
+  {
     version: '3.5.0',
     date: '2026-02-17',
     changes: [

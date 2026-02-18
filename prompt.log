@@ -2093,3 +2093,9 @@ Created complete video generation pipeline in `docs/collateral/video/`:
 
 **Commits**: `video-presentation`
 **Tag**: `collateral-video`
+
+### Prompt 147
+
+> ship it
+
+Release v3.6.0: Updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.6.0, pushed. Built container, pushed to quay.io with v3.6.0 and latest tags. Restarted running app, verified healthz returns 3.6.0.

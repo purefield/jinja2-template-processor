@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.6.0 (2026-02-17)
 - **collateral-video** — Add narrated video presentation: 16-slide MP4 with real editor screenshots (Playwright), TTS narration (edge-tts), Pillow slides, moviepy assembly; 3.6 minutes, 1920x1080 (2026-02-17)
 
 ## v3.5.0 (2026-02-17)
