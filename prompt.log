@@ -2128,4 +2128,16 @@ Ran full video generation pipeline: 17 slides generated, 17 TTS audio clips (edg
 
 > commit / ship it
 
-Committed regenerated video + audio files. Proceeding with release v3.7.1.
+Committed regenerated video + audio files. Released v3.7.1: updated all five version locations, committed, tagged v3.7.1, pushed. Built container, pushed to quay.io. Restarted running app, verified healthz returns 3.7.1.
+
+### Prompt 153
+
+> the font is still tiny. focus the narrative on portability, version control, externalized secrets, extensibility with plugins, installer and day two operations agnostic
+
+Major rewrite of generate-video.py: raised minimum font size from 28px to 40px (new scale: 40 footer, 44-48 body, 48-52 subtitles, 56 card titles, 72 headings, 88-96 big numbers, 96-120 titles). Completely restructured slides: renamed slide_problem→slide_portability, slide_insight→slide_version_control, slide_solution→slide_extensibility, slide_file_externalization→slide_secrets. Rewrote all narration around 5 themes: portability, version control, externalized secrets, extensibility with plugins, installer/day-2 agnostic. Layout changes: portability uses flowing platform text, version-control shows 3 property cards, extensibility shows plugin cards + day-1/day-2 messaging, secrets shows 4 file-path examples, numbers retitled "Portability Dividend" with 3 ratio cards, time-cost uses 3 big stat cards instead of table, platform-coverage uses 4 stat cards. All 17 slides generated successfully.
+
+### Prompt 154
+
+> Implement the following plan: Fix Font Rendering — Fonts Render Tiny on All Slides
+
+Fixed root cause of tiny font rendering: the `font()` function silently fell back to `ImageFont.load_default()` without passing the size parameter because no TrueType fonts existed on this system. Added Red Hat variable fonts (`RedHatText[wght].ttf`) to the front of both regular and bold candidate lists in `_find_font()` and `_find_bold_font()`. Fixed the fallback to use `ImageFont.load_default(size=size)` so size is always respected. Added a startup warning when no TrueType fonts are found. Regenerated all 17 slides — fonts now render at proper sizes (40-120px).

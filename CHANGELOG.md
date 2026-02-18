@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **fix-font-rendering** — Fix silent font fallback: add Red Hat variable fonts to discovery, pass size to `load_default()` fallback, add startup warning for missing fonts (2026-02-18)
+
 ## v3.7.1 (2026-02-18)
 - **video-regenerate** — Regenerate full video pipeline: 17 slides, TTS audio, 3.8 min MP4 with bigger fonts, CLI demo, click indicators, fixed KubeVirt pronunciation (2026-02-18)
 
