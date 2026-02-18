@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.4.0
+- **Collateral Kit**: Executive one-pager, 11-slide deck, demo script, architecture SVG, and comparison matrix in `docs/collateral/`
+- **File Externalization Docs**: Collateral highlights that pull secrets, SSH keys, certificates, and credentials are externalized as file paths loaded at render time
+- **ESO Clarification**: ESO documented as day-2 on-cluster operator, not part of the rendering process
+
 ## 3.3.0
 - **ESO Vault Config**: ClusterSecretStore config template for Vault/OpenBao backend with Kubernetes auth. Default cert-manager secretStore changed to vault. ESO enabled on all example clusterfiles
 

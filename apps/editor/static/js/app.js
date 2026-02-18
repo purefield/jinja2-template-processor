@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.4.0',
+    date: '2026-02-17',
+    changes: [
+      'Collateral kit: one-pager, slide deck, demo script, architecture SVG, comparison matrix in docs/collateral/',
+      'File externalization highlighted: pull secrets, SSH keys, certs, credentials are file paths loaded at render time',
+      'ESO role clarified: day-2 on-cluster operator, not part of the rendering process'
+    ]
+  },
+  {
     version: '3.3.0',
     date: '2026-02-16',
     changes: [
