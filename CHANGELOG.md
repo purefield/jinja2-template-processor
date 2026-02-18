@@ -2,26 +2,6 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
-- **fix-font-rendering** — Fix silent font fallback: add Red Hat variable fonts to discovery, pass size to `load_default()` fallback, add startup warning for missing fonts (2026-02-18)
-
-## v3.7.1 (2026-02-18)
-- **video-regenerate** — Regenerate full video pipeline: 17 slides, TTS audio, 3.8 min MP4 with bigger fonts, CLI demo, click indicators, fixed KubeVirt pronunciation (2026-02-18)
-
-## v3.7.0 (2026-02-18)
-- **video-font-sizes** — Scale all video slide fonts to minimum 28px, simplify crowded layouts (fewer boxes/bars/steps), add cursor + click ripple animation on demo slides 06-11 (2026-02-18)
-- **video-cli-demo** — Add CLI demo slide (terminal-style process.py usage), fix KubeVirt TTS pronunciation (2026-02-18)
-
-## v3.6.0 (2026-02-17)
-- **collateral-video** — Add narrated video presentation: 16-slide MP4 with real editor screenshots (Playwright), TTS narration (edge-tts), Pillow slides, moviepy assembly; 3.6 minutes, 1920x1080 (2026-02-17)
-
-## v3.5.0 (2026-02-17)
-- **collateral-infographic-fix** — Fix Time & Cost table layout: proper grid columns, shorter labels, alternating row backgrounds, no text cutoff (2026-02-17)
-- **collateral-infographic** — Add SVG infographic with field counts, line expansion charts, cross-platform comparison, time/cost analysis (92% savings), and expansion ratio visuals (2026-02-17)
-- **collateral-business-value** — Add business value and ROI presentation: 10.2x output expansion, 80-90% time savings, Red Hat strategic value analysis (2026-02-17)
-- **collateral-file-externalization** — Highlight file externalization (pull secrets, SSH keys, certs, credentials are file paths loaded at render time) and correct ESO role (day-2 on-cluster operator, not part of rendering) across all collateral; move collateral into `docs/collateral/` (2026-02-17)
-- **collateral-kit** — Add executive one-pager, 11-slide presentation deck, 5-minute demo script, SVG architecture diagram, and tool comparison matrix (2026-02-17)
-
 ## v3.3.0 (2026-02-16)
 - **eso-vault-config** — Add Vault ClusterSecretStore config template to ESO plugin with Kubernetes auth defaults; change cert-manager secretStore default to vault; enable ESO on all example clusterfiles
 

@@ -2141,3 +2141,9 @@ Major rewrite of generate-video.py: raised minimum font size from 28px to 40px (
 > Implement the following plan: Fix Font Rendering — Fonts Render Tiny on All Slides
 
 Fixed root cause of tiny font rendering: the `font()` function silently fell back to `ImageFont.load_default()` without passing the size parameter because no TrueType fonts existed on this system. Added Red Hat variable fonts (`RedHatText[wght].ttf`) to the front of both regular and bold candidate lists in `_find_font()` and `_find_bold_font()`. Fixed the fallback to use `ImageFont.load_default(size=size)` so size is always respected. Added a startup warning when no TrueType fonts are found. Regenerated all 17 slides — fonts now render at proper sizes (40-120px).
+
+### Prompt 155
+
+> Fix card text centering in generate-video.py, install DejaVu fonts, delete stale files, regenerate slides
+
+Installed DejaVu fonts (v2.37) to ~/.local/share/fonts/. Updated generate-video.py: replaced 10 draw_centred() calls with draw_centred_in() in 5 slide functions (slide_version_control, slide_extensibility, slide_numbers, slide_time_cost, slide_platform_coverage) so card text centers within card bounds instead of centering on the full slide width. Deleted stale files: 02-problem.png, 03-insight.png, 04-solution.png, 05-file-ext.png, clusterfile-presentation-v1.mp4, clusterfile-presentation-v2.mp4. Regenerated all 17 slides successfully.

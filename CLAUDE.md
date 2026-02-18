@@ -49,6 +49,7 @@
   3. A short summary of what was done (changes, commits, tags, or explanation given)
 
   Do this for **every** prompt — not just feature work. Includes: questions, "commit", "ship it", "stop", corrections, config discussions. This is the audit trail of the entire session.
+- **Collateral is not a version change.** Changes under `docs/collateral/` (videos, slides, presentations, infographics, install scripts) do NOT trigger version bumps, changelog entries, or release processes. Collateral is documentation/marketing material, not application functionality. Commit and tag normally, but skip version sync and changelog.
 - **Maintain a changelog.** When committing a feature or notable fix, append an entry to `CHANGELOG.md` under an `## Unreleased` section. Each entry should include the tag name, a one-line summary, and the date. Move entries under a version heading when a release tag is created.
 - **Keep versions in sync.** On release, update **all five** version locations together:
   1. `apps/editor/APP_VERSION` — the single source of truth for the app version

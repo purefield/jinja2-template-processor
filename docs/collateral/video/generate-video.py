@@ -69,10 +69,11 @@ _font_cache = {}
 def _find_font():
     """Find a usable sans-serif font on the system."""
     candidates = [
-        "/usr/share/fonts/redhat-vf/RedHatText[wght].ttf",
+        os.path.expanduser("~/.local/share/fonts/DejaVuSans.ttf"),
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
         "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/redhat-vf/RedHatText[wght].ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         "/usr/share/fonts/google-noto/NotoSans-Regular.ttf",
     ]
@@ -84,10 +85,11 @@ def _find_font():
 def _find_bold_font():
     """Find a usable bold sans-serif font on the system."""
     candidates = [
-        "/usr/share/fonts/redhat-vf/RedHatText[wght].ttf",
+        os.path.expanduser("~/.local/share/fonts/DejaVuSans-Bold.ttf"),
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/redhat-vf/RedHatText[wght].ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
         "/usr/share/fonts/google-noto/NotoSans-Bold.ttf",
     ]
@@ -122,6 +124,12 @@ def draw_centred(draw, y, text, fnt, fill=BLACK):
     bbox = draw.textbbox((0, 0), text, font=fnt)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) // 2, y), text, font=fnt, fill=fill)
+
+def draw_centred_in(draw, cx, y, cw, text, fnt, fill=BLACK):
+    """Centre text within a horizontal region [cx, cx+cw]."""
+    bbox = draw.textbbox((0, 0), text, font=fnt)
+    tw = bbox[2] - bbox[0]
+    draw.text((cx + (cw - tw) // 2, y), text, font=fnt, fill=fill)
 
 def draw_left(draw, x, y, text, fnt, fill=BLACK):
     draw.text((x, y), text, font=fnt, fill=fill)
@@ -199,9 +207,9 @@ def slide_version_control():
         x = sx + i * (card_w + gap)
         y = 260
         draw_card(draw, x, y, card_w, card_h, WHITE, colour)
-        draw_centred(draw, y + 30, title, font(44, bold=True), colour)
+        draw_centred_in(draw, x, y + 30, card_w, title, font(44, bold=True), colour)
         for k, line in enumerate(detail.split("\n")):
-            draw_centred(draw, y + 120 + k * 55, line, font(44), BLACK)
+            draw_centred_in(draw, x, y + 120 + k * 55, card_w, line, font(44), BLACK)
 
     # Bottom message
     draw_centred(draw, 640, "267 input lines \u2192 2,579 output lines", font(56, bold=True), BG_DARK)
@@ -237,7 +245,7 @@ def slide_extensibility():
         y = 480
         draw.line([(W // 2, cy + ch), (x + card_w // 2, y)], fill=colour, width=2)
         draw_card(draw, x, y, card_w, 90, WHITE, colour)
-        draw_centred(draw, y + 18, name, font(44, bold=True), colour)
+        draw_centred_in(draw, x, y + 18, card_w, name, font(44, bold=True), colour)
 
     # Installer agnostic message
     draw_centred(draw, 650, "Day-1: installer agnostic", font(56, bold=True), BG_DARK)
@@ -299,8 +307,8 @@ def slide_numbers():
         x = sx + i * (card_w + gap)
         y = 240
         draw_card(draw, x, y, card_w, card_h, bg, colour)
-        draw_centred(draw, y + 30, big, font(96, bold=True), colour)
-        draw_centred(draw, y + 170, label, font(48, bold=True), BLACK)
+        draw_centred_in(draw, x, y + 30, card_w, big, font(96, bold=True), colour)
+        draw_centred_in(draw, x, y + 170, card_w, label, font(48, bold=True), BLACK)
 
     # Bottom summary
     draw_centred(draw, 650, "267 lines in  \u2192  2,579 lines out across 11 templates", font(48, bold=True), BG_DARK)
@@ -328,10 +336,10 @@ def slide_time_cost():
         x = sx + i * (card_w + gap)
         y = 240
         draw_card(draw, x, y, card_w, card_h, WHITE, colour)
-        draw_centred(draw, y + 30, big, font(88, bold=True), colour)
-        draw_centred(draw, y + 150, label, font(44, bold=True), BLACK)
+        draw_centred_in(draw, x, y + 30, card_w, big, font(88, bold=True), colour)
+        draw_centred_in(draw, x, y + 150, card_w, label, font(44, bold=True), BLACK)
         for k, line in enumerate(detail.split("\n")):
-            draw_centred(draw, y + 260 + k * 55, line, font(44), GREY)
+            draw_centred_in(draw, x, y + 260 + k * 55, card_w, line, font(44), GREY)
 
     draw_centred(draw, 760, "Portability saves real time and money", font(52, bold=True), GREEN)
     draw_footer(draw)
@@ -357,9 +365,9 @@ def slide_platform_coverage():
         x = sx + i * (card_w + gap)
         y = 200
         draw_card(draw, x, y, card_w, card_h, WHITE, colour)
-        draw_centred(draw, y + 30, num, font(96, bold=True), colour)
+        draw_centred_in(draw, x, y + 30, card_w, num, font(96, bold=True), colour)
         for k, line in enumerate(label.split("\n")):
-            draw_centred(draw, y + 175 + k * 55, line, font(44, bold=True), BLACK)
+            draw_centred_in(draw, x, y + 175 + k * 55, card_w, line, font(44, bold=True), BLACK)
 
     # Bottom: key message
     draw_centred(draw, 650, "From AWS to baremetal to KubeVirt", font(52, bold=True), BG_DARK)
