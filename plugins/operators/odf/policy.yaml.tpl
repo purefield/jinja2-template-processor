@@ -55,7 +55,34 @@
                     name: odf-operator
                     source: {{ odf.source | default("redhat-operators") }}
                     sourceNamespace: openshift-marketplace
-      - objectDefinition:
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: odf-subscription
+            compliance: Compliant
+        objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: odf-operator-ready
+          spec:
+            remediationAction: inform
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: operators.coreos.com/v1alpha1
+                  kind: ClusterServiceVersion
+                  metadata:
+                    namespace: openshift-storage
+                  status:
+                    phase: Succeeded
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: odf-operator-ready
+            compliance: Compliant
+        objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
           kind: ConfigurationPolicy
           metadata:

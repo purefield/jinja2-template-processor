@@ -52,7 +52,34 @@
                     name: lvms-operator
                     source: {{ lvm.source | default("redhat-operators") }}
                     sourceNamespace: openshift-marketplace
-      - objectDefinition:
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: lvm-subscription
+            compliance: Compliant
+        objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: lvm-operator-ready
+          spec:
+            remediationAction: inform
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: operators.coreos.com/v1alpha1
+                  kind: ClusterServiceVersion
+                  metadata:
+                    namespace: openshift-storage
+                  status:
+                    phase: Succeeded
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: lvm-operator-ready
+            compliance: Compliant
+        objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
           kind: ConfigurationPolicy
           metadata:

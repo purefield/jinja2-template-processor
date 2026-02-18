@@ -2159,3 +2159,33 @@ Added rule to CLAUDE.md: "Collateral is not a version change" — changes under 
 > generate the video
 
 Ran full video generation pipeline: 17 slides generated with DejaVu Sans fonts (proper card centering, correct Unicode arrows), 17 TTS audio clips (en-US-AndrewNeural), assembled into 3.7 min MP4 (6.3 MB, 1920x1080, 24fps). Cursor + click ripple active on demo slides 06-11.
+
+### Prompt 158
+
+> commit and push
+
+Already clean — video was identical to previous generation, no changes to commit.
+
+### Prompt 159
+
+> generate the video
+
+Regenerated video: same 3.7 min, 6.3 MB output. No changes from previous generation.
+
+### Prompt 160
+
+> what is the status on the ODF ACM Policy issue
+
+Ran read-only diagnostics on rlinks hub. ODF is healthy on the hub (all CSVs Succeeded, all pods running). The original error was from managed cluster ocp-cluster3.
+
+### Prompt 161
+
+> it's not the rlinks cluster, it's the managed cluster ocp-cluster3
+
+No access to ocp-cluster3 directly. User clarified: work offline, review templates, create troubleshooting scripts.
+
+### Prompt 162
+
+> That is why the steps scripts exist, they have loops, checks waits and so on!!
+
+Found root cause in ACM Policy templates: ODF, LVM, and ArgoCD policies deliver Subscription + CR simultaneously with no ordering. The StorageCluster CR fails because the CRD doesn't exist until the operator CSV reaches Succeeded. Fixed all three operator policy templates by adding `extraDependencies` with a CSV readiness gate (`operator-ready` ConfigurationPolicy) between the Subscription and CR delivery. Chain: subscription → operator-ready (inform, checks CSV phase=Succeeded) → CR (enforce). All 134 tests pass. Rendered output verified for all three operators.

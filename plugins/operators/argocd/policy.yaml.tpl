@@ -55,7 +55,34 @@
                     name: openshift-gitops-operator
                     source: {{ argo.source | default("redhat-operators") }}
                     sourceNamespace: openshift-marketplace
-      - objectDefinition:
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: argocd-subscription
+            compliance: Compliant
+        objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: argocd-operator-ready
+          spec:
+            remediationAction: inform
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: operators.coreos.com/v1alpha1
+                  kind: ClusterServiceVersion
+                  metadata:
+                    namespace: openshift-gitops-operator
+                  status:
+                    phase: Succeeded
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: argocd-operator-ready
+            compliance: Compliant
+        objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
           kind: ConfigurationPolicy
           metadata:
@@ -115,7 +142,12 @@
                         requests:
                           cpu: 250m
                           memory: 512Mi{% if argo.bootstrap is defined and argo.bootstrap.repoURL is defined %}
-      - objectDefinition:
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: argocd-instance
+            compliance: Compliant
+        objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
           kind: ConfigurationPolicy
           metadata:
@@ -148,6 +180,7 @@
                         selfHeal: true
                       syncOptions:
                         - CreateNamespace=true{% endif %}{% endif %}
+
 - kind: PlacementBinding
   apiVersion: policy.open-cluster-management.io/v1
   metadata:

@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **operator-policy-ordering** — Fix ACM Policy race condition: add `extraDependencies` with CSV readiness gate to ODF, LVM, and ArgoCD policy templates so operator CRs are only created after the operator is fully installed (2026-02-18)
+
 ## v3.3.0 (2026-02-16)
 - **eso-vault-config** — Add Vault ClusterSecretStore config template to ESO plugin with Kubernetes auth defaults; change cert-manager secretStore default to vault; enable ESO on all example clusterfiles
 
