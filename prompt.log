@@ -2054,3 +2054,18 @@ Committed and tagged as `collateral-infographic`.
 > Detailed analysis comparing clusterfile input vs rendered output for a typical baremetal deployment. Run commands to count YAML key fields, render each template, count lines/fields, count unique K8s resource kinds, count leaf fields in input and output, and do the same for kubevirt, ipi-aws, and acm-hub-sno.
 
 Ran comprehensive metrics analysis across all deployment types. All raw numbers collected and reported. No commits needed -- analysis/reporting only.
+
+### Prompt 144
+
+> Time &amp; Cost cuts off text in the infographic
+
+Fixed the Time &amp; Cost section in `docs/collateral/infographic.svg`:
+- Restructured as proper table grid with centered column headers (Scenario, Manual, Clusterfile, Savings)
+- Row labels now centered in their own column (155px) instead of left-aligned at x=100 where they overlapped value boxes
+- Shortened labels ("Each add'l cluster" → "Next cluster", "Switch deploy method" → "Switch method", "10-cluster engagement" → "10 clusters")
+- Added alternating row backgrounds for readability
+- Added header underline and summary line with closing message
+- Expanded section height from 240 to 290px
+- Shifted expansion ratio section and footer down to accommodate
+- Increased viewBox from 1800 to 1870 for total canvas height
+Committed and tagged as `collateral-infographic-fix`.
