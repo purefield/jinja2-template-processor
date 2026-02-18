@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.7.0',
+    date: '2026-02-18',
+    changes: [
+      'Video: all slide fonts min 28px, simplified layouts, cursor + click ripple on demo slides',
+      'Video: CLI demo slide showing terminal-style process.py usage',
+      'Video: KubeVirt TTS pronunciation fix'
+    ]
+  },
+  {
     version: '3.6.0',
     date: '2026-02-17',
     changes: [

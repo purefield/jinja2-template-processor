@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.7.0
+- **Video Improvements**: All slide fonts scaled to minimum 28px for legibility, simplified layouts, cursor + click ripple animation on demo slides, CLI demo slide added, KubeVirt TTS pronunciation fixed
+
 ## 3.6.0
 - **Video Presentation**: Narrated MP4 video (3.6 min, 1920x1080) with real editor screenshots (Playwright), TTS narration (edge-tts), data slides, and full value story walkthrough
 
