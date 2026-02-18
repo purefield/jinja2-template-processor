@@ -2153,3 +2153,9 @@ Created `docs/collateral/video/install-deps.sh` — downloads DejaVu Sans fonts 
 > move this work into the background, do not track collateral creation as version changes! remember this. also cleanup version history from collateral work
 
 Added rule to CLAUDE.md: "Collateral is not a version change" — changes under docs/collateral/ skip version bumps, changelog entries, and release processes. Cleaned CHANGELOG.md: removed all collateral-only version entries (v3.5.0 through v3.7.1 and Unreleased section). Latest real feature entry is now v3.3.0. Moved remaining slide fix work to background agent. Fixed install-deps.sh download URL (GitHub redirects; switched to SourceForge mirror).
+
+### Prompt 157
+
+> generate the video
+
+Ran full video generation pipeline: 17 slides generated with DejaVu Sans fonts (proper card centering, correct Unicode arrows), 17 TTS audio clips (en-US-AndrewNeural), assembled into 3.7 min MP4 (6.3 MB, 1920x1080, 24fps). Cursor + click ripple active on demo slides 06-11.
