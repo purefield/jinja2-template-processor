@@ -2027,3 +2027,30 @@ Created `docs/collateral/business-value.md` — a business value and ROI present
 - Proof points table with all measurable evidence
 - Highlights file externalization (secrets never inline) throughout
 Committed and tagged as `collateral-business-value`.
+
+### Prompt 143
+
+> Find number of fields in each template vs clusterfile for typical deployment, lines to edit vs templated, time and effort, create an infographic with charts and graphs with time and cost
+
+Gathered precise field counts from rendered output using leaf-value analysis:
+- Baremetal clusterfile: 187 input fields → 1,049 output fields across 4 YAML templates (5.6x field expansion)
+- Per-template field counts: install-config 106, agent-config 245, ACM ZTP 648, operators 50, SiteConfig 151
+- Lines: 267 input → 2,579 output (9.7x), ACM ZTP alone 764 lines with 56 K8s resource definitions
+- Cross-platform: AWS IPI 41 fields, KubeVirt 89 fields, ACM Hub SNO 36 fields
+- Time/cost model: first cluster 6h/$900 manual vs 30min/$75 with Clusterfile (92% savings); 10-cluster engagement $4,950 vs $450
+
+Created `docs/collateral/infographic.svg` — full-page SVG infographic with:
+- 4 headline stat cards (187 input, 1,049 output, 2,579 total lines, 56 K8s resources)
+- Vertical bar chart: input fields vs per-template output fields
+- Horizontal bar chart: lines per template (11 templates)
+- Cross-platform comparison: fields by platform type
+- ACM Hub SNO expansion detail
+- Time &amp; cost table: manual vs clusterfile for first cluster, additional clusters, method switch, 10-cluster engagement
+- 3 expansion ratio boxes (9.7x lines, 5.6x fields, 56 resources)
+Committed and tagged as `collateral-infographic`.
+
+### Prompt 143
+
+> Detailed analysis comparing clusterfile input vs rendered output for a typical baremetal deployment. Run commands to count YAML key fields, render each template, count lines/fields, count unique K8s resource kinds, count leaf fields in input and output, and do the same for kubevirt, ipi-aws, and acm-hub-sno.
+
+Ran comprehensive metrics analysis across all deployment types. All raw numbers collected and reported. No commits needed -- analysis/reporting only.
