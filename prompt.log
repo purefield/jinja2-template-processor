@@ -2144,6 +2144,12 @@ Fixed root cause of tiny font rendering: the `font()` function silently fell bac
 
 ### Prompt 155
 
-> Fix card text centering in generate-video.py, install DejaVu fonts, delete stale files, regenerate slides
+> create a script to install the dependencies for optimal content creation! Most slides have overlapping font and what looks like missing icons
 
-Installed DejaVu fonts (v2.37) to ~/.local/share/fonts/. Updated generate-video.py: replaced 10 draw_centred() calls with draw_centred_in() in 5 slide functions (slide_version_control, slide_extensibility, slide_numbers, slide_time_cost, slide_platform_coverage) so card text centers within card bounds instead of centering on the full slide width. Deleted stale files: 02-problem.png, 03-insight.png, 04-solution.png, 05-file-ext.png, clusterfile-presentation-v1.mp4, clusterfile-presentation-v2.mp4. Regenerated all 17 slides successfully.
+Created `docs/collateral/video/install-deps.sh` — downloads DejaVu Sans fonts (full Unicode coverage including →, ·, —, ×) to ~/.local/share/fonts/, installs pip packages (Pillow, edge-tts, moviepy, cairosvg, playwright), verifies everything works. Fixed two rendering bugs in generate-video.py: (1) added `draw_centred_in()` helper for card-bounded text centering (fixes overlapping text on slides 03, 04, 13, 14, 15), (2) added DejaVu Sans to font discovery lists (fixes → rendering as black blocks). Deleted stale files (02-problem.png, 03-insight.png, 04-solution.png, 05-file-ext.png, v1/v2 MP4s). Regenerated all 17 slides — card text now properly centered within each card, arrows render correctly.
+
+### Prompt 156
+
+> move this work into the background, do not track collateral creation as version changes! remember this. also cleanup version history from collateral work
+
+Added rule to CLAUDE.md: "Collateral is not a version change" — changes under docs/collateral/ skip version bumps, changelog entries, and release processes. Cleaned CHANGELOG.md: removed all collateral-only version entries (v3.5.0 through v3.7.1 and Unreleased section). Latest real feature entry is now v3.3.0. Moved remaining slide fix work to background agent. Fixed install-deps.sh download URL (GitHub redirects; switched to SourceForge mirror).

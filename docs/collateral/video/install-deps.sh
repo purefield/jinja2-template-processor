@@ -5,7 +5,7 @@ set -euo pipefail
 
 FONT_DIR="${HOME}/.local/share/fonts"
 DEJAVU_VERSION="2.37"
-DEJAVU_URL="https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_${DEJAVU_VERSION}/dejavu-fonts-ttf-${DEJAVU_VERSION}.zip"
+DEJAVU_URL="https://sourceforge.net/projects/dejavu/files/dejavu/${DEJAVU_VERSION}/dejavu-fonts-ttf-${DEJAVU_VERSION}.zip/download"
 
 echo "=== Installing DejaVu fonts (Unicode arrows, symbols) ==="
 mkdir -p "${FONT_DIR}"
