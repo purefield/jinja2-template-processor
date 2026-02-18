@@ -2075,3 +2075,21 @@ Committed and tagged as `collateral-infographic-fix`.
 > ship it
 
 Release v3.5.0: Updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.5.0, pushed. Built container, pushed to quay.io with v3.5.0 and latest tags. Restarted running app, verified healthz returns 3.5.0.
+
+### Prompt 146
+
+> Implement the following plan: Clusterfile Video Presentation — generate a photo-realistic, audio-narrated MP4 video combining real editor screenshots, SVG diagrams, data visualizations, and professional TTS narration.
+
+Created complete video generation pipeline in `docs/collateral/video/`:
+
+1. **Screenshot capture** (`capture-screenshots.js` + `capture-screenshots.py`) — Playwright scripts that capture 6 real screenshots from the running editor at localhost:8000: baremetal loaded, kubevirt platform, operators panel, install-config render, operators render, siteconfig render. Runs via Playwright container (`mcr.microsoft.com/playwright:v1.50.0-noble`).
+
+2. **Video generator** (`generate-video.py`) — Full Python pipeline using Pillow, edge-tts, and moviepy:
+   - Generates 16 slide images: title, problem, insight, solution, file externalization, 6 demo screenshots, numbers, time & cost, architecture, CTA, end card
+   - TTS narration with Microsoft Edge voice (en-US-AndrewNeural) for 14 narrated sections
+   - Assembles into 1920x1080 H.264 MP4 at 24fps
+
+3. **Output** — `clusterfile-presentation.mp4`: 3.6 minutes, 1920x1080, 4.8 MB, with synchronized audio narration covering the full value story and live demo walkthrough.
+
+**Commits**: `video-presentation`
+**Tag**: `collateral-video`

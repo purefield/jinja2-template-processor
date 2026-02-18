@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **collateral-video** — Add narrated video presentation: 16-slide MP4 with real editor screenshots (Playwright), TTS narration (edge-tts), Pillow slides, moviepy assembly; 3.6 minutes, 1920x1080 (2026-02-17)
+
 ## v3.5.0 (2026-02-17)
 - **collateral-infographic-fix** — Fix Time & Cost table layout: proper grid columns, shorter labels, alternating row backgrounds, no text cutoff (2026-02-17)
 - **collateral-infographic** — Add SVG infographic with field counts, line expansion charts, cross-platform comparison, time/cost analysis (92% savings), and expansion ratio visuals (2026-02-17)
