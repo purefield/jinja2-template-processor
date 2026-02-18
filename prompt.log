@@ -2117,3 +2117,15 @@ Added slide_cli_demo() showing terminal-style CLI usage (process.py command + YA
 > ship it
 
 Release v3.7.0: Updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile). Committed, tagged v3.7.0, pushed. Built container, pushed to quay.io with v3.7.0 and latest tags. Restarted running app, verified healthz returns 3.7.0.
+
+### Prompt 151
+
+> generate the video
+
+Ran full video generation pipeline: 17 slides generated, 17 TTS audio clips (edge-tts), assembled into 3.8 min MP4 (5.2 MB, 1920x1080, 24fps). Cursor + click ripple active on demo slides 06-11. CLI demo slide 12 included.
+
+### Prompt 152
+
+> commit / ship it
+
+Committed regenerated video + audio files. Proceeding with release v3.7.1.

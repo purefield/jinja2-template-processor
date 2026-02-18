@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.7.1',
+    date: '2026-02-18',
+    changes: [
+      'Video regenerated: 17 slides, 3.8 min MP4 with bigger fonts, CLI demo, click indicators'
+    ]
+  },
+  {
     version: '3.7.0',
     date: '2026-02-18',
     changes: [

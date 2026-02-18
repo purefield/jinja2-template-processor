@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.7.1
+- **Video Regenerated**: Full pipeline rebuilt — 17 slides, 3.8 min MP4 with all font/layout/CLI/cursor improvements baked in
+
 ## 3.7.0
 - **Video Improvements**: All slide fonts scaled to minimum 28px for legibility, simplified layouts, cursor + click ripple animation on demo slides, CLI demo slide added, KubeVirt TTS pronunciation fixed
 
