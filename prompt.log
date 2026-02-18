@@ -2189,3 +2189,9 @@ No access to ocp-cluster3 directly. User clarified: work offline, review templat
 > That is why the steps scripts exist, they have loops, checks waits and so on!!
 
 Found root cause in ACM Policy templates: ODF, LVM, and ArgoCD policies deliver Subscription + CR simultaneously with no ordering. The StorageCluster CR fails because the CRD doesn't exist until the operator CSV reaches Succeeded. Fixed all three operator policy templates by adding `extraDependencies` with a CSV readiness gate (`operator-ready` ConfigurationPolicy) between the Subscription and CR delivery. Chain: subscription → operator-ready (inform, checks CSV phase=Succeeded) → CR (enforce). All 134 tests pass. Rendered output verified for all three operators.
+
+### Prompt 163
+
+> ship it
+
+Released v3.8.0: updated all five version locations, committed, tagged v3.8.0, pushed. Built container, pushed to quay.io (v3.8.0 + latest). Restarted app, verified healthz returns 3.8.0.
