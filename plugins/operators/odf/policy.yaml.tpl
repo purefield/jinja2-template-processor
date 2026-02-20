@@ -71,12 +71,10 @@
             object-templates:
               - complianceType: musthave
                 objectDefinition:
-                  apiVersion: operators.coreos.com/v1alpha1
-                  kind: ClusterServiceVersion
+                  apiVersion: apiextensions.k8s.io/v1
+                  kind: CustomResourceDefinition
                   metadata:
-                    namespace: openshift-storage
-                  status:
-                    phase: Succeeded
+                    name: storageclusters.ocs.openshift.io
       - extraDependencies:
           - apiVersion: policy.open-cluster-management.io/v1
             kind: ConfigurationPolicy

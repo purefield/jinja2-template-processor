@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **crd-readiness-gate** — Fix ACM Policy readiness gate: replace generic CSV status check with CRD existence check (`CustomResourceDefinition`) for ODF (`storageclusters.ocs.openshift.io`), LVM (`lvmclusters.lvm.topolvm.io`), and ArgoCD (`argocds.argoproj.io`). The CSV check matched the wrong CSV in multi-operator installs like ODF (2026-02-20)
+
 ## v3.8.0 (2026-02-18)
 - **operator-policy-ordering** — Fix ACM Policy race condition: add `extraDependencies` with CSV readiness gate to ODF, LVM, and ArgoCD policy templates so operator CRs are only created after the operator is fully installed (2026-02-18)
 

@@ -1830,6 +1830,30 @@ class TestOperatorsPlugin:
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-argocd']
         assert len(bindings) == 1, "Expected one ArgoCD PlacementBinding"
 
+    def test_argocd_crd_readiness_gate(self, template_env):
+        """Test ArgoCD ACM Policy uses CRD check as readiness gate."""
+        data = self.operator_data({})
+        data['cluster']['version'] = '4.21.0'
+        data['cluster']['arch'] = 'x86_64'
+        for hostname, host in data['hosts'].items():
+            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
+            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
+            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-argocd']
+        assert len(policies) == 1
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'argocd-operator-ready']
+        assert len(ready) == 1, "Expected argocd-operator-ready ConfigurationPolicy"
+        obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
+        assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
+        assert obj['metadata']['name'] == 'argocds.argoproj.io'
+
     def test_argocd_bootstrap_application(self, template_env):
         """Test ArgoCD bootstrap creates an Application CR for app-of-apps."""
         data = self.operator_data({'bootstrap': {'repoURL': 'https://git.example.com/cluster-config.git', 'path': 'operators', 'targetRevision': 'main'}})
@@ -1957,6 +1981,31 @@ class TestLvmOperator:
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-lvm']
         assert len(bindings) == 1
 
+    def test_lvm_crd_readiness_gate(self, template_env):
+        """Test LVM ACM Policy uses CRD check as readiness gate."""
+        data = self.operator_data({})
+        data['plugins']['operators']['lvm'] = {}
+        data['cluster']['version'] = '4.21.0'
+        data['cluster']['arch'] = 'x86_64'
+        for hostname, host in data['hosts'].items():
+            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
+            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
+            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-lvm']
+        assert len(policies) == 1
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'lvm-operator-ready']
+        assert len(ready) == 1, "Expected lvm-operator-ready ConfigurationPolicy"
+        obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
+        assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
+        assert obj['metadata']['name'] == 'lvmclusters.lvm.topolvm.io'
+
     def test_lvm_in_install_config(self, template_env):
         """Test LVM manifests appear in install-config output."""
         data = self.operator_data({})
@@ -2045,6 +2094,31 @@ class TestOdfOperator:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-odf']
         assert len(policies) == 1
+
+    def test_odf_crd_readiness_gate(self, template_env):
+        """Test ODF ACM Policy uses CRD check (not CSV) as readiness gate."""
+        data = self.operator_data({})
+        data['cluster']['version'] = '4.21.0'
+        data['cluster']['arch'] = 'x86_64'
+        for hostname, host in data['hosts'].items():
+            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
+            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
+            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-odf']
+        assert len(policies) == 1
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'odf-operator-ready']
+        assert len(ready) == 1, "Expected odf-operator-ready ConfigurationPolicy"
+        obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
+        assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
+        assert obj['metadata']['name'] == 'storageclusters.ocs.openshift.io'
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
 
 
 class TestCertManagerOperator:

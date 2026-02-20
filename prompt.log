@@ -2195,3 +2195,30 @@ Found root cause in ACM Policy templates: ODF, LVM, and ArgoCD policies deliver 
 > ship it
 
 Released v3.8.0: updated all five version locations, committed, tagged v3.8.0, pushed. Built container, pushed to quay.io (v3.8.0 + latest). Restarted app, verified healthz returns 3.8.0.
+
+### Prompt 164
+
+> Research the GitHub repository github.com/redhat-cop/gitops-catalog. I need to understand: (1) How the repo is structured (directory layout, what's in each operator directory), (2) How it handles operator installation ordering -- does it use ArgoCD sync waves, health checks, or some other mechanism to ensure CRDs exist before CRs are created?, (3) Specifically look at how odf-operator, lvms-operator, openshift-gitops-operator, cert-manager-operator, external-secrets-operator are handled, (4) What does a typical operator directory contain?, (5) How would someone use this catalog with ACM policies to deploy operators on managed clusters?
+
+Researched the gitops-catalog repo using WebFetch against the GitHub API and raw file URLs. Documented the full directory structure, the base/overlays kustomize pattern, the operator vs instance separation, ArgoCD sync-wave usage (sync-wave "10" on console-plugin Jobs, SkipDryRunOnMissingResource annotation on aggregates), and the installplan-approver Job pattern. Retrieved actual file contents for all five requested operators. Provided detailed findings with file contents.
+
+### Prompt 165
+
+> re-render the ocp-cluster3 templates and reapply the policies
+
+Rendered ocp-cluster3 templates. oc session expired, provided manual apply instructions.
+
+### Prompt 166
+
+> still fails. can we incorporate the github.com/redhat-cop/gitops-catalog
+
+Root cause identified: the v3.8.0 CSV readiness check (`musthave` on generic ClusterServiceVersion without a name) matched the wrong CSV. ODF installs multiple CSVs (`odf-operator`, `ocs-operator`, `mcg-operator`, `csi-addons-operator`). The `odf-operator` CSV reaches Succeeded first, but the `StorageCluster` CRD is provided by `ocs-operator` which is still installing. The check passes prematurely.
+
+Fix: replaced generic CSV status check with CRD existence check in all three operator policy templates:
+- ODF: check for `storageclusters.ocs.openshift.io` CRD
+- LVM: check for `lvmclusters.lvm.topolvm.io` CRD
+- ArgoCD: check for `argocds.argoproj.io` CRD
+
+The gitops-catalog research confirmed this is the right approach — the catalog uses `SkipDryRunOnMissingResource=true` and relies on ArgoCD's built-in health checks to wait for CRDs. It does NOT solve the ordering problem itself. For ACM Policy delivery, CRD existence checks are the correct gate.
+
+Added 3 new tests validating CRD readiness gates. All 137 tests pass.
