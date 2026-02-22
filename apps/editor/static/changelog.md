@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.8.1
+- **CRD Readiness Gate**: Fix ACM Policy readiness gate — replace generic CSV status check with CRD existence check for ODF, LVM, and ArgoCD. The CSV check matched the wrong CSV in multi-operator installs
+
 ## 3.8.0
 - **Operator Policy Ordering**: Fix ACM Policy race condition — add `extraDependencies` with CSV readiness gate to ODF, LVM, and ArgoCD policies so CRs are only created after the operator is installed
 

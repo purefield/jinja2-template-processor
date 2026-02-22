@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.8.1',
+    date: '2026-02-21',
+    changes: [
+      'Fix ACM Policy readiness gate: use CRD existence check instead of generic CSV status check for ODF, LVM, ArgoCD'
+    ]
+  },
+  {
     version: '3.8.0',
     date: '2026-02-18',
     changes: [
