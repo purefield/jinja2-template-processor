@@ -42,6 +42,33 @@ items:
   metadata:
     name: {{ cluster.name }}
   spec: {}
+- kind: ManagedCluster
+  apiVersion: cluster.open-cluster-management.io/v1
+  metadata:
+    name: {{ cluster.name }}
+    namespace: {{ cluster.name }}
+    labels:
+      name: {{ cluster.name }}
+      cloud: BareMetal
+      vendor: OpenShift
+      location: {{ cluster.location }}
+  spec:
+    hubAcceptsClient: true
+    leaseDurationSeconds: 60
+- kind: KlusterletAddonConfig
+  apiVersion: agent.open-cluster-management.io/v1
+  metadata:
+    name: {{ cluster.name }}
+    namespace: {{ cluster.name }}
+  spec:
+    applicationManager: {argocdCluster: false, enabled: true}
+    certPolicyController: {enabled: true}
+    clusterLabels: {name: {{ cluster.name }}, cloud: Baremetal, vendor: OpenShift}
+    clusterName: {{ cluster.name }}
+    clusterNamespace: {{ cluster.name }}
+    iamPolicyController: {enabled: true}
+    policyController: {enabled: true}
+    searchCollector: {enabled: true}
 - kind: Cluster
   apiVersion: cluster.x-k8s.io/v1beta1
   metadata:
