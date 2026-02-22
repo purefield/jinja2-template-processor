@@ -2222,3 +2222,9 @@ Fix: replaced generic CSV status check with CRD existence check in all three ope
 The gitops-catalog research confirmed this is the right approach — the catalog uses `SkipDryRunOnMissingResource=true` and relies on ArgoCD's built-in health checks to wait for CRDs. It does NOT solve the ordering problem itself. For ACM Policy delivery, CRD existence checks are the correct gate.
 
 Added 3 new tests validating CRD readiness gates. All 137 tests pass.
+
+### Prompt 167
+
+> ship it
+
+Released v3.8.1: updated all five version locations, committed, tagged v3.8.1, pushed. Built container, pushed to quay.io (v3.8.1 + latest). Restarted app, verified healthz returns 3.8.1.
