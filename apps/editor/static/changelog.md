@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.8.2
+- **ODF Auto Channel**: Derive ODF operator channel from cluster version (`stable-4.X`) instead of hardcoded `stable-4.18`
+
 ## 3.8.1
 - **CRD Readiness Gate**: Fix ACM Policy readiness gate — replace generic CSV status check with CRD existence check for ODF, LVM, and ArgoCD. The CSV check matched the wrong CSV in multi-operator installs
 

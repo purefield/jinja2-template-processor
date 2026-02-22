@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.8.2 (2026-02-21)
+- **odf-auto-channel** — Derive ODF operator channel from `cluster.version` (`stable-4.X`) instead of hardcoded `stable-4.18`. Fixes ODF installation failure on OCP 4.21+ where the `stable-4.18` channel doesn't exist
+
 ## v3.8.1 (2026-02-21)
 - **crd-readiness-gate** — Fix ACM Policy readiness gate: replace generic CSV status check with CRD existence check (`CustomResourceDefinition`) for ODF (`storageclusters.ocs.openshift.io`), LVM (`lvmclusters.lvm.topolvm.io`), and ArgoCD (`argocds.argoproj.io`). The CSV check matched the wrong CSV in multi-operator installs like ODF
 

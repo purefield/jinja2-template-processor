@@ -2228,3 +2228,17 @@ Added 3 new tests validating CRD readiness gates. All 137 tests pass.
 > ship it
 
 Released v3.8.1: updated all five version locations, committed, tagged v3.8.1, pushed. Built container, pushed to quay.io (v3.8.1 + latest). Restarted app, verified healthz returns 3.8.1.
+
+### Prompt 168
+
+> (shows step script output: "the server doesn't have a resource type storagecluster" on ocp-cluster3)
+
+Root cause: ODF channel hardcoded to `stable-4.18` but ocp-cluster3 runs OCP 4.21.0. The `stable-4.18` channel doesn't exist for OCP 4.21, so the Subscription fails and the operator never installs. The CRD readiness gate correctly blocks the StorageCluster CR, but the CRD never appears because the operator never installs.
+
+Fix: derive ODF channel from `cluster.version` using `"stable-" + cluster.version.split(".")[:2] | join(".")`. For OCP 4.21.0 this produces `stable-4.21`. Applied to both policy.yaml.tpl and manifests.yaml.tpl. Re-rendered ocp-cluster3.
+
+### Prompt 169
+
+> ship it
+
+Released v3.8.2: ODF auto-channel fix. Updated all five version locations, committed, tagged, pushed. Built container, pushed to quay.io. Restarted app, verified healthz.

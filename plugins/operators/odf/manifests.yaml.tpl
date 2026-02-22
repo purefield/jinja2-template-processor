@@ -1,5 +1,6 @@
 {%- set odf = plugins.operators.odf -%}
 {%- set odfEnabled = odf.enabled | default(true) -%}
+{%- set odfChannel = odf.channel | default("stable-" + cluster.version.split(".")[:2] | join(".")) -%}
 {%- set sc = odf.storageCluster | default({}) -%}
 {%- if odfEnabled %}
 ---
@@ -25,7 +26,7 @@ metadata:
   name: odf-operator
   namespace: openshift-storage
 spec:
-  channel: {{ odf.channel | default("stable-4.18") }}
+  channel: {{ odfChannel }}
   installPlanApproval: {{ odf.approval | default("Automatic") }}
   name: odf-operator
   source: {{ odf.source | default("redhat-operators") }}

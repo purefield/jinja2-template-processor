@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.8.2',
+    date: '2026-02-21',
+    changes: [
+      'Derive ODF operator channel from cluster version (stable-4.X) instead of hardcoded stable-4.18'
+    ]
+  },
+  {
     version: '3.8.1',
     date: '2026-02-21',
     changes: [
