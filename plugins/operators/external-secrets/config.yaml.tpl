@@ -1,4 +1,5 @@
 {%- set es = plugins.operators['external-secrets'] -%}
+{%- if es.vault is defined -%}
 {%- set v = es.vault -%}
 {%- set vServer = v.server | default("http://vault-openbao.vault.svc.cluster.local:8200") -%}
 {%- set vPath = v.path | default("secret") -%}
@@ -24,3 +25,4 @@ spec:
           serviceAccountRef:
             name: {{ vSA }}
             namespace: {{ vSANS }}
+{%- endif -%}

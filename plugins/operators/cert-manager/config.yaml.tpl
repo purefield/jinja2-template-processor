@@ -1,4 +1,5 @@
 {%- set cm = plugins.operators['cert-manager'] -%}
+{%- if cm.letsencrypt is defined -%}
 {%- set le = cm.letsencrypt -%}
 {%- set r53 = le.route53 -%}
 {%- set selfCheck = cm.selfCheck | default({}) -%}
@@ -73,3 +74,4 @@ spec:
   dnsNames:
     - api.{{ clusterDomain }}
     - "*.apps.{{ clusterDomain }}"
+{%- endif -%}

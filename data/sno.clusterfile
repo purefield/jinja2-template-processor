@@ -59,8 +59,8 @@ cluster:
       publisher: Red Hat
 plugins:
   operators:
-    lvm: {}
     argocd: {}
+    lvm: {}
     external-secrets: {}
 network:
   domain: base.domain

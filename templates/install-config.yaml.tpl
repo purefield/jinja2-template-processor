@@ -132,16 +132,6 @@ spec:
 # Place in openshift/ directory for ABI/IPI — forces virtual disks to report as SSD
 {{ ssdUdev }}{% endif %}{% if plugins is defined and plugins.operators is defined %}
 {%- set ops = plugins.operators -%}
-{%- if ops.argocd is defined %}{%- set operatorManifests %}{% include "operators/argocd/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
-{%- if ops.lvm is defined %}{%- set operatorManifests %}{% include "operators/lvm/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
-{%- if ops.odf is defined %}{%- set operatorManifests %}{% include "operators/odf/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
-{%- if ops.acm is defined %}{%- set operatorManifests %}{% include "operators/acm/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
-{%- if ops['cert-manager'] is defined %}{%- set operatorManifests %}{% include "operators/cert-manager/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
-{%- if ops['external-secrets'] is defined %}{%- set operatorManifests %}{% include "operators/external-secrets/manifests.yaml.tpl" %}{% endset %}
-{{ operatorManifests }}{% endif -%}
+{%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{%- set operatorManifests %}{% include "operators/" ~ op_name ~ "/manifests.yaml.tpl" ignore missing %}{% endset %}
+{{ operatorManifests }}{% endfor -%}
 {% endif %}
