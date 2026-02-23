@@ -2242,3 +2242,79 @@ Fix: derive ODF channel from `cluster.version` using `"stable-" + cluster.versio
 > ship it
 
 Released v3.8.2: ODF auto-channel fix. Updated all five version locations, committed, tagged, pushed. Built container, pushed to quay.io. Restarted app, verified healthz.
+
+### Prompt 170
+
+> (shows same step script output: "the server doesn't have a resource type storagecluster" on ocp-cluster3 again)
+
+Investigated deeper. The error persisted because the `.generated.clusterfile` for ocp-cluster3 was stale — it was generated before operators were added to the source clusterfile. Setup.sh caches the generated file (skips regeneration if it already exists and is newer). So ACM templates were rendered without any operator policies — ODF was never deployed to the managed cluster. Fixed by merging the `plugins.operators` section from the source clusterfile into the existing generated file (preserving MAC addresses). Re-rendered ACM templates. Provided manual apply instructions for the ACM hub.
+
+### Prompt 171
+
+> ./manage-cluster.sh install ocp-cluster3
+
+User confirmed the command being run. Verified the source clusterfile had the operators section.
+
+### Prompt 172
+
+> might be good to have some troubleshooting output like the steps files do with checks and waits, not sure how to do this but it is otherwise a regression in features
+
+Created `templates/operator-wait.sh.tpl` — a new Jinja2 template that generates a diagnostic wait script for ACM Policy-delivered operators. Uses format.sh helpers (`__` for messages, `oo` for wait loops). Checks each enabled operator progressively: Namespace → Subscription → CSV phase → CRD existence → CR status. Supports all 5 operators: ODF, LVM, ArgoCD, cert-manager, external-secrets. Renders conditionally based on `plugins.operators` in the clusterfile. Usage: `process.py clusterfile operator-wait.sh.tpl | bash`
+
+### Prompt 173
+
+> ship it
+
+### Prompt 174
+
+> the goal is to have few, very clean and self contained templates, or we could use the steps approach. use a cronjob if need be, but either we can use gitops or not, not a long mess of trial and error, only robust, improvement from the reliable, easy to troubleshoot steps approach.
+
+User rejected the operator-wait.sh.tpl approach as a band-aid. Chose "ACM Policy, no wait" — trust GitOps convergence. ACM Policies deliver operators with CRD readiness gates ensuring ordering; no separate wait script needed. Removed `operator-wait.sh.tpl`. Reverted v3.8.3 version bump (no feature to release). Committed removal and pushed.
+
+### Prompt 175
+
+> how?
+
+Explained: check ACM Policy compliance on the hub with `oc get policy -n ocp-cluster3`. Each policy shows Compliant/NonCompliant.
+
+### Prompt 176
+
+> oc get policy -n ocp-cluster3 — No resources found
+
+Policies were never applied to the hub. The rendered template exists with 4 policies but was never `oc apply`'d. Directed user to run `./manage-cluster.sh create ocp-cluster3`.
+
+### Prompt 177
+
+> pushed the current copy via scp
+
+User SCPed manage-cluster.sh to inference machine for editing.
+
+### Prompt 178
+
+> remove the blind StorageCluster wait from install phase
+
+Removed lines 148-149 (`__ "ODF delivered via ACM Policy..."` and `oo 1 "oc get storagecluster..."`) from manage-cluster.sh install phase. Trust ACM Policy convergence.
+
+### Prompt 179
+
+> scp it back and run create ocp-cluster3
+
+No ACM kubeconfig on inference machine. User pulled edited file back and ran `./manage-cluster.sh create ocp-cluster3` from their workstation.
+
+### Prompt 180
+
+> done
+
+ACM policies applied to hub via setup.sh. Operators should now converge on ocp-cluster3 via ACM Policy with CRD readiness gates.
+
+### Prompt 181
+
+> Implement the following plan: [Quality Hardening — DRY, Robust, Self-Sufficient Plugins]
+
+Implemented the full 6-item quality hardening plan:
+1. **dynamic-plugin-integration** — Replaced 4×6 hardcoded operator if-blocks with convention-based for-loops in operators.yaml.tpl, acm-ztp.yaml.tpl, acm-capi-m3.yaml.tpl, install-config.yaml.tpl. Added self-guards to cert-manager and external-secrets config templates. Reordered sno.clusterfile operators for output parity. Zero diff. (commit 3fe31bb)
+2. **cert-manager-crd-gate** — Added CRD readiness gate (certmanagers.operator.openshift.io) to cert-manager policy.yaml.tpl. (commit 40b1e39)
+3. **lib-render-dry** — Created lib/render.py with shared code (IndentDumper, base64encode, set_by_path, validate_data_for_template, YAMLLINT_CONFIG). Updated process.py and template_processor.py. Zero diff. (commit 0c0b914)
+4. **test-consolidation** — Replaced 6 duplicated operator_data() methods with operator_test_data() helper. Replaced inline ZTP host setup with ztp_host_data(). Strengthened policy assertions (remediationAction, policy-templates count, PlacementBinding structure, CRD names). Added cert-manager CRD readiness gate test. 138 tests pass. (commit 03b87ae)
+5. **load-file-warning** — Added stderr warning in load_file() for missing files. (commit 8955138)
+6. Verified all 4 baselines: ZTP, CAPI, operators, install-config — zero diff.
