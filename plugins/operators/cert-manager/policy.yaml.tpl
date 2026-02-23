@@ -52,6 +52,26 @@
                     name: openshift-cert-manager-operator
                     source: {{ cm.source | default("redhat-operators") }}
                     sourceNamespace: openshift-marketplace
+      - extraDependencies:
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: cert-manager-subscription
+            compliance: Compliant
+        objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: cert-manager-operator-ready
+          spec:
+            remediationAction: inform
+            severity: medium
+            object-templates:
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: apiextensions.k8s.io/v1
+                  kind: CustomResourceDefinition
+                  metadata:
+                    name: certmanagers.operator.openshift.io
 - kind: PlacementBinding
   apiVersion: policy.open-cluster-management.io/v1
   metadata:
