@@ -2318,3 +2318,9 @@ Implemented the full 6-item quality hardening plan:
 4. **test-consolidation** — Replaced 6 duplicated operator_data() methods with operator_test_data() helper. Replaced inline ZTP host setup with ztp_host_data(). Strengthened policy assertions (remediationAction, policy-templates count, PlacementBinding structure, CRD names). Added cert-manager CRD readiness gate test. 138 tests pass. (commit 03b87ae)
 5. **load-file-warning** — Added stderr warning in load_file() for missing files. (commit 8955138)
 6. Verified all 4 baselines: ZTP, CAPI, operators, install-config — zero diff.
+
+### Prompt 182
+
+> ship it
+
+Released v3.9.0. Updated all 5 version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG, CHANGELOG.md, Containerfile). Added lib/ COPY to Containerfile and container-compatible sys.path for lib.render import. Committed, tagged v3.9.0, pushed. Built and pushed container images (v3.9.0 + latest). Restarted app — healthz returns 3.9.0.
