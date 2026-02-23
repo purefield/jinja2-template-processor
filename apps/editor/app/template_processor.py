@@ -2,126 +2,25 @@
 import yaml
 from jinja2 import Environment, FileSystemLoader, UndefinedError
 import os
-import base64
 import yamllint.config
 import yamllint.linter
 import jsonpath_ng
 import re
 from pathlib import Path
+import sys
 
-
-class IndentDumper(yaml.SafeDumper):
-    """Custom YAML dumper with proper indentation."""
-    def increase_indent(self, flow=False, indentless=False):
-        return super().increase_indent(flow, False)
-
-
-def _represent_multiline_yaml_str():
-    """Configure YAML to use literal block style for multiline strings."""
-    yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
-    def repr_str(dumper, data):
-        if '\n' in data:
-            return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-        return dumper.org_represent_str(data)
-    yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
-
-_represent_multiline_yaml_str()
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+from lib.render import (
+    IndentDumper, base64encode, set_by_path,
+    resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
+)
 
 
 def load_file(path: str) -> str:
-    """
-    Return a placeholder for file paths.
-    In browser context, we don't read actual file contents.
-    Templates will show <file:path> placeholders for x-is-file fields.
-    """
+    """Return a placeholder for file paths (browser context)."""
     if not path or not isinstance(path, str):
         return ""
     return f"<file:{path}>"
-
-
-def base64encode(s) -> str:
-    """Encode a string or bytes to base64."""
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    return base64.b64encode(s).decode("utf-8")
-
-
-_key_index_re = re.compile(r"([^.\[\]]+)|(\[(\d+)\])")
-
-
-def _ensure_container(parent, token_key, next_token_is_index):
-    """Ensure a container exists at the given key."""
-    if isinstance(parent, dict):
-        if token_key not in parent or parent[token_key] is None:
-            parent[token_key] = [] if next_token_is_index else {}
-        return parent[token_key]
-    return parent
-
-
-def _set_by_path(doc: dict, path_expr: str, value) -> dict:
-    """Set a value in a nested dict/list structure using a JSONPath-like expression."""
-    if path_expr.startswith('$'):
-        path_expr = path_expr[1:]
-    if path_expr.startswith('.'):
-        path_expr = path_expr[1:]
-    if path_expr == '':
-        return value
-
-    tokens = _key_index_re.findall(path_expr)
-    parsed = []
-    for key, idxgrp, idxnum in tokens:
-        if key:
-            parsed.append(('key', key))
-        else:
-            parsed.append(('idx', int(idxnum)))
-
-    cur = doc
-    parent = None
-    parent_key = None
-
-    for i, (ttype, tval) in enumerate(parsed):
-        last = (i == len(parsed) - 1)
-        if ttype == 'key':
-            next_is_index = (i + 1 < len(parsed) and parsed[i+1][0] == 'idx')
-            if not isinstance(cur, dict):
-                if parent is not None:
-                    if isinstance(parent, list) and isinstance(parent_key, int):
-                        parent[parent_key] = {}
-                        cur = parent[parent_key]
-                    elif isinstance(parent, dict):
-                        parent[parent_key] = {}
-                        cur = parent[parent_key]
-                    else:
-                        raise TypeError("Path traversal encountered non-container type")
-                else:
-                    raise TypeError("Root is not a dict; cannot set by key")
-            if last:
-                cur[tval] = value
-                return doc
-            parent, parent_key = cur, tval
-            cur = _ensure_container(cur, tval, next_is_index)
-        else:
-            idx = tval
-            if not isinstance(cur, list):
-                if parent is not None:
-                    if isinstance(parent, dict):
-                        parent[parent_key] = []
-                        cur = parent[parent_key]
-                    elif isinstance(parent, list) and isinstance(parent_key, int):
-                        parent[parent_key] = []
-                        cur = parent[parent_key]
-                    else:
-                        raise TypeError("Path traversal encountered non-container type")
-                else:
-                    raise TypeError("Root is not a list; cannot index")
-            while len(cur) <= idx:
-                cur.append({})
-            if last:
-                cur[idx] = value
-                return doc
-            parent, parent_key = cur, idx
-            cur = cur[idx]
-    return doc
 
 
 def apply_params(data: dict, params: list) -> dict:
@@ -140,7 +39,7 @@ def apply_params(data: dict, params: list) -> dict:
                 continue
         except Exception:
             pass
-        _set_by_path(data, path_expr, val)
+        set_by_path(data, path_expr, val)
     return data
 
 
@@ -163,46 +62,6 @@ def process_template(config_data: dict, template_content: str, template_dir: str
 
     template = env.from_string(template_content)
     return template.render(config_data)
-
-
-def _resolve_path(data, dotted_path):
-    """Check if a dotted path like 'cluster.name' exists in nested dict."""
-    parts = dotted_path.split('.')
-    cur = data
-    for part in parts:
-        if not isinstance(cur, dict) or part not in cur:
-            return False
-        cur = cur[part]
-    return True
-
-
-def validate_data_for_template(data, meta):
-    """Pre-render validation: check platform compatibility and required fields.
-    Returns (warnings, errors) tuple of string lists.
-    """
-    warnings = []
-    errors = []
-    platform = data.get('cluster', {}).get('platform', 'baremetal') if isinstance(data.get('cluster'), dict) else 'baremetal'
-    supported = meta.get('platforms', [])
-    if supported and platform not in supported:
-        errors.append(
-            f"Platform '{platform}' is not supported by template '{meta.get('name', '?')}'."
-            f" Supported platforms: {', '.join(supported)}."
-            f" Set cluster.platform to one of the above, or use a different template."
-        )
-    requires = meta.get('requires', [])
-    missing = []
-    for req in requires:
-        if req.startswith('hosts.') or req.startswith('plugins.'):
-            continue
-        if not _resolve_path(data, req):
-            missing.append(req)
-    if missing:
-        warnings.append(
-            f"Missing recommended fields: {', '.join(missing)}."
-            f" Template may produce incomplete output."
-        )
-    return warnings, errors
 
 
 def render_template(yaml_text: str, template_name: str, params: list, templates_dir: Path) -> dict:
@@ -273,7 +132,7 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
             )
 
             # Run yamllint
-            config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
+            config = yamllint.config.YamlLintConfig(YAMLLINT_CONFIG)
             problems = list(yamllint.linter.run(output_yaml, config))
             warnings = val_warnings + [str(p) for p in problems]
 

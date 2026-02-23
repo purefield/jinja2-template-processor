@@ -4,7 +4,6 @@ from jinja2 import Environment, FileSystemLoader, TemplateNotFound, UndefinedErr
 import argparse
 import os
 import sys
-import base64
 import yamllint.config
 import yamllint.linter
 import jsonpath_ng
@@ -16,21 +15,10 @@ try:
 except Exception:
     jsonschema = None
 
-class IndentDumper(yaml.SafeDumper):
-    def increase_indent(self, flow=False, indentless=False):
-        return super().increase_indent(flow, False)
-
-def __represent_multiline_yaml_str():
-    """Compel ``yaml`` library to use block style literals for multi-line
-    strings to prevent unwanted multiple newlines.
-    """
-    yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
-    def repr_str(dumper, data):
-        if '\n' in data:
-            return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-        return dumper.org_represent_str(data)
-    yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
-__represent_multiline_yaml_str()
+from lib.render import (
+    IndentDumper, base64encode, set_by_path,
+    resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
+)
 
 def load_file(path):
     if not path or not isinstance(path, str):
@@ -41,11 +29,6 @@ def load_file(path):
         return content.rstrip()
     except (FileNotFoundError, IOError):
         return ""
-
-def base64encode(s):
-    if isinstance(s, str):
-        s = s.encode("utf-8")
-    return base64.b64encode(s).decode("utf-8")
 
 def parse_template_meta(template_file):
     """Parse @meta block from a template file."""
@@ -61,45 +44,6 @@ def parse_template_meta(template_file):
     except Exception:
         pass
     return meta
-
-def _resolve_path(data, dotted_path):
-    """Check if a dotted path like 'cluster.name' exists in nested dict."""
-    parts = dotted_path.split('.')
-    cur = data
-    for part in parts:
-        if not isinstance(cur, dict) or part not in cur:
-            return False
-        cur = cur[part]
-    return True
-
-def validate_data_for_template(data, meta):
-    """Pre-render validation: check platform compatibility and required fields.
-    Returns (warnings, errors) tuple of string lists.
-    """
-    warnings = []
-    errors = []
-    platform = data.get('cluster', {}).get('platform', 'baremetal') if isinstance(data.get('cluster'), dict) else 'baremetal'
-    supported = meta.get('platforms', [])
-    if supported and platform not in supported:
-        errors.append(
-            f"Platform '{platform}' is not supported by template '{meta.get('name', '?')}'.\n"
-            f"  Supported platforms: {', '.join(supported)}\n"
-            f"  Set cluster.platform to one of the above, or use a different template."
-        )
-    requires = meta.get('requires', [])
-    missing = []
-    for req in requires:
-        if req.startswith('hosts.') or req.startswith('plugins.'):
-            continue
-        if not _resolve_path(data, req):
-            missing.append(req)
-    if missing:
-        warnings.append(
-            f"Missing recommended fields for '{meta.get('name', '?')}':\n"
-            + "".join(f"  - {m}\n" for m in missing)
-            + "  Template may produce incomplete output."
-        )
-    return warnings, errors
 
 def process_template(config_data, template_file, data_file):
     """
@@ -123,94 +67,6 @@ def process_template(config_data, template_file, data_file):
     except TemplateNotFound:
         raise FileNotFoundError(f"Error: Template file '{template_file}' not found.")
     return template.render(config_data)
-
-# --- JSONPath upsert helpers -------------------------------------------------
-
-_key_index_re = re.compile(r"([^.\[\]]+)|(\[(\d+)\])")  # tokens: key or [index]
-
-def _ensure_container(parent, token_key, next_token_is_index):
-    """Ensure that the next container exists under parent for token_key.
-    If next is index -> create list; else create dict.
-    """
-    if isinstance(parent, dict):
-        if token_key not in parent or parent[token_key] is None:
-            parent[token_key] = [] if next_token_is_index else {}
-        return parent[token_key]
-    return parent  # best effort; caller guards types
-
-def _set_by_path(doc, path_expr, value):
-    """Create-or-update value at a dotted/array path like:
-       'a.b[0].c' or '$.a.b[1]'. Creates missing dicts/lists as needed.
-    """
-    # Normalize: remove leading '$' and optional '.'
-    if path_expr.startswith('$'):
-        path_expr = path_expr[1:]
-    if path_expr.startswith('.'):
-        path_expr = path_expr[1:]
-
-    if path_expr == '':
-        # root replacement (rare; not recommended)
-        return value
-
-    tokens = _key_index_re.findall(path_expr)
-    # tokens is list of tuples (key, idx_group, idx_num). We map to sequence of ('key', name) or ('idx', int)
-    parsed = []
-    for key, idxgrp, idxnum in tokens:
-        if key:
-            parsed.append(('key', key))
-        else:
-            parsed.append(('idx', int(idxnum)))
-
-    cur = doc
-    parent = None
-    parent_key = None
-    for i, (ttype, tval) in enumerate(parsed):
-        last = (i == len(parsed) - 1)
-        if ttype == 'key':
-            # lookahead: is next token an index?
-            next_is_index = (i + 1 < len(parsed) and parsed[i+1][0] == 'idx')
-            if not isinstance(cur, dict):
-                # convert to dict if possible
-                if parent is not None:
-                    if isinstance(parent, list) and isinstance(parent_key, int):
-                        parent[parent_key] = {}
-                        cur = parent[parent_key]
-                    elif isinstance(parent, dict):
-                        parent[parent_key] = {}
-                        cur = parent[parent_key]
-                    else:
-                        raise TypeError("Path traversal encountered non-container type")
-                else:
-                    raise TypeError("Root is not a dict; cannot set by key")  # shouldn't happen for our usage
-            if last:
-                cur[tval] = value
-                return doc
-            parent, parent_key = cur, tval
-            cur = _ensure_container(cur, tval, next_is_index)
-        else:  # index
-            idx = tval
-            if not isinstance(cur, list):
-                # convert to list
-                if parent is not None:
-                    if isinstance(parent, dict):
-                        parent[parent_key] = []
-                        cur = parent[parent_key]
-                    elif isinstance(parent, list) and isinstance(parent_key, int):
-                        parent[parent_key] = []
-                        cur = parent[parent_key]
-                    else:
-                        raise TypeError("Path traversal encountered non-container type")
-                else:
-                    raise TypeError("Root is not a list; cannot index")
-            # ensure size
-            while len(cur) <= idx:
-                cur.append({})
-            if last:
-                cur[idx] = value
-                return doc
-            parent, parent_key = cur, idx
-            cur = cur[idx]
-    return doc
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process Jinja2 templates with YAML data.")
@@ -330,7 +186,7 @@ if __name__ == "__main__":
             # If parse fails, fall back to dotted/indexed path
             pass
         # Create missing structure using dotted/index fallback
-        _set_by_path(data, path_expr, val)
+        set_by_path(data, path_expr, val)
 
     # If schema provided and scope is data+params, validate now after applying overrides
     if args.schema and args.validate_scope == "data+params":
@@ -345,7 +201,7 @@ if __name__ == "__main__":
                 print(m, file=sys.stderr)
             sys.exit(2)
 
-    config = yamllint.config.YamlLintConfig('extends: default\nrules:\n  line-length: disable')
+    config = yamllint.config.YamlLintConfig(YAMLLINT_CONFIG)
 
     # Pre-render validation: check platform and required fields
     meta = parse_template_meta(args.template_file)
