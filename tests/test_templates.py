@@ -308,6 +308,25 @@ def baremetal_vips_data():
     }
 
 
+def operator_test_data(operator_name, config=None):
+    """Shared helper for operator test data — returns base cluster data with a single operator configured."""
+    data = base_cluster_data()
+    data['cluster']['platform'] = 'baremetal'
+    data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
+    if config is not None:
+        data['plugins'] = {'operators': {operator_name: config}}
+    return data
+
+
+def ztp_host_data(data):
+    """Enrich all hosts in data with BMC/network/storage for ZTP template rendering."""
+    for host in data['hosts'].values():
+        host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
+        host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
+        host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+    return data
+
+
 # --- Test classes ---
 
 class TestInstallConfigTemplate:
@@ -1728,21 +1747,12 @@ class TestDisconnectedOperatorHub:
 class TestOperatorsPlugin:
     """Tests for operator plugin architecture — ArgoCD."""
 
-    def operator_data(self, argocd_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if argocd_config is not None:
-            data['plugins'] = {'operators': {'argocd': argocd_config}}
-        return data
-
     def test_argocd_standalone_defaults(self, template_env):
         """Test standalone operators template with all ArgoCD defaults."""
-        data = self.operator_data({})
+        data = operator_test_data('argocd', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
-        docs = list(yaml.safe_load_all(rendered))
-        docs = [d for d in docs if d is not None]
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
 
         kinds = [d['kind'] for d in docs]
         assert 'Namespace' in kinds
@@ -1757,7 +1767,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_custom_channel(self, template_env):
         """Test ArgoCD with custom channel and HA."""
-        data = self.operator_data({'channel': 'gitops-1.14', 'ha': True})
+        data = operator_test_data('argocd', {'channel': 'gitops-1.14', 'ha': True})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1771,7 +1781,7 @@ class TestOperatorsPlugin:
     def test_argocd_rbac_policy(self, template_env):
         """Test ArgoCD with custom RBAC policy."""
         policy = "g, system:cluster-admins, role:admin\np, role:dev, applications, *, */*, allow"
-        data = self.operator_data({'rbac': {'policy': policy, 'defaultPolicy': 'role:admin'}})
+        data = operator_test_data('argocd', {'rbac': {'policy': policy, 'defaultPolicy': 'role:admin'}})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1782,7 +1792,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_disabled(self, template_env):
         """Test ArgoCD with enabled: false produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('argocd', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         # Should produce no YAML docs
@@ -1791,7 +1801,7 @@ class TestOperatorsPlugin:
 
     def test_no_operators_plugin(self, template_env):
         """Test templates work fine without operators plugin."""
-        data = self.operator_data(None)  # no operators plugin
+        data = operator_test_data('argocd')  # no operators plugin
         template = template_env.get_template('install-config.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1802,7 +1812,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_in_install_config(self, template_env):
         """Test ArgoCD manifests appear in install-config output."""
-        data = self.operator_data({})
+        data = operator_test_data('argocd', {})
         template = template_env.get_template('install-config.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1812,13 +1822,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_acm_ztp_policy(self, template_env):
         """Test ArgoCD generates ACM Policy in ZTP template."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('argocd', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -1826,19 +1830,17 @@ class TestOperatorsPlugin:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-argocd']
         assert len(policies) == 1, "Expected one ArgoCD Policy"
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 3, "ArgoCD policy: subscription + CRD gate + CR"
 
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-argocd']
         assert len(bindings) == 1, "Expected one ArgoCD PlacementBinding"
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-argocd'
 
     def test_argocd_crd_readiness_gate(self, template_env):
         """Test ArgoCD ACM Policy uses CRD check as readiness gate."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('argocd', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -1850,13 +1852,14 @@ class TestOperatorsPlugin:
         templates = policy['spec']['policy-templates']
         ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'argocd-operator-ready']
         assert len(ready) == 1, "Expected argocd-operator-ready ConfigurationPolicy"
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
         obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
         assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
         assert obj['metadata']['name'] == 'argocds.argoproj.io'
 
     def test_argocd_bootstrap_application(self, template_env):
         """Test ArgoCD bootstrap creates an Application CR for app-of-apps."""
-        data = self.operator_data({'bootstrap': {'repoURL': 'https://git.example.com/cluster-config.git', 'path': 'operators', 'targetRevision': 'main'}})
+        data = operator_test_data('argocd', {'bootstrap': {'repoURL': 'https://git.example.com/cluster-config.git', 'path': 'operators', 'targetRevision': 'main'}})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1871,7 +1874,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_bootstrap_no_sync(self, template_env):
         """Test ArgoCD bootstrap with autoSync disabled omits syncPolicy."""
-        data = self.operator_data({'bootstrap': {'repoURL': 'https://git.example.com/config.git', 'autoSync': False}})
+        data = operator_test_data('argocd', {'bootstrap': {'repoURL': 'https://git.example.com/config.git', 'autoSync': False}})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1881,7 +1884,7 @@ class TestOperatorsPlugin:
 
     def test_argocd_no_bootstrap_without_config(self, template_env):
         """Test no bootstrap Application when bootstrap is not configured."""
-        data = self.operator_data({})
+        data = operator_test_data('argocd', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1892,17 +1895,9 @@ class TestOperatorsPlugin:
 class TestLvmOperator:
     """Tests for LVM operator plugin."""
 
-    def operator_data(self, lvm_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if lvm_config is not None:
-            data['plugins'] = {'operators': {'lvm': lvm_config}}
-        return data
-
     def test_lvm_standalone_defaults(self, template_env):
         """Test LVM with all defaults produces Namespace, OperatorGroup, Subscription, LVMCluster."""
-        data = self.operator_data({})
+        data = operator_test_data('lvm', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1924,7 +1919,7 @@ class TestLvmOperator:
 
     def test_lvm_custom_channel(self, template_env):
         """Test LVM with custom channel and source."""
-        data = self.operator_data({'channel': 'stable-4.19', 'source': 'my-catalog'})
+        data = operator_test_data('lvm', {'channel': 'stable-4.19', 'source': 'my-catalog'})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1935,7 +1930,7 @@ class TestLvmOperator:
 
     def test_lvm_device_classes(self, template_env):
         """Test LVM with custom device classes."""
-        data = self.operator_data({
+        data = operator_test_data('lvm', {
             'deviceClasses': [
                 {'name': 'fast', 'fstype': 'xfs', 'deviceSelector': {'paths': ['/dev/nvme0n1']}},
                 {'name': 'slow', 'default': True, 'fstype': 'ext4'}
@@ -1955,7 +1950,7 @@ class TestLvmOperator:
 
     def test_lvm_disabled(self, template_env):
         """Test LVM disabled produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('lvm', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -1963,14 +1958,7 @@ class TestLvmOperator:
 
     def test_lvm_acm_policy(self, template_env):
         """Test LVM generates ACM Policy in ZTP template."""
-        data = self.operator_data({})
-        data['plugins']['operators']['lvm'] = {}
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('lvm', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -1978,19 +1966,17 @@ class TestLvmOperator:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-lvm']
         assert len(policies) == 1
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 3, "LVM policy: subscription + CRD gate + CR"
+
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-lvm']
         assert len(bindings) == 1
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-lvm'
 
     def test_lvm_crd_readiness_gate(self, template_env):
         """Test LVM ACM Policy uses CRD check as readiness gate."""
-        data = self.operator_data({})
-        data['plugins']['operators']['lvm'] = {}
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('lvm', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -2002,13 +1988,14 @@ class TestLvmOperator:
         templates = policy['spec']['policy-templates']
         ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'lvm-operator-ready']
         assert len(ready) == 1, "Expected lvm-operator-ready ConfigurationPolicy"
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
         obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
         assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
         assert obj['metadata']['name'] == 'lvmclusters.lvm.topolvm.io'
 
     def test_lvm_in_install_config(self, template_env):
         """Test LVM manifests appear in install-config output."""
-        data = self.operator_data({})
+        data = operator_test_data('lvm', {})
         template = template_env.get_template('install-config.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2020,17 +2007,9 @@ class TestLvmOperator:
 class TestOdfOperator:
     """Tests for ODF operator plugin."""
 
-    def operator_data(self, odf_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if odf_config is not None:
-            data['plugins'] = {'operators': {'odf': odf_config}}
-        return data
-
     def test_odf_standalone_defaults(self, template_env):
         """Test ODF with all defaults."""
-        data = self.operator_data({})
+        data = operator_test_data('odf', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2050,7 +2029,7 @@ class TestOdfOperator:
 
     def test_odf_custom_storage_cluster(self, template_env):
         """Test ODF with custom storage cluster config."""
-        data = self.operator_data({
+        data = operator_test_data('odf', {
             'channel': 'stable-4.19',
             'storageCluster': {
                 'name': 'my-cluster',
@@ -2072,7 +2051,7 @@ class TestOdfOperator:
 
     def test_odf_disabled(self, template_env):
         """Test ODF disabled produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('odf', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2080,13 +2059,7 @@ class TestOdfOperator:
 
     def test_odf_acm_policy(self, template_env):
         """Test ODF generates ACM Policy in ZTP template."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('odf', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -2094,16 +2067,17 @@ class TestOdfOperator:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-odf']
         assert len(policies) == 1
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 3, "ODF policy: subscription + CRD gate + CR"
+
+        bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-odf']
+        assert len(bindings) == 1
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-odf'
 
     def test_odf_crd_readiness_gate(self, template_env):
         """Test ODF ACM Policy uses CRD check (not CSV) as readiness gate."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('odf', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -2115,26 +2089,18 @@ class TestOdfOperator:
         templates = policy['spec']['policy-templates']
         ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'odf-operator-ready']
         assert len(ready) == 1, "Expected odf-operator-ready ConfigurationPolicy"
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
         obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
         assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
         assert obj['metadata']['name'] == 'storageclusters.ocs.openshift.io'
-        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
 
 
 class TestCertManagerOperator:
     """Tests for cert-manager operator plugin."""
 
-    def operator_data(self, cm_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if cm_config is not None:
-            data['plugins'] = {'operators': {'cert-manager': cm_config}}
-        return data
-
     def test_certmanager_standalone_defaults(self, template_env):
         """Test cert-manager with all defaults."""
-        data = self.operator_data({})
+        data = operator_test_data('cert-manager', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2151,7 +2117,7 @@ class TestCertManagerOperator:
 
     def test_certmanager_custom_source(self, template_env):
         """Test cert-manager with custom source for disconnected."""
-        data = self.operator_data({'source': 'custom-catalog', 'approval': 'Manual'})
+        data = operator_test_data('cert-manager', {'source': 'custom-catalog', 'approval': 'Manual'})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2162,7 +2128,7 @@ class TestCertManagerOperator:
 
     def test_certmanager_disabled(self, template_env):
         """Test cert-manager disabled produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('cert-manager', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2170,13 +2136,7 @@ class TestCertManagerOperator:
 
     def test_certmanager_acm_policy(self, template_env):
         """Test cert-manager generates ACM Policy in ZTP template."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('cert-manager', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -2184,8 +2144,32 @@ class TestCertManagerOperator:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-cert-manager']
         assert len(policies) == 1
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 2, "cert-manager policy: subscription + CRD gate"
+
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-cert-manager']
         assert len(bindings) == 1
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-cert-manager'
+
+    def test_certmanager_crd_readiness_gate(self, template_env):
+        """Test cert-manager ACM Policy uses CRD check as readiness gate."""
+        data = ztp_host_data(operator_test_data('cert-manager', {}))
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-cert-manager']
+        assert len(policies) == 1
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'cert-manager-operator-ready']
+        assert len(ready) == 1, "Expected cert-manager-operator-ready ConfigurationPolicy"
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
+        obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
+        assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
+        assert obj['metadata']['name'] == 'certmanagers.operator.openshift.io'
 
 
 class TestCertManagerConfig:
@@ -2300,17 +2284,9 @@ class TestCertManagerConfig:
 class TestAcmOperator:
     """Tests for ACM operator plugin."""
 
-    def operator_data(self, acm_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if acm_config is not None:
-            data['plugins'] = {'operators': {'acm': acm_config}}
-        return data
-
     def test_acm_standalone_defaults(self, template_env):
         """Test ACM with all defaults produces full hub manifests."""
-        data = self.operator_data({})
+        data = operator_test_data('acm', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2333,7 +2309,7 @@ class TestAcmOperator:
 
     def test_acm_custom_config(self, template_env):
         """Test ACM with custom storage sizes and availability."""
-        data = self.operator_data({
+        data = operator_test_data('acm', {
             'multiClusterHub': {'availabilityConfig': 'Basic'},
             'agentServiceConfig': {'databaseStorage': '20Gi', 'imageStorage': '100Gi'}
         })
@@ -2350,7 +2326,7 @@ class TestAcmOperator:
 
     def test_acm_disabled(self, template_env):
         """Test ACM disabled produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('acm', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2360,17 +2336,9 @@ class TestAcmOperator:
 class TestExternalSecretsOperator:
     """Tests for external-secrets operator plugin."""
 
-    def operator_data(self, es_config=None):
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        if es_config is not None:
-            data['plugins'] = {'operators': {'external-secrets': es_config}}
-        return data
-
     def test_externalsecrets_standalone_defaults(self, template_env):
         """Test external-secrets with defaults (no Namespace/OperatorGroup — global scope)."""
-        data = self.operator_data({})
+        data = operator_test_data('external-secrets', {})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2384,7 +2352,7 @@ class TestExternalSecretsOperator:
 
     def test_externalsecrets_custom_source(self, template_env):
         """Test external-secrets with custom source."""
-        data = self.operator_data({'source': 'disconnected-catalog'})
+        data = operator_test_data('external-secrets', {'source': 'disconnected-catalog'})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2394,7 +2362,7 @@ class TestExternalSecretsOperator:
 
     def test_externalsecrets_disabled(self, template_env):
         """Test external-secrets disabled produces no output."""
-        data = self.operator_data({'enabled': False})
+        data = operator_test_data('external-secrets', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -2402,13 +2370,7 @@ class TestExternalSecretsOperator:
 
     def test_externalsecrets_acm_policy(self, template_env):
         """Test external-secrets generates ACM Policy in ZTP template."""
-        data = self.operator_data({})
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = ztp_host_data(operator_test_data('external-secrets', {}))
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
@@ -2416,6 +2378,13 @@ class TestExternalSecretsOperator:
         items = result.get('items', [])
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-external-secrets']
         assert len(policies) == 1
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 1, "external-secrets policy: subscription only (no CRD gate)"
+
+        bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-external-secrets']
+        assert len(bindings) == 1
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-external-secrets'
 
 
 class TestMultipleOperators:
@@ -2449,20 +2418,10 @@ class TestMultipleOperators:
 
     def test_mixed_operators_ztp_policies(self, template_env):
         """Test multiple operators generate correct ACM policies in ZTP."""
-        data = base_cluster_data()
-        data['cluster']['platform'] = 'baremetal'
-        data['cluster']['version'] = '4.21.0'
-        data['cluster']['arch'] = 'x86_64'
-        data['network']['primary']['vips'] = {'api': '10.0.0.2', 'apps': '10.0.0.3'}
-        data['plugins'] = {'operators': {
-            'lvm': {},
-            'cert-manager': {},
-            'external-secrets': {}
-        }}
-        for hostname, host in data['hosts'].items():
-            host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
-            host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
-            host['storage'] = {'os': {'deviceName': '/dev/sda'}}
+        data = operator_test_data('lvm', {})
+        data['plugins']['operators']['cert-manager'] = {}
+        data['plugins']['operators']['external-secrets'] = {}
+        ztp_host_data(data)
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
