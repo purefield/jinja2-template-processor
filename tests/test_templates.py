@@ -2068,7 +2068,7 @@ class TestOdfOperator:
         policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-odf']
         assert len(policies) == 1
         assert policies[0]['spec']['remediationAction'] == 'enforce'
-        assert len(policies[0]['spec']['policy-templates']) == 3, "ODF policy: subscription + CRD gate + CR"
+        assert len(policies[0]['spec']['policy-templates']) == 4, "ODF policy: node-labels + subscription + CRD gate + CR"
 
         bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-odf']
         assert len(bindings) == 1
@@ -2093,6 +2093,31 @@ class TestOdfOperator:
         obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
         assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD, not CSV"
         assert obj['metadata']['name'] == 'storageclusters.ocs.openshift.io'
+
+    def test_odf_node_labels_policy(self, template_env):
+        """Test ODF ACM Policy labels nodes for ODF storage (compact: all nodes, standard: workers)."""
+        data = ztp_host_data(operator_test_data('odf', {}))
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-odf']
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        labels_stage = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'odf-node-labels']
+        assert len(labels_stage) == 1, "Expected odf-node-labels ConfigurationPolicy"
+        objs = labels_stage[0]['objectDefinition']['spec']['object-templates']
+        workers = [h for h, d in data['hosts'].items() if d.get('role') == 'worker']
+        expected = len(workers) if workers else len(data['hosts'])
+        assert len(objs) == expected, f"Should label {expected} nodes (workers if present, else all)"
+        for obj in objs:
+            assert obj['objectDefinition']['kind'] == 'Node'
+            assert 'cluster.ocs.openshift.io/openshift-storage' in obj['objectDefinition']['metadata']['labels']
+        # StorageCluster must depend on node-labels
+        sc_stage = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'odf-storagecluster']
+        dep_names = [d['name'] for d in sc_stage[0].get('extraDependencies', [])]
+        assert 'odf-node-labels' in dep_names, "StorageCluster must depend on node-labels"
 
 
 class TestCertManagerOperator:

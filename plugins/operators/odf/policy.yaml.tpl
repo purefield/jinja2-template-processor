@@ -2,6 +2,11 @@
 {%- set odfEnabled = odf.enabled | default(true) -%}
 {%- set odfChannel = odf.channel | default("stable-" + cluster.version.split(".")[:2] | join(".")) -%}
 {%- set sc = odf.storageCluster | default({}) -%}
+{%- set _workers = [] -%}
+{%- for hostname, host in hosts.items() if host.role | default('worker') == 'worker' -%}
+{%- set _ = _workers.append(hostname) -%}
+{%- endfor -%}
+{%- set odf_nodes = _workers if _workers else hosts.keys() | list -%}
 {%- if odfEnabled %}
 - kind: Policy
   apiVersion: policy.open-cluster-management.io/v1
@@ -16,6 +21,23 @@
     remediationAction: enforce
     disabled: false
     policy-templates:
+      - objectDefinition:
+          apiVersion: policy.open-cluster-management.io/v1
+          kind: ConfigurationPolicy
+          metadata:
+            name: odf-node-labels
+          spec:
+            remediationAction: enforce
+            severity: high
+            object-templates:{% for node in odf_nodes %}
+              - complianceType: musthave
+                objectDefinition:
+                  apiVersion: v1
+                  kind: Node
+                  metadata:
+                    name: {{ node }}
+                    labels:
+                      cluster.ocs.openshift.io/openshift-storage: ""{% endfor %}
       - objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
           kind: ConfigurationPolicy
@@ -80,6 +102,10 @@
           - apiVersion: policy.open-cluster-management.io/v1
             kind: ConfigurationPolicy
             name: odf-operator-ready
+            compliance: Compliant
+          - apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            name: odf-node-labels
             compliance: Compliant
         objectDefinition:
           apiVersion: policy.open-cluster-management.io/v1
