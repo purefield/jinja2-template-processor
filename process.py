@@ -28,6 +28,7 @@ def load_file(path):
             content = f.read()
         return content.rstrip()
     except (FileNotFoundError, IOError):
+        print(f"WARNING: load_file('{path}'): file not found or unreadable", file=sys.stderr)
         return ""
 
 def parse_template_meta(template_file):
