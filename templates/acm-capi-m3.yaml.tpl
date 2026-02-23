@@ -363,7 +363,20 @@ items:
 {{ insecureImageManifest }}{% endif %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
 {{ osImagesSync }}{% if plugins is defined and plugins.operators is defined %}
-{%- set ops = plugins.operators -%}
+{%- set ops = plugins.operators %}
+- kind: Placement
+  apiVersion: cluster.open-cluster-management.io/v1beta1
+  metadata:
+    name: {{ cluster.name }}
+    namespace: {{ cluster.name }}
+  spec:
+    predicates:
+      - requiredClusterSelector:
+          labelSelector:
+            matchLabels:
+              name: {{ cluster.name }}
+    clusterSets:
+      - default
 {%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{%- set opPolicy %}{% include "operators/" ~ op_name ~ "/policy.yaml.tpl" ignore missing %}{% endset %}
 {{ opPolicy }}{% endfor -%}
 {% endif %}
