@@ -2,12 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
-- **dynamic-plugin-integration** — Replace 4x6 hardcoded operator if-blocks with convention-based for-loops in templates. Plugins are now self-sufficient and discovered by convention. Config templates self-guard internally (2026-02-23)
-- **cert-manager-crd-gate** — Add CRD readiness gate (`certmanagers.operator.openshift.io`) to cert-manager ACM Policy, matching the 3-stage pattern used by ArgoCD, LVM, and ODF (2026-02-23)
-- **lib-render-dry** — Extract shared Python module `lib/render.py` from duplicated code in `process.py` and `template_processor.py`: IndentDumper, base64encode, set_by_path, validate_data_for_template, YAMLLINT_CONFIG (2026-02-23)
-- **test-consolidation** — Consolidate 6 duplicated operator_data() test methods into shared helpers; strengthen ACM policy assertions (remediationAction, policy-templates count, PlacementBinding structure, CRD names) (2026-02-23)
-- **load-file-warning** — Add stderr warning in load_file() when secret files are missing or unreadable (2026-02-23)
+## v3.9.0 (2026-02-23)
+- **dynamic-plugin-integration** — Replace 4x6 hardcoded operator if-blocks with convention-based for-loops in templates. Plugins are now self-sufficient and discovered by convention. Config templates self-guard internally
+- **cert-manager-crd-gate** — Add CRD readiness gate (`certmanagers.operator.openshift.io`) to cert-manager ACM Policy, matching the 3-stage pattern used by ArgoCD, LVM, and ODF
+- **lib-render-dry** — Extract shared Python module `lib/render.py` from duplicated code in `process.py` and `template_processor.py`: IndentDumper, base64encode, set_by_path, validate_data_for_template, YAMLLINT_CONFIG
+- **test-consolidation** — Consolidate 6 duplicated operator_data() test methods into shared helpers; strengthen ACM policy assertions (remediationAction, policy-templates count, PlacementBinding structure, CRD names)
+- **load-file-warning** — Add stderr warning in load_file() when secret files are missing or unreadable
 
 ## v3.8.2 (2026-02-21)
 - **odf-auto-channel** — Derive ODF operator channel from `cluster.version` (`stable-4.X`) instead of hardcoded `stable-4.18`. Fixes ODF installation failure on OCP 4.21+ where the `stable-4.18` channel doesn't exist

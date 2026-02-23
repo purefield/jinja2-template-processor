@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.9.0',
+    date: '2026-02-23',
+    changes: [
+      'Dynamic plugin integration: operators discovered by convention, no hardcoded if-blocks',
+      'cert-manager CRD readiness gate added to ACM Policy (3-stage pattern)',
+      'Shared Python library lib/render.py eliminates CLI/editor code duplication',
+      'load_file() warns on stderr when secret files are missing'
+    ]
+  },
+  {
     version: '3.8.2',
     date: '2026-02-21',
     changes: [

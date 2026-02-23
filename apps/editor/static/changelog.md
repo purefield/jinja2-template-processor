@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 3.9.0
+- **Dynamic Plugin Integration**: Operators discovered by convention — no hardcoded if-blocks. Adding a new operator requires only its plugin directory, no template changes
+- **cert-manager CRD Gate**: ACM Policy for cert-manager now includes CRD readiness gate (certmanagers.operator.openshift.io), matching the 3-stage pattern used by ArgoCD, LVM, and ODF
+- **DRY Shared Library**: Common Python utilities (IndentDumper, base64encode, YAML validation) extracted to `lib/render.py`, eliminating duplication between CLI and web editor
+- **Missing File Warnings**: `load_file()` now warns on stderr when secret files are missing or unreadable
+
 ## 3.8.2
 - **ODF Auto Channel**: Derive ODF operator channel from cluster version (`stable-4.X`) instead of hardcoded `stable-4.18`
 

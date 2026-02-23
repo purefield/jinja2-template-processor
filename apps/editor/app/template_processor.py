@@ -9,7 +9,8 @@ import re
 from pathlib import Path
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))  # dev: repo root
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))              # container: /app/
 from lib.render import (
     IndentDumper, base64encode, set_by_path,
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
