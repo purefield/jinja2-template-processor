@@ -2324,3 +2324,33 @@ Implemented the full 6-item quality hardening plan:
 > ship it
 
 Released v3.9.0. Updated all 5 version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG, CHANGELOG.md, Containerfile). Added lib/ COPY to Containerfile and container-compatible sys.path for lib.render import. Committed, tagged v3.9.0, pushed. Built and pushed container images (v3.9.0 + latest). Restarted app — healthz returns 3.9.0.
+
+### Prompt 183
+
+> ocp-cluster3 installed OCP with the operators, great. for ODF we did not create a storagecluster yet and the installation is hanging waiting for the PVC to be created with the default storage class for the internal image registry
+
+Investigated ocp-cluster3 ODF issue. Rendered CAPI template and found ODF policy was present but missing node labeling. Added automatic ODF storage node labeling (odf-node-labels ConfigurationPolicy) to the ODF policy template with smart worker-preference logic. 4-stage pipeline: node-labels + subscription → CRD gate → StorageCluster. Committed a04abdc, tagged odf-node-labels.
+
+### Prompt 184
+
+> that should happen as part of the automation, no manual steps allowed here
+
+Already implemented in Prompt 183 — the node labeling is automatic via ACM Policy ConfigurationPolicy, no manual steps.
+
+### Prompt 185
+
+> (applied policy, PlacementBinding already exists error)
+
+Investigated PlacementBinding conflict. User showed only operator-external-secrets PlacementBinding exists. The real issue was that PlacementBindings reference a Placement resource that neither ZTP nor CAPI templates create.
+
+### Prompt 186
+
+> the rule does not match a cluster
+
+Root cause: PlacementBindings reference `kind: Placement, name: {{ cluster.name }}` but no Placement resource existed. Added Placement resource to both acm-capi-m3.yaml.tpl and acm-ztp.yaml.tpl. Fixed Jinja2 whitespace issue (`{%- set ops -%}` trim dashes eating newline before Placement). Committed d80017d, tagged add-placement-resource. Re-rendered /tmp/odf-policy-cluster3.yaml with Placement + Policy + PlacementBinding.
+
+### Prompt 187
+
+> (continued session — fixing Placement whitespace issue)
+
+Fixed the Jinja2 whitespace bug: `{%- set ops = plugins.operators -%}` right trim dash was eating the newline before `- kind: Placement`, preventing it from rendering. Changed to `{%- set ops = plugins.operators %}` (no right trim). Verified Placement renders in both ZTP and CAPI output. 139 tests pass. Extracted clean /tmp/odf-policy-cluster3.yaml with all 3 resources (Placement, Policy, PlacementBinding).

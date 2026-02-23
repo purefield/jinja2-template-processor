@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **add-placement-resource** — Add Placement resource to ACM ZTP and CAPI templates so operator PlacementBindings can target managed clusters
+- **odf-node-labels** — Add automatic ODF storage node labeling via ACM Policy; smart node selection labels workers when present, all nodes for compact clusters; 4-stage pipeline with dual dependencies on StorageCluster
+
 ## v3.9.0 (2026-02-23)
 - **dynamic-plugin-integration** — Replace 4x6 hardcoded operator if-blocks with convention-based for-loops in templates. Plugins are now self-sufficient and discovered by convention. Config templates self-guard internally
 - **cert-manager-crd-gate** — Add CRD readiness gate (`certmanagers.operator.openshift.io`) to cert-manager ACM Policy, matching the 3-stage pattern used by ArgoCD, LVM, and ODF
