@@ -364,6 +364,13 @@ items:
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
 {{ osImagesSync }}{% if plugins is defined and plugins.operators is defined %}
 {%- set ops = plugins.operators %}
+- kind: ManagedClusterSetBinding
+  apiVersion: cluster.open-cluster-management.io/v1beta2
+  metadata:
+    name: default
+    namespace: {{ cluster.name }}
+  spec:
+    clusterSet: default
 - kind: Placement
   apiVersion: cluster.open-cluster-management.io/v1beta1
   metadata:

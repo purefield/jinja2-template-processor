@@ -1,0 +1,92 @@
+{
+  "title": "Local Storage Operator (LSO)",
+  "description": "Exposes local block devices as PVs via LocalVolumeSet. Provides StorageClass for ODF on bare-metal/KubeVirt nodes. Specify {} for all defaults.",
+  "type": "object",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html",
+  "properties": {
+    "enabled": {
+      "title": "Enabled",
+      "type": "boolean",
+      "default": true,
+      "description": "Set false to skip LSO installation."
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "default": "stable",
+      "description": "OLM subscription channel (e.g. stable, stable-4.18)."
+    },
+    "approval": {
+      "title": "Install Plan Approval",
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "default": "Automatic",
+      "description": "InstallPlan approval strategy. Automatic installs updates immediately; Manual requires admin approval."
+    },
+    "source": {
+      "title": "Catalog Source",
+      "type": "string",
+      "default": "redhat-operators",
+      "description": "OLM CatalogSource name. Override for disconnected or custom catalogs."
+    },
+    "storageClassName": {
+      "title": "Storage Class Name",
+      "type": "string",
+      "default": "local-block",
+      "description": "Name of the StorageClass created by the LocalVolumeSet."
+    },
+    "volumeMode": {
+      "title": "Volume Mode",
+      "type": "string",
+      "enum": [
+        "Block",
+        "Filesystem"
+      ],
+      "default": "Block",
+      "description": "PV volume mode. Block for ODF/Ceph, Filesystem for general use."
+    },
+    "fsType": {
+      "title": "Filesystem Type",
+      "type": "string",
+      "enum": [
+        "xfs",
+        "ext4"
+      ],
+      "default": "xfs",
+      "description": "Filesystem type when volumeMode is Filesystem."
+    },
+    "deviceInclusionSpec": {
+      "title": "Device Inclusion Spec",
+      "type": "object",
+      "description": "Filter which local devices the operator should discover and provision.",
+      "properties": {
+        "deviceTypes": {
+          "title": "Device Types",
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["disk"],
+          "description": "Device types to include (disk, part, mpath)."
+        },
+        "minSize": {
+          "title": "Minimum Size",
+          "type": "string",
+          "description": "Minimum device size (e.g. 100Gi)."
+        },
+        "maxSize": {
+          "title": "Maximum Size",
+          "type": "string",
+          "description": "Maximum device size (e.g. 2Ti)."
+        }
+      }
+    },
+    "nodeSelector": {
+      "title": "Node Selector",
+      "type": "object",
+      "description": "Label selector for nodes with local disks. Defaults to ODF storage label: cluster.ocs.openshift.io/openshift-storage."
+    }
+  },
+  "additionalProperties": true
+}

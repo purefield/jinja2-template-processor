@@ -2004,6 +2004,105 @@ class TestLvmOperator:
         assert 'LVMCluster' in kinds
 
 
+class TestLsoOperator:
+    """Tests for Local Storage Operator (LSO) plugin."""
+
+    def test_lso_standalone_defaults(self, template_env):
+        """Test LSO with all defaults produces Namespace, OperatorGroup, Subscription, LocalVolumeSet."""
+        data = operator_test_data('lso', {})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        kinds = [d['kind'] for d in docs]
+        assert 'Namespace' in kinds
+        assert 'OperatorGroup' in kinds
+        assert 'Subscription' in kinds
+        assert 'LocalVolumeSet' in kinds
+
+        ns = next(d for d in docs if d['kind'] == 'Namespace')
+        assert ns['metadata']['name'] == 'openshift-local-storage'
+
+        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        assert sub['spec']['channel'] == 'stable'
+        assert sub['spec']['name'] == 'local-storage-operator'
+        assert sub['metadata']['namespace'] == 'openshift-local-storage'
+
+        lvs = next(d for d in docs if d['kind'] == 'LocalVolumeSet')
+        assert lvs['spec']['storageClassName'] == 'local-block'
+        assert lvs['spec']['volumeMode'] == 'Block'
+        assert lvs['spec']['deviceInclusionSpec']['deviceTypes'] == ['disk']
+
+    def test_lso_custom_config(self, template_env):
+        """Test LSO with custom storageClassName and deviceInclusionSpec."""
+        data = operator_test_data('lso', {
+            'storageClassName': 'my-local',
+            'volumeMode': 'Filesystem',
+            'fsType': 'ext4',
+            'deviceInclusionSpec': {
+                'deviceTypes': ['disk', 'part'],
+                'minSize': '100Gi',
+                'maxSize': '2Ti'
+            }
+        })
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        lvs = next(d for d in docs if d['kind'] == 'LocalVolumeSet')
+        assert lvs['spec']['storageClassName'] == 'my-local'
+        assert lvs['spec']['volumeMode'] == 'Filesystem'
+        assert lvs['spec']['fsType'] == 'ext4'
+        assert lvs['spec']['deviceInclusionSpec']['deviceTypes'] == ['disk', 'part']
+        assert lvs['spec']['deviceInclusionSpec']['minSize'] == '100Gi'
+        assert lvs['spec']['deviceInclusionSpec']['maxSize'] == '2Ti'
+
+    def test_lso_disabled(self, template_env):
+        """Test LSO disabled produces no output."""
+        data = operator_test_data('lso', {'enabled': False})
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        assert len(docs) == 0
+
+    def test_lso_acm_policy(self, template_env):
+        """Test LSO generates ACM Policy with 3 policy-templates + PlacementBinding."""
+        data = ztp_host_data(operator_test_data('lso', {}))
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-lso']
+        assert len(policies) == 1
+        assert policies[0]['spec']['remediationAction'] == 'enforce'
+        assert len(policies[0]['spec']['policy-templates']) == 3, "LSO policy: subscription + CRD gate + CR"
+
+        bindings = [i for i in items if i.get('kind') == 'PlacementBinding' and i['metadata']['name'] == 'operator-lso']
+        assert len(bindings) == 1
+        assert bindings[0]['placementRef']['kind'] == 'Placement'
+        assert bindings[0]['subjects'][0]['name'] == 'operator-lso'
+
+    def test_lso_crd_readiness_gate(self, template_env):
+        """Test LSO ACM Policy uses localvolumesets CRD as readiness gate."""
+        data = ztp_host_data(operator_test_data('lso', {}))
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        items = result.get('items', [])
+        policies = [i for i in items if i.get('kind') == 'Policy' and i['metadata']['name'] == 'operator-lso']
+        assert len(policies) == 1
+        policy = policies[0]
+        templates = policy['spec']['policy-templates']
+        ready = [t for t in templates if t.get('objectDefinition', {}).get('metadata', {}).get('name') == 'lso-operator-ready']
+        assert len(ready) == 1, "Expected lso-operator-ready ConfigurationPolicy"
+        assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
+        obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
+        assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD"
+        assert obj['metadata']['name'] == 'localvolumesets.local.openshift.io'
+
+
 class TestOdfOperator:
     """Tests for ODF operator plugin."""
 

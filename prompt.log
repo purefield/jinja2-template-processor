@@ -2354,3 +2354,16 @@ Root cause: PlacementBindings reference `kind: Placement, name: {{ cluster.name 
 > (continued session — fixing Placement whitespace issue)
 
 Fixed the Jinja2 whitespace bug: `{%- set ops = plugins.operators -%}` right trim dash was eating the newline before `- kind: Placement`, preventing it from rendering. Changed to `{%- set ops = plugins.operators %}` (no right trim). Verified Placement renders in both ZTP and CAPI output. 139 tests pass. Extracted clean /tmp/odf-policy-cluster3.yaml with all 3 resources (Placement, Policy, PlacementBinding).
+
+### Prompt 188
+
+> Implement the following plan: Local Storage Operator (LSO) Plugin — Create LSO operator plugin (schema, manifests, policy), update ocp-cluster3 clusterfile to use LSO instead of LVM, add tests, verify.
+
+Created new `plugins/operators/lso/` plugin with 3 files:
+- `schema.json` — LSO config schema (storageClassName, volumeMode, fsType, deviceInclusionSpec, nodeSelector)
+- `manifests.yaml.tpl` — Standalone: Namespace, OperatorGroup, Subscription, LocalVolumeSet (openshift-local-storage ns, local-block SC, Block mode, ODF node selector)
+- `policy.yaml.tpl` — ACM 3-stage Policy (lso-subscription → lso-operator-ready CRD gate on localvolumesets.local.openshift.io → lso-localvolumeset CR) + PlacementBinding
+
+Updated ocp-cluster3 clusterfile: replaced `lvm` with `lso: {}`, set `storageClassName: local-block` on ODF storageDeviceSets.
+
+Added 5 tests to TestLsoOperator: standalone defaults, custom config, disabled, ACM policy (3 templates + binding), CRD readiness gate. All 144 tests pass (139 existing + 5 new). Committed and tagged operator-lso.
