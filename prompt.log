@@ -2409,3 +2409,21 @@ Found the root cause in `form.js:renderArrayField`. The "+ Add" button handler u
 Fix: Use `arr.length` (the live state array from `State.getNestedValue`) instead of the stale `arrValue.length`. Also fixed a form→editor sync race condition where `syncingFromForm` was cleared after 50ms but the editor debounce was 300ms, allowing `onYamlChange` to re-parse and replace `currentObject`.
 
 Committed and tagged fix-editor-array-add.
+
+### Prompt 196
+
+> [context restored from compacted conversation]
+
+Continued from previous session. Tagged and pushed fix-editor-array-add.
+
+### Prompt 197
+
+> deleting all entries and adding them back in works for the count that was there, then fails to properly add, only the last survives
+
+User reports partial fix. Investigating remaining array add issue. Pending deeper fix.
+
+### Prompt 198
+
+> ship it so that I can test it.
+
+Released v3.10.0: updated all five version locations, committed, tagged, built container, pushed to quay.io, restarted editor.

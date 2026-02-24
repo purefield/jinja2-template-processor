@@ -108,6 +108,17 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.10.0',
+    date: '2026-02-24',
+    changes: [
+      'Placement resource added to ACM ZTP and CAPI templates for operator PlacementBindings',
+      'Automatic ODF storage node labeling via ACM Policy with smart worker/compact detection',
+      'Local Storage Operator plugin: LocalVolumeSet CR, ACM 3-stage Policy, local-block StorageClass',
+      'Fix form array "+ Add" button overwriting first item instead of appending',
+      'Fix form→editor sync race condition (guard window increased to cover debounce)'
+    ]
+  },
+  {
     version: '3.9.0',
     date: '2026-02-23',
     changes: [

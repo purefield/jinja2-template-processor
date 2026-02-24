@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.10.0 (2026-02-24)
 - **add-placement-resource** — Add Placement resource to ACM ZTP and CAPI templates so operator PlacementBindings can target managed clusters
 - **odf-node-labels** — Add automatic ODF storage node labeling via ACM Policy; smart node selection labels workers when present, all nodes for compact clusters; 4-stage pipeline with dual dependencies on StorageCluster
 - **operator-lso** — Local Storage Operator plugin: Namespace, OperatorGroup, Subscription, LocalVolumeSet CR with block-mode discovery on ODF-labeled nodes; ACM 3-stage Policy (subscription → CRD gate → CR) + PlacementBinding; default StorageClass `local-block` for ODF consumption; 5 new tests

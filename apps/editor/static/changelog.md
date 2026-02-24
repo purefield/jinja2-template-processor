@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 3.10.0
+- **Placement Resource**: ACM ZTP and CAPI templates now include Placement resource for operator PlacementBindings
+- **ODF Node Labeling**: Automatic ODF storage node labeling via ACM Policy with smart worker/compact detection
+- **Local Storage Operator**: New LSO plugin with LocalVolumeSet CR, ACM 3-stage Policy, `local-block` StorageClass for ODF
+- **Array Fix**: Fix form "+ Add" button overwriting first array item instead of appending; fix form→editor sync race condition
+
 ## 3.9.0
 - **Dynamic Plugin Integration**: Operators discovered by convention — no hardcoded if-blocks. Adding a new operator requires only its plugin directory, no template changes
 - **cert-manager CRD Gate**: ACM Policy for cert-manager now includes CRD readiness gate (certmanagers.operator.openshift.io), matching the 3-stage pattern used by ArgoCD, LVM, and ODF
