@@ -914,11 +914,19 @@ function renderArrayField(path, key, schema, value) {
   const rawItemSchema = schema.items || { type: 'string' };
   const itemSchema = safeResolveSchema(rawItemSchema, getRootSchema());
 
-  arrValue.forEach((item, idx) => {
-    const itemPath = `${path}[${idx}]`;
-    const itemEl = renderArrayItem(itemPath, idx, itemSchema, item, items);
-    items.appendChild(itemEl);
-  });
+  // Re-render all array items from current state (eliminates stale closures)
+  function refreshItems() {
+    items.innerHTML = '';
+    const currentArr = State.getNestedValue(State.state.currentObject, path) || [];
+    currentArr.forEach((val, i) => {
+      const itemPath = `${path}[${i}]`;
+      const itemEl = renderArrayItem(itemPath, i, itemSchema, val, items);
+      items.appendChild(itemEl);
+    });
+  }
+  items._refreshArray = refreshItems;
+
+  refreshItems();
 
   arrayContainer.appendChild(items);
 
@@ -937,16 +945,13 @@ function renderArrayField(path, key, schema, value) {
       State.setNestedValue(State.state.currentObject, path, []);
     }
     const arr = State.getNestedValue(State.state.currentObject, path);
-    const newIdx = arr.length;
-    const newPath = `${path}[${newIdx}]`;
     arr.push(defaultVal);
 
     State.recordChange(path, arr);
     triggerFormChange();
 
-    // Refresh array display
-    const newItem = renderArrayItem(newPath, newIdx, itemSchema, defaultVal, items);
-    items.appendChild(newItem);
+    // Re-render all items with fresh closures
+    refreshItems();
   });
 
   addContainer.appendChild(addBtn);
@@ -1054,14 +1059,12 @@ function removeArrayItem(path, container, element) {
     triggerFormChange();
   }
 
-  element.remove();
-
-  // Reindex remaining items
-  const items = container.querySelectorAll('[data-path]');
-  items.forEach((item, newIdx) => {
-    const newPath = `${arrayPath}[${newIdx}]`;
-    item.dataset.path = newPath;
-  });
+  // Re-render all items with fresh closures and correct indices
+  if (container._refreshArray) {
+    container._refreshArray();
+  } else {
+    element.remove();
+  }
 }
 
 /**

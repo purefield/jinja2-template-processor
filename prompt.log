@@ -2427,3 +2427,9 @@ User reports partial fix. Investigating remaining array add issue. Pending deepe
 > ship it so that I can test it.
 
 Released v3.10.0: updated all five version locations, committed, tagged, built container, pushed to quay.io, restarted editor.
+
+### Prompt 199
+
+> it kind of works. starting with one entry, adding one and another works. removing the first and third entry leaves the second in the UI and the first in the yaml
+
+Root cause: `removeArrayItem` reindexed `data-path` attributes but input/remove event listeners still held old paths from closures. After removing item [0], remaining items' handlers still pointed to [1], [2] — splicing wrong indices. Fix: re-render all array items from state after any add/remove (`items._refreshArray()`), giving every item fresh closures with correct paths. Tagged fix-editor-array-remove, shipped as v3.10.1.
