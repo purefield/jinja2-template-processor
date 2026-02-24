@@ -2433,3 +2433,15 @@ Released v3.10.0: updated all five version locations, committed, tagged, built c
 > it kind of works. starting with one entry, adding one and another works. removing the first and third entry leaves the second in the UI and the first in the yaml
 
 Root cause: `removeArrayItem` reindexed `data-path` attributes but input/remove event listeners still held old paths from closures. After removing item [0], remaining items' handlers still pointed to [1], [2] — splicing wrong indices. Fix: re-render all array items from state after any add/remove (`items._refreshArray()`), giving every item fresh closures with correct paths. Tagged fix-editor-array-remove, shipped as v3.10.1.
+
+### Prompt 200
+
+> it works! adding, removing, all good. the yaml is in sync.
+
+Array add/remove confirmed working. Marked task #6 complete.
+
+### Prompt 201
+
+> changing the yaml does not update the editor however until I click on host again. should be if I click outside the yaml
+
+Form doesn't refresh after YAML editor changes because `onYamlChange` deliberately skips form re-render to preserve focus. Fix: track `formNeedsRefresh` flag, re-render on CodeMirror `blur` event. Shipped as v3.10.2.

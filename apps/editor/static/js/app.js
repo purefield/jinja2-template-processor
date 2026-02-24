@@ -73,6 +73,7 @@ const PLATFORM_INFO = {
 
 // Flag to prevent form→editor→form sync loops
 let syncingFromForm = false;
+let formNeedsRefresh = false;
 
 // Get icon SVG for template category
 function getTemplateIcon(category) {
@@ -802,8 +803,17 @@ function initUI() {
   // Initialize YAML editor
   const editorContainer = document.getElementById('yaml-editor');
   if (editorContainer) {
-    CodeMirror.initYamlEditor(editorContainer);
+    const cm = CodeMirror.initYamlEditor(editorContainer);
     CodeMirror.setupEditorSync(onYamlChange);
+    // Re-render form when editor loses focus so edits are reflected
+    if (cm) {
+      cm.on('blur', () => {
+        if (formNeedsRefresh) {
+          formNeedsRefresh = false;
+          renderCurrentSection();
+        }
+      });
+    }
   }
 
   // Initialize template source editor (read-only)
@@ -2163,7 +2173,8 @@ function onYamlChange(yamlText) {
   if (currentSection === 'validation' || currentSection === 'changes') {
     renderCurrentSection();
   }
-  // Note: Form sections are NOT re-rendered to preserve user's input focus
+  // Mark that form needs refresh when editor loses focus
+  formNeedsRefresh = true;
 }
 
 /**
