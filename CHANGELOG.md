@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.10.1 (2026-02-24)
+- **fix-editor-array-remove** — Fix array remove using stale closure paths: re-render all items from state after add/remove, eliminating stale closures
+
 ## v3.10.0 (2026-02-24)
 - **add-placement-resource** — Add Placement resource to ACM ZTP and CAPI templates so operator PlacementBindings can target managed clusters
 - **odf-node-labels** — Add automatic ODF storage node labeling via ACM Policy; smart node selection labels workers when present, all nodes for compact clusters; 4-stage pipeline with dual dependencies on StorageCluster

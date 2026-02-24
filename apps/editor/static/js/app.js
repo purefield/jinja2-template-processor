@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.10.1',
+    date: '2026-02-24',
+    changes: [
+      'Fix array remove button using stale closure paths after reindexing',
+      'Re-render all array items from state after add/remove for correct indices'
+    ]
+  },
+  {
     version: '3.10.0',
     date: '2026-02-24',
     changes: [

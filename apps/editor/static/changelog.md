@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.10.1
+- **Array Remove Fix**: Fix remove button using stale paths after reindexing — re-render items with fresh closures after add/remove
+
 ## 3.10.0
 - **Placement Resource**: ACM ZTP and CAPI templates now include Placement resource for operator PlacementBindings
 - **ODF Node Labeling**: Automatic ODF storage node labeling via ACM Policy with smart worker/compact detection
