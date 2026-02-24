@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.10.2
+- **Editor Blur Refresh**: Form fields now update when you click outside the YAML editor after making manual edits
+
 ## 3.10.1
 - **Array Remove Fix**: Fix remove button using stale paths after reindexing — re-render items with fresh closures after add/remove
 

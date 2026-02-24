@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.10.2 (2026-02-24)
+- **editor-blur-refresh** — Re-render form when YAML editor loses focus so manual YAML edits are reflected in form fields immediately
+
 ## v3.10.1 (2026-02-24)
 - **fix-editor-array-remove** — Fix array remove using stale closure paths: re-render all items from state after add/remove, eliminating stale closures
 

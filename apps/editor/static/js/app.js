@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.10.2',
+    date: '2026-02-24',
+    changes: [
+      'Form fields now update when you click outside the YAML editor after manual edits'
+    ]
+  },
+  {
     version: '3.10.1',
     date: '2026-02-24',
     changes: [
