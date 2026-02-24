@@ -2367,3 +2367,45 @@ Created new `plugins/operators/lso/` plugin with 3 files:
 Updated ocp-cluster3 clusterfile: replaced `lvm` with `lso: {}`, set `storageClassName: local-block` on ODF storageDeviceSets.
 
 Added 5 tests to TestLsoOperator: standalone defaults, custom config, disabled, ACM policy (3 templates + binding), CRD readiness gate. All 144 tests pass (139 existing + 5 new). Committed and tagged operator-lso.
+
+### Prompt 189
+
+> apply the policies to ocp-cluster3
+
+Re-rendered /tmp/odf-policy-cluster3.yaml as multi-document YAML (the previous List wrapper format wasn't being applied). User needs to apply from their own session — rlinks is a production cluster that cannot be mutated.
+
+### Prompt 190
+
+> done, no change
+
+Only operator-odf policy exists on the hub (already applied from previous session). operator-lso Policy was not created, likely because the original List-wrapped file didn't get properly processed by oc apply. Suggested user apply the re-rendered multi-doc file and check for stale operator-lvm policy.
+
+### Prompt 191
+
+> rlinks? WTF
+
+Acknowledged — should not be running any commands against rlinks cluster. The only oc context on this machine points to rlinks. Provided commands for user to run from their own ACM hub session.
+
+### Prompt 192
+
+> oc get policy -n ocp-cluster3 (only operator-odf, compliant)
+
+Noted operator-lso Policy not yet created. Need to apply the re-rendered /tmp/odf-policy-cluster3.yaml.
+
+### Prompt 193
+
+> pause on this and keep track. the editor fails to render any array elements such as multiple search domains, multiple image registries and so on. The last one is only retained.
+
+### Prompt 194
+
+> The issue is form -> clusterfile yaml
+
+### Prompt 195
+
+> example. I add to the primary network on a host.network.primary.ports an entry, it does not show up in yaml until I add another one, then the first one added is missing.
+
+Found the root cause in `form.js:renderArrayField`. The "+ Add" button handler used `arrValue.length` (a closure-captured reference to the initial array) to calculate the new item index. When the initial value was empty/undefined, `arrValue = []` (a standalone empty array) that never grew — every "+ Add" used `newIdx = 0`, overwriting the previous item at index 0.
+
+Fix: Use `arr.length` (the live state array from `State.getNestedValue`) instead of the stale `arrValue.length`. Also fixed a form→editor sync race condition where `syncingFromForm` was cleared after 50ms but the editor debounce was 300ms, allowing `onYamlChange` to re-parse and replace `currentObject`.
+
+Committed and tagged fix-editor-array-add.

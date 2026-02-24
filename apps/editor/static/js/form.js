@@ -930,15 +930,15 @@ function renderArrayField(path, key, schema, value) {
   addBtn.className = 'btn btn--secondary btn--sm';
   addBtn.textContent = '+ Add';
   addBtn.addEventListener('click', () => {
-    const newIdx = arrValue.length;
-    const newPath = `${path}[${newIdx}]`;
     const defaultVal = itemSchema.type === 'object' ? {} : '';
 
-    // Update data
+    // Update data — ensure array exists in state then push
     if (!Array.isArray(State.getNestedValue(State.state.currentObject, path))) {
       State.setNestedValue(State.state.currentObject, path, []);
     }
     const arr = State.getNestedValue(State.state.currentObject, path);
+    const newIdx = arr.length;
+    const newPath = `${path}[${newIdx}]`;
     arr.push(defaultVal);
 
     State.recordChange(path, arr);

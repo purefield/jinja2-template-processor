@@ -2159,10 +2159,10 @@ function onFormChange() {
   State.state.currentYamlText = yaml;
   CodeMirror.setEditorValue(yaml, true);
 
-  // Clear flag after a short delay (after editor change event fires)
+  // Clear flag after editor debounce completes (300ms SYNC_DELAY + margin)
   setTimeout(() => {
     syncingFromForm = false;
-  }, 50);
+  }, 400);
 
   updateValidationBadge();
   updateChangesBadge();

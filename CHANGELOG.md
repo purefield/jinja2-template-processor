@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 - **add-placement-resource** — Add Placement resource to ACM ZTP and CAPI templates so operator PlacementBindings can target managed clusters
 - **odf-node-labels** — Add automatic ODF storage node labeling via ACM Policy; smart node selection labels workers when present, all nodes for compact clusters; 4-stage pipeline with dual dependencies on StorageCluster
 - **operator-lso** — Local Storage Operator plugin: Namespace, OperatorGroup, Subscription, LocalVolumeSet CR with block-mode discovery on ODF-labeled nodes; ACM 3-stage Policy (subscription → CRD gate → CR) + PlacementBinding; default StorageClass `local-block` for ODF consumption; 5 new tests
+- **fix-editor-array-add** — Fix form array "+ Add" button using stale closure length: new items overwrote index 0 instead of appending; also fix form→editor sync race condition (50ms guard vs 300ms debounce)
 
 ## v3.9.0 (2026-02-23)
 - **dynamic-plugin-integration** — Replace 4x6 hardcoded operator if-blocks with convention-based for-loops in templates. Plugins are now self-sufficient and discovered by convention. Config templates self-guard internally
