@@ -21,7 +21,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
-{%- set hasExtraManifests = cluster.manifests is defined or cluster.mirrors is defined or enableTPM -%}
+{%- set hasExtraManifests = cluster.manifests | default(false) or cluster.mirrors | default(false) or enableTPM -%}
 #!/bin/bash
 # ZTP Troubleshoot: {{ cluster.name }}.{{ network.domain }}
 # Cluster version: {{ cluster.version }}

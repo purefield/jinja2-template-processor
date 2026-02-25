@@ -13,7 +13,7 @@ relatedTemplates:
   - clusterfile2siteconfig.yaml.tpl
 docs: https://github.com/stolostron/siteconfig
 -#}
-{%- set s = spec if spec is defined else {} -%}
+{%- set s = spec | default({}) -%}
 {%- set platformMap = {"BareMetal": "baremetal", "None": "none", "VSphere": "vsphere", "AWS": "aws", "Azure": "azure", "GCP": "gcp", "External": "external"} -%}
 {%- set platform = platformMap[s.platformType | default("BareMetal")] | default(s.platformType | default("baremetal") | lower) -%}
 {%- set imgRef = s.clusterImageSetNameRef | default("4.18.0") -%}

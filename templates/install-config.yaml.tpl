@@ -34,7 +34,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
-{%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
+{%- set platformPlugin = (plugins | default({}))[platform] | default({}) -%}
 ---
 apiVersion: v1
 metadata:
@@ -81,7 +81,7 @@ sshKey: |{% for pubKey in cluster.sshKeys %}
 
 additionalTrustBundle: |
 {{ load_file(network.trustBundle) | indent(2, true) }}{%- endif %}
-{%- if cluster.mirrors is defined and cluster.mirrors | length > 0 %}
+{%- if cluster.mirrors | default([]) | length > 0 %}
 
 imageDigestSources:{% for mirror in cluster.mirrors %}
   - source: {{ mirror.source }}
@@ -128,7 +128,7 @@ spec:
       - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if platform == "kubevirt" %}{%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
 ---
 # Place in openshift/ directory for ABI/IPI — forces virtual disks to report as SSD
-{{ ssdUdev }}{% endif %}{% if plugins is defined and plugins.operators is defined %}
+{{ ssdUdev }}{% endif %}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators -%}
 {%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{%- set operatorManifests %}{% include "operators/" ~ op_name ~ "/manifests.yaml.tpl" ignore missing %}{% endset %}
 {{ operatorManifests }}{% endfor -%}{% endif %}

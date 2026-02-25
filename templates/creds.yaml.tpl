@@ -19,7 +19,7 @@ relatedTemplates:
 docs: https://docs.openshift.com/container-platform/latest/authentication/managing_cloud_provider_credentials/about-cloud-credential-operator.html
 -#}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
-{%- set platformPlugin = plugins[platform] | default({}) if plugins is defined else {} -%}
+{%- set platformPlugin = (plugins | default({}))[platform] | default({}) -%}
 {%- if platformPlugin.credentials is defined or platform in ['vsphere', 'nutanix', 'openstack'] -%}
 {% include 'platforms/' ~ platform ~ '/creds.yaml.tpl' %}
 {%- endif -%}

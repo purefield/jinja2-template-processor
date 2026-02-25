@@ -35,7 +35,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   'ibmcloud': 'IBM Cloud',
   'nutanix': 'Nutanix'
 } -%}
-{%- set cm = cluster.machine | default({}) if cluster.machine is defined else {} -%}
+{%- set cm = cluster.machine | default({}) -%}
 {%- set controlMachine = cm.control | default({}) -%}
 {%- set workerMachine  = cm.worker | default({}) -%}
 {%- set detailedHosts = [] -%}

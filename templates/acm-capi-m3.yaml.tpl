@@ -290,7 +290,7 @@ items:
   apiVersion: metal3.io/v1alpha1
   metadata:
     annotations:
-      inspect.metal3.io: {{ host.ironicInspect if host.ironicInspect is defined else "disabled" }}{% if host.ignitionConfigOverride is defined %}
+      inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{% if host.ignitionConfigOverride is defined %}
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
     labels:
       node: {{ shortname }}
@@ -361,7 +361,7 @@ items:
       manifests:
 {{ insecureImageManifest }}{% endif %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}{% if plugins is defined and plugins.operators is defined %}
+{{ osImagesSync }}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators %}
 - kind: ManagedClusterSetBinding
   apiVersion: cluster.open-cluster-management.io/v1beta2

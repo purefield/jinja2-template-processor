@@ -24,7 +24,7 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvmap = kv.storageMapping | default({}) -%}
 {%- set kvnet = kv.network | default({}) -%}
 {%- set netType = kvnet.type | default("cudn") -%}
-{%- set vlanId = network.primary.vlan if network.primary.vlan is defined and network.primary.vlan else kvnet.vlan | default(false) -%}
+{%- set vlanId = network.primary.vlan | default(kvnet.vlan | default(false)) -%}
 {%- set lbOpts = kvnet.linuxBridge | default({}) -%}
 {%- set bridge = lbOpts.bridge | default("bridge-1410") -%}
 {%- if netType == "cudn" -%}
@@ -71,7 +71,7 @@ items:
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}
-{%- set hm = host.machine if host.machine is defined else roleMachine -%}
+{%- set hm = host.machine | default(roleMachine) -%}
 {%- set hms = hm.storage | default({}) -%}
 {%- set memory  = hm.memory | default(64) -%}
 {%- set cores   = hm.cpus | default(16) -%}

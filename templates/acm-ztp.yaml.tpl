@@ -232,7 +232,7 @@ items:
     annotations:
       bmac.agent-install.openshift.io/hostname: {{ name }}
       bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}
-      inspect.metal3.io: {{ host.ironicInspect if host.ironicInspect is defined else "disabled" }}{% if host.installerArgs is defined %}
+      inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{% if host.installerArgs is defined %}
       bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
     labels:
@@ -287,7 +287,7 @@ items:
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
 {{ pocBanner }}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}{% if plugins is defined and plugins.operators is defined %}
+{{ osImagesSync }}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators %}
 - kind: ManagedClusterSetBinding
   apiVersion: cluster.open-cluster-management.io/v1beta2
