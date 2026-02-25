@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.14.0
+- **URL Routing**: Bookmarkable URLs — every sidebar section and About sub-tab gets a shareable hash URL (e.g. `#cluster`, `#about/comparison`); browser back/forward buttons navigate between sections
+
 ## 3.13.0
 - **About & Collateral**: New About sidebar section with tabbed marketing collateral — overview, business value, comparison, presentation deck, and demo script rendered from markdown with inline SVG diagrams
 

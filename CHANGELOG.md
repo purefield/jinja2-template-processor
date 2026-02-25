@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.14.0 (2026-02-25)
 - **url-routing** — Hash-based URL routing: every section and collateral sub-tab is bookmarkable/shareable; back/forward buttons work between sections
 
 ## v3.13.0 (2026-02-25)

@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.14.0',
+    date: '2026-02-25',
+    changes: [
+      'Bookmarkable URLs: every section and About sub-tab gets a shareable hash URL; browser back/forward buttons work'
+    ]
+  },
+  {
     version: '3.13.0',
     date: '2026-02-25',
     changes: [
