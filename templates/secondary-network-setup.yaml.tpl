@@ -69,13 +69,10 @@ items:{%- set enabledFalse='{"enabled":false}' %}{% for network in network.secon
         "master": "{{ interface }}",
         "linkInContainer": false,
         "mode": "bridge",{% endif %}
-        "cniVersion": "0.3.1"
-        "ipam": {
-{%- if network.subnet == 'dhcp' %}
-           "type": "dhcp"
-{%- else %}
+        "cniVersion": "0.3.1",
+        "ipam": {{% if network.subnet == 'dhcp' %}
+           "type": "dhcp"{% else %}
            "type": "whereabouts",
-           "range": {{ network.subnet }}
-{%- endif %}
+           "range": "{{ network.subnet }}"{% endif %}
         }
       }{% endfor %}

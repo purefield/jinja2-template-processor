@@ -7,11 +7,9 @@ metadata:
   name: openstack-credentials
   namespace: kube-system
 type: Opaque
-stringData:
-{%- if osp.cloudsYaml is defined %}
+stringData:{% if osp.cloudsYaml is defined %}
   clouds.yaml: |
-{{ load_file(osp.cloudsYaml) | indent(4, true) }}
-{%- else %}
+{{ load_file(osp.cloudsYaml) | indent(4, true) }}{% else %}
   clouds.yaml: |
     clouds:
       {{ osp.cloud }}:
@@ -22,5 +20,4 @@ stringData:
           password: {{ load_file(osp.password) | trim }}
           user_domain_name: {{ osp.userDomainName | default('Default', true) }}
           project_domain_name: {{ osp.projectDomainName | default('Default', true) }}
-        region_name: {{ osp.region | default('regionOne', true) }}
-{%- endif %}
+        region_name: {{ osp.region | default('regionOne', true) }}{% endif %}

@@ -59,8 +59,7 @@ compute:
 proxy:
   httpProxy: {{ network.proxy.httpProxy }}
   httpsProxy: {{ network.proxy.httpsProxy }}
-  noProxy: {{ network.proxy.noProxy }}
-{%- endif %}
+  noProxy: {{ network.proxy.noProxy }}{% endif %}
 
 networking:
   networkType: {{ network.primary.type | default("OVNKubernetes", true) }}
@@ -81,8 +80,7 @@ sshKey: |{% for pubKey in cluster.sshKeys %}
   {{ load_file(pubKey) | trim }}{%- endfor %}{% if network.trustBundle is defined %}
 
 additionalTrustBundle: |
-{{ load_file(network.trustBundle) | indent(2, true) }}
-{%- endif %}
+{{ load_file(network.trustBundle) | indent(2, true) }}{%- endif %}
 {%- if cluster.mirrors is defined and cluster.mirrors | length > 0 %}
 
 imageDigestSources:{% for mirror in cluster.mirrors %}
@@ -133,5 +131,4 @@ spec:
 {{ ssdUdev }}{% endif %}{% if plugins is defined and plugins.operators is defined %}
 {%- set ops = plugins.operators -%}
 {%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{%- set operatorManifests %}{% include "operators/" ~ op_name ~ "/manifests.yaml.tpl" ignore missing %}{% endset %}
-{{ operatorManifests }}{% endfor -%}
-{% endif %}
+{{ operatorManifests }}{% endfor -%}{% endif %}

@@ -325,8 +325,7 @@ items:
           spec:
             registrySources:
               insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-                - {{ location }}{% endfor %}{% endfor %}
-{%- endset %}{% if enableDisconnected %}
+                - {{ location }}{% endfor %}{% endfor %}{%- endset %}{% if enableDisconnected %}
 - kind: ManifestWork
   apiVersion: work.open-cluster-management.io/v1
   metadata:

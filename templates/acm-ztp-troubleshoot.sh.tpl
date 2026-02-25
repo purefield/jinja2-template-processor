@@ -123,8 +123,8 @@ pct = data.get('status',{}).get('progress',{}).get('totalPercentage', 'n/a')
 print(f'Stage: {stage}, Progress: {pct}%')
 " 2>/dev/null || echo "unknown")
     echo "  → $PROGRESS"
-fi
-{% if hasExtraManifests %}
+fi{% if hasExtraManifests %}
+
 # ─── 4. EXTRA MANIFESTS CONFIGMAP ────────────────────────
 section "4. Extra Manifests ConfigMap"
 
@@ -145,8 +145,7 @@ for k in sorted(data.keys()):
     else
         fail "AgentClusterInstall.manifestsConfigMapRef = '$REF' (expected 'extraclustermanifests')"
     fi
-fi
-{% endif %}{% if cluster.mirrors is defined %}
+fi{% endif %}{% if cluster.mirrors is defined %}
 # ─── 5. MIRROR REGISTRY CONFIG ───────────────────────────
 section "5. Mirror Registry ConfigMap"
 
@@ -157,8 +156,8 @@ if [ "$MIRROR_REF" = "mirror-registries-${CLUSTER}" ]; then
     pass "AgentClusterInstall.mirrorRegistryRef → mirror-registries-${CLUSTER}"
 else
     warn "AgentClusterInstall.mirrorRegistryRef = '$MIRROR_REF'"
-fi
-{% endif %}
+fi{% endif %}
+
 # ─── 6. CLUSTERDEPLOYMENT STATUS ─────────────────────────
 section "6. ClusterDeployment Conditions"
 
@@ -202,13 +201,12 @@ print('yes' if data.get('spec',{}).get('clusterInstallRef') else 'no')
 fi
 
 # ─── 7. PER-HOST RESOURCES ──────────────────────────────
-section "7. Per-Host Resources ({{ hosts | length }} hosts)"
-{% for name, host in hosts.items() %}
+section "7. Per-Host Resources ({{ hosts | length }} hosts)"{% for name, host in hosts.items() %}
 echo "  ── {{ name }} ({{ host.role }}) ──"
 check_resource nmstateconfig "{{ name }}-nmstate" "$NS"{% if host.bmc is defined %}
 check_resource secret "bmc-secret-{{ name }}" "$NS"{% endif %}
-check_resource baremetalhost "{{ name }}" "$NS"
-{% endfor %}
+check_resource baremetalhost "{{ name }}" "$NS"{% endfor %}
+
 # ─── 8. BAREMETALHOST STATUS ─────────────────────────────
 section "8. BareMetalHost Status"
 
