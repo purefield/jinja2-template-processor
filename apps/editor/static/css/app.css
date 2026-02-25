@@ -1635,6 +1635,111 @@ html, body {
   margin-top: var(--pf-global--spacer--md);
 }
 
+/* Collateral / About tabs */
+.collateral-tabs {
+  display: flex;
+  gap: var(--pf-global--spacer--xs);
+  border-bottom: 2px solid var(--pf-global--BorderColor--100);
+  margin-bottom: var(--pf-global--spacer--lg);
+}
+
+.collateral-tabs__btn {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-size: var(--pf-global--FontSize--sm);
+  font-weight: 600;
+  color: var(--pf-global--Color--200);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.collateral-tabs__btn:hover {
+  color: var(--pf-global--Color--100);
+}
+
+.collateral-tabs__btn--active {
+  color: var(--pf-global--primary-color--100);
+  border-bottom-color: var(--pf-global--primary-color--100);
+}
+
+.collateral-md {
+  line-height: 1.6;
+  font-size: var(--pf-global--FontSize--sm);
+}
+
+.collateral-md h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 16px; }
+.collateral-md h2 { font-size: 1.2rem; font-weight: 600; margin: 24px 0 12px; border-bottom: 1px solid var(--pf-global--BorderColor--100); padding-bottom: 6px; }
+.collateral-md h3 { font-size: 1.05rem; font-weight: 600; margin: 20px 0 8px; }
+.collateral-md p { margin: 0 0 12px; }
+.collateral-md ul, .collateral-md ol { margin: 0 0 12px; padding-left: 24px; }
+.collateral-md li { margin-bottom: 4px; }
+
+.collateral-md table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: var(--pf-global--FontSize--sm);
+}
+
+.collateral-md th, .collateral-md td {
+  border: 1px solid var(--pf-global--BorderColor--100);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.collateral-md th {
+  background: var(--pf-global--BackgroundColor--200);
+  font-weight: 600;
+}
+
+.collateral-md code {
+  background: var(--pf-global--BackgroundColor--200);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.collateral-md pre {
+  background: var(--pf-global--BackgroundColor--dark-100);
+  color: var(--pf-global--Color--light-100);
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.collateral-md pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.collateral-md blockquote {
+  border-left: 3px solid var(--pf-global--primary-color--100);
+  margin: 12px 0;
+  padding: 8px 16px;
+  color: var(--pf-global--Color--200);
+}
+
+.collateral-md hr {
+  border: none;
+  border-top: 1px solid var(--pf-global--BorderColor--100);
+  margin: 24px 0;
+}
+
+.collateral-svg {
+  margin: 24px 0;
+  text-align: center;
+}
+
+.collateral-svg svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Welcome Tour */
 .tour-step {
   margin-bottom: var(--pf-global--spacer--lg);

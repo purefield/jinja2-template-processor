@@ -1,0 +1,356 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1870" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa"/>
+      <stop offset="100%" style="stop-color:#e8eaf6"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1565c0"/>
+      <stop offset="100%" style="stop-color:#1e88e5"/>
+    </linearGradient>
+    <linearGradient id="redBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c62828"/>
+      <stop offset="100%" style="stop-color:#e53935"/>
+    </linearGradient>
+    <linearGradient id="greenBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2e7d32"/>
+      <stop offset="100%" style="stop-color:#43a047"/>
+    </linearGradient>
+    <linearGradient id="orangeBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e65100"/>
+      <stop offset="100%" style="stop-color:#fb8c00"/>
+    </linearGradient>
+    <linearGradient id="purpleBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6a1b9a"/>
+      <stop offset="100%" style="stop-color:#ab47bc"/>
+    </linearGradient>
+    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d47a1"/>
+      <stop offset="100%" style="stop-color:#1565c0"/>
+    </linearGradient>
+    <linearGradient id="savingsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8f5e9"/>
+      <stop offset="100%" style="stop-color:#c8e6c9"/>
+    </linearGradient>
+    <linearGradient id="costGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffebee"/>
+      <stop offset="100%" style="stop-color:#ffcdd2"/>
+    </linearGradient>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="1870" fill="url(#bgGrad)"/>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- HERO BANNER                                    -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="0" y="0" width="1200" height="130" fill="url(#heroGrad)"/>
+  <text x="600" y="55" text-anchor="middle" font-size="34" font-weight="700" fill="white">Clusterfile: The Numbers</text>
+  <text x="600" y="85" text-anchor="middle" font-size="16" fill="#bbdefb">Fields you write vs. fields the templates generate</text>
+  <text x="600" y="110" text-anchor="middle" font-size="13" fill="#90caf9">Real data from production clusterfiles and rendered output</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 1: HEADLINE STATS (4 cards)            -->
+  <!-- ══════════════════════════════════════════════ -->
+
+  <!-- Card 1: 187 → 1,049 -->
+  <rect x="40" y="155" width="260" height="110" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="170" y="185" text-anchor="middle" font-size="13" font-weight="600" fill="#616161">YOU WRITE</text>
+  <text x="170" y="218" text-anchor="middle" font-size="36" font-weight="700" fill="#1565c0">187</text>
+  <text x="170" y="240" text-anchor="middle" font-size="11" fill="#9e9e9e">fields in a clusterfile</text>
+  <text x="170" y="255" text-anchor="middle" font-size="10" fill="#bdbdbd">(baremetal, 3-node HA)</text>
+
+  <!-- Card 2 -->
+  <rect x="320" y="155" width="260" height="110" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="450" y="185" text-anchor="middle" font-size="13" font-weight="600" fill="#616161">TEMPLATES PRODUCE</text>
+  <text x="450" y="218" text-anchor="middle" font-size="36" font-weight="700" fill="#c62828">1,049</text>
+  <text x="450" y="240" text-anchor="middle" font-size="11" fill="#9e9e9e">fields across 4 YAML outputs</text>
+  <text x="450" y="255" text-anchor="middle" font-size="10" fill="#bdbdbd">(install, agent, ZTP, operators)</text>
+
+  <!-- Card 3 -->
+  <rect x="600" y="155" width="260" height="110" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="730" y="185" text-anchor="middle" font-size="13" font-weight="600" fill="#616161">TOTAL OUTPUT</text>
+  <text x="730" y="218" text-anchor="middle" font-size="36" font-weight="700" fill="#e65100">2,579</text>
+  <text x="730" y="240" text-anchor="middle" font-size="11" fill="#9e9e9e">lines across 11 templates</text>
+  <text x="730" y="255" text-anchor="middle" font-size="10" fill="#bdbdbd">(YAML + shell + HTML)</text>
+
+  <!-- Card 4 -->
+  <rect x="880" y="155" width="280" height="110" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="1020" y="185" text-anchor="middle" font-size="13" font-weight="600" fill="#616161">K8S RESOURCES (ZTP)</text>
+  <text x="1020" y="218" text-anchor="middle" font-size="36" font-weight="700" fill="#6a1b9a">56</text>
+  <text x="1020" y="240" text-anchor="middle" font-size="11" fill="#9e9e9e">resource definitions</text>
+  <text x="1020" y="255" text-anchor="middle" font-size="10" fill="#bdbdbd">(17 top-level, 39 nested)</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 2: BAR CHART — Fields per template    -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="40" y="290" width="1120" height="340" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="600" y="322" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Leaf Fields: What You Write vs. What Each Template Generates</text>
+  <text x="600" y="342" text-anchor="middle" font-size="12" fill="#757575">Baremetal 3-node HA cluster (187 input fields)</text>
+
+  <!-- Y-axis label -->
+  <text x="68" y="358" font-size="10" fill="#9e9e9e">Fields</text>
+
+  <!-- Grid lines -->
+  <line x1="100" y1="380" x2="100" y2="595" stroke="#e0e0e0" stroke-width="1"/>
+  <line x1="100" y1="595" x2="1120" y2="595" stroke="#bdbdbd" stroke-width="1"/>
+  <!-- 200 mark -->
+  <line x1="100" y1="503" x2="1120" y2="503" stroke="#f5f5f5" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="90" y="507" text-anchor="end" font-size="9" fill="#bdbdbd">200</text>
+  <!-- 400 mark -->
+  <line x1="100" y1="435" x2="1120" y2="435" stroke="#f5f5f5" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="90" y="439" text-anchor="end" font-size="9" fill="#bdbdbd">400</text>
+  <!-- 648 mark (max) -->
+  <line x1="100" y1="380" x2="1120" y2="380" stroke="#f5f5f5" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="90" y="384" text-anchor="end" font-size="9" fill="#bdbdbd">650</text>
+  <!-- 0 mark -->
+  <text x="90" y="599" text-anchor="end" font-size="9" fill="#bdbdbd">0</text>
+
+  <!-- Clusterfile input bar (reference) -->
+  <rect x="130" y="533" width="120" height="62" rx="4" fill="url(#blueBar)"/>
+  <text x="190" y="527" text-anchor="middle" font-size="14" font-weight="700" fill="#1565c0">187</text>
+  <text x="190" y="610" text-anchor="middle" font-size="9" fill="#616161">Clusterfile</text>
+  <text x="190" y="621" text-anchor="middle" font-size="8" fill="#9e9e9e">(your input)</text>
+
+  <!-- install-config bar -->
+  <rect x="280" y="560" width="120" height="35" rx="4" fill="url(#redBar)"/>
+  <text x="340" y="554" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">106</text>
+  <text x="340" y="610" text-anchor="middle" font-size="9" fill="#616161">install-config</text>
+
+  <!-- agent-config bar -->
+  <rect x="430" y="514" width="120" height="81" rx="4" fill="url(#redBar)"/>
+  <text x="490" y="508" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">245</text>
+  <text x="490" y="610" text-anchor="middle" font-size="9" fill="#616161">agent-config</text>
+
+  <!-- ACM ZTP bar (big one) -->
+  <rect x="580" y="380" width="120" height="215" rx="4" fill="url(#redBar)"/>
+  <text x="640" y="374" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">648</text>
+  <text x="640" y="610" text-anchor="middle" font-size="9" fill="#616161">ACM ZTP</text>
+
+  <!-- operators bar -->
+  <rect x="730" y="578" width="120" height="17" rx="4" fill="url(#redBar)"/>
+  <text x="790" y="574" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">50</text>
+  <text x="790" y="610" text-anchor="middle" font-size="9" fill="#616161">operators</text>
+
+  <!-- SiteConfig bar -->
+  <rect x="880" y="545" width="120" height="50" rx="4" fill="url(#orangeBar)"/>
+  <text x="940" y="539" text-anchor="middle" font-size="14" font-weight="700" fill="#e65100">151</text>
+  <text x="940" y="610" text-anchor="middle" font-size="9" fill="#616161">SiteConfig</text>
+
+  <!-- TOTAL bar -->
+  <rect x="1020" y="247" width="80" height="0" rx="0" fill="none"/>
+  <text x="1060" y="580" text-anchor="middle" font-size="11" font-weight="600" fill="#424242">TOTAL</text>
+  <text x="1060" y="598" text-anchor="middle" font-size="20" font-weight="700" fill="#c62828">1,049</text>
+  <text x="1060" y="614" text-anchor="middle" font-size="10" fill="#9e9e9e">output fields</text>
+
+  <!-- Legend -->
+  <rect x="110" y="355" width="12" height="12" rx="2" fill="url(#blueBar)"/>
+  <text x="128" y="365" font-size="10" fill="#616161">Your input (187 fields)</text>
+  <rect x="300" y="355" width="12" height="12" rx="2" fill="url(#redBar)"/>
+  <text x="318" y="365" font-size="10" fill="#616161">Generated output (1,049 fields from 4 YAML templates)</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 3: LINES CHART — per template         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="40" y="655" width="1120" height="310" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="600" y="687" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Lines of Output Per Template</text>
+  <text x="600" y="705" text-anchor="middle" font-size="12" fill="#757575">267 input lines produce 2,579 output lines (9.7x expansion)</text>
+
+  <!-- Horizontal bar chart -->
+  <!-- Scale: max bar width 700px for 764 lines -->
+
+  <!-- acm-ztp: 764 -->
+  <text x="195" y="740" text-anchor="end" font-size="10" fill="#424242">ACM ZTP</text>
+  <rect x="200" y="728" width="700" height="18" rx="3" fill="url(#redBar)"/>
+  <text x="910" y="741" font-size="11" font-weight="600" fill="#c62828">764 lines</text>
+
+  <!-- cluster-overview: 421 -->
+  <text x="195" y="766" text-anchor="end" font-size="10" fill="#424242">cluster-overview</text>
+  <rect x="200" y="754" width="386" height="18" rx="3" fill="url(#orangeBar)"/>
+  <text x="596" y="767" font-size="11" font-weight="600" fill="#e65100">421 lines</text>
+
+  <!-- troubleshoot: 337 -->
+  <text x="195" y="792" text-anchor="end" font-size="10" fill="#424242">troubleshoot</text>
+  <rect x="200" y="780" width="309" height="18" rx="3" fill="url(#orangeBar)"/>
+  <text x="519" y="793" font-size="11" font-weight="600" fill="#e65100">337 lines</text>
+
+  <!-- agent-config: 252 -->
+  <text x="195" y="818" text-anchor="end" font-size="10" fill="#424242">agent-config</text>
+  <rect x="200" y="806" width="231" height="18" rx="3" fill="url(#redBar)"/>
+  <text x="441" y="819" font-size="11" font-weight="600" fill="#c62828">252 lines</text>
+
+  <!-- nodes-config: 247 -->
+  <text x="195" y="844" text-anchor="end" font-size="10" fill="#424242">nodes-config</text>
+  <rect x="200" y="832" width="226" height="18" rx="3" fill="url(#redBar)"/>
+  <text x="436" y="845" font-size="11" font-weight="600" fill="#c62828">247 lines</text>
+
+  <!-- siteconfig: 152 -->
+  <text x="195" y="870" text-anchor="end" font-size="10" fill="#424242">SiteConfig</text>
+  <rect x="200" y="858" width="139" height="18" rx="3" fill="url(#orangeBar)"/>
+  <text x="349" y="871" font-size="11" font-weight="600" fill="#e65100">152 lines</text>
+
+  <!-- pre-check: 147 -->
+  <text x="195" y="896" text-anchor="end" font-size="10" fill="#424242">pre-check.sh</text>
+  <rect x="200" y="884" width="135" height="18" rx="3" fill="url(#greenBar)"/>
+  <text x="345" y="897" font-size="11" font-weight="600" fill="#2e7d32">147 lines</text>
+
+  <!-- install-config: 104 -->
+  <text x="195" y="922" text-anchor="end" font-size="10" fill="#424242">install-config</text>
+  <rect x="200" y="910" width="95" height="18" rx="3" fill="url(#redBar)"/>
+  <text x="305" y="923" font-size="11" font-weight="600" fill="#c62828">104 lines</text>
+
+  <!-- acm-asc + operators + creds: remaining -->
+  <text x="195" y="948" text-anchor="end" font-size="10" fill="#424242">others (4)</text>
+  <rect x="200" y="936" width="100" height="18" rx="3" fill="url(#purpleBar)"/>
+  <text x="310" y="949" font-size="11" font-weight="600" fill="#6a1b9a">155 lines</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 4: CROSS-PLATFORM COMPARISON           -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="40" y="990" width="540" height="280" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="310" y="1022" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Input Fields by Platform</text>
+  <text x="310" y="1040" text-anchor="middle" font-size="12" fill="#757575">What a user actually fills in</text>
+
+  <!-- Horizontal bars -->
+  <!-- Scale: max 280px for 187 -->
+
+  <text x="175" y="1075" text-anchor="end" font-size="11" fill="#424242">Baremetal (3-node)</text>
+  <rect x="180" y="1061" width="280" height="22" rx="4" fill="url(#blueBar)"/>
+  <text x="470" y="1077" font-size="12" font-weight="700" fill="#1565c0">187 fields</text>
+
+  <text x="175" y="1115" text-anchor="end" font-size="11" fill="#424242">KubeVirt (5-node)</text>
+  <rect x="180" y="1101" width="133" height="22" rx="4" fill="url(#purpleBar)"/>
+  <text x="323" y="1117" font-size="12" font-weight="700" fill="#6a1b9a">89 fields</text>
+
+  <text x="175" y="1155" text-anchor="end" font-size="11" fill="#424242">AWS IPI</text>
+  <rect x="180" y="1141" width="61" height="22" rx="4" fill="url(#orangeBar)"/>
+  <text x="251" y="1157" font-size="12" font-weight="700" fill="#e65100">41 fields</text>
+
+  <text x="175" y="1195" text-anchor="end" font-size="11" fill="#424242">ACM Hub SNO</text>
+  <rect x="180" y="1181" width="54" height="22" rx="4" fill="url(#greenBar)"/>
+  <text x="244" y="1197" font-size="12" font-weight="700" fill="#2e7d32">36 fields</text>
+
+  <text x="310" y="1245" text-anchor="middle" font-size="10" fill="#9e9e9e">Simpler clusters = fewer fields. The schema adapts to each platform.</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 4b: ACM-HUB SNO expansion              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="620" y="990" width="540" height="280" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="890" y="1022" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Disconnected ACM Hub SNO</text>
+  <text x="890" y="1040" text-anchor="middle" font-size="12" fill="#757575">36 input fields, massive output</text>
+
+  <text x="790" y="1080" text-anchor="end" font-size="11" fill="#424242">Clusterfile (input)</text>
+  <rect x="795" y="1066" width="36" height="22" rx="4" fill="url(#blueBar)"/>
+  <text x="841" y="1082" font-size="12" font-weight="700" fill="#1565c0">70 lines</text>
+
+  <text x="790" y="1120" text-anchor="end" font-size="11" fill="#424242">install-config</text>
+  <rect x="795" y="1106" width="165" height="22" rx="4" fill="url(#redBar)"/>
+  <text x="970" y="1122" font-size="12" font-weight="700" fill="#c62828">165 lines</text>
+
+  <text x="790" y="1160" text-anchor="end" font-size="11" fill="#424242">operators.yaml</text>
+  <rect x="795" y="1146" width="160" height="22" rx="4" fill="url(#redBar)"/>
+  <text x="965" y="1162" font-size="12" font-weight="700" fill="#c62828">160 lines</text>
+
+  <text x="890" y="1200" text-anchor="middle" font-size="13" font-weight="600" fill="#424242">70 lines in → 325+ lines out</text>
+  <text x="890" y="1220" text-anchor="middle" font-size="12" fill="#757575">6 operators (LVM, ACM, ArgoCD, cert-manager,</text>
+  <text x="890" y="1236" text-anchor="middle" font-size="12" fill="#757575">external-secrets, ODF) + disconnected mirrors</text>
+  <text x="890" y="1255" text-anchor="middle" font-size="11" fill="#2e7d32" font-weight="600">4.6x expansion from just 36 user-editable fields</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 5: TIME & COST                         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="40" y="1295" width="1120" height="290" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="600" y="1327" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Time &amp; Cost: Manual vs. Clusterfile</text>
+  <text x="600" y="1347" text-anchor="middle" font-size="12" fill="#757575">Baremetal 3-node cluster, 2,579 lines of config, $150/hr consultant rate</text>
+
+  <!-- Column headers -->
+  <text x="155" y="1378" text-anchor="middle" font-size="12" font-weight="600" fill="#424242">Scenario</text>
+  <text x="390" y="1378" text-anchor="middle" font-size="12" font-weight="600" fill="#c62828">Manual</text>
+  <text x="650" y="1378" text-anchor="middle" font-size="12" font-weight="600" fill="#2e7d32">Clusterfile</text>
+  <text x="900" y="1378" text-anchor="middle" font-size="12" font-weight="600" fill="#1565c0">Savings</text>
+  <!-- Header underline -->
+  <line x1="70" y1="1386" x2="1130" y2="1386" stroke="#e0e0e0" stroke-width="1"/>
+
+  <!-- Row 1: First cluster -->
+  <rect x="70" y="1394" width="1060" height="34" rx="4" fill="#fafafa"/>
+  <text x="155" y="1416" text-anchor="middle" font-size="12" fill="#424242" font-weight="600">First cluster</text>
+  <rect x="275" y="1400" width="230" height="22" rx="4" fill="url(#costGrad)" stroke="#ffcdd2" stroke-width="1"/>
+  <text x="390" y="1416" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">6 hours / $900</text>
+  <rect x="535" y="1400" width="230" height="22" rx="4" fill="url(#savingsGrad)" stroke="#c8e6c9" stroke-width="1"/>
+  <text x="650" y="1416" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">30 min / $75</text>
+  <rect x="800" y="1400" width="200" height="22" rx="4" fill="#e3f2fd" stroke="#bbdefb" stroke-width="1"/>
+  <text x="900" y="1416" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">92% / $825</text>
+
+  <!-- Row 2: Each additional cluster -->
+  <rect x="70" y="1434" width="1060" height="34" rx="4" fill="white"/>
+  <text x="155" y="1456" text-anchor="middle" font-size="12" fill="#424242" font-weight="600">Next cluster</text>
+  <rect x="275" y="1440" width="230" height="22" rx="4" fill="url(#costGrad)" stroke="#ffcdd2" stroke-width="1"/>
+  <text x="390" y="1456" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">3 hours / $450</text>
+  <rect x="535" y="1440" width="230" height="22" rx="4" fill="url(#savingsGrad)" stroke="#c8e6c9" stroke-width="1"/>
+  <text x="650" y="1456" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">15 min / $38</text>
+  <rect x="800" y="1440" width="200" height="22" rx="4" fill="#e3f2fd" stroke="#bbdefb" stroke-width="1"/>
+  <text x="900" y="1456" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">92% / $412</text>
+
+  <!-- Row 3: Switch deployment method -->
+  <rect x="70" y="1474" width="1060" height="34" rx="4" fill="#fafafa"/>
+  <text x="155" y="1496" text-anchor="middle" font-size="12" fill="#424242" font-weight="600">Switch method</text>
+  <rect x="275" y="1480" width="230" height="22" rx="4" fill="url(#costGrad)" stroke="#ffcdd2" stroke-width="1"/>
+  <text x="390" y="1496" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">4 hours / $600</text>
+  <rect x="535" y="1480" width="230" height="22" rx="4" fill="url(#savingsGrad)" stroke="#c8e6c9" stroke-width="1"/>
+  <text x="650" y="1496" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">1 min / $2.50</text>
+  <rect x="800" y="1480" width="200" height="22" rx="4" fill="#e3f2fd" stroke="#bbdefb" stroke-width="1"/>
+  <text x="900" y="1496" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">99% / $598</text>
+
+  <!-- Row 4: 10-cluster engagement -->
+  <rect x="70" y="1514" width="1060" height="34" rx="4" fill="white"/>
+  <text x="155" y="1536" text-anchor="middle" font-size="12" fill="#424242" font-weight="600">10 clusters</text>
+  <rect x="275" y="1520" width="230" height="22" rx="4" fill="url(#costGrad)" stroke="#ffcdd2" stroke-width="1"/>
+  <text x="390" y="1536" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">33 hours / $4,950</text>
+  <rect x="535" y="1520" width="230" height="22" rx="4" fill="url(#savingsGrad)" stroke="#c8e6c9" stroke-width="1"/>
+  <text x="650" y="1536" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">3 hours / $450</text>
+  <rect x="800" y="1520" width="200" height="22" rx="4" fill="#e3f2fd" stroke="#bbdefb" stroke-width="1"/>
+  <text x="900" y="1536" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">91% / $4,500</text>
+
+  <!-- Summary line -->
+  <line x1="70" y1="1556" x2="1130" y2="1556" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="600" y="1575" text-anchor="middle" font-size="12" font-weight="600" fill="#424242">Time freed goes to architecture, migration, and higher-value consulting work</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- SECTION 6: EXPANSION RATIO VISUAL              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <rect x="40" y="1610" width="1120" height="200" rx="10" fill="white" filter="url(#shadow)"/>
+  <text x="600" y="1642" text-anchor="middle" font-size="18" font-weight="700" fill="#212121">Expansion Ratios: What the Numbers Mean</text>
+
+  <!-- 3 ratio boxes -->
+  <!-- Lines ratio -->
+  <rect x="80" y="1665" width="320" height="120" rx="8" fill="#e3f2fd" stroke="#90caf9" stroke-width="1"/>
+  <text x="240" y="1695" text-anchor="middle" font-size="42" font-weight="700" fill="#1565c0">9.7x</text>
+  <text x="240" y="1720" text-anchor="middle" font-size="13" font-weight="600" fill="#424242">Lines of code</text>
+  <text x="240" y="1740" text-anchor="middle" font-size="11" fill="#757575">267 input → 2,579 output lines</text>
+  <text x="240" y="1758" text-anchor="middle" font-size="10" fill="#9e9e9e">YAML + shell scripts + HTML</text>
+  <text x="240" y="1773" text-anchor="middle" font-size="10" fill="#9e9e9e">across 11 renderable templates</text>
+
+  <!-- Fields ratio -->
+  <rect x="440" y="1665" width="320" height="120" rx="8" fill="#fff3e0" stroke="#ffcc80" stroke-width="1"/>
+  <text x="600" y="1695" text-anchor="middle" font-size="42" font-weight="700" fill="#e65100">5.6x</text>
+  <text x="600" y="1720" text-anchor="middle" font-size="13" font-weight="600" fill="#424242">Data fields</text>
+  <text x="600" y="1740" text-anchor="middle" font-size="11" fill="#757575">187 input → 1,049 output fields</text>
+  <text x="600" y="1758" text-anchor="middle" font-size="10" fill="#9e9e9e">Structured YAML only (4 templates)</text>
+  <text x="600" y="1773" text-anchor="middle" font-size="10" fill="#9e9e9e">Every field correctly cross-referenced</text>
+
+  <!-- K8s resources ratio -->
+  <rect x="800" y="1665" width="320" height="120" rx="8" fill="#f3e5f5" stroke="#ce93d8" stroke-width="1"/>
+  <text x="960" y="1695" text-anchor="middle" font-size="42" font-weight="700" fill="#6a1b9a">56</text>
+  <text x="960" y="1720" text-anchor="middle" font-size="13" font-weight="600" fill="#424242">K8s resources (ZTP)</text>
+  <text x="960" y="1740" text-anchor="middle" font-size="11" fill="#757575">17 top-level + 39 nested resources</text>
+  <text x="960" y="1758" text-anchor="middle" font-size="10" fill="#9e9e9e">From 1 clusterfile: Secrets, Policies,</text>
+  <text x="960" y="1773" text-anchor="middle" font-size="10" fill="#9e9e9e">BareMetalHosts, NMState, InfraEnv...</text>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- FOOTER                                         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <text x="600" y="1840" text-anchor="middle" font-size="12" fill="#9e9e9e">Clusterfile v3.12.0 — measured from production clusterfiles and rendered output — quay.io/dds/clusterfile-editor:latest</text>
+</svg>

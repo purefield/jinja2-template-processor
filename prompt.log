@@ -2568,3 +2568,16 @@ Left `is defined` only where it guards entire YAML/HTML blocks (emit-or-skip). A
 > ship it
 
 Full release v3.12.1: updated 5 version locations, committed, tagged `v3.12.1`, pushed. Built container, pushed `v3.12.1` + `latest` to quay.io. Restarted app — healthz returns `3.12.1`.
+
+### Prompt 217
+
+> Implement the plan: Add Marketing Collateral to Editor App — About sidebar section with tabbed sub-navigation, fetching markdown collateral from /static/collateral/ and rendering via marked.js
+
+Added About section to editor app:
+- Downloaded `marked.min.js` (v15.0.7) into `static/vendor/`
+- Copied 7 collateral files (5 .md + 2 .svg) from `docs/collateral/` to `apps/editor/static/collateral/`
+- Added About sidebar nav item with info-circle icon after Changes
+- Added `renderAboutSection()` with 5 tabbed sub-sections (Overview, Business Value, Comparison, Presentation, Demo Script)
+- Overview tab inlines architecture + infographic SVGs below markdown
+- Content cached after first fetch to avoid re-requests
+- Added CSS for collateral tabs, markdown content, tables, code blocks, SVGs

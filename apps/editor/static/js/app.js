@@ -1314,6 +1314,8 @@ function renderCurrentSection() {
     renderChangelogSection(container);
   } else if (section === 'privacy') {
     renderPrivacySection(container);
+  } else if (section === 'about') {
+    renderAboutSection(container);
   } else {
     Form.renderSection(section, container);
   }
@@ -2715,6 +2717,90 @@ function renderPrivacySection(container) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Render About section with collateral tabs
+ */
+const _collateralCache = {};
+const COLLATERAL_TABS = [
+  { id: 'overview', label: 'Overview', file: 'one-pager.md', svgs: ['architecture.svg', 'infographic.svg'] },
+  { id: 'business-value', label: 'Business Value', file: 'business-value.md' },
+  { id: 'comparison', label: 'Comparison', file: 'comparison.md' },
+  { id: 'presentation', label: 'Presentation', file: 'deck.md' },
+  { id: 'demo-script', label: 'Demo Script', file: 'demo-script.md' }
+];
+
+function renderAboutSection(container) {
+  const activeTab = container.querySelector('.collateral-tabs__btn--active')?.dataset.tab || 'overview';
+
+  container.innerHTML = `
+    <div class="changelog-page" style="max-width:900px;">
+      <div class="form-section">
+        <h2 class="form-section__title">About</h2>
+        <p class="form-description" style="margin-bottom:16px;">
+          Product collateral and documentation for Clusterfile Editor.
+        </p>
+        <div class="collateral-tabs">
+          ${COLLATERAL_TABS.map(t => `
+            <button class="collateral-tabs__btn${t.id === activeTab ? ' collateral-tabs__btn--active' : ''}" data-tab="${t.id}">${Help.escapeHtml(t.label)}</button>
+          `).join('')}
+        </div>
+        <div class="collateral-content" id="collateral-content">
+          <div class="loading"><div class="loading__spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.querySelectorAll('.collateral-tabs__btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.collateral-tabs__btn').forEach(b => b.classList.remove('collateral-tabs__btn--active'));
+      btn.classList.add('collateral-tabs__btn--active');
+      loadCollateralTab(btn.dataset.tab, container.querySelector('#collateral-content'));
+    });
+  });
+
+  loadCollateralTab(activeTab, container.querySelector('#collateral-content'));
+}
+
+async function loadCollateralTab(tabId, contentEl) {
+  const tab = COLLATERAL_TABS.find(t => t.id === tabId);
+  if (!tab) return;
+
+  // Show spinner only if not cached
+  if (!_collateralCache[tab.file]) {
+    contentEl.innerHTML = '<div class="loading"><div class="loading__spinner"></div></div>';
+  }
+
+  try {
+    // Fetch and cache markdown
+    if (!_collateralCache[tab.file]) {
+      const resp = await fetch(`/static/collateral/${tab.file}`);
+      if (!resp.ok) throw new Error(`Failed to load ${tab.file}`);
+      _collateralCache[tab.file] = await resp.text();
+    }
+
+    const html = marked.parse(_collateralCache[tab.file]);
+    let svgHtml = '';
+
+    // Fetch SVGs for overview tab
+    if (tab.svgs) {
+      for (const svgFile of tab.svgs) {
+        if (!_collateralCache[svgFile]) {
+          const resp = await fetch(`/static/collateral/${svgFile}`);
+          if (resp.ok) _collateralCache[svgFile] = await resp.text();
+        }
+        if (_collateralCache[svgFile]) {
+          svgHtml += `<div class="collateral-svg">${_collateralCache[svgFile]}</div>`;
+        }
+      }
+    }
+
+    contentEl.innerHTML = `<div class="collateral-md">${html}</div>${svgHtml}`;
+  } catch (err) {
+    contentEl.innerHTML = `<div class="empty-state"><div class="empty-state__title">Failed to load</div><div class="empty-state__description">${Help.escapeHtml(err.message)}</div></div>`;
+  }
 }
 
 /**

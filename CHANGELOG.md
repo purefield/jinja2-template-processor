@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **about-collateral** — Add About sidebar section with tabbed marketing collateral (overview, business value, comparison, presentation, demo script); markdown rendered via marked.js with inline SVG diagrams
+
 ## v3.12.1 (2026-02-25)
 - **template-formatting-audit** — Fix Jinja2 formatting across 11 templates: move all control blocks inline per style rules; fix missing JSON comma in secondary-network-setup
 - **concise-defaults** — Replace verbose `is defined` guards with `| default()` shorthand across 9 templates
