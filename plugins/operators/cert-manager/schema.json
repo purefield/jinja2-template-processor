@@ -76,7 +76,7 @@
             "secretStore": {
               "title": "ClusterSecretStore Name",
               "type": "string",
-              "default": "aws-secretsmanager",
+              "default": "vault",
               "description": "Name of the ClusterSecretStore for Route53 credentials."
             },
             "remoteRef": {
