@@ -2467,3 +2467,15 @@ Wave 2 delivered:
 > ship it
 
 Released v3.11.0: updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile), committed, tagged v3.11.0, pushed to GitHub, built container, pushed to quay.io (v3.11.0 + latest), restarted app. Healthz confirms 3.11.0.
+
+### Prompt 204
+
+> fix is in place. One thing I noticed in the config step in manage-cluster.sh is that we do not advance automatically anymore: (oo polling loop blocks on "Press any key" when polled command errors)
+
+Root cause: `_loop` (aliased as `oo`) called `cmd` for each poll iteration. `cmd` on non-zero exit triggers `read -p "Press any key to continue..."`, blocking the loop. Fix: replaced `cmd "$args" 1>/dev/null` + `countNew=$OUTPUT` with direct `countNew=$(bash -c "$args" 2>/dev/null)` so polling errors are silently ignored and the loop retries every 2s.
+
+### Prompt 205
+
+> ship it
+
+format.sh fix is standalone (outside repo, `/home/inference/tmp/format/format.sh`), already saved in place. No app version bump or container rebuild needed.
