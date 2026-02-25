@@ -85,7 +85,7 @@ items:
       workerAgents: {{ workerCount }}
     sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
-      name: extraclustermanifests{% endif %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
+      name: extraclustermanifests{% endif %}{% if cluster.mirrors %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:

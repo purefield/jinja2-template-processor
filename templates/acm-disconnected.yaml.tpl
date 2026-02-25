@@ -33,4 +33,4 @@ items:
       channel: fast
       visible: "true"
   spec:
-    releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release@{{ cluster.releaseDigest }}{% include "includes/mirror-registries-configmap.yaml.tpl" %}
+    releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release@{{ cluster.releaseDigest }}{% if cluster.mirrors %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% endif %}

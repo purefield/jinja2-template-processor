@@ -1,4 +1,4 @@
-{% if cluster.mirrors %}
+
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -10,4 +10,4 @@
     ca-bundle.crt: |
 {{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
     registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}
+{{ registries | indent(6,true) }}
