@@ -2491,3 +2491,9 @@ Implemented the full plan:
 4. Created `templates/acm-disconnected.yaml.tpl` — generates List with digest-based ClusterImageSet + mirror-registries ConfigMap
 5. Added 10 new tests (TestAcmDisconnectedTemplate): digest vs tag, mirror host, labels, ConfigMap with/without CA, include extraction integrity
 6. All 154 tests pass. Committed and tagged `acm-disconnected-digest`.
+
+### Prompt 207
+
+> ship it
+
+Released v3.12.0: updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG, CHANGELOG.md, Containerfile), committed, tagged v3.12.0, pushed to GitHub, built container, pushed to quay.io (v3.12.0 + latest), restarted app. Healthz confirms 3.12.0.
