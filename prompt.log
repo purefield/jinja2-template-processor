@@ -2497,3 +2497,17 @@ Implemented the full plan:
 > ship it
 
 Released v3.12.0: updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG, CHANGELOG.md, Containerfile), committed, tagged v3.12.0, pushed to GitHub, built container, pushed to quay.io (v3.12.0 + latest), restarted app. Healthz confirms 3.12.0.
+
+### Prompt 208
+
+> next update the marketing collateral with the new features and value add such as disk encryption and disconnected
+
+Updated all 6 marketing collateral files:
+- **one-pager.md**: Added disk encryption (TPM + Tang) and disconnected digest differentiators, updated operator count (7), test count (154), added security and disconnected architecture items
+- **deck.md**: Updated editor version (v3.12.0), operator count (7, +LSO), added security bullet, updated test/validation section with encryption and disconnected details, bumped release count (60+)
+- **business-value.md**: Added disk encryption and disconnected proof points, updated test/operator counts, version to v3.12.0
+- **comparison.md**: Added disk encryption row (TPM + Tang vs competitors), updated disconnected row (digest-based), bumped operator count (7)
+- **demo-script.md**: Added disk encryption and disconnected digest backup demos, added Q&A for both, updated test count (154)
+- **infographic.svg**: Updated version footer to v3.12.0
+
+Committed and tagged `collateral-security-disconnected`. No version bump (collateral changes per CLAUDE.md rules).
