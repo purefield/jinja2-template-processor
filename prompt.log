@@ -2544,3 +2544,9 @@ Launched thorough audit of ALL templates against formatting rules. Found violati
 > fix tier 1 and 2
 
 Fixed all 11 files across Tier 1 and Tier 2. Moved all control blocks (`{% if %}`, `{% endif %}`, `{% for %}`, `{% endfor %}`) from own lines to end of preceding content lines. Also fixed missing comma in secondary-network-setup.yaml.tpl JSON ipam block. All 154 tests pass. Committed `ac2ccd6`, tagged `template-formatting-audit`.
+
+### Prompt 214
+
+> skip tier 3
+
+Tier 3 (replacing `is defined` guards with `| default()`) skipped per user decision.
