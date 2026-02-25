@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.12.1
+- **Template Quality Audit**: Fixed Jinja2 formatting across 20 templates — control blocks moved inline, `is defined` replaced with `| default()`, mirror-registries include whitespace fix
+
 ## 3.12.0
 - **ACM Disconnected Setup**: New `acm-disconnected` template generates digest-based ClusterImageSet (`@sha256:...`) + mirror-registries ConfigMap for air-gapped ACM hub clusters where IDMS/ICSP only trigger on digest pulls
 - **Release Digest Field**: New `cluster.releaseDigest` schema field — existing ClusterImageSet template auto-switches to digest when set

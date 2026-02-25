@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.12.1 (2026-02-25)
+- **template-formatting-audit** — Fix Jinja2 formatting across 11 templates: move all control blocks inline per style rules; fix missing JSON comma in secondary-network-setup
+- **concise-defaults** — Replace verbose `is defined` guards with `| default()` shorthand across 9 templates
+- **mirror-registries-include-fix** — Fix mirror-registries include whitespace: remove self-guard, callers add `{% if %}` inline
+
 ## v3.12.0 (2026-02-25)
 - **acm-disconnected-digest** — New `acm-disconnected.yaml.tpl` template for ACM hub-side disconnected setup: digest-based ClusterImageSet (`@sha256:...`) + mirror-registries ConfigMap; add `cluster.releaseDigest` schema field; make existing `acm-clusterimageset.yaml.tpl` digest-aware; DRY-extract mirror-registries ConfigMap to shared include; 10 new tests
 

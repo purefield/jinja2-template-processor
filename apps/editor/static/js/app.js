@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.12.1',
+    date: '2026-02-25',
+    changes: [
+      'Template quality audit: fixed Jinja2 formatting across 20 templates — control blocks inline, | default() shorthand, mirror-registries include fix'
+    ]
+  },
+  {
     version: '3.12.0',
     date: '2026-02-25',
     changes: [
