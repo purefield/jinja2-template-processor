@@ -740,10 +740,10 @@ const CHANGELOG = [
 async function init() {
   console.log('Initializing Clusterfile Editor v2.1');
 
-  // Load saved state
+  // Load saved state (hash overrides localStorage section)
   const saved = State.loadFromLocalStorage();
   State.state.mode = saved.mode;
-  State.state.currentSection = saved.section;
+  State.state.currentSection = getHashSection() || saved.section;
   State.state.currentFilename = saved.filename;
 
   // Fetch schema
@@ -917,9 +917,30 @@ function setupNavigation() {
 }
 
 /**
+ * Parse section (and optional sub-tab) from URL hash
+ */
+function getHashSection() {
+  const hash = window.location.hash.replace(/^#/, '').split('?')[0];
+  return hash.split('/')[0] || '';
+}
+
+function getHashSubTab() {
+  const hash = window.location.hash.replace(/^#/, '').split('?')[0];
+  return hash.split('/')[1] || '';
+}
+
+function navigateFromHash() {
+  const section = getHashSection() || 'account';
+  navigateToSection(section, { _fromHash: true });
+}
+
+// Back/forward button support
+window.addEventListener('popstate', navigateFromHash);
+
+/**
  * Navigate to a section
  */
-function navigateToSection(section) {
+function navigateToSection(section, opts = {}) {
   State.state.currentSection = section;
 
   // Update nav active state
@@ -929,6 +950,14 @@ function navigateToSection(section) {
 
   // Render section
   renderCurrentSection();
+
+  // Update URL hash (skip during popstate to avoid duplicate entries)
+  if (!opts._fromHash) {
+    const hash = '#' + section;
+    if (window.location.hash !== hash) {
+      history.pushState(null, '', hash);
+    }
+  }
 
   // Save section to localStorage immediately
   localStorage.setItem(State.STORAGE_KEYS.CURRENT_SECTION, section);
@@ -2739,7 +2768,8 @@ const COLLATERAL_TABS = [
 ];
 
 function renderAboutSection(container) {
-  const activeTab = container.querySelector('.collateral-tabs__btn--active')?.dataset.tab || 'overview';
+  const hashTab = getHashSubTab();
+  const activeTab = (hashTab && COLLATERAL_TABS.find(t => t.id === hashTab)) ? hashTab : 'overview';
 
   container.innerHTML = `
     <div class="changelog-page" style="max-width:900px;">
@@ -2764,9 +2794,16 @@ function renderAboutSection(container) {
     btn.addEventListener('click', () => {
       container.querySelectorAll('.collateral-tabs__btn').forEach(b => b.classList.remove('collateral-tabs__btn--active'));
       btn.classList.add('collateral-tabs__btn--active');
+      const hash = '#about/' + btn.dataset.tab;
+      if (window.location.hash !== hash) history.pushState(null, '', hash);
       loadCollateralTab(btn.dataset.tab, container.querySelector('#collateral-content'));
     });
   });
+
+  // Set initial hash if on default tab
+  if (!hashTab && window.location.hash !== '#about') {
+    history.replaceState(null, '', '#about');
+  }
 
   loadCollateralTab(activeTab, container.querySelector('#collateral-content'));
 }

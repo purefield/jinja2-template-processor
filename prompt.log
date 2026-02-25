@@ -2587,3 +2587,15 @@ Added About section to editor app:
 > ship it
 
 Full release v3.13.0: updated all 5 version locations (APP_VERSION, Containerfile, app.js CHANGELOG, static/changelog.md, CHANGELOG.md). Committed, tagged `v3.13.0`, pushed. Built container, pushed `v3.13.0` + `latest` to quay.io. Restarted app — healthz returns `3.13.0`.
+
+### Prompt 219
+
+> can we use shareable urls in the app that can be bookmarked or linked? right now the app is hiding the url
+
+Added hash-based URL routing to the editor app:
+- `navigateToSection()` now calls `history.pushState()` to update URL hash (e.g. `#cluster`, `#about`)
+- Added `getHashSection()`, `getHashSubTab()`, `navigateFromHash()` helpers
+- Added `popstate` listener for browser back/forward button support
+- On init, URL hash takes priority over localStorage for section selection
+- About collateral sub-tabs are individually linkable (e.g. `#about/business-value`)
+- Tab clicks within About push to history for back button navigation

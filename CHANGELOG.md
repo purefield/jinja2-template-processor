@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **url-routing** — Hash-based URL routing: every section and collateral sub-tab is bookmarkable/shareable; back/forward buttons work between sections
+
 ## v3.13.0 (2026-02-25)
 - **about-collateral** — Add About sidebar section with tabbed marketing collateral (overview, business value, comparison, presentation, demo script); markdown rendered via marked.js with inline SVG diagrams
 
