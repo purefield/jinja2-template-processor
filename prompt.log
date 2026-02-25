@@ -2550,3 +2550,15 @@ Fixed all 11 files across Tier 1 and Tier 2. Moved all control blocks (`{% if %}
 > skip tier 3
 
 Tier 3 (replacing `is defined` guards with `| default()`) skipped per user decision.
+
+### Prompt 215
+
+> less is more, I prefer concise solutions, remember this too and implement the changes
+
+Saved preference to memory. Implemented Tier 3: replaced verbose `is defined` guards with `| default()` shorthand across 9 files. Patterns converted:
+- `plugins[x] | default({}) if plugins is defined else {}` → `(plugins | default({}))[x] | default({})`
+- `x if x is defined else fallback` → `x | default(fallback)`
+- `cluster.mirrors is defined and cluster.mirrors | length` → `cluster.mirrors | default([]) | length`
+- `plugins is defined and plugins.operators is defined` → `(plugins | default({})).operators is defined`
+
+Left `is defined` only where it guards entire YAML/HTML blocks (emit-or-skip). All 154 tests pass. Committed `a420498`, tagged `concise-defaults`.
