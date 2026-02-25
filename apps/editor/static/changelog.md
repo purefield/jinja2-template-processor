@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.12.0
+- **ACM Disconnected Setup**: New `acm-disconnected` template generates digest-based ClusterImageSet (`@sha256:...`) + mirror-registries ConfigMap for air-gapped ACM hub clusters where IDMS/ICSP only trigger on digest pulls
+- **Release Digest Field**: New `cluster.releaseDigest` schema field — existing ClusterImageSet template auto-switches to digest when set
+
 ## 3.11.0
 - **Form Group Sections**: Cluster and Network forms now have collapsible groups (Basics, Security, Disconnected, Advanced, Cluster Networks, Proxy & Trust) so you see what matters first and expand the rest on demand
 - **cert-manager Fix**: secretStore default corrected from `aws-secretsmanager` to `vault`

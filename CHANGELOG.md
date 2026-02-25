@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.12.0 (2026-02-25)
 - **acm-disconnected-digest** — New `acm-disconnected.yaml.tpl` template for ACM hub-side disconnected setup: digest-based ClusterImageSet (`@sha256:...`) + mirror-registries ConfigMap; add `cluster.releaseDigest` schema field; make existing `acm-clusterimageset.yaml.tpl` digest-aware; DRY-extract mirror-registries ConfigMap to shared include; 10 new tests
 
 ## v3.11.0 (2026-02-24)

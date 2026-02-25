@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.12.0',
+    date: '2026-02-25',
+    changes: [
+      'ACM disconnected setup template: digest-based ClusterImageSet + mirror-registries ConfigMap for air-gapped environments',
+      'New cluster.releaseDigest schema field — ClusterImageSet auto-switches to @sha256 digest when set'
+    ]
+  },
+  {
     version: '3.11.0',
     date: '2026-02-24',
     changes: [
