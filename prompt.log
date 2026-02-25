@@ -2562,3 +2562,9 @@ Saved preference to memory. Implemented Tier 3: replaced verbose `is defined` gu
 - `plugins is defined and plugins.operators is defined` → `(plugins | default({})).operators is defined`
 
 Left `is defined` only where it guards entire YAML/HTML blocks (emit-or-skip). All 154 tests pass. Committed `a420498`, tagged `concise-defaults`.
+
+### Prompt 216
+
+> ship it
+
+Full release v3.12.1: updated 5 version locations, committed, tagged `v3.12.1`, pushed. Built container, pushed `v3.12.1` + `latest` to quay.io. Restarted app — healthz returns `3.12.1`.
