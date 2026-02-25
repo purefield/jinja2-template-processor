@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.13.0',
+    date: '2026-02-25',
+    changes: [
+      'New About sidebar section with tabbed marketing collateral — overview, business value, comparison, presentation, demo script with inline SVG diagrams'
+    ]
+  },
+  {
     version: '3.12.1',
     date: '2026-02-25',
     changes: [

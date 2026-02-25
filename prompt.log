@@ -2581,3 +2581,9 @@ Added About section to editor app:
 - Overview tab inlines architecture + infographic SVGs below markdown
 - Content cached after first fetch to avoid re-requests
 - Added CSS for collateral tabs, markdown content, tables, code blocks, SVGs
+
+### Prompt 218
+
+> ship it
+
+Full release v3.13.0: updated all 5 version locations (APP_VERSION, Containerfile, app.js CHANGELOG, static/changelog.md, CHANGELOG.md). Committed, tagged `v3.13.0`, pushed. Built container, pushed `v3.13.0` + `latest` to quay.io. Restarted app — healthz returns `3.13.0`.

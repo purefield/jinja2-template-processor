@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.13.0
+- **About & Collateral**: New About sidebar section with tabbed marketing collateral — overview, business value, comparison, presentation deck, and demo script rendered from markdown with inline SVG diagrams
+
 ## 3.12.1
 - **Template Quality Audit**: Fixed Jinja2 formatting across 20 templates — control blocks moved inline, `is defined` replaced with `| default()`, mirror-registries include whitespace fix
 

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.13.0 (2026-02-25)
 - **about-collateral** — Add About sidebar section with tabbed marketing collateral (overview, business value, comparison, presentation, demo script); markdown rendered via marked.js with inline SVG diagrams
 
 ## v3.12.1 (2026-02-25)
