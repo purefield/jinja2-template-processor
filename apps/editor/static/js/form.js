@@ -553,18 +553,62 @@ function renderObjectFields(container, schema, basePath, data) {
   const resolvedSchema = safeResolveSchema(schema, getRootSchema());
   if (!resolvedSchema.properties || typeof resolvedSchema.properties !== 'object') return;
 
+  // Collect fields into ordered groups (preserving encounter order)
+  const groups = new Map();  // groupName -> { collapsed, fields[] }
+  const ungrouped = [];
+
   for (const [key, rawFieldSchema] of Object.entries(resolvedSchema.properties)) {
     const path = basePath ? `${basePath}.${key}` : key;
     const value = data?.[key];
-
-    // Resolve $ref for each field schema
     const fieldSchema = safeResolveSchema(rawFieldSchema, getRootSchema());
-    const fieldElement = renderField(path, key, fieldSchema, value);
-    if (fieldElement) {
-      container.appendChild(fieldElement);
+    const groupName = rawFieldSchema?.['x-group'] || fieldSchema?.['x-group'];
+
+    if (groupName) {
+      if (!groups.has(groupName)) {
+        const collapsed = !!(rawFieldSchema?.['x-group-collapsed'] || fieldSchema?.['x-group-collapsed']);
+        groups.set(groupName, { collapsed, fields: [] });
+      }
+      groups.get(groupName).fields.push({ path, key, fieldSchema, value });
+    } else {
+      ungrouped.push({ path, key, fieldSchema, value });
     }
   }
 
+  // If no groups, render flat (backwards compatible)
+  if (groups.size === 0) {
+    for (const { path, key, fieldSchema, value } of ungrouped) {
+      const el = renderField(path, key, fieldSchema, value);
+      if (el) container.appendChild(el);
+    }
+    return;
+  }
+
+  // Render grouped fields with collapsible headers
+  for (const [groupName, { collapsed, fields }] of groups) {
+    const section = document.createElement('div');
+    section.className = 'form-group-section' + (collapsed ? ' form-group-section--collapsed' : '');
+
+    const header = document.createElement('div');
+    header.className = 'form-group-section__header';
+    header.innerHTML = `<span class="form-group-section__toggle">\u25BC</span> ${Help.escapeHtml(groupName)}`;
+    header.addEventListener('click', () => section.classList.toggle('form-group-section--collapsed'));
+    section.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = 'form-group-section__content';
+    for (const { path, key, fieldSchema, value } of fields) {
+      const el = renderField(path, key, fieldSchema, value);
+      if (el) content.appendChild(el);
+    }
+    section.appendChild(content);
+    container.appendChild(section);
+  }
+
+  // Render any ungrouped fields after groups
+  for (const { path, key, fieldSchema, value } of ungrouped) {
+    const el = renderField(path, key, fieldSchema, value);
+    if (el) container.appendChild(el);
+  }
 }
 
 /**

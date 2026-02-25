@@ -687,6 +687,42 @@ html, body {
   display: none;
 }
 
+/* Form group sections (x-group collapsible groups) */
+.form-group-section {
+  margin-bottom: var(--pf-global--spacer--md);
+}
+
+.form-group-section__header {
+  font-size: var(--pf-global--FontSize--sm);
+  font-weight: 600;
+  color: var(--pf-global--Color--200);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--pf-global--spacer--xs);
+  padding: var(--pf-global--spacer--sm) 0;
+  border-bottom: 1px solid var(--pf-global--BorderColor--100);
+  margin-bottom: var(--pf-global--spacer--sm);
+  user-select: none;
+}
+
+.form-group-section__header:hover {
+  color: var(--pf-global--primary-color--100);
+}
+
+.form-group-section__toggle {
+  transition: transform 0.15s;
+  font-size: 0.7em;
+}
+
+.form-group-section--collapsed .form-group-section__toggle {
+  transform: rotate(-90deg);
+}
+
+.form-group-section--collapsed .form-group-section__content {
+  display: none;
+}
+
 /* Array Fields */
 .array-field {
   border: 1px solid var(--pf-global--BorderColor--100);

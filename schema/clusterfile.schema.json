@@ -209,6 +209,7 @@
       "properties": {
         "version": {
           "title": "OpenShift Version",
+          "x-group": "Basics",
           "anyOf": [
             {
               "type": "string",
@@ -234,12 +235,14 @@
         },
         "name": {
           "title": "Cluster Name",
+          "x-group": "Basics",
           "$ref": "#/$defs/dnsLabel",
           "description": "DNS-compatible cluster name (lowercase, hyphens allowed, max 63 chars).",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuration-parameters_installing-bare-metal"
         },
         "sshKeys": {
           "title": "SSH Keys",
+          "x-group": "Basics",
           "type": "array",
           "items": {
             "type": "string",
@@ -253,12 +256,15 @@
         },
         "location": {
           "title": "Location",
+          "x-group": "Basics",
           "type": "string",
           "maxLength": 128,
           "description": "Logical environment identifier for labels and metadata."
         },
         "manifests": {
           "title": "Manifests",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "array",
           "items": {
             "type": "object",
@@ -290,6 +296,8 @@
         },
         "mirrors": {
           "title": "Image Mirrors",
+          "x-group": "Disconnected",
+          "x-group-collapsed": true,
           "type": "array",
           "items": {
             "type": "object",
@@ -331,6 +339,8 @@
         },
         "disconnected": {
           "title": "Disconnected",
+          "x-group": "Disconnected",
+          "x-group-collapsed": true,
           "type": "boolean",
           "default": false,
           "description": "Air-gapped cluster: disables default OperatorHub catalog sources and enables custom CatalogSources from mirrored operator indexes.",
@@ -338,6 +348,8 @@
         },
         "catalogSources": {
           "title": "Catalog Sources",
+          "x-group": "Disconnected",
+          "x-group-collapsed": true,
           "type": "array",
           "items": {
             "type": "object",
@@ -378,6 +390,7 @@
         },
         "platform": {
           "title": "Platform",
+          "x-group": "Basics",
           "anyOf": [
             {
               "type": "string",
@@ -407,6 +420,7 @@
         },
         "arch": {
           "title": "Architecture",
+          "x-group": "Basics",
           "type": "string",
           "enum": [
             "x86_64",
@@ -420,6 +434,8 @@
         },
         "machine": {
           "title": "Machine Resources",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "object",
           "properties": {
             "control": {
@@ -436,12 +452,15 @@
         },
         "tpm": {
           "title": "TPM Disk Encryption",
+          "x-group": "Security",
+          "x-group-collapsed": true,
           "type": "boolean",
           "default": false,
           "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs."
         },
         "clusterType": {
           "title": "Cluster Type",
+          "x-group": "Basics",
           "type": "string",
           "enum": [
             "SNO",
@@ -453,6 +472,8 @@
         },
         "cpuPartitioningMode": {
           "title": "CPU Partitioning",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "string",
           "enum": [
             "None",
@@ -464,6 +485,8 @@
         },
         "diskEncryption": {
           "title": "Disk Encryption",
+          "x-group": "Security",
+          "x-group-collapsed": true,
           "type": "object",
           "properties": {
             "type": {
@@ -507,11 +530,15 @@
         },
         "installConfigOverrides": {
           "title": "Install Config Overrides",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "string",
           "description": "Raw JSON string merged into install-config.yaml. For edge cases not covered by the schema."
         },
         "holdInstallation": {
           "title": "Hold Installation",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "boolean",
           "default": false,
           "description": "Pause cluster provisioning. The cluster is defined but not installed until this is set to false."
@@ -534,12 +561,15 @@
       "properties": {
         "domain": {
           "title": "Base Domain",
+          "x-group": "Basics",
           "$ref": "#/$defs/fqdn",
           "description": "Base DNS domain (e.g., example.com). Cannot be changed after installation.",
           "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "trustBundle": {
           "title": "Trust Bundle",
+          "x-group": "Proxy & Trust",
+          "x-group-collapsed": true,
           "type": "string",
           "minLength": 1,
           "description": "Path to PEM-encoded CA certificate bundle for cluster-wide TLS trust.",
@@ -548,6 +578,8 @@
         },
         "proxy": {
           "title": "Proxy",
+          "x-group": "Proxy & Trust",
+          "x-group-collapsed": true,
           "type": "object",
           "properties": {
             "httpProxy": {
@@ -576,6 +608,8 @@
         },
         "ntpservers": {
           "title": "NTP Servers",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "array",
           "items": {
             "anyOf": [
@@ -592,6 +626,7 @@
         },
         "nameservers": {
           "title": "DNS Servers",
+          "x-group": "Basics",
           "type": "array",
           "items": {
             "$ref": "#/$defs/ipAddress"
@@ -603,6 +638,7 @@
         },
         "dnsResolver": {
           "title": "DNS Resolver",
+          "x-group": "Basics",
           "type": "object",
           "properties": {
             "search": {
@@ -622,6 +658,7 @@
         },
         "primary": {
           "title": "Primary Network",
+          "x-group": "Basics",
           "type": "object",
           "properties": {
             "bond": {
@@ -737,6 +774,8 @@
         },
         "cluster": {
           "title": "Cluster Network",
+          "x-group": "Cluster Networks",
+          "x-group-collapsed": true,
           "type": "object",
           "properties": {
             "subnet": {
@@ -761,6 +800,8 @@
         },
         "service": {
           "title": "Service Network",
+          "x-group": "Cluster Networks",
+          "x-group-collapsed": true,
           "type": "object",
           "properties": {
             "subnet": {
@@ -776,6 +817,8 @@
         },
         "secondary": {
           "title": "Secondary Networks",
+          "x-group": "Advanced",
+          "x-group-collapsed": true,
           "type": "array",
           "items": {
             "type": "object",
