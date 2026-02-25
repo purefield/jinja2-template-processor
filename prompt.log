@@ -2511,3 +2511,21 @@ Updated all 6 marketing collateral files:
 - **infographic.svg**: Updated version footer to v3.12.0
 
 Committed and tagged `collateral-security-disconnected`. No version bump (collateral changes per CLAUDE.md rules).
+
+### Prompt 209
+
+> what are the rules we defined for template formatting and code quality?
+
+Summarized all template formatting rules, design principles, template robustness patterns, schema design rules, and git rules from CLAUDE.md and project memory.
+
+### Prompt 210
+
+> audit the new templates against these rules
+
+Audited all new/modified templates. Found 1 violation: `mirror-registries-configmap.yaml.tpl` line 1 has `{% if cluster.mirrors %}` starting on its own line (should be at end of preceding YAML line). Also emits stray newline when mirrors=false due to trailing newline after `{% endif %}`.
+
+### Prompt 211
+
+> yes fix it
+
+Fixed: removed self-guard (`{% if %}...{% endif %}`) from include file — it's now pure content (starts with `\n- kind: ConfigMap`, no trailing newline). Callers (`acm-ztp.yaml.tpl`, `acm-disconnected.yaml.tpl`) add `{% if cluster.mirrors %}...{% endif %}` inline at end of their preceding YAML lines. All 154 tests pass. Committed and tagged `fix-include-whitespace`.
