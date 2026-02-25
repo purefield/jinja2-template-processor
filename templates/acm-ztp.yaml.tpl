@@ -85,19 +85,7 @@ items:
       workerAgents: {{ workerCount }}
     sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
-      name: extraclustermanifests{% endif %}{% if cluster.mirrors %}
-- kind: ConfigMap
-  apiVersion: v1
-  metadata:
-    name: mirror-registries-{{ cluster.name }}
-    namespace: multicluster-engine
-    labels:
-      app: assisted-service
-  data:{% if network.trustBundle %}
-    ca-bundle.crt: |
-{{ load_file(network.trustBundle)|safe|indent(6,true) }}{% endif %}
-    registries.conf: |{%- set registries %}{% include "includes/registries.conf.tpl" %}{% endset %}
-{{ registries | indent(6,true) }}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
+      name: extraclustermanifests{% endif %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:

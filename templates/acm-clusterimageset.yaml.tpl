@@ -27,4 +27,4 @@ metadata:
     visible: "true"
   name: img{{ cluster.version }}-{{ arch }}-appsub
 spec:
-  releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release:{{ cluster.version }}-{{ imageArch }}
+  releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release{% if cluster.releaseDigest is defined %}@{{ cluster.releaseDigest }}{% else %}:{{ cluster.version }}-{{ imageArch }}{% endif %}

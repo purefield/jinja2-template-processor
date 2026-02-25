@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **acm-disconnected-digest** — New `acm-disconnected.yaml.tpl` template for ACM hub-side disconnected setup: digest-based ClusterImageSet (`@sha256:...`) + mirror-registries ConfigMap; add `cluster.releaseDigest` schema field; make existing `acm-clusterimageset.yaml.tpl` digest-aware; DRY-extract mirror-registries ConfigMap to shared include; 10 new tests
+
 ## v3.11.0 (2026-02-24)
 - **fix-cert-manager-secretstore** — Fix cert-manager secretStore default from `aws-secretsmanager` to `vault`
 - **x-group-form-sections** — Schema-driven collapsible form groups using `x-group` and `x-group-collapsed` annotations; Cluster groups: Basics, Security, Disconnected, Advanced; Network groups: Basics, Cluster Networks, Proxy & Trust, Advanced; collapsed groups reduce form clutter while keeping all fields accessible

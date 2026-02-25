@@ -2479,3 +2479,15 @@ Root cause: `_loop` (aliased as `oo`) called `cmd` for each poll iteration. `cmd
 > ship it
 
 format.sh fix is standalone (outside repo, `/home/inference/tmp/format/format.sh`), already saved in place. No app version bump or container rebuild needed.
+
+### Prompt 206
+
+> Implement ACM disconnected setup template plan: digest-based ClusterImageSet, mirror-registries ConfigMap include, schema releaseDigest field
+
+Implemented the full plan:
+1. Added `cluster.releaseDigest` field to schema (Disconnected x-group, `^sha256:[a-f0-9]{64}$` pattern)
+2. Updated `acm-clusterimageset.yaml.tpl` to use `@digest` when `releaseDigest` is set, fallback to `:tag`
+3. Extracted mirror-registries ConfigMap from `acm-ztp.yaml.tpl` to shared `templates/includes/mirror-registries-configmap.yaml.tpl`
+4. Created `templates/acm-disconnected.yaml.tpl` — generates List with digest-based ClusterImageSet + mirror-registries ConfigMap
+5. Added 10 new tests (TestAcmDisconnectedTemplate): digest vs tag, mirror host, labels, ConfigMap with/without CA, include extraction integrity
+6. All 154 tests pass. Committed and tagged `acm-disconnected-digest`.

@@ -346,6 +346,15 @@
           "description": "Air-gapped cluster: disables default OperatorHub catalog sources and enables custom CatalogSources from mirrored operator indexes.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html"
         },
+        "releaseDigest": {
+          "title": "Release Image Digest",
+          "x-group": "Disconnected",
+          "x-group-collapsed": true,
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA256 digest of the release image. Required for disconnected installs where IDMS/ICSP only trigger on digest pulls. Get with: oc adm release info quay.io/openshift-release-dev/ocp-release:<version>-<arch>",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html"
+        },
         "catalogSources": {
           "title": "Catalog Sources",
           "x-group": "Disconnected",

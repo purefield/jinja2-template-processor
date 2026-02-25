@@ -3277,5 +3277,224 @@ print('OK')
         assert 'OK' in result.stdout
 
 
+class TestAcmDisconnectedTemplate:
+    """Test the acm-disconnected.yaml.tpl template and digest-based ClusterImageSet."""
+
+    DIGEST = 'sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
+
+    def disconnected_data(self, with_trust_bundle=False):
+        """Return data for disconnected ACM template."""
+        data = {
+            'account': {'pullSecret': 'secrets/pull-secret.json'},
+            'cluster': {
+                'name': 'disco-test',
+                'version': '4.20.8',
+                'arch': 'x86_64',
+                'releaseDigest': self.DIGEST,
+                'mirrors': [
+                    {
+                        'source': 'quay.io',
+                        'prefix': '',
+                        'mirrors': ['registry.local:5000/quay-io']
+                    },
+                    {
+                        'source': 'registry.redhat.io',
+                        'prefix': '',
+                        'mirrors': ['registry.local:5000/redhat-io']
+                    }
+                ]
+            },
+            'network': {
+                'domain': 'example.com',
+            }
+        }
+        if with_trust_bundle:
+            data['network']['trustBundle'] = 'secrets/ca-bundle.pem'
+        return data
+
+    def render_template(self, env, data, template_name='acm-disconnected.yaml.tpl'):
+        template = env.get_template(template_name)
+        rendered = template.render(data)
+        return yaml.safe_load(rendered)
+
+    def get_item(self, result, kind, name=None):
+        for item in result['items']:
+            if item['kind'] == kind:
+                if name is None or item['metadata']['name'] == name:
+                    return item
+        return None
+
+    def test_disconnected_clusterimageset_uses_digest(self, template_env):
+        """ClusterImageSet in acm-disconnected must use @sha256 digest, not :tag."""
+        data = self.disconnected_data()
+        result = self.render_template(template_env, data)
+        cis = self.get_item(result, 'ClusterImageSet')
+        assert cis is not None, "ClusterImageSet not found"
+        assert f'@{self.DIGEST}' in cis['spec']['releaseImage'], \
+            f"Expected digest in releaseImage, got: {cis['spec']['releaseImage']}"
+        assert ':4.20.8' not in cis['spec']['releaseImage'], \
+            "releaseImage should not contain tag when digest is set"
+
+    def test_disconnected_clusterimageset_uses_mirror(self, template_env):
+        """ClusterImageSet should use mirror registry host, not quay.io."""
+        data = self.disconnected_data()
+        result = self.render_template(template_env, data)
+        cis = self.get_item(result, 'ClusterImageSet')
+        assert cis['spec']['releaseImage'].startswith('registry.local:5000/'), \
+            f"Expected mirror host, got: {cis['spec']['releaseImage']}"
+
+    def test_disconnected_clusterimageset_labels(self, template_env):
+        """ClusterImageSet should have channel and visible labels."""
+        data = self.disconnected_data()
+        result = self.render_template(template_env, data)
+        cis = self.get_item(result, 'ClusterImageSet')
+        assert cis['metadata']['labels']['channel'] == 'fast'
+        assert cis['metadata']['labels']['visible'] == 'true'
+        assert cis['metadata']['name'] == 'img4.20.8-x86-64-appsub'
+
+    def test_disconnected_mirror_registries_configmap(self, template_env):
+        """mirror-registries ConfigMap should be present with registries.conf."""
+        data = self.disconnected_data()
+        result = self.render_template(template_env, data)
+        cm = self.get_item(result, 'ConfigMap', 'mirror-registries-disco-test')
+        assert cm is not None, "mirror-registries ConfigMap not found"
+        assert cm['metadata']['namespace'] == 'multicluster-engine'
+        assert cm['metadata']['labels']['app'] == 'assisted-service'
+        assert 'registries.conf' in cm['data']
+        assert 'quay.io' in cm['data']['registries.conf']
+        assert 'registry.local:5000/quay-io' in cm['data']['registries.conf']
+
+    def test_disconnected_mirror_registries_with_ca_bundle(self, template_env):
+        """mirror-registries ConfigMap should include ca-bundle.crt when trustBundle is set."""
+        data = self.disconnected_data(with_trust_bundle=True)
+        result = self.render_template(template_env, data)
+        cm = self.get_item(result, 'ConfigMap', 'mirror-registries-disco-test')
+        assert cm is not None
+        assert 'ca-bundle.crt' in cm['data']
+        assert 'BEGIN CERTIFICATE' in cm['data']['ca-bundle.crt']
+
+    def test_disconnected_mirror_registries_without_ca_bundle(self, template_env):
+        """mirror-registries ConfigMap should NOT include ca-bundle.crt when trustBundle is absent."""
+        data = self.disconnected_data(with_trust_bundle=False)
+        result = self.render_template(template_env, data)
+        cm = self.get_item(result, 'ConfigMap', 'mirror-registries-disco-test')
+        assert cm is not None
+        assert 'ca-bundle.crt' not in cm.get('data', {})
+
+    def test_clusterimageset_with_digest(self, template_env):
+        """acm-clusterimageset.yaml.tpl should use @digest when releaseDigest is set."""
+        data = {
+            'cluster': {
+                'version': '4.20.8',
+                'arch': 'x86_64',
+                'releaseDigest': self.DIGEST
+            }
+        }
+        template = template_env.get_template('acm-clusterimageset.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        assert f'@{self.DIGEST}' in result['spec']['releaseImage']
+        assert ':4.20.8' not in result['spec']['releaseImage']
+
+    def test_clusterimageset_without_digest(self, template_env):
+        """acm-clusterimageset.yaml.tpl should use :tag when releaseDigest is not set."""
+        data = {
+            'cluster': {
+                'version': '4.20.8',
+                'arch': 'x86_64'
+            }
+        }
+        template = template_env.get_template('acm-clusterimageset.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        assert ':4.20.8-x86_64' in result['spec']['releaseImage']
+        assert '@sha256' not in result['spec']['releaseImage']
+
+    def test_clusterimageset_with_mirror_and_digest(self, template_env):
+        """acm-clusterimageset.yaml.tpl should use mirror host + digest."""
+        data = {
+            'cluster': {
+                'version': '4.20.8',
+                'arch': 'x86_64',
+                'releaseDigest': self.DIGEST,
+                'mirrors': [
+                    {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']}
+                ]
+            }
+        }
+        template = template_env.get_template('acm-clusterimageset.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        assert result['spec']['releaseImage'] == \
+            f'registry.local:5000/openshift-release-dev/ocp-release@{self.DIGEST}'
+
+    def test_ztp_mirror_registries_after_include_extraction(self, template_env):
+        """Verify acm-ztp still renders mirror-registries ConfigMap after include extraction."""
+        data = {
+            'account': {'pullSecret': 'secrets/pull-secret.json'},
+            'cluster': {
+                'name': 'ztp-mirror-test',
+                'version': '4.21.0',
+                'arch': 'x86_64',
+                'location': 'dc1',
+                'platform': 'baremetal',
+                'sshKeys': ['secrets/id_rsa.pub'],
+                'mirrors': [
+                    {
+                        'source': 'quay.io',
+                        'prefix': '',
+                        'mirrors': ['registry.local:5000/quay-io']
+                    }
+                ]
+            },
+            'network': {
+                'domain': 'example.com',
+                'nameservers': ['10.0.0.100'],
+                'dnsResolver': {'search': ['example.com']},
+                'ntpservers': ['10.0.0.100'],
+                'trustBundle': 'secrets/ca-bundle.pem',
+                'primary': {
+                    'bond': False,
+                    'vlan': False,
+                    'gateway': '10.0.0.1',
+                    'subnet': '10.0.0.0/24',
+                    'type': 'OVNKubernetes',
+                    'vips': {'api': ['10.0.0.2'], 'apps': ['10.0.0.3']}
+                },
+                'cluster': {'subnet': '10.128.0.0/14', 'hostPrefix': 23},
+                'service': {'subnet': '172.30.0.0/16'}
+            },
+            'hosts': {
+                'node1.ztp.example.com': {
+                    'role': 'control',
+                    'storage': {'os': {'deviceName': '/dev/sda'}},
+                    'bmc': {
+                        'vendor': 'dell', 'version': 9,
+                        'username': 'admin', 'password': 'bmc-password.txt',
+                        'address': '10.0.1.4'
+                    },
+                    'network': {
+                        'interfaces': [{'name': 'eth0', 'macAddress': '00:1A:2B:3C:4D:01'}],
+                        'primary': {'address': '10.0.0.4', 'ports': ['eth0']}
+                    }
+                }
+            },
+            'plugins': {}
+        }
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        cm = None
+        for item in result['items']:
+            if item['kind'] == 'ConfigMap' and item['metadata']['name'] == 'mirror-registries-ztp-mirror-test':
+                cm = item
+        assert cm is not None, "mirror-registries ConfigMap not found after include extraction"
+        assert cm['metadata']['namespace'] == 'multicluster-engine'
+        assert cm['metadata']['labels']['app'] == 'assisted-service'
+        assert 'registries.conf' in cm['data']
+        assert 'ca-bundle.crt' in cm['data']
+        assert 'BEGIN CERTIFICATE' in cm['data']['ca-bundle.crt']
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
