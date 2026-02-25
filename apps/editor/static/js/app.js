@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.11.0',
+    date: '2026-02-24',
+    changes: [
+      'Collapsible form groups for Cluster and Network sections (Basics, Security, Disconnected, Advanced, Cluster Networks, Proxy & Trust)',
+      'cert-manager secretStore default corrected from aws-secretsmanager to vault'
+    ]
+  },
+  {
     version: '3.10.2',
     date: '2026-02-24',
     changes: [

@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.11.0
+- **Form Group Sections**: Cluster and Network forms now have collapsible groups (Basics, Security, Disconnected, Advanced, Cluster Networks, Proxy & Trust) so you see what matters first and expand the rest on demand
+- **cert-manager Fix**: secretStore default corrected from `aws-secretsmanager` to `vault`
+
 ## 3.10.2
 - **Editor Blur Refresh**: Form fields now update when you click outside the YAML editor after making manual edits
 
