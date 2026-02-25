@@ -2529,3 +2529,18 @@ Audited all new/modified templates. Found 1 violation: `mirror-registries-config
 > yes fix it
 
 Fixed: removed self-guard (`{% if %}...{% endif %}`) from include file — it's now pure content (starts with `\n- kind: ConfigMap`, no trailing newline). Callers (`acm-ztp.yaml.tpl`, `acm-disconnected.yaml.tpl`) add `{% if cluster.mirrors %}...{% endif %}` inline at end of their preceding YAML lines. All 154 tests pass. Committed and tagged `fix-include-whitespace`.
+
+### Prompt 212
+
+> audit the rest of the templates too
+
+Launched thorough audit of ALL templates against formatting rules. Found violations across 3 tiers:
+- **Tier 1** (main YAML templates, 4 files): install-config.yaml.tpl, acm-capi-m3.yaml.tpl, secondary-network-setup.yaml.tpl, openstack/creds.yaml.tpl — `{%- if/endif/endset %}` on own lines
+- **Tier 2** (shell templates, 7 files): all 6 pre-check includes + acm-ztp-troubleshoot.sh.tpl — `{%- if/for/endif/endfor %}` on own lines
+- **Tier 3** (legacy, many files): `is defined` guards where `| default()` suffices — deferred for later
+
+### Prompt 213
+
+> fix tier 1 and 2
+
+Fixed all 11 files across Tier 1 and Tier 2. Moved all control blocks (`{% if %}`, `{% endif %}`, `{% for %}`, `{% endfor %}`) from own lines to end of preceding content lines. Also fixed missing comma in secondary-network-setup.yaml.tpl JSON ipam block. All 154 tests pass. Committed `ac2ccd6`, tagged `template-formatting-audit`.
