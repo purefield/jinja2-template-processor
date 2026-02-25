@@ -2605,3 +2605,9 @@ Added hash-based URL routing to the editor app:
 > ship it
 
 Full release v3.14.0: updated all 5 version locations (APP_VERSION, Containerfile, app.js CHANGELOG, static/changelog.md, CHANGELOG.md). Committed, tagged `v3.14.0`, pushed. Built container, pushed `v3.14.0` + `latest` to quay.io. Restarted app — healthz returns `3.14.0`.
+
+### Prompt 221
+
+> great
+
+Acknowledgment — no changes needed. v3.14.0 is live with hash-based URL routing.
