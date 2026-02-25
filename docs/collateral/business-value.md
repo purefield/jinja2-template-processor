@@ -63,7 +63,7 @@ Pull secrets, SSH keys, CA certificates, BMC passwords, and cloud credentials ar
 
 | Benefit | Detail |
 |---|---|
-| **Reduced deployment failures** | Schema validation catches errors before rendering; 134 regression tests ensure template correctness |
+| **Reduced deployment failures** | Schema validation catches errors before rendering; 154 regression tests ensure template correctness |
 | **Faster time to production** | From cluster definition to `oc apply` in minutes, not days |
 | **Operational consistency** | Every cluster from the same template set is structurally identical — no configuration drift |
 | **Lower skill barrier** | The web editor's schema-driven form guides users through every field; no need to memorize 16 Kubernetes resource types |
@@ -104,10 +104,12 @@ One clusterfile per cluster, version-controlled in Git, rendered by CI, applied 
 | **32 K8s resources** | ACM ZTP template alone generates 32 resources of 16 types from one file |
 | **11 platforms** | AWS, Azure, GCP, vSphere, OpenStack, IBM Cloud, Nutanix, Baremetal, KubeVirt, SNO, External |
 | **6 deployment methods** | Agent-based, IPI, ACM ZTP, ACM CAPI, UPI, SiteConfig |
-| **134 regression tests** | Every platform x method combination tested automatically |
-| **6 operator plugins** | ArgoCD, LVM, ODF, ACM, cert-manager, External Secrets — smart defaults, ACM policy wrappers |
+| **154 regression tests** | Every platform x method combination tested automatically |
+| **7 operator plugins** | ArgoCD, LVM, ODF, LSO, ACM, cert-manager, External Secrets — smart defaults, ACM policy wrappers |
+| **Disk encryption** | TPM 2.0 (LUKS/Clevis) and Tang NBDE — automated across baremetal, KubeVirt, ZTP, and CAPI |
+| **Disconnected/air-gapped** | Digest-based ClusterImageSet, mirror-registries ConfigMap, IDMS/ICSP, custom CatalogSources |
 | **19 example clusterfiles** | Ready-to-use for every platform and topology |
-| **Production validated** | Baremetal, KubeVirt, cloud IPI, disconnected, ACM-managed fleets |
+| **Production validated** | Baremetal, KubeVirt, cloud IPI, disconnected (digest-based), ACM-managed fleets, TPM/Tang encrypted |
 | **Zero inline secrets** | All sensitive content externalized as file paths; safe to commit, review, and share |
 | **Web editor** | Offline-first, no telemetry, schema-driven — accessible to anyone, runs anywhere |
 
@@ -122,4 +124,4 @@ One clusterfile per cluster, version-controlled in Git, rendered by CI, applied 
 
 ---
 
-*Clusterfile v3.4.0 — `quay.io/dds/clusterfile-editor:latest`*
+*Clusterfile v3.12.0 — `quay.io/dds/clusterfile-editor:latest`*

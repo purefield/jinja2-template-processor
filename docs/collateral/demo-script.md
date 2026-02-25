@@ -117,7 +117,7 @@ python process.py -t operators.yaml.tpl -d data/baremetal.clusterfile
 ## Wrap-Up (15 seconds)
 
 **Talking points:**
-- "One YAML file. 102 templates. 11 platforms. 6 deployment methods. 134 tests."
+- "One YAML file. 102 templates. 11 platforms. 6 deployment methods. 154 tests."
 - "Define your cluster once. Render it for any tool. Validate before you deploy."
 - "The editor runs offline, in a container, with no telemetry. Your cluster data stays yours."
 
@@ -132,7 +132,10 @@ python process.py -t pre-check.sh.tpl -d data/baremetal.clusterfile | bash
 "Run DNS, NTP, BMC, and network validation before you even start the install."
 
 ### Disconnected/air-gapped
-Load `acm-hub-sno.clusterfile` — show mirror registries, custom catalog sources, disconnected mode toggle.
+Load `acm-hub-sno.clusterfile` — show mirror registries, custom catalog sources, disconnected mode toggle. Render `acm-disconnected.yaml.tpl` to show digest-based ClusterImageSet (`@sha256:...`) and mirror-registries ConfigMap — the fix for IDMS/ICSP only intercepting digest pulls.
+
+### Disk encryption
+Toggle `cluster.tpm: true` to show TPM 2.0 disk encryption — MachineConfig with LUKS/Clevis auto-generated in ZTP extraclustermanifests. Show Tang NBDE option (`cluster.diskEncryption.type: tang`) for network-bound key management without TPM hardware.
 
 ### ACM ZTP
 Render `acm-ztp.yaml.tpl` from `baremetal.clusterfile` — show InfraEnv, ClusterDeployment, BareMetalHost, NMState, AgentClusterInstall all generated from one file.
@@ -148,7 +151,10 @@ Render `cluster-overview.html.tpl` — show the HTML diagram of the cluster topo
 A: Helm charts are per-application. Clusterfile is per-cluster — one file generates outputs for multiple tools (installer, ACM, operators, scripts). Helm can't render an install-config and an ACM policy from the same values file.
 
 **Q: Does it work disconnected?**
-A: Yes. The editor is offline-first (no external calls). The clusterfile schema supports mirror registries, custom catalog sources, and disconnected mode.
+A: Yes. The editor is offline-first (no external calls). The clusterfile schema supports mirror registries, custom catalog sources, and disconnected mode. The new `acm-disconnected` template generates a digest-based ClusterImageSet (`@sha256:...`) so IDMS/ICSP mirror rules actually trigger — the most common gotcha in air-gapped ACM deployments.
+
+**Q: What about disk encryption?**
+A: Two options built in. TPM 2.0 via `cluster.tpm: true` — generates LUKS/Clevis MachineConfigs for all deployment methods (ZTP, CAPI, ABI/IPI). Tang NBDE via `cluster.diskEncryption` — network-bound encryption using Clevis and a Tang server, no TPM hardware required. Both are auto-included in extraclustermanifests, ManifestWorks, and installer manifests.
 
 **Q: Where do secrets live?**
 A: Build-time secrets (pull secrets, SSH keys, BMC passwords, cloud credentials, CA certs) are files on disk — the clusterfile stores only the path. Runtime secrets on the created cluster are managed by ESO syncing from Vault. The clusterfile itself contains no secret values.

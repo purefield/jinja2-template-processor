@@ -88,7 +88,7 @@ The **cluster intent** is constant. Only the **output format** changes.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                   Web Editor (v3.3.0)                │
+│                   Web Editor (v3.12.0)               │
 │  Schema-driven form │ YAML editor │ Live rendering  │
 └────────────────────────────┬────────────────────────┘
                              │ /api/render
@@ -98,7 +98,7 @@ The **cluster intent** is constant. Only the **output format** changes.
 └───────┬──────────────┬──────────────┬───────────────┘
         │              │              │
 ┌───────▼──────┐ ┌─────▼──────┐ ┌────▼────────────┐
-│  33 Core     │ │ 11 Platform│ │  6 Operator     │
+│  33 Core     │ │ 11 Platform│ │  7 Operator     │
 │  Templates   │ │ Plugins    │ │  Plugins        │
 │              │ │            │ │                  │
 │ install-cfg  │ │ AWS        │ │ ArgoCD          │
@@ -107,7 +107,7 @@ The **cluster intent** is constant. Only the **output format** changes.
 │ SiteConfig   │ │ vSphere    │ │ ACM             │
 │ pre-checks   │ │ OpenStack  │ │ cert-manager    │
 │ operators    │ │ IBM Cloud  │ │ external-secrets│
-│ kubevirt     │ │ Nutanix    │ │                 │
+│ kubevirt     │ │ Nutanix    │ │ LSO             │
 │ overview     │ │ Baremetal  │ │ Each: manifests │
 │              │ │ KubeVirt   │ │ + ACM policy    │
 │              │ │ None (SNO) │ │ + config        │
@@ -164,7 +164,9 @@ The **cluster intent** is constant. Only the **output format** changes.
 | creds          | — | — | X | X | X | X | X | X | X | — | — |
 | overview       | X | X | X | X | X | X | X | X | X | X | X |
 
-**Operator coverage:** ArgoCD, LVM Storage, ODF, ACM, cert-manager, External Secrets — each with standalone manifests + ACM Policy wrapper
+**Operator coverage:** ArgoCD, LVM Storage, ODF, LSO, ACM, cert-manager, External Secrets — each with standalone manifests + ACM Policy wrapper
+
+**Security:** TPM 2.0 disk encryption, Tang NBDE (Clevis), digest-based mirrors for air-gapped IDMS/ICSP
 
 ---
 
@@ -208,24 +210,26 @@ Vault / OpenBao ──► External Secrets Operator ──► Kubernetes Secrets
 
 ## Slide 9: Validated In Production
 
-### 134 tests. 11 platforms. Real deployments.
+### 154 tests. 11 platforms. Real deployments.
 
 **Test coverage:**
 - Every platform × every deployment method combination
-- All 6 operators: standalone + ACM policy variants
+- All 7 operators: standalone + ACM policy variants
 - Network: bonding, VLANs, secondary networks, proxy, disconnected
-- Security: TPM encryption, Tang encryption, file externalization, day-2 Vault/ESO
+- Security: TPM 2.0 encryption, Tang NBDE (Clevis), file externalization, day-2 Vault/ESO
+- Disconnected: digest-based ClusterImageSet, IDMS/ICSP mirror registries, custom CatalogSources
 - Topologies: SNO, compact, HA, HA+arbiter, KubeVirt
 
 **Production deployments:**
 - Baremetal clusters: bonded NICs, VLANs, TPM disk encryption
 - KubeVirt clusters: CUDN networking, linux-bridge, SSD udev rules
 - Cloud IPI: AWS, Azure, GCP, vSphere
-- Disconnected: mirror registries, custom catalog sources
+- Disconnected: digest-based mirrors, custom catalog sources, air-gapped ACM hub setup
 - ACM-managed fleets: ZTP automation, operator policies
+- Disk encryption: TPM 2.0 (LUKS/Clevis) and Tang NBDE for remote key management
 
 **Maturity:**
-- 50+ tagged releases since v2.6.6
+- 60+ tagged releases since v2.6.6
 - Comprehensive changelog and audit trail
 - Container image on Quay.io with health endpoint
 

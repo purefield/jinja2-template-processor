@@ -39,8 +39,8 @@ Large or sensitive content — pull secrets, SSH keys, CA certificates, cloud cr
 | **102 templates** | Covering installation, ACM ZTP, CAPI, SiteConfig, operators, pre-checks, and docs |
 | **11 platforms** | AWS, Azure, GCP, vSphere, OpenStack, IBM Cloud, Nutanix, Baremetal, KubeVirt, None (SNO), External |
 | **6 deployment methods** | Agent-based, IPI, ACM ZTP, ACM CAPI, UPI, SiteConfig |
-| **6 operator plugins** | ArgoCD, LVM Storage, ODF, ACM, cert-manager, External Secrets (ESO) |
-| **134 automated tests** | Every platform, topology, and feature combination |
+| **7 operator plugins** | ArgoCD, LVM Storage, ODF, LSO, ACM, cert-manager, External Secrets (ESO) |
+| **154 automated tests** | Every platform, topology, and feature combination |
 | **19 example clusterfiles** | Ready-to-use samples for every platform and topology |
 
 ## Differentiators
@@ -53,6 +53,8 @@ Large or sensitive content — pull secrets, SSH keys, CA certificates, cloud cr
 | Offline-first, no telemetry | Yes | N/A | N/A | N/A |
 | Bidirectional SiteConfig conversion | Yes | No | No | No |
 | Externalized file references (secrets, certs) | Yes | No | No | No |
+| Disk encryption (TPM + Tang NBDE) | Yes | No | No | Partial |
+| Disconnected/air-gapped (digest-based mirrors) | Yes | No | No | Partial |
 | Day-2 secrets management (Vault/ESO templates) | Yes | No | No | Partial |
 
 ## Architecture
@@ -60,7 +62,9 @@ Large or sensitive content — pull secrets, SSH keys, CA certificates, cloud cr
 - **CLI** (`process.py`) — Render any template from the command line; pipe to `oc apply` or write to file
 - **Web Editor** — Schema-driven browser UI with live YAML editing, validation, and template rendering
 - **Template Library** — 102 Jinja2 templates organized by function (install, ACM, operators, scripts)
-- **Plugin System** — Platform plugins (11) and operator plugins (6) with auto-discovered schemas
+- **Plugin System** — Platform plugins (11) and operator plugins (7) with auto-discovered schemas
+- **Security** — TPM 2.0 disk encryption, Tang NBDE with Clevis, air-gapped digest-based mirrors
+- **Disconnected** — ACM hub-side setup with digest-based ClusterImageSet, mirror-registries ConfigMap, custom CatalogSources
 - **File Externalization** — Pull secrets, SSH keys, certificates, cloud credentials, and manifests are file paths in the clusterfile; the processor reads and inlines them at render time
 - **Day-2 Operator Templates** — Generates ESO + Vault ClusterSecretStore manifests for the created cluster's own secrets management (ESO runs on the cluster, not during rendering)
 
@@ -69,8 +73,10 @@ Large or sensitive content — pull secrets, SSH keys, CA certificates, cloud cr
 - Baremetal clusters with bonded NICs, VLANs, and TPM disk encryption
 - KubeVirt (OpenShift Virtualization) clusters with CUDN and linux-bridge networking
 - Cloud IPI deployments on AWS, Azure, GCP, vSphere
-- Disconnected/air-gapped environments with mirror registries
+- Disconnected/air-gapped environments with digest-based mirror registries and custom catalog sources
 - ACM-managed multi-cluster fleets with ZTP automation
+- Tang NBDE (Network-Bound Disk Encryption) with Clevis for remote key management
+- Secure boot with TPM 2.0 across baremetal and KubeVirt platforms
 
 ---
 

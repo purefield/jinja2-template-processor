@@ -19,9 +19,10 @@ This comparison evaluates Clusterfile against common tools used for OpenShift/Ku
 | **Pre-flight validation** | 6 modular check scripts (DNS, NTP, BMC, etc.) | No | No | Partial — via pre-tasks | No |
 | **Bidirectional conversion** | Clusterfile ↔ ClusterInstance CR | No | No | No | One-way (CR → cluster) |
 | **GitOps-ready** | Yes — deterministic YAML output, versionable | Yes | Yes | Partial — playbook execution model | Yes |
-| **Day-2 operator management** | 6 operators with manifests + ACM policies | Per-chart | Per-overlay | Via roles | Limited |
+| **Day-2 operator management** | 7 operators with manifests + ACM policies | Per-chart | Per-overlay | Via roles | Limited |
 | **Cluster topology awareness** | SNO, compact, HA, HA+arbiter auto-detection | No | No | Manual | Limited |
-| **Disconnected/air-gapped** | Mirror registries, custom catalogs, offline editor | No special support | No special support | Yes, with effort | Yes, with effort |
+| **Disk encryption** | TPM 2.0 + Tang NBDE, auto-generated MachineConfigs | No | No | Manual playbooks | No |
+| **Disconnected/air-gapped** | Digest-based mirrors, IDMS/ICSP, custom catalogs, offline editor | No special support | No special support | Yes, with effort | Yes, with effort |
 | **Learning curve** | Low — fill in a YAML form, schema guides you | Medium — chart + values + hooks | Medium — bases + overlays + patches | High — playbooks + roles + inventory | Medium — CRDs + ACM concepts |
 | **Dependencies** | Python 3, Jinja2, PyYAML | Go, Kubernetes | kubectl | Python, many collections | ACM hub cluster |
 
