@@ -2445,3 +2445,19 @@ Array add/remove confirmed working. Marked task #6 complete.
 > changing the yaml does not update the editor however until I click on host again. should be if I click outside the yaml
 
 Form doesn't refresh after YAML editor changes because `onYamlChange` deliberately skips form re-render to preserve focus. Fix: track `formNeedsRefresh` flag, re-render on CodeMirror `blur` event. Shipped as v3.10.2.
+
+### Prompt 202
+
+> Implement the following plan: Snowball — Small Fixes First, Then Form Groupings. Wave 1: Fix cert-manager secretStore default (vault instead of aws-secretsmanager), fix kubeadmin login script (suppress kubeconfig dump, fix hardcoded path, add scp command). Wave 2: Add x-group annotation system for schema-driven collapsible form groups.
+
+Wave 1 delivered:
+- Fixed cert-manager secretStore default from `aws-secretsmanager` to `vault` in plugins/operators/cert-manager/schema.json. Committed and tagged `fix-cert-manager-secretstore`.
+- Fixed kubeadmin login script: replaced `_:` + echo pattern with direct quiet pipe-to-file, fixed hardcoded `/home/daniel/` to `~/`, added scp command for kubeconfig copy.
+
+Wave 2 delivered:
+- Added `x-group` and `x-group-collapsed` annotations to 24 properties across `cluster` and `network` schema sections.
+- Updated `renderObjectFields()` in form.js to detect x-group annotations and render collapsible group sections. Backwards compatible — ungrouped fields render flat.
+- Added CSS for `.form-group-section` collapsible headers.
+- Cluster groups: Basics (expanded), Security (collapsed), Disconnected (collapsed), Advanced (collapsed).
+- Network groups: Basics (expanded), Cluster Networks (collapsed), Proxy & Trust (collapsed), Advanced (collapsed).
+- Committed and tagged `x-group-form-sections`. All 144 tests pass.

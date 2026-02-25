@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **fix-cert-manager-secretstore** — Fix cert-manager secretStore default from `aws-secretsmanager` to `vault`
+- **x-group-form-sections** — Schema-driven collapsible form groups using `x-group` and `x-group-collapsed` annotations; Cluster groups: Basics, Security, Disconnected, Advanced; Network groups: Basics, Cluster Networks, Proxy & Trust, Advanced; collapsed groups reduce form clutter while keeping all fields accessible
+
 ## v3.10.2 (2026-02-24)
 - **editor-blur-refresh** — Re-render form when YAML editor loses focus so manual YAML edits are reflected in form fields immediately
 
