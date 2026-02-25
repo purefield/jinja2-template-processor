@@ -2461,3 +2461,9 @@ Wave 2 delivered:
 - Cluster groups: Basics (expanded), Security (collapsed), Disconnected (collapsed), Advanced (collapsed).
 - Network groups: Basics (expanded), Cluster Networks (collapsed), Proxy & Trust (collapsed), Advanced (collapsed).
 - Committed and tagged `x-group-form-sections`. All 144 tests pass.
+
+### Prompt 203
+
+> ship it
+
+Released v3.11.0: updated all five version locations (APP_VERSION, static/changelog.md, app.js CHANGELOG array, CHANGELOG.md, Containerfile), committed, tagged v3.11.0, pushed to GitHub, built container, pushed to quay.io (v3.11.0 + latest), restarted app. Healthz confirms 3.11.0.
