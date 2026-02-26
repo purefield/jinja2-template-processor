@@ -839,9 +839,6 @@ async function init() {
   });
 
   console.log('Initialization complete');
-
-  // Apply deep link if URL has template/sample params
-  await applyDeepLink();
 }
 
 /**
@@ -988,60 +985,6 @@ function navigateToSection(section, opts = {}) {
 
   // Save section to localStorage immediately
   localStorage.setItem(State.STORAGE_KEYS.CURRENT_SECTION, section);
-}
-
-/**
- * Apply deep link: load sample + template from URL hash params
- * #templates/?template=foo.yaml.tpl        → template source tab
- * #rendered/?template=foo.yaml.tpl&sample=bar.clusterfile → rendered output tab
- */
-async function applyDeepLink() {
-  const section = getHashSection();
-  const params = getHashParams();
-  if (!params.template) return;
-  if (section !== 'templates' && section !== 'rendered') return;
-
-  console.log('Deep link:', section, params);
-
-  try {
-    // Step 1: Load sample content from API if specified
-    if (params.sample) {
-      const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(params.sample)}`);
-      if (!resp.ok) throw new Error('Sample not found: ' + params.sample);
-      const result = await resp.json();
-      // Update state and editor with sample data
-      State.state.currentFilename = result.filename || params.sample;
-      State.setBaseline(result.content);
-      State.updateCurrent(result.content, 'load');
-      CodeMirror.setEditorValue(result.content, false);
-      updateHeader();
-      console.log('Deep link: loaded sample', params.sample);
-    }
-
-    // Step 2: Load template source from API
-    await loadTemplateSource(params.template);
-    console.log('Deep link: loaded template', params.template);
-
-    // Step 3: Navigate to templates section (re-renders form with correct data)
-    navigateToSection('templates', { _fromHash: true });
-
-    // Step 4: After DOM settles, sync dropdown and switch to correct tab
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Re-load template (renderTemplatesSection may have triggered platform default)
-    await loadTemplateSource(params.template);
-    const select = document.getElementById('template-select');
-    if (select) select.value = params.template;
-
-    // Click the target tab
-    const targetTab = section === 'rendered' ? 'rendered' : 'template';
-    const tabEl = document.querySelector(`.tab[data-tab="${targetTab}"]`);
-    if (tabEl) tabEl.click();
-    console.log('Deep link: complete, tab =', targetTab);
-  } catch (e) {
-    console.error('Deep link failed:', e);
-    showToast('Deep link failed: ' + e.message, 'error');
-  }
 }
 
 /**
@@ -1644,8 +1587,41 @@ function renderTemplatesSection(container) {
   // Set up copy/download buttons in pane header
   setupTemplateButtons();
 
-  // If there's a selected template, load it
-  if (PLATFORM_TEMPLATES[currentPlatform]) {
+  // Deep link: if URL has ?template= param, use it instead of platform default
+  const deepLinkParams = getHashParams();
+  const hashSection = getHashSection();
+  if (!_deepLinkApplied && deepLinkParams.template && (hashSection === 'templates' || hashSection === 'rendered')) {
+    _deepLinkApplied = true;
+    const dlTemplate = deepLinkParams.template;
+    const dlSample = deepLinkParams.sample;
+    const dlTab = hashSection === 'rendered' ? 'rendered' : 'template';
+
+    (async () => {
+      try {
+        // Load sample from API if specified
+        if (dlSample) {
+          const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(dlSample)}`);
+          if (resp.ok) {
+            const result = await resp.json();
+            State.state.currentFilename = result.filename || dlSample;
+            State.setBaseline(result.content);
+            State.updateCurrent(result.content, 'load');
+            CodeMirror.setEditorValue(result.content, false);
+            updateHeader();
+          }
+        }
+        // Load template and sync dropdown
+        await loadTemplateSource(dlTemplate);
+        const sel = document.getElementById('template-select');
+        if (sel) sel.value = dlTemplate;
+        // Click the target tab
+        document.querySelector(`.tab[data-tab="${dlTab}"]`)?.click();
+      } catch (e) {
+        console.error('Deep link failed:', e);
+      }
+    })();
+  } else if (PLATFORM_TEMPLATES[currentPlatform]) {
+    // Default: load platform template
     const templateName = PLATFORM_TEMPLATES[currentPlatform];
     if (State.state.templates.find(t => t.name === templateName)) {
       loadTemplateSource(templateName);
@@ -2845,6 +2821,7 @@ function renderPrivacySection(container) {
 /**
  * Render About section with collateral tabs
  */
+let _deepLinkApplied = false;
 const _collateralCache = {};
 const COLLATERAL_TABS = [
   { id: 'overview', label: 'Overview', file: 'one-pager.md', svgs: ['architecture.svg', 'infographic.svg'] },
