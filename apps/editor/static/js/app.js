@@ -1620,8 +1620,8 @@ function renderTemplatesSection(container) {
         console.error('Deep link failed:', e);
       }
     })();
-  } else if (PLATFORM_TEMPLATES[currentPlatform]) {
-    // Default: load platform template
+  } else if (!_deepLinkApplied && PLATFORM_TEMPLATES[currentPlatform]) {
+    // Default: load platform template (skip if deep link already applied)
     const templateName = PLATFORM_TEMPLATES[currentPlatform];
     if (State.state.templates.find(t => t.name === templateName)) {
       loadTemplateSource(templateName);

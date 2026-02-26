@@ -2668,3 +2668,9 @@ Reworked applyDeepLink to handle race with renderTemplatesSection's unawaited pl
 > still not working
 
 Completely reworked deep link approach. Removed standalone `applyDeepLink()` function — the async timing was unreliable with `renderTemplatesSection` racing. Now embedded deep link logic directly inside `renderTemplatesSection()` at the end, where the dropdown DOM already exists. Uses `_deepLinkApplied` flag to run only once. The `else if` prevents platform-default template from overriding the deep-linked template.
+
+### Prompt 230
+
+> http://inference.ola.purefield.nl:8000/#templates
+
+Verified hosted app is running v3.15.0, APIs work, JS has deep link code. Found the real bug: `renderCurrentSection()` is called TWICE during init (once in `initUI()` line 915, once in `init()` line 811 after restoring saved doc). First call triggers deep link correctly and sets `_deepLinkApplied = true`. Second call skips deep link but still runs platform-default `loadTemplateSource`, overwriting the deep-linked template. Fixed by checking `_deepLinkApplied` in the platform-default branch too.
