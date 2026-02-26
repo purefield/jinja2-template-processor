@@ -2627,3 +2627,11 @@ Added deep linking for templates and rendered output:
 > ship it
 
 Full release v3.15.0: updated all 5 version locations (APP_VERSION, Containerfile, app.js CHANGELOG, static/changelog.md, CHANGELOG.md). Committed, tagged `v3.15.0`, pushed. Built container, pushed `v3.15.0` + `latest` to quay.io. Restarted app — healthz returns `3.15.0`.
+
+### Prompt 224
+
+> not working with the hosted app
+
+Fixed two bugs in deep linking:
+1. `getHashSection()` returning `rendered` was set as `currentSection` on init — not a valid section, so templates panel never rendered. Now maps `rendered` → `templates` during init.
+2. `applyDeepLink()` was calling `loadTemplateSource` before `navigateToSection('templates')`, so the dropdown didn't exist yet. Reordered: navigate first (renders DOM), then load template and sync dropdown.

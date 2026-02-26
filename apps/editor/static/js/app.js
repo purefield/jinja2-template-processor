@@ -757,7 +757,10 @@ async function init() {
   // Load saved state (hash overrides localStorage section)
   const saved = State.loadFromLocalStorage();
   State.state.mode = saved.mode;
-  State.state.currentSection = getHashSection() || saved.section;
+  const hashSection = getHashSection();
+  // Deep link sections (templates, rendered) both map to 'templates' sidebar
+  const resolvedSection = (hashSection === 'rendered') ? 'templates' : hashSection;
+  State.state.currentSection = resolvedSection || saved.section;
   State.state.currentFilename = saved.filename;
 
   // Fetch schema
@@ -1004,18 +1007,15 @@ async function applyDeepLink() {
     if (sample) loadDocument(sample.content, sample.filename, true);
   }
 
-  // Load template source
-  await loadTemplateSource(params.template);
+  // Navigate to templates section (renders the dropdown)
   navigateToSection('templates', { _fromHash: true });
 
-  // Sync dropdown and trigger metadata update
+  // Load template and sync dropdown
+  await loadTemplateSource(params.template);
   const select = document.getElementById('template-select');
-  if (select) {
-    select.value = params.template;
-    select.dispatchEvent(new Event('change'));
-  }
+  if (select) select.value = params.template;
 
-  // Switch to correct tab
+  // Switch to correct tab after DOM settles
   const targetTab = section === 'rendered' ? 'rendered' : 'template';
   setTimeout(() => {
     document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
