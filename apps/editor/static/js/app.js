@@ -953,9 +953,60 @@ function getHashParams() {
   return Object.fromEntries(new URLSearchParams(hash.slice(qIdx + 1)));
 }
 
+/**
+ * Build a URL hash from current app state
+ * Format: #section[/tab][?template=...&sample=...]
+ */
+function buildEditorHash(section, tab) {
+  section = section || State.state.currentSection || 'account';
+  tab = tab || getActiveEditorTab();
+  let hash = '#' + section;
+  // Editor tabs as sub-paths (yaml is the default, no sub-path needed)
+  if (section === 'templates' && tab && tab !== 'yaml') {
+    hash += '/' + tab;
+  }
+  // About sub-tabs are handled separately in renderAboutSection
+  // Append query params for template-related views
+  if (section === 'templates') {
+    const qp = new URLSearchParams();
+    if (State.state.selectedTemplate) qp.set('template', State.state.selectedTemplate);
+    const filename = State.state.currentFilename;
+    if (filename && filename !== 'untitled.clusterfile') qp.set('sample', filename);
+    const qs = qp.toString();
+    if (qs) hash += '?' + qs;
+  }
+  return hash;
+}
+
+/**
+ * Get the currently active editor tab
+ */
+function getActiveEditorTab() {
+  const active = document.querySelector('.tabs[data-tab-group="editor"] .tab--active');
+  return active?.dataset?.tab || 'yaml';
+}
+
+/**
+ * Update URL hash to reflect current app state (replaceState to avoid flooding history)
+ */
+function updateEditorHash() {
+  const hash = buildEditorHash();
+  if (window.location.hash !== hash) {
+    history.replaceState(null, '', hash);
+  }
+}
+
 function navigateFromHash() {
   const section = getHashSection() || 'account';
-  navigateToSection(section, { _fromHash: true });
+  const resolvedSection = (section === 'rendered') ? 'templates' : section;
+  navigateToSection(resolvedSection, { _fromHash: true });
+  // Restore editor tab from sub-path
+  const subTab = getHashSubTab();
+  const editorTab = (section === 'rendered') ? 'rendered' : (subTab || 'yaml');
+  if (editorTab && editorTab !== 'yaml') {
+    const tabBtn = document.querySelector(`.tab[data-tab="${editorTab}"]`);
+    if (tabBtn) tabBtn.click();
+  }
 }
 
 // Back/forward button support
@@ -977,7 +1028,7 @@ function navigateToSection(section, opts = {}) {
 
   // Update URL hash (skip during popstate to avoid duplicate entries)
   if (!opts._fromHash) {
-    const hash = '#' + section;
+    const hash = buildEditorHash(section);
     if (window.location.hash !== hash) {
       history.pushState(null, '', hash);
     }
@@ -1250,26 +1301,22 @@ function setupTabs() {
         });
 
         // Refresh appropriate editor when switching tabs
-        if (tabId === 'yaml' || tabId === 'diff') {
-          if (tabId === 'yaml') setTimeout(() => CodeMirror.refreshEditor(), 100);
-          // Restore section hash when leaving template/rendered tabs
-          if (window.location.hash.startsWith('#rendered') || window.location.hash.startsWith('#templates/')) {
-            history.replaceState(null, '', '#templates');
-          }
+        if (tabId === 'yaml') {
+          setTimeout(() => CodeMirror.refreshEditor(), 100);
         } else if (tabId === 'template') {
           setTimeout(() => CodeMirror.refreshTemplateEditor(), 100);
           if (State.state.currentSection !== 'templates') {
             navigateToSection('templates');
           }
-          history.replaceState(null, '', '#templates/');
         } else if (tabId === 'rendered') {
           setTimeout(() => CodeMirror.refreshRenderedEditor(), 100);
           if (State.state.currentSection !== 'templates') {
             navigateToSection('templates');
           }
           autoRenderTemplate();
-          history.replaceState(null, '', '#rendered/');
         }
+        // Always sync URL to reflect current tab
+        updateEditorHash();
 
         // Update diff view when switching to diff tab
         if (tabId === 'diff') {
@@ -1593,11 +1640,15 @@ function renderTemplatesSection(container) {
   // Deep link: if URL has ?template= param, use it instead of platform default
   const deepLinkParams = getHashParams();
   const hashSection = getHashSection();
-  if (!_deepLinkApplied && deepLinkParams.template && (hashSection === 'templates' || hashSection === 'rendered')) {
+  const hashSubTab = getHashSubTab();
+  // Support both #rendered/?... (legacy) and #templates/rendered?... (new)
+  const isDeepLink = deepLinkParams.template && (hashSection === 'templates' || hashSection === 'rendered');
+  if (!_deepLinkApplied && isDeepLink) {
     _deepLinkApplied = true;
     const dlTemplate = deepLinkParams.template;
     const dlSample = deepLinkParams.sample;
-    const dlTab = hashSection === 'rendered' ? 'rendered' : 'template';
+    // Determine target tab: #rendered or #templates/rendered → rendered tab, otherwise template tab
+    const dlTab = (hashSection === 'rendered' || hashSubTab === 'rendered') ? 'rendered' : 'template';
 
     (async () => {
       try {
@@ -1623,11 +1674,19 @@ function renderTemplatesSection(container) {
         console.error('Deep link failed:', e);
       }
     })();
-  } else if (!_deepLinkApplied && PLATFORM_TEMPLATES[currentPlatform]) {
-    // Default: load platform template (skip if deep link already applied)
-    const templateName = PLATFORM_TEMPLATES[currentPlatform];
-    if (State.state.templates.find(t => t.name === templateName)) {
-      loadTemplateSource(templateName);
+  } else if (!_deepLinkApplied) {
+    // Restore editor tab from URL sub-path (e.g. #templates/diff, #templates/template)
+    const tabFromHash = hashSubTab || 'yaml';
+    if (tabFromHash !== 'yaml') {
+      const tabBtn = document.querySelector(`.tab[data-tab="${tabFromHash}"]`);
+      if (tabBtn) tabBtn.click();
+    }
+    // Load platform-default template if available
+    if (PLATFORM_TEMPLATES[currentPlatform]) {
+      const templateName = PLATFORM_TEMPLATES[currentPlatform];
+      if (State.state.templates.find(t => t.name === templateName)) {
+        loadTemplateSource(templateName);
+      }
     }
   }
 }
@@ -1735,6 +1794,7 @@ async function loadTemplateSource(templateName) {
     CodeMirror.setTemplateValue(content);
     State.state.selectedTemplate = templateName;
     State.state.selectedTemplateContent = content;
+    updateEditorHash();
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
   }
@@ -2461,6 +2521,9 @@ function loadDocument(yamlText, filename = 'untitled.clusterfile', setAsBaseline
   if (renderedTab?.classList.contains('tab--active') && State.state.selectedTemplate) {
     autoRenderTemplate();
   }
+
+  // Sync URL with new sample filename
+  updateEditorHash();
 }
 
 /**
