@@ -1,6 +1,6 @@
 """Template processor for Jinja2 rendering with YAML output."""
 import yaml
-from jinja2 import Environment, FileSystemLoader, UndefinedError
+from jinja2 import Environment, FileSystemLoader, Undefined, UndefinedError
 import os
 import yamllint.config
 import yamllint.linter
@@ -44,8 +44,33 @@ def apply_params(data: dict, params: list) -> dict:
     return data
 
 
-def process_template(config_data: dict, template_content: str, template_dir: str) -> str:
-    """Process a Jinja2 template with the given configuration data."""
+class LoggingUndefined(Undefined):
+    """Undefined that logs access instead of raising, renders as empty string."""
+    _missing = set()
+
+    def __str__(self):
+        LoggingUndefined._missing.add(self._undefined_name)
+        return ''
+
+    def __iter__(self):
+        LoggingUndefined._missing.add(self._undefined_name)
+        return iter([])
+
+    def __bool__(self):
+        LoggingUndefined._missing.add(self._undefined_name)
+        return False
+
+    def __getattr__(self, name):
+        if name.startswith('_'):
+            raise AttributeError(name)
+        LoggingUndefined._missing.add(f"{self._undefined_name}.{name}")
+        return LoggingUndefined(name=f"{self._undefined_name}.{name}")
+
+
+def process_template(config_data: dict, template_content: str, template_dir: str) -> tuple:
+    """Process a Jinja2 template with the given configuration data.
+    Returns (output, missing_vars) tuple.
+    """
     includes_dir = os.path.join(template_dir, 'includes')
     plugins_tpl  = os.path.join(template_dir, 'plugins')
     plugins_root = os.path.join(os.path.dirname(template_dir), 'plugins')
@@ -57,12 +82,14 @@ def process_template(config_data: dict, template_content: str, template_dir: str
     if os.path.exists(plugins_root):
         loader_paths.append(plugins_root)
 
-    env = Environment(loader=FileSystemLoader(loader_paths))
+    env = Environment(loader=FileSystemLoader(loader_paths), undefined=LoggingUndefined)
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
 
+    LoggingUndefined._missing = set()
     template = env.from_string(template_content)
-    return template.render(config_data)
+    output = template.render(config_data)
+    return output, sorted(LoggingUndefined._missing)
 
 
 def render_template(yaml_text: str, template_name: str, params: list, templates_dir: Path) -> dict:
@@ -97,23 +124,19 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     except Exception as e:
         return {"success": False, "error": f"Failed to read template: {e}", "output": ""}
 
-    # Pre-render validation
+    # Pre-render validation (warnings only, never blocks rendering)
     meta = parse_template_metadata(template_content)
     val_warnings, val_errors = validate_data_for_template(data, meta)
-    if val_errors:
-        return {"success": False, "error": val_errors[0], "output": "", "warnings": val_warnings}
+    # Demote validation errors to warnings so rendering always proceeds
+    all_warnings = val_warnings + val_errors
 
-    # Render template
+    # Render template (LoggingUndefined prevents crashes on missing data)
     try:
-        processed = process_template(data, template_content, str(templates_dir))
-    except UndefinedError as e:
-        msg = str(e)
-        tpl_name = meta.get('name', template_name)
-        requires = meta.get('requires', [])
-        hint = f" Required fields: {', '.join(requires)}" if requires else ""
-        return {"success": False, "error": f"Error rendering '{tpl_name}': {msg}.{hint}", "output": "", "warnings": val_warnings}
+        processed, missing_vars = process_template(data, template_content, str(templates_dir))
+        if missing_vars:
+            all_warnings.append(f"Undefined variables: {', '.join(missing_vars)}")
     except Exception as e:
-        return {"success": False, "error": f"Template rendering failed: {e}", "output": "", "warnings": val_warnings}
+        return {"success": False, "error": f"Template rendering failed: {e}", "output": "", "warnings": all_warnings}
 
     # Format YAML output if applicable
     if template_name.endswith('.yaml.tpl') or template_name.endswith('.yaml.tmpl'):
@@ -135,18 +158,18 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
             # Run yamllint
             config = yamllint.config.YamlLintConfig(YAMLLINT_CONFIG)
             problems = list(yamllint.linter.run(output_yaml, config))
-            warnings = val_warnings + [str(p) for p in problems]
+            all_warnings += [str(p) for p in problems]
 
             return {
                 "success": True,
                 "output": output_yaml,
-                "warnings": warnings,
+                "warnings": all_warnings,
                 "error": ""
             }
         except Exception as e:
-            return {"success": False, "error": f"YAML processing failed: {e}", "output": processed, "warnings": val_warnings}
+            return {"success": False, "error": f"YAML processing failed: {e}", "output": processed, "warnings": all_warnings}
 
-    return {"success": True, "output": processed, "warnings": val_warnings, "error": ""}
+    return {"success": True, "output": processed, "warnings": all_warnings, "error": ""}
 
 
 def parse_template_metadata(content: str) -> dict:

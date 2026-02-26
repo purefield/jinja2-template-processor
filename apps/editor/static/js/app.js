@@ -1869,17 +1869,22 @@ async function autoRenderTemplate() {
     }
 
     const result = await response.json();
+    let output = result.output || '';
+
+    // Prepend warnings as comments so they're visible inline
+    if (result.warnings?.length > 0) {
+      const commentChar = templateName.endsWith('.sh.tpl') ? '#' : '#';
+      const header = result.warnings.map(w => `${commentChar} ⚠ ${w}`).join('\n');
+      output = header + '\n\n' + output;
+      showToast(`Rendered with ${result.warnings.length} warning(s)`, 'warning');
+    }
 
     // Show with highlights if we have params and baseline
     if (params.length > 0 && baselineOutput) {
-      CodeMirror.setRenderedValueWithHighlights(result.output, baselineOutput);
+      CodeMirror.setRenderedValueWithHighlights(output, baselineOutput);
       showToast(`Rendered with ${params.length} parameter override(s) highlighted`, 'success');
     } else {
-      CodeMirror.setRenderedValue(result.output);
-    }
-
-    if (result.warnings?.length > 0) {
-      showToast(`Rendered with ${result.warnings.length} warning(s)`, 'warning');
+      CodeMirror.setRenderedValue(output);
     }
   } catch (e) {
     CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
