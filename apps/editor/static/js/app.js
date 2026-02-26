@@ -969,7 +969,8 @@ function buildEditorHash(section, tab) {
   // Append query params for template-related views
   if (section === 'templates') {
     const qp = new URLSearchParams();
-    if (State.state.selectedTemplate) qp.set('template', State.state.selectedTemplate);
+    const tpl = State.state.selectedTemplate || document.getElementById('template-select')?.value;
+    if (tpl) qp.set('template', tpl);
     const filename = State.state.currentFilename;
     if (filename && filename !== 'untitled.clusterfile') qp.set('sample', filename);
     const qs = qp.toString();
