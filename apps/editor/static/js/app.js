@@ -1250,22 +1250,25 @@ function setupTabs() {
         });
 
         // Refresh appropriate editor when switching tabs
-        if (tabId === 'yaml') {
-          setTimeout(() => CodeMirror.refreshEditor(), 100);
+        if (tabId === 'yaml' || tabId === 'diff') {
+          if (tabId === 'yaml') setTimeout(() => CodeMirror.refreshEditor(), 100);
+          // Restore section hash when leaving template/rendered tabs
+          if (window.location.hash.startsWith('#rendered') || window.location.hash.startsWith('#templates/')) {
+            history.replaceState(null, '', '#templates');
+          }
         } else if (tabId === 'template') {
           setTimeout(() => CodeMirror.refreshTemplateEditor(), 100);
-          // Switch to templates section if not already there
           if (State.state.currentSection !== 'templates') {
             navigateToSection('templates');
           }
+          history.replaceState(null, '', '#templates/');
         } else if (tabId === 'rendered') {
           setTimeout(() => CodeMirror.refreshRenderedEditor(), 100);
-          // Switch to templates section if not already there
           if (State.state.currentSection !== 'templates') {
             navigateToSection('templates');
           }
-          // Auto-render if template is selected
           autoRenderTemplate();
+          history.replaceState(null, '', '#rendered/');
         }
 
         // Update diff view when switching to diff tab

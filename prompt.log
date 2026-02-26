@@ -2674,3 +2674,9 @@ Completely reworked deep link approach. Removed standalone `applyDeepLink()` fun
 > http://inference.ola.purefield.nl:8000/#templates
 
 Verified hosted app is running v3.15.0, APIs work, JS has deep link code. Found the real bug: `renderCurrentSection()` is called TWICE during init (once in `initUI()` line 915, once in `init()` line 811 after restoring saved doc). First call triggers deep link correctly and sets `_deepLinkApplied = true`. Second call skips deep link but still runs platform-default `loadTemplateSource`, overwriting the deep-linked template. Fixed by checking `_deepLinkApplied` in the platform-default branch too.
+
+### Prompt 231
+
+> when I select rendered, the url does not change
+
+Added hash updates for editor tabs: clicking Rendered tab sets `#rendered/`, clicking Template tab sets `#templates/`, clicking YAML/Diff restores `#templates`. Uses `replaceState` to avoid flooding history.
