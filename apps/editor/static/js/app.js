@@ -829,6 +829,9 @@ async function init() {
   });
 
   console.log('Initialization complete');
+
+  // Apply deep link if URL has template/sample params
+  await applyDeepLink();
 }
 
 /**
@@ -936,6 +939,13 @@ function getHashSubTab() {
   return hash.split('/')[1] || '';
 }
 
+function getHashParams() {
+  const hash = window.location.hash.replace(/^#/, '');
+  const qIdx = hash.indexOf('?');
+  if (qIdx === -1) return {};
+  return Object.fromEntries(new URLSearchParams(hash.slice(qIdx + 1)));
+}
+
 function navigateFromHash() {
   const section = getHashSection() || 'account';
   navigateToSection(section, { _fromHash: true });
@@ -968,6 +978,41 @@ function navigateToSection(section, opts = {}) {
 
   // Save section to localStorage immediately
   localStorage.setItem(State.STORAGE_KEYS.CURRENT_SECTION, section);
+}
+
+/**
+ * Apply deep link: load sample + template from URL hash params
+ * #templates/?template=foo.yaml.tpl        → template source tab
+ * #rendered/?template=foo.yaml.tpl&sample=bar.clusterfile → rendered output tab
+ */
+async function applyDeepLink() {
+  const section = getHashSection();
+  const params = getHashParams();
+  if (!params.template) return;
+  if (section !== 'templates' && section !== 'rendered') return;
+
+  // Load sample if specified
+  if (params.sample) {
+    const sample = State.state.samples.find(s => s.filename === params.sample);
+    if (sample) loadDocument(sample.content, sample.filename, true);
+  }
+
+  // Load template source
+  await loadTemplateSource(params.template);
+  navigateToSection('templates', { _fromHash: true });
+
+  // Sync dropdown and trigger metadata update
+  const select = document.getElementById('template-select');
+  if (select) {
+    select.value = params.template;
+    select.dispatchEvent(new Event('change'));
+  }
+
+  // Switch to correct tab
+  const targetTab = section === 'rendered' ? 'rendered' : 'template';
+  setTimeout(() => {
+    document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
+  }, 300);
 }
 
 /**

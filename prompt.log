@@ -2611,3 +2611,13 @@ Full release v3.14.0: updated all 5 version locations (APP_VERSION, Containerfil
 > great
 
 Acknowledgment — no changes needed. v3.14.0 is live with hash-based URL routing.
+
+### Prompt 222
+
+> now finish the work by allowing me to deep link to a rendered template with a provided clusterfile from the samples
+
+Added deep linking for templates and rendered output:
+- `#templates/?template=install-config.yaml.tpl` → loads template source tab
+- `#rendered/?template=install-config.yaml.tpl&sample=ipi-vsphere.clusterfile` → loads sample, renders template, shows rendered output
+- Added `getHashParams()` helper to parse query params from hash
+- Added `applyDeepLink()` function called at end of `init()` — loads sample, loads template, syncs dropdown, switches to correct tab
