@@ -2635,3 +2635,12 @@ Full release v3.15.0: updated all 5 version locations (APP_VERSION, Containerfil
 Fixed two bugs in deep linking:
 1. `getHashSection()` returning `rendered` was set as `currentSection` on init — not a valid section, so templates panel never rendered. Now maps `rendered` → `templates` during init.
 2. `applyDeepLink()` was calling `loadTemplateSource` before `navigateToSection('templates')`, so the dropdown didn't exist yet. Reordered: navigate first (renders DOM), then load template and sync dropdown.
+
+### Prompt 225
+
+> still not working. Another fix to mix in, when I change the template, render it, only show the template if selecting template. when I switch the sample or load a new file, re-render and stay on render tab
+
+Fixed deep link and template/render tab behavior:
+1. `applyDeepLink()` no longer dispatches `change` event on dropdown (was triggering handler that clicks Template tab, overriding the Rendered tab switch). Loads sample silently, sets dropdown value without event, then clicks the correct tab directly.
+2. `loadDocument()` now auto-re-renders if the Rendered tab is active and a template is selected — so switching samples or loading files while viewing rendered output keeps showing updated output.
+3. Template select `change` handler still switches to Template tab (line 1614) — correct behavior per user request.

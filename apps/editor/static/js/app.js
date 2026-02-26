@@ -1001,25 +1001,29 @@ async function applyDeepLink() {
   if (!params.template) return;
   if (section !== 'templates' && section !== 'rendered') return;
 
-  // Load sample if specified
+  // Load sample if specified (silently — don't trigger re-render yet)
   if (params.sample) {
     const sample = State.state.samples.find(s => s.filename === params.sample);
-    if (sample) loadDocument(sample.content, sample.filename, true);
+    if (sample) {
+      State.state.currentFilename = sample.filename;
+      State.setBaseline(sample.content);
+      State.updateCurrent(sample.content, 'load');
+      CodeMirror.setEditorValue(sample.content, false);
+      updateHeader();
+    }
   }
 
   // Navigate to templates section (renders the dropdown)
   navigateToSection('templates', { _fromHash: true });
 
-  // Load template and sync dropdown
+  // Load template and sync dropdown (don't dispatch change — it would click Template tab)
   await loadTemplateSource(params.template);
   const select = document.getElementById('template-select');
   if (select) select.value = params.template;
 
-  // Switch to correct tab after DOM settles
+  // Switch to correct tab — clicking Rendered tab triggers autoRenderTemplate()
   const targetTab = section === 'rendered' ? 'rendered' : 'template';
-  setTimeout(() => {
-    document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
-  }, 300);
+  document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
 }
 
 /**
@@ -2454,6 +2458,12 @@ function loadDocument(yamlText, filename = 'untitled.clusterfile', setAsBaseline
 
   // Update validation
   updateValidationBadge();
+
+  // Re-render template if Rendered tab is active
+  const renderedTab = document.querySelector('.tab[data-tab="rendered"]');
+  if (renderedTab?.classList.contains('tab--active') && State.state.selectedTemplate) {
+    autoRenderTemplate();
+  }
 }
 
 /**
