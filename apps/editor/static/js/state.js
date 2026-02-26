@@ -54,6 +54,7 @@ const state = {
 
   // Validation
   validationErrors: [],
+  renderWarnings: [],
 
   // API data
   samples: [],

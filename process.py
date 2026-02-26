@@ -16,7 +16,7 @@ except Exception:
     jsonschema = None
 
 from lib.render import (
-    IndentDumper, base64encode, set_by_path,
+    IndentDumper, LoggingUndefined, base64encode, set_by_path,
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
 )
 
@@ -60,14 +60,17 @@ def process_template(config_data, template_file, data_file):
     plugins_tpl  = os.path.join(template_dir, 'plugins')
     repo_root    = os.path.dirname(template_dir)
     plugins_root = os.path.join(repo_root, 'plugins')
-    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_tpl, plugins_root, config_dir]))
+    env = Environment(loader=FileSystemLoader([template_dir, includes_dir, plugins_tpl, plugins_root, config_dir]),
+                      undefined=LoggingUndefined)
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     try:
         template = env.get_template(os.path.basename(template_file))
     except TemplateNotFound:
         raise FileNotFoundError(f"Error: Template file '{template_file}' not found.")
-    return template.render(config_data)
+    LoggingUndefined._missing = {}
+    output = template.render(config_data)
+    return output, dict(LoggingUndefined._missing)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process Jinja2 templates with YAML data.")
@@ -204,28 +207,22 @@ if __name__ == "__main__":
 
     config = yamllint.config.YamlLintConfig(YAMLLINT_CONFIG)
 
-    # Pre-render validation: check platform and required fields
+    # Pre-render validation (warnings to stderr, never blocks rendering)
     meta = parse_template_meta(args.template_file)
     val_warnings, val_errors = validate_data_for_template(data, meta)
-    for w in val_warnings:
-        print(w, file=sys.stderr)
-    if val_errors:
-        for e in val_errors:
-            print(e, file=sys.stderr)
-        sys.exit(1)
+    for w in val_warnings + val_errors:
+        print(f"WARNING: {w}", file=sys.stderr)
 
     try:
-        processedTemplate = process_template(data, args.template_file, args.data_file)
-    except UndefinedError as e:
-        msg = str(e)
-        tpl_name = meta.get('name', os.path.basename(args.template_file))
-        print(f"Error rendering '{tpl_name}': {msg}", file=sys.stderr)
-        requires = meta.get('requires', [])
-        if requires:
-            print(f"This template requires: {', '.join(requires)}", file=sys.stderr)
-        sys.exit(1)
+        processedTemplate, missing_vars = process_template(data, args.template_file, args.data_file)
+        if missing_vars:
+            for var, default in sorted(missing_vars.items()):
+                print(f"WARNING: {var} undefined, substituted {default!r}", file=sys.stderr)
     except (FileNotFoundError, ValueError) as e:
         print(e, file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"ERROR: Template rendering failed: {e}", file=sys.stderr)
         sys.exit(1)
 
     if args.template_file.endswith('yaml.tpl') or args.template_file.endswith('yaml.tmpl'):

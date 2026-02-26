@@ -2,6 +2,105 @@
 import yaml
 import base64
 import re
+from jinja2 import Undefined
+
+
+# Sensible defaults for common clusterfile variables.
+# When a template references an undefined variable, we substitute a
+# recognizable placeholder and warn, instead of rendering empty or crashing.
+_DEFAULTS = {
+    'name': 'CHANGEME',
+    'domain': 'example.com',
+    'subnet': '10.0.0.0/24',
+    'hostPrefix': 23,
+    'vips': {'api': '10.0.0.1', 'apps': '10.0.0.2'},
+    'api': '10.0.0.1',
+    'apps': '10.0.0.2',
+    'version': '4.16.0',
+    'platform': 'baremetal',
+    'location': 'default',
+    'namespace': 'CHANGEME',
+    'pullSecret': '{"auths":{}}',
+    'sshKeys': 'ssh-ed25519 CHANGEME',
+    'httpProxy': '',
+    'httpsProxy': '',
+    'noProxy': '',
+    'replicas': 0,
+    'type': 'OVNKubernetes',
+    'macAddress': '00:00:00:00:00:00',
+    'image': 'CHANGEME',
+    'publisher': 'CHANGEME',
+}
+
+
+def _default_for(name):
+    """Return a sensible default for the leaf variable name, or 'CHANGEME'."""
+    leaf = name.rsplit('.', 1)[-1].rstrip(']').rsplit('[', 1)[0] if name else ''
+    return _DEFAULTS.get(leaf, 'CHANGEME')
+
+
+class LoggingUndefined(Undefined):
+    """Undefined that substitutes sensible defaults and logs warnings.
+    Overrides _fail_with_undefined_error so no operation ever crashes.
+    """
+    _missing = {}  # name → substituted value
+
+    def _log(self, value=None):
+        name = self._undefined_name
+        if name and name not in LoggingUndefined._missing:
+            LoggingUndefined._missing[name] = value if value is not None else _default_for(name)
+
+    def _default(self):
+        return _default_for(self._undefined_name)
+
+    def _fail_with_undefined_error(self, *args, **kwargs):
+        d = self._default()
+        self._log(d)
+        return d
+
+    def __str__(self):
+        d = self._default()
+        self._log(d)
+        return str(d)
+
+    def __iter__(self):
+        self._log([])
+        return iter([])
+
+    def __bool__(self):
+        self._log(False)
+        return False
+
+    def __len__(self):
+        self._log([])
+        return 0
+
+    def __eq__(self, other):
+        self._log()
+        return isinstance(other, Undefined)
+
+    def __ne__(self, other):
+        self._log()
+        return not isinstance(other, Undefined)
+
+    def __hash__(self):
+        return id(type(self))
+
+    def __call__(self, *args, **kwargs):
+        self._log()
+        return self
+
+    def __getattr__(self, name):
+        if name.startswith('_'):
+            raise AttributeError(name)
+        full = f"{self._undefined_name}.{name}" if self._undefined_name else name
+        LoggingUndefined._missing.setdefault(full, _default_for(full))
+        return LoggingUndefined(name=full)
+
+    def __getitem__(self, name):
+        full = f"{self._undefined_name}[{name}]" if self._undefined_name else f"[{name}]"
+        self._log()
+        return LoggingUndefined(name=full)
 
 
 class IndentDumper(yaml.SafeDumper):

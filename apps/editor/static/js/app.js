@@ -1869,14 +1869,14 @@ async function autoRenderTemplate() {
     }
 
     const result = await response.json();
-    let output = result.output || '';
+    const output = result.output || '';
 
-    // Prepend warnings as comments so they're visible inline
+    // Store render warnings in state and update validation badge
+    State.state.renderWarnings = result.warnings || [];
+    updateValidationBadge();
+
     if (result.warnings?.length > 0) {
-      const commentChar = templateName.endsWith('.sh.tpl') ? '#' : '#';
-      const header = result.warnings.map(w => `${commentChar} ⚠ ${w}`).join('\n');
-      output = header + '\n\n' + output;
-      showToast(`Rendered with ${result.warnings.length} warning(s)`, 'warning');
+      showToast(`Rendered with ${result.warnings.length} warning(s) — see Validation tab`, 'warning');
     }
 
     // Show with highlights if we have params and baseline
@@ -1888,6 +1888,8 @@ async function autoRenderTemplate() {
     }
   } catch (e) {
     CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
+    State.state.renderWarnings = [e.message];
+    updateValidationBadge();
   }
 }
 
@@ -2282,8 +2284,11 @@ function formatChangeValue(value) {
 function renderValidationSection(container) {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
+  const renderWarnings = State.state.renderWarnings || [];
+  const hasSchemaErrors = result.errors.length > 0;
+  const hasRenderWarnings = renderWarnings.length > 0;
 
-  if (result.valid) {
+  if (!hasSchemaErrors && !hasRenderWarnings) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state__icon">
@@ -2299,39 +2304,52 @@ function renderValidationSection(container) {
     return;
   }
 
-  container.innerHTML = `
-    <div class="validation-panel">
-      <h3 style="margin: 0 0 16px 0;">${result.errors.length} Validation Error${result.errors.length !== 1 ? 's' : ''}</h3>
-      ${result.errors.map(e => `
-        <div class="validation-item">
-          <span class="validation-item__icon validation-item__icon--error">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </span>
-          <div class="validation-item__content">
-            <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
-            <div class="validation-item__message">${Help.escapeHtml(e.message)}</div>
-          </div>
+  const schemaHtml = hasSchemaErrors ? `
+    <h3 style="margin: 0 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
+    ${result.errors.map(e => `
+      <div class="validation-item">
+        <span class="validation-item__icon validation-item__icon--error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </span>
+        <div class="validation-item__content">
+          <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
+          <div class="validation-item__message">${Help.escapeHtml(e.message)}</div>
         </div>
-      `).join('')}
-    </div>
-  `;
+      </div>
+    `).join('')}` : '';
 
-  // Set up path click handlers
+  const renderHtml = hasRenderWarnings ? `
+    <h3 style="margin: ${hasSchemaErrors ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
+    ${renderWarnings.map(w => `
+      <div class="validation-item">
+        <span class="validation-item__icon validation-item__icon--warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="color: var(--pf-global--warning-color--100)">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </span>
+        <div class="validation-item__content">
+          <div class="validation-item__message">${Help.escapeHtml(w)}</div>
+        </div>
+      </div>
+    `).join('')}` : '';
+
+  container.innerHTML = `<div class="validation-panel">${schemaHtml}${renderHtml}</div>`;
+
+  // Set up path click handlers for schema errors
   container.querySelectorAll('.validation-item__path').forEach(pathEl => {
     pathEl.addEventListener('click', () => {
       const path = pathEl.dataset.path;
       if (path) {
-        // Navigate to the field
         const parts = State.parsePath(path);
         if (parts.length > 0) {
-          const section = parts[0];
-          navigateToSection(section);
+          navigateToSection(parts[0]);
         }
-        // Also try to go to line in editor
         CodeMirror.goToPath(path);
       }
     });
@@ -2411,11 +2429,13 @@ function syncEditorFromState() {
 function updateValidationBadge() {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
+  const renderWarnings = State.state.renderWarnings || [];
+  const total = result.errors.length + renderWarnings.length;
 
   const badge = document.querySelector('[data-section="validation"] .sidebar-nav__item-badge');
   if (badge) {
-    badge.textContent = result.errors.length;
-    badge.style.display = result.errors.length > 0 ? 'inline' : 'none';
+    badge.textContent = total;
+    badge.style.display = total > 0 ? 'inline' : 'none';
   }
 }
 

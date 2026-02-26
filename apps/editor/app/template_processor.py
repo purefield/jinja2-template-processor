@@ -1,6 +1,6 @@
 """Template processor for Jinja2 rendering with YAML output."""
 import yaml
-from jinja2 import Environment, FileSystemLoader, Undefined, UndefinedError
+from jinja2 import Environment, FileSystemLoader
 import os
 import yamllint.config
 import yamllint.linter
@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))  # dev: repo root
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))              # container: /app/
 from lib.render import (
-    IndentDumper, base64encode, set_by_path,
+    IndentDumper, LoggingUndefined, base64encode, set_by_path,
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
 )
 
@@ -44,65 +44,6 @@ def apply_params(data: dict, params: list) -> dict:
     return data
 
 
-class LoggingUndefined(Undefined):
-    """Undefined that logs access instead of raising, renders as empty string.
-    Overrides _fail_with_undefined_error so no operation ever crashes.
-    """
-    _missing = set()
-
-    def _log(self):
-        name = self._undefined_name
-        if name:
-            LoggingUndefined._missing.add(name)
-
-    def _fail_with_undefined_error(self, *args, **kwargs):
-        self._log()
-        return ''
-
-    def __str__(self):
-        self._log()
-        return ''
-
-    def __iter__(self):
-        self._log()
-        return iter([])
-
-    def __bool__(self):
-        self._log()
-        return False
-
-    def __len__(self):
-        self._log()
-        return 0
-
-    def __eq__(self, other):
-        self._log()
-        return isinstance(other, Undefined)
-
-    def __ne__(self, other):
-        self._log()
-        return not isinstance(other, Undefined)
-
-    def __hash__(self):
-        return id(type(self))
-
-    def __call__(self, *args, **kwargs):
-        self._log()
-        return self
-
-    def __getattr__(self, name):
-        if name.startswith('_'):
-            raise AttributeError(name)
-        LoggingUndefined._missing.add(
-            f"{self._undefined_name}.{name}" if self._undefined_name else name
-        )
-        return LoggingUndefined(name=f"{self._undefined_name}.{name}" if self._undefined_name else name)
-
-    def __getitem__(self, name):
-        self._log()
-        return LoggingUndefined(name=f"{self._undefined_name}[{name}]" if self._undefined_name else f"[{name}]")
-
-
 def process_template(config_data: dict, template_content: str, template_dir: str) -> tuple:
     """Process a Jinja2 template with the given configuration data.
     Returns (output, missing_vars) tuple.
@@ -122,10 +63,10 @@ def process_template(config_data: dict, template_content: str, template_dir: str
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
 
-    LoggingUndefined._missing = set()
+    LoggingUndefined._missing = {}
     template = env.from_string(template_content)
     output = template.render(config_data)
-    return output, sorted(LoggingUndefined._missing)
+    return output, dict(LoggingUndefined._missing)
 
 
 def render_template(yaml_text: str, template_name: str, params: list, templates_dir: Path) -> dict:
@@ -170,7 +111,8 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     try:
         processed, missing_vars = process_template(data, template_content, str(templates_dir))
         if missing_vars:
-            all_warnings.append(f"Undefined variables: {', '.join(missing_vars)}")
+            subs = [f"{k}={v!r}" for k, v in sorted(missing_vars.items())]
+            all_warnings.append(f"Substituted defaults: {', '.join(subs)}")
     except Exception as e:
         return {"success": False, "error": f"Template rendering failed: {e}", "output": "", "warnings": all_warnings}
 
