@@ -45,26 +45,62 @@ def apply_params(data: dict, params: list) -> dict:
 
 
 class LoggingUndefined(Undefined):
-    """Undefined that logs access instead of raising, renders as empty string."""
+    """Undefined that logs access instead of raising, renders as empty string.
+    Overrides _fail_with_undefined_error so no operation ever crashes.
+    """
     _missing = set()
 
+    def _log(self):
+        name = self._undefined_name
+        if name:
+            LoggingUndefined._missing.add(name)
+
+    def _fail_with_undefined_error(self, *args, **kwargs):
+        self._log()
+        return ''
+
     def __str__(self):
-        LoggingUndefined._missing.add(self._undefined_name)
+        self._log()
         return ''
 
     def __iter__(self):
-        LoggingUndefined._missing.add(self._undefined_name)
+        self._log()
         return iter([])
 
     def __bool__(self):
-        LoggingUndefined._missing.add(self._undefined_name)
+        self._log()
         return False
+
+    def __len__(self):
+        self._log()
+        return 0
+
+    def __eq__(self, other):
+        self._log()
+        return isinstance(other, Undefined)
+
+    def __ne__(self, other):
+        self._log()
+        return not isinstance(other, Undefined)
+
+    def __hash__(self):
+        return id(type(self))
+
+    def __call__(self, *args, **kwargs):
+        self._log()
+        return self
 
     def __getattr__(self, name):
         if name.startswith('_'):
             raise AttributeError(name)
-        LoggingUndefined._missing.add(f"{self._undefined_name}.{name}")
-        return LoggingUndefined(name=f"{self._undefined_name}.{name}")
+        LoggingUndefined._missing.add(
+            f"{self._undefined_name}.{name}" if self._undefined_name else name
+        )
+        return LoggingUndefined(name=f"{self._undefined_name}.{name}" if self._undefined_name else name)
+
+    def __getitem__(self, name):
+        self._log()
+        return LoggingUndefined(name=f"{self._undefined_name}[{name}]" if self._undefined_name else f"[{name}]")
 
 
 def process_template(config_data: dict, template_content: str, template_dir: str) -> tuple:
