@@ -109,6 +109,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.16.0',
+    date: '2026-02-25',
+    changes: [
+      'Universal URL routing: every section, tab, template, and sample in sharable URL',
+      'Graceful rendering: templates always render with sensible defaults for missing data',
+      'Render warnings shown in Validation tab with badge count',
+      'Selecting a template defaults to rendered output view'
+    ]
+  },
+  {
     version: '3.15.0',
     date: '2026-02-25',
     changes: [

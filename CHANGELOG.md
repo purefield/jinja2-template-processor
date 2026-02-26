@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.16.0 (2026-02-25)
+- **universal-url-routing** — Every section, editor tab, template, and sample in the URL hash; back/forward restores full state
+- **graceful-render** — Templates always render with sensible defaults for missing data; LoggingUndefined substitutes domain, subnet, macAddress, etc.
+- **render-warnings-validation** — Render warnings (substituted defaults, platform mismatches) shown in Validation tab with badge; CLI prints to stderr
+- **template-default-rendered** — Selecting a template defaults to rendered output view
+
 ## v3.15.0 (2026-02-25)
 - **deep-link-templates** — Deep link to template source (`#templates/?template=...`) or rendered output (`#rendered/?template=...&sample=...`); auto-loads sample, selects template, switches to correct tab
 

@@ -1,5 +1,12 @@
 # Clusterfile Editor Changelog
 
+## 3.16.0
+- **Universal URL Routing**: Every section, editor tab, template selection, and sample load syncs to the URL (`#section/tab?template=...&sample=...`); back/forward restores full view state
+- **Graceful Rendering**: Templates always render even with missing or incomplete data — undefined variables get sensible defaults (domain, subnet, macAddress, etc.) instead of crashing
+- **Validation Tab Warnings**: Render warnings (substituted defaults, platform mismatches, missing fields) appear in the Validation sidebar tab with badge count
+- **CLI stderr Warnings**: `process.py` prints render warnings to stderr while keeping clean output on stdout; never crashes on missing data
+- **Default to Rendered**: Selecting a template now shows rendered output immediately instead of source
+
 ## 3.15.0
 - **Deep Link Templates**: Share links to template source (`#templates/?template=...`) or rendered output with sample data (`#rendered/?template=...&sample=...`)
 
