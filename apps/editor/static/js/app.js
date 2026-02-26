@@ -1625,9 +1625,9 @@ function renderTemplatesSection(container) {
     if (templateName) {
       await loadTemplateSource(templateName);
       updatePreviewButton(templateName);
-      // Switch to template tab to show source
-      const templateTab = document.querySelector('.tab[data-tab="template"]');
-      if (templateTab) templateTab.click();
+      // Switch to rendered tab to show output
+      const renderedTab = document.querySelector('.tab[data-tab="rendered"]');
+      if (renderedTab) renderedTab.click();
     }
   });
 
