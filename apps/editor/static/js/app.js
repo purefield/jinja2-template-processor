@@ -1004,39 +1004,43 @@ async function applyDeepLink() {
   console.log('Deep link:', section, params);
 
   try {
-    // Load sample if specified (fetch content from API, then load silently)
+    // Step 1: Load sample content from API if specified
     if (params.sample) {
-      try {
-        const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(params.sample)}`);
-        if (!resp.ok) throw new Error('Sample not found');
-        const result = await resp.json();
-        State.state.currentFilename = result.filename || params.sample;
-        State.setBaseline(result.content);
-        State.updateCurrent(result.content, 'load');
-        CodeMirror.setEditorValue(result.content, false);
-        updateHeader();
-        console.log('Deep link: loaded sample', params.sample);
-      } catch (e) {
-        console.warn('Deep link: failed to load sample:', params.sample, e.message);
-      }
+      const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(params.sample)}`);
+      if (!resp.ok) throw new Error('Sample not found: ' + params.sample);
+      const result = await resp.json();
+      // Update state and editor with sample data
+      State.state.currentFilename = result.filename || params.sample;
+      State.setBaseline(result.content);
+      State.updateCurrent(result.content, 'load');
+      CodeMirror.setEditorValue(result.content, false);
+      updateHeader();
+      console.log('Deep link: loaded sample', params.sample);
     }
 
-    // Navigate to templates section (renders the dropdown)
-    navigateToSection('templates', { _fromHash: true });
-
-    // Load template and sync dropdown (don't dispatch change — it would click Template tab)
+    // Step 2: Load template source from API
     await loadTemplateSource(params.template);
     console.log('Deep link: loaded template', params.template);
 
+    // Step 3: Navigate to templates section (re-renders form with correct data)
+    navigateToSection('templates', { _fromHash: true });
+
+    // Step 4: After DOM settles, sync dropdown and switch to correct tab
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Re-load template (renderTemplatesSection may have triggered platform default)
+    await loadTemplateSource(params.template);
     const select = document.getElementById('template-select');
     if (select) select.value = params.template;
 
-    // Switch to correct tab — clicking Rendered tab triggers autoRenderTemplate()
+    // Click the target tab
     const targetTab = section === 'rendered' ? 'rendered' : 'template';
-    document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
+    const tabEl = document.querySelector(`.tab[data-tab="${targetTab}"]`);
+    if (tabEl) tabEl.click();
+    console.log('Deep link: complete, tab =', targetTab);
   } catch (e) {
     console.error('Deep link failed:', e);
-    showToast('Failed to load deep link: ' + e.message, 'error');
+    showToast('Deep link failed: ' + e.message, 'error');
   }
 }
 

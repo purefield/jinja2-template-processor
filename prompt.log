@@ -2656,3 +2656,9 @@ Root cause: browser cache. Cache-bust params in index.html were stuck at `?v=2.5
 > nope
 
 Root cause: `/api/samples` returns `{name, filename}` only — no `content`. Deep link was reading `sample.content` which was `undefined`, so the sample never loaded. Fixed to fetch content from `/api/samples/{filename}` like the sample dropdown does.
+
+### Prompt 228
+
+> nothing
+
+Reworked applyDeepLink to handle race with renderTemplatesSection's unawaited platform-default loadTemplateSource. Now: (1) fetch sample from API, update state directly, (2) load template, (3) navigate to templates section, (4) wait for DOM to settle, (5) re-load template to override platform default, sync dropdown, click target tab.
