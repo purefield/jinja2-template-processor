@@ -2621,3 +2621,9 @@ Added deep linking for templates and rendered output:
 - `#rendered/?template=install-config.yaml.tpl&sample=ipi-vsphere.clusterfile` → loads sample, renders template, shows rendered output
 - Added `getHashParams()` helper to parse query params from hash
 - Added `applyDeepLink()` function called at end of `init()` — loads sample, loads template, syncs dropdown, switches to correct tab
+
+### Prompt 223
+
+> ship it
+
+Full release v3.15.0: updated all 5 version locations (APP_VERSION, Containerfile, app.js CHANGELOG, static/changelog.md, CHANGELOG.md). Committed, tagged `v3.15.0`, pushed. Built container, pushed `v3.15.0` + `latest` to quay.io. Restarted app — healthz returns `3.15.0`.

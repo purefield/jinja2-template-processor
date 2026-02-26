@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.15.0 (2026-02-25)
 - **deep-link-templates** — Deep link to template source (`#templates/?template=...`) or rendered output (`#rendered/?template=...&sample=...`); auto-loads sample, selects template, switches to correct tab
 
 ## v3.14.0 (2026-02-25)

@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.15.0
+- **Deep Link Templates**: Share links to template source (`#templates/?template=...`) or rendered output with sample data (`#rendered/?template=...&sample=...`)
+
 ## 3.14.0
 - **URL Routing**: Bookmarkable URLs — every sidebar section and About sub-tab gets a shareable hash URL (e.g. `#cluster`, `#about/comparison`); browser back/forward buttons navigate between sections
 

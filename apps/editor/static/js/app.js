@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.15.0',
+    date: '2026-02-25',
+    changes: [
+      'Deep link to template source or rendered output with sample data via URL hash params'
+    ]
+  },
+  {
     version: '3.14.0',
     date: '2026-02-25',
     changes: [
