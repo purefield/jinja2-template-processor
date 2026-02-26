@@ -2644,3 +2644,9 @@ Fixed deep link and template/render tab behavior:
 1. `applyDeepLink()` no longer dispatches `change` event on dropdown (was triggering handler that clicks Template tab, overriding the Rendered tab switch). Loads sample silently, sets dropdown value without event, then clicks the correct tab directly.
 2. `loadDocument()` now auto-re-renders if the Rendered tab is active and a template is selected — so switching samples or loading files while viewing rendered output keeps showing updated output.
 3. Template select `change` handler still switches to Template tab (line 1614) — correct behavior per user request.
+
+### Prompt 226
+
+> doesnt work
+
+Root cause: browser cache. Cache-bust params in index.html were stuck at `?v=2.5.0` while app is v3.15.0 — browser was serving old app.js without any deep link code. Updated all cache-bust params to `?v=3.15.0`. Also added try/catch and console logging to `applyDeepLink()` for debuggability.

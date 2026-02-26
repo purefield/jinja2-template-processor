@@ -1001,29 +1001,41 @@ async function applyDeepLink() {
   if (!params.template) return;
   if (section !== 'templates' && section !== 'rendered') return;
 
-  // Load sample if specified (silently — don't trigger re-render yet)
-  if (params.sample) {
-    const sample = State.state.samples.find(s => s.filename === params.sample);
-    if (sample) {
-      State.state.currentFilename = sample.filename;
-      State.setBaseline(sample.content);
-      State.updateCurrent(sample.content, 'load');
-      CodeMirror.setEditorValue(sample.content, false);
-      updateHeader();
+  console.log('Deep link:', section, params);
+
+  try {
+    // Load sample if specified (silently — don't trigger re-render yet)
+    if (params.sample) {
+      const sample = State.state.samples.find(s => s.filename === params.sample);
+      if (sample) {
+        State.state.currentFilename = sample.filename;
+        State.setBaseline(sample.content);
+        State.updateCurrent(sample.content, 'load');
+        CodeMirror.setEditorValue(sample.content, false);
+        updateHeader();
+        console.log('Deep link: loaded sample', sample.filename);
+      } else {
+        console.warn('Deep link: sample not found:', params.sample);
+      }
     }
+
+    // Navigate to templates section (renders the dropdown)
+    navigateToSection('templates', { _fromHash: true });
+
+    // Load template and sync dropdown (don't dispatch change — it would click Template tab)
+    await loadTemplateSource(params.template);
+    console.log('Deep link: loaded template', params.template);
+
+    const select = document.getElementById('template-select');
+    if (select) select.value = params.template;
+
+    // Switch to correct tab — clicking Rendered tab triggers autoRenderTemplate()
+    const targetTab = section === 'rendered' ? 'rendered' : 'template';
+    document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
+  } catch (e) {
+    console.error('Deep link failed:', e);
+    showToast('Failed to load deep link: ' + e.message, 'error');
   }
-
-  // Navigate to templates section (renders the dropdown)
-  navigateToSection('templates', { _fromHash: true });
-
-  // Load template and sync dropdown (don't dispatch change — it would click Template tab)
-  await loadTemplateSource(params.template);
-  const select = document.getElementById('template-select');
-  if (select) select.value = params.template;
-
-  // Switch to correct tab — clicking Rendered tab triggers autoRenderTemplate()
-  const targetTab = section === 'rendered' ? 'rendered' : 'template';
-  document.querySelector(`.tab[data-tab="${targetTab}"]`)?.click();
 }
 
 /**
