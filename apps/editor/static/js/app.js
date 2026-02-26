@@ -1004,18 +1004,20 @@ async function applyDeepLink() {
   console.log('Deep link:', section, params);
 
   try {
-    // Load sample if specified (silently — don't trigger re-render yet)
+    // Load sample if specified (fetch content from API, then load silently)
     if (params.sample) {
-      const sample = State.state.samples.find(s => s.filename === params.sample);
-      if (sample) {
-        State.state.currentFilename = sample.filename;
-        State.setBaseline(sample.content);
-        State.updateCurrent(sample.content, 'load');
-        CodeMirror.setEditorValue(sample.content, false);
+      try {
+        const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(params.sample)}`);
+        if (!resp.ok) throw new Error('Sample not found');
+        const result = await resp.json();
+        State.state.currentFilename = result.filename || params.sample;
+        State.setBaseline(result.content);
+        State.updateCurrent(result.content, 'load');
+        CodeMirror.setEditorValue(result.content, false);
         updateHeader();
-        console.log('Deep link: loaded sample', sample.filename);
-      } else {
-        console.warn('Deep link: sample not found:', params.sample);
+        console.log('Deep link: loaded sample', params.sample);
+      } catch (e) {
+        console.warn('Deep link: failed to load sample:', params.sample, e.message);
       }
     }
 

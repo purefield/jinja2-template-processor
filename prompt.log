@@ -2650,3 +2650,9 @@ Fixed deep link and template/render tab behavior:
 > doesnt work
 
 Root cause: browser cache. Cache-bust params in index.html were stuck at `?v=2.5.0` while app is v3.15.0 — browser was serving old app.js without any deep link code. Updated all cache-bust params to `?v=3.15.0`. Also added try/catch and console logging to `applyDeepLink()` for debuggability.
+
+### Prompt 227
+
+> nope
+
+Root cause: `/api/samples` returns `{name, filename}` only — no `content`. Deep link was reading `sample.content` which was `undefined`, so the sample never loaded. Fixed to fetch content from `/api/samples/{filename}` like the sample dropdown does.
