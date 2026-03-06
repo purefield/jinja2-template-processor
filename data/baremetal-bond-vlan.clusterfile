@@ -47,7 +47,7 @@ cluster:
         - internal-registry.tld/registry-connect-redhat-com
 network:
   domain: base.domain
-  trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
+  trustBundle: /etc/ssl/certs/IBM-Root-CA-PROD.pem
   proxy:
     httpProxy: http://proxy.company.tld:8080/
     httpsProxy: http://proxy.company.tld:8080/

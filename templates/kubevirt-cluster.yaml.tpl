@@ -5,6 +5,7 @@ type: clusterfile
 category: installation
 platforms:
   - kubevirt
+  - baremetal
 requires:
   - cluster.name
   - cluster.machine
