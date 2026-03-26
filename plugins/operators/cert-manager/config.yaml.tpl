@@ -1,10 +1,10 @@
 {%- set cm = plugins.operators['cert-manager'] -%}
 {%- if cm.letsencrypt is defined -%}
 {%- set le = cm.letsencrypt -%}
-{%- set r53 = le.route53 -%}
 {%- set selfCheck = cm.selfCheck | default({}) -%}
 {%- set nameservers = selfCheck.nameservers | default(["8.8.8.8:53", "1.1.1.1:53"]) -%}
 {%- set clusterDomain = cluster.name ~ '.' ~ network.domain %}
+{%- set provider = le.provider -%}
 ---
 apiVersion: operator.openshift.io/v1alpha1
 kind: CertManager
@@ -14,7 +14,7 @@ spec:
   controllerConfig:
     overrideArgs:
       - --dns01-recursive-nameservers-only
-      - --dns01-recursive-nameservers={{ nameservers | join(',') }}
+      - --dns01-recursive-nameservers={{ nameservers | join(',') }}{% if provider == 'aws' %}{%- set r53 = le.route53 -%}
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -59,7 +59,42 @@ spec:
               key: aws-access-key-id
             secretAccessKeySecretRef:
               name: route53-credentials
-              key: aws-secret-access-key
+              key: aws-secret-access-key{% elif provider == 'cloudflare' and le.cloudflare is defined %}{%- set cf = le.cloudflare -%}
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflare-api-token
+  namespace: cert-manager
+spec:
+  secretStoreRef:
+    name: {{ cf.secretStore | default("vault") }}
+    kind: ClusterSecretStore
+  target:
+    name: cloudflare-api-token
+  data:
+    - secretKey: api-token
+      remoteRef:
+        key: {{ cf.remoteRef }}
+        property: api-token
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ le.email }}
+    privateKeySecretRef:
+      name: letsencrypt-acme-account-key
+    solvers:
+      - dns01:{% if le.cnameStrategy is defined %}
+          cnameStrategy: {{ le.cnameStrategy }}{% endif %}
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token{% endif %}
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

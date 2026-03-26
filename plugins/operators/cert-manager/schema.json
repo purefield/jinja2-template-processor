@@ -35,11 +35,11 @@
     },
     "letsencrypt": {
       "title": "LetsEncrypt Configuration",
-      "description": "Configure cert-manager with LetsEncrypt DNS-01 validation via Route53. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
+      "description": "Configure cert-manager with LetsEncrypt DNS-01 validation. Choose the provider as aws or cloudflare. AWS uses Route53 for DNS-01. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
       "type": "object",
       "required": [
         "email",
-        "route53"
+        "provider"
       ],
       "properties": {
         "email": {
@@ -48,9 +48,24 @@
           "format": "email",
           "description": "Contact email for LetsEncrypt account registration."
         },
+        "provider": {
+          "title": "DNS Provider",
+          "type": "string",
+          "enum": [
+            "aws",
+            "cloudflare"
+          ],
+          "default": "aws",
+          "x-rerender-on-change": true,
+          "description": "Choose the DNS provider for DNS-01 challenges."
+        },
         "route53": {
-          "title": "Route53 DNS-01 Configuration",
+          "title": "AWS Route53 DNS-01 Configuration",
           "type": "object",
+          "x-visible-when": {
+            "field": "provider",
+            "equals": "aws"
+          },
           "required": [
             "hostedZoneID",
             "role",
@@ -83,6 +98,31 @@
               "title": "Remote Secret Key",
               "type": "string",
               "description": "Key in the external secret store containing aws-access-key-id and aws-secret-access-key."
+            }
+          },
+          "additionalProperties": false
+        },
+        "cloudflare": {
+          "title": "Cloudflare DNS-01 Configuration",
+          "type": "object",
+          "x-visible-when": {
+            "field": "provider",
+            "equals": "cloudflare"
+          },
+          "required": [
+            "remoteRef"
+          ],
+          "properties": {
+            "secretStore": {
+              "title": "ClusterSecretStore Name",
+              "type": "string",
+              "default": "vault",
+              "description": "Name of the ClusterSecretStore for Cloudflare credentials."
+            },
+            "remoteRef": {
+              "title": "Remote Secret Key",
+              "type": "string",
+              "description": "Key in the external secret store containing api-token."
             }
           },
           "additionalProperties": false

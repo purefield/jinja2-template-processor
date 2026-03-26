@@ -2704,3 +2704,69 @@ Reviewed `CLAUDE.md`, `prompt.log`, and existing plugin templates in the cluster
 > ship it
 
 Verified the clusterfile repo is on `auth.github`, confirmed the release commit/tag for v3.17.0, and started the full ship flow: audit-log update, push branch/tags, container build/push, restart, and health verification.
+
+### Prompt 236
+
+> we have a gap, the Let's encrypt configuration for the operator is missing the option for cloudflare. we also do not have a new plugin area for auth in the UI
+
+Added Cloudflare support to the cert-manager plugin schema/template and generalized the editor plugin form so `plugins.auth` renders as its own Authentication subsection beside Platform and Operators.
+
+### Prompt 237
+
+> restart the container
+
+Restarted the local `clusterfile-editor` container to pick up the current editor build.
+
+### Prompt 238
+
+> The UI does not reflect the changes yet
+
+Identified that the container was still running an older image, rebuilt the local editor image from the current tree, restarted the container, and verified health.
+
+### Prompt 239
+
+> overall we introduced a discrepancy with aws vs route53 and cloudflare between the projects. the provider is aws/cloudflare the service is route53 / dns. we should consider this when using these selectors for both projects.
+
+Aligned cert-manager selector semantics in the clusterfile repo to use provider values `aws` and `cloudflare`, while keeping Route53 as the AWS-specific config block name.
+
+### Prompt 240
+
+> no legacy support, keep it clean forward.
+
+Removed the legacy `route53` selector fallback from the cert-manager plugin and tests so the forward contract is only `aws` or `cloudflare`.
+
+### Prompt 241
+
+> make sure the ui shows the new auth plugin section for the plugin configuration. secrets need to be loaded from files
+
+Switched the GitHub auth plugin from external secret names to file-based `clientIdFile` and `clientSecretFile` inputs, updated templates/tests, and kept the editor aligned with the repo's file-externalization model.
+
+### Prompt 242
+
+> restart pod to test
+
+Restarted the local editor container and verified the health endpoint before testing the updated UI.
+
+### Prompt 243
+
+> much better. the dns provider selection does not open fields. do we need that?
+
+Added schema-driven rerender support so changing the DNS provider immediately reveals the matching aws or cloudflare configuration block in the form.
+
+### Prompt 244
+
+> the suggested value for ClusterSecretStore Name is vault. should that be the name of the secret or store provider?
+
+Clarified that the field refers to the `ClusterSecretStore` resource name, not a secret name or abstract provider type.
+
+### Prompt 245
+
+> all good
+
+Confirmed the local editor state was in good shape with working auth plugin UI, file-based credentials, and cert-manager provider switching.
+
+### Prompt 246
+
+> ship it
+
+Prepared a new clusterfile release containing the auth UI, file-based GitHub credential handling, and cert-manager provider toggle fixes, then updated version metadata and release notes for v3.18.0.

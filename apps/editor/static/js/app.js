@@ -109,6 +109,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.18.0',
+    date: '2026-03-26',
+    changes: [
+      'Plugins page now shows an Authentication section for auth plugins',
+      'GitHub OAuth credentials are configured as file paths and loaded at render time',
+      'cert-manager LetsEncrypt now supports aws or cloudflare with provider-specific fields and live field switching'
+    ]
+  },
+  {
     version: '3.17.0',
     date: '2026-03-26',
     changes: [

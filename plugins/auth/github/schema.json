@@ -1,6 +1,6 @@
 {
   "title": "GitHub OAuth",
-  "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Each provider references an external secret entry that supplies the OAuth client ID and client secret.",
+  "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Credentials are externalized as file paths and loaded at render time.",
   "type": "object",
   "properties": {
     "hostname": {
@@ -38,7 +38,8 @@
         "required": [
           "name",
           "secretName",
-          "externalSecretName"
+          "clientIdFile",
+          "clientSecretFile"
         ],
         "properties": {
           "name": {
@@ -51,11 +52,17 @@
             "type": "string",
             "description": "Kubernetes secret name that stores the OAuth client secret in the cluster."
           },
-          "externalSecretName": {
-            "title": "External Secret Name",
+          "clientIdFile": {
+            "title": "Client ID File",
             "type": "string",
-            "description": "Name of the external secret entry that stores the OAuth client ID in username and the client secret in password. The current automation resolves this from Bitwarden.",
-            "x-doc-url": "https://bitwarden.com/help/cli/"
+            "description": "Path to a file containing the GitHub OAuth client ID.",
+            "x-is-file": true
+          },
+          "clientSecretFile": {
+            "title": "Client Secret File",
+            "type": "string",
+            "description": "Path to a file containing the GitHub OAuth client secret.",
+            "x-is-file": true
           },
           "organizations": {
             "title": "Organizations",

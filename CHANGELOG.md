@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.0 (2026-03-26)
+- **auth-ui-files** — Expose `plugins.auth.github` in the editor, switch GitHub OAuth credentials to file-path inputs, and load client ID/secret from files at render time
+- **cert-manager-provider-toggle** — Add aws/cloudflare LetsEncrypt provider selection with provider-specific form sections and Cloudflare render support
+
 ## v3.17.0 (2026-03-26)
 - **auth.github** — Add GitHub auth plugin with co-located schema/templates, generic plugin schema discovery, and template-based OAuth app setup, secret rendering, and OpenShift OAuth configuration
 

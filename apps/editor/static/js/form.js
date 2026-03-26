@@ -180,8 +180,11 @@ function renderPluginsSection(container, schema) {
   // --- Platform subsection ---
   renderPlatformSubsection(container, resolvedPluginsSchema);
 
+  // --- Auth subsection ---
+  renderPluginGroupSubsection(container, resolvedPluginsSchema, 'auth', 'Authentication');
+
   // --- Operators subsection ---
-  renderOperatorsSubsection(container, resolvedPluginsSchema);
+  renderPluginGroupSubsection(container, resolvedPluginsSchema, 'operators', 'Operators', '24px');
 }
 
 /**
@@ -266,33 +269,30 @@ function renderPlatformSubsection(container, pluginsSchema) {
   renderObjectFields(container, pluginSchema, path, pluginData);
 }
 
-/**
- * Render operators subsection with collapsible enable/disable fieldsets
- */
-function renderOperatorsSubsection(container, pluginsSchema) {
-  const rawOperatorsSchema = pluginsSchema?.properties?.operators;
-  if (!rawOperatorsSchema) return;
-  const operatorsSchema = safeResolveSchema(rawOperatorsSchema, getRootSchema());
-  if (!operatorsSchema?.properties) return;
+function renderPluginGroupSubsection(container, pluginsSchema, groupName, titleText, topMargin = '24px') {
+  const rawGroupSchema = pluginsSchema?.properties?.[groupName];
+  if (!rawGroupSchema) return;
+  const groupSchema = safeResolveSchema(rawGroupSchema, getRootSchema());
+  if (!groupSchema?.properties) return;
 
   const subtitle = document.createElement('h3');
   subtitle.className = 'form-section__subtitle';
-  subtitle.textContent = 'Operators';
-  subtitle.style.marginTop = '24px';
+  subtitle.textContent = titleText;
+  subtitle.style.marginTop = topMargin;
   subtitle.style.marginBottom = '12px';
   subtitle.style.color = 'var(--pf-global--Color--100)';
   subtitle.style.fontSize = '1rem';
   subtitle.style.fontWeight = '600';
   container.appendChild(subtitle);
 
-  const operatorsData = State.state.currentObject?.plugins?.operators || {};
+  const groupData = State.state.currentObject?.plugins?.[groupName] || {};
 
-  for (const [opName, rawOpSchema] of Object.entries(operatorsSchema.properties)) {
-    const opSchema = safeResolveSchema(rawOpSchema, getRootSchema());
-    if (!opSchema || opSchema.type !== 'object') continue;
+  for (const [pluginName, rawPluginSchema] of Object.entries(groupSchema.properties)) {
+    const pluginSchema = safeResolveSchema(rawPluginSchema, getRootSchema());
+    if (!pluginSchema || pluginSchema.type !== 'object') continue;
 
-    const isEnabled = opName in operatorsData;
-    const opData = operatorsData[opName] || {};
+    const isEnabled = pluginName in groupData;
+    const pluginData = groupData[pluginName] || {};
 
     const fieldset = document.createElement('fieldset');
     fieldset.className = 'form-fieldset';
@@ -310,17 +310,15 @@ function renderOperatorsSubsection(container, pluginsSchema) {
     checkbox.addEventListener('change', (e) => {
       e.stopPropagation();
       if (checkbox.checked) {
-        // Ensure plugins.operators path exists
         if (!State.state.currentObject.plugins) State.state.currentObject.plugins = {};
-        if (!State.state.currentObject.plugins.operators) State.state.currentObject.plugins.operators = {};
-        State.setNestedValue(State.state.currentObject, `plugins.operators.${opName}`, {});
+        if (!State.state.currentObject.plugins[groupName]) State.state.currentObject.plugins[groupName] = {};
+        State.setNestedValue(State.state.currentObject, `plugins.${groupName}.${pluginName}`, {});
         fieldset.classList.remove('form-fieldset--collapsed');
       } else {
-        State.deleteNestedValue(State.state.currentObject, `plugins.operators.${opName}`);
+        State.deleteNestedValue(State.state.currentObject, `plugins.${groupName}.${pluginName}`);
         fieldset.classList.add('form-fieldset--collapsed');
       }
       triggerFormChange();
-      // Re-render to show/hide operator fields
       setTimeout(() => {
         const container = document.getElementById('form-content');
         if (container) renderSection('plugins', container);
@@ -335,11 +333,11 @@ function renderOperatorsSubsection(container, pluginsSchema) {
     legend.appendChild(toggleSpan);
 
     const labelSpan = document.createElement('span');
-    labelSpan.textContent = ` ${opSchema.title || opName}`;
+    labelSpan.textContent = ` ${pluginSchema.title || pluginName}`;
     legend.appendChild(labelSpan);
 
-    if (Help.createHelpIcon && opSchema.description) {
-      legend.appendChild(Help.createHelpIcon(opSchema, opName));
+    if (Help.createHelpIcon && pluginSchema.description) {
+      legend.appendChild(Help.createHelpIcon(pluginSchema, pluginName));
     }
 
     legend.addEventListener('click', (e) => {
@@ -351,11 +349,10 @@ function renderOperatorsSubsection(container, pluginsSchema) {
 
     const content = document.createElement('div');
     content.className = 'form-fieldset__content';
-    if (isEnabled && opSchema.properties) {
-      // Filter out 'enabled' from displayed fields (handled by checkbox)
-      const filteredSchema = { ...opSchema, properties: { ...opSchema.properties } };
+    if (isEnabled && pluginSchema.properties) {
+      const filteredSchema = { ...pluginSchema, properties: { ...pluginSchema.properties } };
       delete filteredSchema.properties.enabled;
-      renderObjectFields(content, filteredSchema, `plugins.operators.${opName}`, opData);
+      renderObjectFields(content, filteredSchema, `plugins.${groupName}.${pluginName}`, pluginData);
     }
     fieldset.appendChild(content);
     container.appendChild(fieldset);
@@ -558,6 +555,7 @@ function renderObjectFields(container, schema, basePath, data) {
   const ungrouped = [];
 
   for (const [key, rawFieldSchema] of Object.entries(resolvedSchema.properties)) {
+    if (!shouldRenderField(rawFieldSchema, basePath, data)) continue;
     const path = basePath ? `${basePath}.${key}` : key;
     const value = data?.[key];
     const fieldSchema = safeResolveSchema(rawFieldSchema, getRootSchema());
@@ -609,6 +607,26 @@ function renderObjectFields(container, schema, basePath, data) {
     const el = renderField(path, key, fieldSchema, value);
     if (el) container.appendChild(el);
   }
+}
+
+function shouldRenderField(schema, basePath, data) {
+  const visibleWhen = schema?.['x-visible-when'];
+  if (!visibleWhen) return true;
+
+  const fieldPath = visibleWhen.field || '';
+  const actual = fieldPath.includes('.')
+    ? State.getNestedValue(State.state.currentObject, fieldPath)
+    : data?.[fieldPath];
+
+  if (Array.isArray(visibleWhen.in)) {
+    return visibleWhen.in.includes(actual);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(visibleWhen, 'equals')) {
+    return actual === visibleWhen.equals;
+  }
+
+  return true;
 }
 
 /**
@@ -1810,6 +1828,16 @@ function updateFieldValue(path, value, schema) {
 
   State.recordChange(path, coercedValue);
   triggerFormChange();
+
+  if (schema?.['x-rerender-on-change']) {
+    setTimeout(() => {
+      const container = document.getElementById('form-content');
+      const sectionName = window.ClusterfileEditor?.State?.state?.currentSection;
+      if (container && sectionName) {
+        renderSection(sectionName, container);
+      }
+    }, 0);
+  }
 
   // Update form group changed state - use CSS.escape for paths with special chars
   try {

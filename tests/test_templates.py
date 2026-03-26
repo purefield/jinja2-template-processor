@@ -2314,12 +2314,23 @@ class TestCertManagerConfig:
     def full_letsencrypt(self):
         return {
             'email': 'test@example.com',
+            'provider': 'aws',
             'route53': {
                 'hostedZoneID': 'Z0123456789ABCDEF',
                 'region': 'us-east-1',
                 'role': 'arn:aws:iam::123456789:role/test-role',
                 'secretStore': 'aws-secretsmanager',
                 'remoteRef': 'route53/credentials',
+            }
+        }
+
+    def full_letsencrypt_cloudflare(self):
+        return {
+            'email': 'test@example.com',
+            'provider': 'cloudflare',
+            'cloudflare': {
+                'secretStore': 'vault',
+                'remoteRef': 'cloudflare/dns',
             }
         }
 
@@ -2388,6 +2399,7 @@ class TestCertManagerConfig:
         """Test only email + route53 required fields needed; rest uses defaults."""
         minimal = {
             'email': 'admin@example.com',
+            'provider': 'aws',
             'route53': {
                 'hostedZoneID': 'ZMINIMAL',
                 'role': 'arn:aws:iam::111:role/minimal',
@@ -2404,6 +2416,22 @@ class TestCertManagerConfig:
         ext = next(d for d in docs if d['kind'] == 'ExternalSecret')
         assert ext['spec']['secretStoreRef']['name'] == 'vault'
 
+    def test_certmanager_config_renders_cloudflare_solver(self, template_env):
+        """Test letsencrypt config renders ClusterIssuer with Cloudflare solver."""
+        data = self.letsencrypt_data(self.full_letsencrypt_cloudflare())
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        issuer = next(d for d in docs if d['kind'] == 'ClusterIssuer')
+        solver = issuer['spec']['acme']['solvers'][0]['dns01']['cloudflare']
+        assert solver['apiTokenSecretRef']['name'] == 'cloudflare-api-token'
+        assert solver['apiTokenSecretRef']['key'] == 'api-token'
+        ext = next(d for d in docs if d['kind'] == 'ExternalSecret')
+        assert ext['metadata']['name'] == 'cloudflare-api-token'
+        assert ext['spec']['secretStoreRef']['name'] == 'vault'
+        assert ext['spec']['data'][0]['remoteRef']['key'] == 'cloudflare/dns'
+        assert ext['spec']['data'][0]['remoteRef']['property'] == 'api-token'
 
 class TestAcmOperator:
     """Tests for ACM operator plugin."""
@@ -3293,7 +3321,11 @@ print('OK')
 class TestAuthGithubTemplates:
     """Tests for GitHub auth config templates."""
 
-    def test_auth_github_config_template_uses_external_secret_name(self):
+    def test_auth_github_config_template_loads_credentials_from_files(self, tmp_path):
+        client_id = tmp_path / 'github-client-id.txt'
+        client_secret = tmp_path / 'github-client-secret.txt'
+        client_id.write_text('github-client-id')
+        client_secret.write_text('github-client-secret')
         data = {
             'cluster': {'name': 'test-cluster'},
             'plugins': {
@@ -3303,7 +3335,8 @@ class TestAuthGithubTemplates:
                             {
                                 'name': 'github',
                                 'secretName': 'github-client-secret-test',
-                                'externalSecretName': 'github.sso.test',
+                                'clientIdFile': str(client_id),
+                                'clientSecretFile': str(client_secret),
                                 'organizations': ['purefield-lab']
                             }
                         ]
@@ -3317,7 +3350,8 @@ class TestAuthGithubTemplates:
             'test.clusterfile'
         )
         rendered = json.loads(out)
-        assert rendered['auth']['github']['providers'][0]['externalSecretName'] == 'github.sso.test'
+        assert rendered['auth']['github']['providers'][0]['clientId'] == 'github-client-id'
+        assert rendered['auth']['github']['providers'][0]['clientSecret'] == 'github-client-secret'
         assert rendered['rolebindingName'] == 'purefield'
 
 

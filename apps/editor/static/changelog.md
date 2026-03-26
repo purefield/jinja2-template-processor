@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.18.0
+- **Authentication Plugins**: Plugins page now shows an Authentication section for auth plugins
+- **GitHub OAuth Files**: GitHub OAuth credentials are configured as file paths and loaded at render time
+- **cert-manager Provider Toggle**: LetsEncrypt now supports aws or cloudflare with provider-specific fields and live field switching
+
 ## 3.17.0
 - **GitHub Auth Plugin**: New `plugins.auth.github` plugin with co-located schema and templates for GitHub OAuth app setup, secret rendering, and OpenShift OAuth configuration
 - **Generic Plugin Discovery**: Schema discovery now loads all plugin groups, not just operators, so the editor automatically exposes auth plugins without custom UI code

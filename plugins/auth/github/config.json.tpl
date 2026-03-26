@@ -1,4 +1,17 @@
 {%- set github = (plugins.auth | default({})).github | default({}) -%}
+{%- set providers = namespace(items=[]) -%}
+{%- for provider in github.providers | default([]) -%}
+  {%- set providers.items = providers.items + [{
+    'name': provider.name,
+    'secretName': provider.secretName,
+    'clientIdFile': provider.clientIdFile,
+    'clientSecretFile': provider.clientSecretFile,
+    'clientId': load_file(provider.clientIdFile),
+    'clientSecret': load_file(provider.clientSecretFile),
+    'organizations': provider.organizations | default([]),
+    'teams': provider.teams | default([])
+  }] -%}
+{%- endfor -%}
 {
   "rolebindingName": {{ ("rlinks" if cluster.name == "rlinks" else "purefield") | tojson }},
   "auth": {
@@ -6,7 +19,7 @@
       "hostname": {{ (github.hostname | default("")) | tojson }},
       "mappingMethod": {{ (github.mappingMethod | default("claim")) | tojson }},
       "secretNamespace": {{ (github.secretNamespace | default("openshift-config")) | tojson }},
-      "providers": {{ (github.providers | default([])) | tojson }}
+      "providers": {{ providers.items | tojson }}
     }
   }
 }
