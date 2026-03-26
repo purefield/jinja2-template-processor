@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.17.0
+- **GitHub Auth Plugin**: New `plugins.auth.github` plugin with co-located schema and templates for GitHub OAuth app setup, secret rendering, and OpenShift OAuth configuration
+- **Generic Plugin Discovery**: Schema discovery now loads all plugin groups, not just operators, so the editor automatically exposes auth plugins without custom UI code
+
 ## 3.16.0
 - **Universal URL Routing**: Every section, editor tab, template selection, and sample load syncs to the URL (`#section/tab?template=...&sample=...`); back/forward restores full view state
 - **Graceful Rendering**: Templates always render even with missing or incomplete data — undefined variables get sensible defaults (domain, subnet, macAddress, etc.) instead of crashing

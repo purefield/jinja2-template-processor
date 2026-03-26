@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.17.0',
+    date: '2026-03-26',
+    changes: [
+      'GitHub auth plugin: plugins.auth.github with co-located schema and templates for OAuth app setup, secret rendering, and OpenShift OAuth config',
+      'Generic plugin discovery: editor schema loader now exposes all plugin groups, not just operators'
+    ]
+  },
+  {
     version: '3.16.0',
     date: '2026-02-25',
     changes: [

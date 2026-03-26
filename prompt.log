@@ -2686,3 +2686,15 @@ Added hash updates for editor tabs: clicking Rendered tab sets `#rendered/`, cli
 > commit these changes in clustefile to a new branch 'auth.github'
 
 Prepared the clusterfile GitHub auth plugin work for commit: reviewed repo-specific template rules, moved GitHub auth templates under `plugins/auth/github/`, reduced the template set, aligned formatting with project conventions, added changelog coverage, and queued the changes for commit on branch `auth.github`.
+
+### Prompt 233
+
+> following the clusterfile repo, we also need to bump the version and make sure the ui supports the new plugin
+
+Verified the editor path supports auth plugins through generic schema-driven rendering after broadening plugin schema discovery beyond operators. Bumped the coordinated version locations to 3.17.0 and added changelog entries for the new `plugins.auth.github` plugin and generic plugin discovery.
+
+### Prompt 234
+
+> also the templates should be formatted in certain way. review the CLAUDE.md file in that project as well as historical prompts and review other templates for patterns.
+
+Reviewed `CLAUDE.md`, `prompt.log`, and existing plugin templates in the clusterfile repo. Moved GitHub auth templates under `plugins/auth/github/` and reformatted rendered-content templates to follow the repo's inline Jinja control-block style while keeping assignment-heavy templates in trimmed `{%- set ... -%}` form.

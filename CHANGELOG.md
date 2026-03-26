@@ -2,8 +2,8 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
-- **auth.github** — Add GitHub auth plugin with co-located schema/templates, generic plugin schema discovery, and template-based OAuth/secret rendering (2026-03-26)
+## v3.17.0 (2026-03-26)
+- **auth.github** — Add GitHub auth plugin with co-located schema/templates, generic plugin schema discovery, and template-based OAuth app setup, secret rendering, and OpenShift OAuth configuration
 
 ## v3.16.0 (2026-02-25)
 - **universal-url-routing** — Every section, editor tab, template, and sample in the URL hash; back/forward restores full state
