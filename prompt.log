@@ -2698,3 +2698,9 @@ Verified the editor path supports auth plugins through generic schema-driven ren
 > also the templates should be formatted in certain way. review the CLAUDE.md file in that project as well as historical prompts and review other templates for patterns.
 
 Reviewed `CLAUDE.md`, `prompt.log`, and existing plugin templates in the clusterfile repo. Moved GitHub auth templates under `plugins/auth/github/` and reformatted rendered-content templates to follow the repo's inline Jinja control-block style while keeping assignment-heavy templates in trimmed `{%- set ... -%}` form.
+
+### Prompt 235
+
+> ship it
+
+Verified the clusterfile repo is on `auth.github`, confirmed the release commit/tag for v3.17.0, and started the full ship flow: audit-log update, push branch/tags, container build/push, restart, and health verification.
