@@ -73,25 +73,28 @@ $(cat "${js_file}")"
     fi
 done
 
-# Collect schema (with auto-discovered operator plugin schemas merged)
+# Collect schema (with auto-discovered plugin schemas merged)
 echo "Collecting schema..."
 SCHEMA_JSON=$(python3 -c "
 import json, os
 with open('${REPO_ROOT}/schema/clusterfile.schema.json') as f:
     s = json.load(f)
-plugins_dir = '${REPO_ROOT}/plugins/operators'
-if os.path.isdir(plugins_dir):
-    s.setdefault('\$defs', {})
-    ops = (s.setdefault('properties', {}).setdefault('plugins', {})
-            .setdefault('properties', {}).setdefault('operators', {})
-            .setdefault('properties', {}))
-    for d in sorted(os.listdir(plugins_dir)):
-        sf = os.path.join(plugins_dir, d, 'schema.json')
+plugins_dir = '${REPO_ROOT}/plugins'
+s.setdefault('\$defs', {})
+plugins = s.setdefault('properties', {}).setdefault('plugins', {}).setdefault('properties', {})
+for group in sorted(os.listdir(plugins_dir)):
+    group_dir = os.path.join(plugins_dir, group)
+    if not os.path.isdir(group_dir):
+        continue
+    props = plugins.setdefault(group, {}).setdefault('properties', {})
+    prefix = group[:-1] if group.endswith('s') else group
+    for d in sorted(os.listdir(group_dir)):
+        sf = os.path.join(group_dir, d, 'schema.json')
         if os.path.isfile(sf):
-            k = 'operator' + ''.join(p.capitalize() for p in d.split('-'))
+            k = prefix + ''.join(p.capitalize() for p in d.split('-'))
             with open(sf) as fh:
                 s['\$defs'][k] = json.load(fh)
-            ops[d] = {'\$ref': f'#/\$defs/{k}'}
+            props[d] = {'\$ref': f'#/\$defs/{k}'}
 print(json.dumps(s))
 ")
 

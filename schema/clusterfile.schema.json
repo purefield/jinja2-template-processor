@@ -2276,6 +2276,17 @@
           "description": "KubeVirt / OpenShift Virtualization settings for VM-based cluster provisioning.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
         },
+        "auth": {
+          "title": "Authentication",
+          "description": "Cluster authentication plugins. Use provider-specific keys such as auth.github for identity provider configuration and leave room for future auth backends.",
+          "type": "object",
+          "properties": {
+            "github": {
+              "$ref": "#/$defs/authGithub"
+            }
+          },
+          "additionalProperties": true
+        },
         "operators": {
           "title": "Operators",
           "description": "Day-2 operator installation and configuration. Each key is an operator name with its config. Specify an operator key with {} to install with all defaults.",

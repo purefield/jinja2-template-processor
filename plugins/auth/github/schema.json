@@ -1,0 +1,88 @@
+{
+  "title": "GitHub OAuth",
+  "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Each provider references an external secret entry that supplies the OAuth client ID and client secret.",
+  "type": "object",
+  "properties": {
+    "hostname": {
+      "title": "Hostname",
+      "type": "string",
+      "default": "",
+      "description": "Optional GitHub Enterprise hostname. Leave empty to use github.com.",
+      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html"
+    },
+    "mappingMethod": {
+      "title": "Mapping Method",
+      "type": "string",
+      "enum": [
+        "claim",
+        "lookup",
+        "generate",
+        "add"
+      ],
+      "default": "claim",
+      "description": "OpenShift identity mapping method for rendered GitHub providers.",
+      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html"
+    },
+    "secretNamespace": {
+      "title": "Secret Namespace",
+      "type": "string",
+      "default": "openshift-config",
+      "description": "Namespace where OAuth client secret objects should be created."
+    },
+    "providers": {
+      "title": "Providers",
+      "description": "GitHub identity providers to render into OpenShift OAuth configuration.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "secretName",
+          "externalSecretName"
+        ],
+        "properties": {
+          "name": {
+            "title": "Provider Name",
+            "type": "string",
+            "description": "Identity provider name as it will appear on the OpenShift login screen."
+          },
+          "secretName": {
+            "title": "Secret Name",
+            "type": "string",
+            "description": "Kubernetes secret name that stores the OAuth client secret in the cluster."
+          },
+          "externalSecretName": {
+            "title": "External Secret Name",
+            "type": "string",
+            "description": "Name of the external secret entry that stores the OAuth client ID in username and the client secret in password. The current automation resolves this from Bitwarden.",
+            "x-doc-url": "https://bitwarden.com/help/cli/"
+          },
+          "organizations": {
+            "title": "Organizations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "GitHub organizations allowed to authenticate through this provider.",
+            "default": []
+          },
+          "teams": {
+            "title": "Teams",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "GitHub teams allowed to authenticate through this provider.",
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "providers"
+  ],
+  "additionalProperties": false
+}

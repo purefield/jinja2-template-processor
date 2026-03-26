@@ -87,26 +87,26 @@ async def healthz():
 
 @app.get("/api/schema")
 async def get_schema():
-    """Return the clusterfile JSON schema with auto-discovered operator plugins."""
+    """Return the clusterfile JSON schema with auto-discovered plugin schemas."""
     schema_path = SCHEMA_DIR / "clusterfile.schema.json"
     if not schema_path.exists():
         raise HTTPException(status_code=404, detail="Schema not found")
     with open(schema_path, "r") as f:
         schema = json.load(f)
-    # Auto-discover operator plugin schemas
-    plugins_operators = PLUGINS_DIR / "operators"
-    if plugins_operators.is_dir():
-        schema.setdefault("$defs", {})
-        ops = (schema.setdefault("properties", {}).setdefault("plugins", {})
-                .setdefault("properties", {}).setdefault("operators", {})
-                .setdefault("properties", {}))
-        for d in sorted(plugins_operators.iterdir()):
-            sf = d / "schema.json"
+    schema.setdefault("$defs", {})
+    plugins = schema.setdefault("properties", {}).setdefault("plugins", {}).setdefault("properties", {})
+    for group in sorted(PLUGINS_DIR.iterdir()):
+        if not group.is_dir():
+            continue
+        props = plugins.setdefault(group.name, {}).setdefault("properties", {})
+        prefix = group.name[:-1] if group.name.endswith("s") else group.name
+        for plugin in sorted(group.iterdir()):
+            sf = plugin / "schema.json"
             if sf.is_file():
-                def_key = "operator" + "".join(p.capitalize() for p in d.name.split("-"))
+                def_key = prefix + "".join(part.capitalize() for part in plugin.name.split("-"))
                 with open(sf) as fh:
                     schema["$defs"][def_key] = json.load(fh)
-                ops[d.name] = {"$ref": f"#/$defs/{def_key}"}
+                props[plugin.name] = {"$ref": f"#/$defs/{def_key}"}
     return JSONResponse(content=schema)
 
 

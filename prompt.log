@@ -2680,3 +2680,9 @@ Verified hosted app is running v3.15.0, APIs work, JS has deep link code. Found 
 > when I select rendered, the url does not change
 
 Added hash updates for editor tabs: clicking Rendered tab sets `#rendered/`, clicking Template tab sets `#templates/`, clicking YAML/Diff restores `#templates`. Uses `replaceState` to avoid flooding history.
+
+### Prompt 232
+
+> commit these changes in clustefile to a new branch 'auth.github'
+
+Prepared the clusterfile GitHub auth plugin work for commit: reviewed repo-specific template rules, moved GitHub auth templates under `plugins/auth/github/`, reduced the template set, aligned formatting with project conventions, added changelog coverage, and queued the changes for commit on branch `auth.github`.

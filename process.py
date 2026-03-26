@@ -72,6 +72,25 @@ def process_template(config_data, template_file, data_file):
     output = template.render(config_data)
     return output, dict(LoggingUndefined._missing)
 
+def merge_plugin_schemas(schema, schema_path):
+    plugins_root = os.path.join(os.path.dirname(os.path.abspath(schema_path)), '..', 'plugins')
+    schema.setdefault('$defs', {})
+    plugins = schema.setdefault('properties', {}).setdefault('plugins', {}).setdefault('properties', {})
+    for group in sorted(os.listdir(plugins_root)):
+        group_dir = os.path.join(plugins_root, group)
+        if not os.path.isdir(group_dir):
+            continue
+        props = plugins.setdefault(group, {}).setdefault('properties', {})
+        prefix = group[:-1] if group.endswith('s') else group
+        for name in sorted(os.listdir(group_dir)):
+            schema_file = os.path.join(group_dir, name, 'schema.json')
+            if os.path.isfile(schema_file):
+                def_key = prefix + ''.join(part.capitalize() for part in name.split('-'))
+                with open(schema_file) as fh:
+                    schema['$defs'][def_key] = json.load(fh)
+                props[name] = {"$ref": f"#/$defs/{def_key}"}
+    return schema
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process Jinja2 templates with YAML data.")
     parser.add_argument("data_file", nargs="?", help="Path to the YAML data file, inline JSON string, or omit to use -p only")
@@ -122,22 +141,7 @@ if __name__ == "__main__":
                 s = yaml.safe_load(txt)
             except Exception as e:
                 raise ValueError(f"Could not parse schema file '{path}': {e}")
-        # Auto-discover operator plugin schemas
-        schema_dir = os.path.dirname(os.path.abspath(path))
-        plugins_operators = os.path.join(os.path.dirname(schema_dir), 'plugins', 'operators')
-        if os.path.isdir(plugins_operators):
-            s.setdefault('$defs', {})
-            ops = (s.setdefault('properties', {}).setdefault('plugins', {})
-                    .setdefault('properties', {}).setdefault('operators', {})
-                    .setdefault('properties', {}))
-            for dirname in sorted(os.listdir(plugins_operators)):
-                sf = os.path.join(plugins_operators, dirname, 'schema.json')
-                if os.path.isfile(sf):
-                    def_key = 'operator' + ''.join(p.capitalize() for p in dirname.split('-'))
-                    with open(sf) as fh:
-                        s['$defs'][def_key] = json.load(fh)
-                    ops[dirname] = {"$ref": f"#/$defs/{def_key}"}
-        return s
+        return merge_plugin_schemas(s, path)
 
     def _validate_against_schema(obj, schema_path):
         if not args.schema:
