@@ -1,6 +1,6 @@
 {
   "title": "GitHub OAuth",
-  "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Credentials are externalized as file paths and loaded at render time.",
+  "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Credentials are loaded from Vault by external secret name at apply time.",
   "type": "object",
   "properties": {
     "hostname": {
@@ -38,8 +38,7 @@
         "required": [
           "name",
           "secretName",
-          "clientIdFile",
-          "clientSecretFile"
+          "externalSecretName"
         ],
         "properties": {
           "name": {
@@ -52,17 +51,10 @@
             "type": "string",
             "description": "Kubernetes secret name that stores the OAuth client secret in the cluster."
           },
-          "clientIdFile": {
-            "title": "Client ID File",
+          "externalSecretName": {
+            "title": "External Secret Name",
             "type": "string",
-            "description": "Path to a file containing the GitHub OAuth client ID.",
-            "x-is-file": true
-          },
-          "clientSecretFile": {
-            "title": "Client Secret File",
-            "type": "string",
-            "description": "Path to a file containing the GitHub OAuth client secret.",
-            "x-is-file": true
+            "description": "Vault secret name under secret/openshift/ with username=clientId and password=clientSecret."
           },
           "organizations": {
             "title": "Organizations",

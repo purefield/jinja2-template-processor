@@ -2330,7 +2330,7 @@ class TestCertManagerConfig:
             'provider': 'cloudflare',
             'cloudflare': {
                 'secretStore': 'vault',
-                'remoteRef': 'cloudflare/dns',
+                'remoteRef': 'cloudflare.dns',
             }
         }
 
@@ -2350,6 +2350,21 @@ class TestCertManagerConfig:
         assert solver['hostedZoneID'] == 'Z0123456789ABCDEF'
         assert solver['region'] == 'us-east-1'
         assert solver['role'] == 'arn:aws:iam::123456789:role/test-role'
+
+    def test_certmanager_config_renders_certmanager_selfcheck(self, template_env):
+        """Test CertManager CR enables public recursive DNS self-check."""
+        data = self.letsencrypt_data(self.full_letsencrypt_cloudflare())
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        certmanagers = [d for d in docs if d['kind'] == 'CertManager']
+        assert len(certmanagers) == 1
+        certmanager = certmanagers[0]
+        assert certmanager['metadata']['name'] == 'cluster'
+        args = certmanager['spec']['controllerConfig']['overrideArgs']
+        assert '--dns01-recursive-nameservers-only' in args
+        assert '--dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53' in args
 
     def test_certmanager_config_renders_certificate(self, template_env):
         """Test Certificate dnsNames derived from cluster.name + network.domain."""
@@ -2391,6 +2406,7 @@ class TestCertManagerConfig:
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
         kinds = [d['kind'] for d in docs]
+        assert 'CertManager' not in kinds
         assert 'ClusterIssuer' not in kinds
         assert 'Certificate' not in kinds
         assert 'ExternalSecret' not in kinds
@@ -2430,8 +2446,8 @@ class TestCertManagerConfig:
         ext = next(d for d in docs if d['kind'] == 'ExternalSecret')
         assert ext['metadata']['name'] == 'cloudflare-api-token'
         assert ext['spec']['secretStoreRef']['name'] == 'vault'
-        assert ext['spec']['data'][0]['remoteRef']['key'] == 'cloudflare/dns'
-        assert ext['spec']['data'][0]['remoteRef']['property'] == 'api-token'
+        assert ext['spec']['data'][0]['remoteRef']['key'] == 'cloudflare.dns'
+        assert ext['spec']['data'][0]['remoteRef']['property'] == 'password'
 
 class TestAcmOperator:
     """Tests for ACM operator plugin."""
@@ -3322,10 +3338,6 @@ class TestAuthGithubTemplates:
     """Tests for GitHub auth config templates."""
 
     def test_auth_github_config_template_loads_credentials_from_files(self, tmp_path):
-        client_id = tmp_path / 'github-client-id.txt'
-        client_secret = tmp_path / 'github-client-secret.txt'
-        client_id.write_text('github-client-id')
-        client_secret.write_text('github-client-secret')
         data = {
             'cluster': {'name': 'test-cluster'},
             'plugins': {
@@ -3335,8 +3347,7 @@ class TestAuthGithubTemplates:
                             {
                                 'name': 'github',
                                 'secretName': 'github-client-secret-test',
-                                'clientIdFile': str(client_id),
-                                'clientSecretFile': str(client_secret),
+                                'externalSecretName': 'github.sso.test-cluster',
                                 'organizations': ['purefield-lab']
                             }
                         ]
@@ -3346,12 +3357,11 @@ class TestAuthGithubTemplates:
         }
         out, _ = process_template(
             data,
-            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'plugins', 'auth', 'github', 'config.json.tpl'),
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'plugins', 'auth', 'github', 'github-oauth-config.json.tpl'),
             'test.clusterfile'
         )
         rendered = json.loads(out)
-        assert rendered['auth']['github']['providers'][0]['clientId'] == 'github-client-id'
-        assert rendered['auth']['github']['providers'][0]['clientSecret'] == 'github-client-secret'
+        assert rendered['auth']['github']['providers'][0]['externalSecretName'] == 'github.sso.test-cluster'
         assert rendered['rolebindingName'] == 'purefield'
 
 

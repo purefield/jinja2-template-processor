@@ -1,6 +1,6 @@
 # cert-manager Operator
 
-TLS certificate automation for OpenShift. This is an install-and-go operator — no custom resources are needed for the base installation. ClusterIssuer and Certificate resources are cluster-specific day-2 configuration.
+TLS certificate automation for OpenShift. This is an install-and-go operator for the base installation. ClusterIssuer, Certificate, and optional DNS01 self-check tuning are cluster-specific day-2 configuration.
 
 ## Quick start
 

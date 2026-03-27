@@ -1,8 +1,6 @@
 {%- set cm = plugins.operators['cert-manager'] -%}
 {%- if cm.letsencrypt is defined -%}
 {%- set le = cm.letsencrypt -%}
-{%- set selfCheck = cm.selfCheck | default({}) -%}
-{%- set nameservers = selfCheck.nameservers | default(["8.8.8.8:53", "1.1.1.1:53"]) -%}
 {%- set clusterDomain = cluster.name ~ '.' ~ network.domain %}
 {%- set provider = le.provider -%}
 ---
@@ -11,10 +9,13 @@ kind: CertManager
 metadata:
   name: cluster
 spec:
+  managementState: Managed
   controllerConfig:
     overrideArgs:
       - --dns01-recursive-nameservers-only
-      - --dns01-recursive-nameservers={{ nameservers | join(',') }}{% if provider == 'aws' %}{%- set r53 = le.route53 -%}
+      - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+---
+{% if provider == 'aws' %}{%- set r53 = le.route53 -%}
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -76,7 +77,7 @@ spec:
     - secretKey: api-token
       remoteRef:
         key: {{ cf.remoteRef }}
-        property: api-token
+        property: password
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer

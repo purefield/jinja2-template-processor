@@ -4,10 +4,7 @@
   {%- set providers.items = providers.items + [{
     'name': provider.name,
     'secretName': provider.secretName,
-    'clientIdFile': provider.clientIdFile,
-    'clientSecretFile': provider.clientSecretFile,
-    'clientId': load_file(provider.clientIdFile),
-    'clientSecret': load_file(provider.clientSecretFile),
+    'externalSecretName': provider.externalSecretName,
     'organizations': provider.organizations | default([]),
     'teams': provider.teams | default([])
   }] -%}
