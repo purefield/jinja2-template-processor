@@ -118,6 +118,14 @@ templates/includes/platforms/
 
 ### Planned Features (from plan file)
 1. **Self-contained container** - No volume mounts needed (COPY at build time)
+
+---
+
+### Prompt 247
+
+> for clusterfile repo, read the rules, prompts and follow insturctions for a release, including quay.io, prompts and all
+
+Prepared the `v3.18.1` release by reading `CLAUDE.md`, syncing the five version/changelog locations, and recording this prompt for the release audit trail.
 2. **Offline distribution package** - Single tarball with image + scripts
 3. **Browser-only mode** - Standalone HTML with Nunjucks for rendering
 

@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '2.1.0';
+let APP_VERSION = '3.18.1';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.1',
+    date: '2026-03-27',
+    changes: [
+      'Fix LocalVolumeSet API group and CRD gate for Local Storage Operator',
+      'Restore ODF default and virtualization default Ceph StorageClass behavior'
+    ]
+  },
   {
     version: '3.18.0',
     date: '2026-03-26',

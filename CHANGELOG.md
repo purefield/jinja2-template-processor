@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.1 (2026-03-27)
+- **operator-storage-reconcile** — Fix LocalVolumeSet API group and ACM CRD gate for the Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
+
 ## v3.18.0 (2026-03-26)
 - **auth-ui-files** — Expose `plugins.auth.github` in the editor, switch GitHub OAuth credentials to file-path inputs, and load client ID/secret from files at render time
 - **cert-manager-provider-toggle** — Add aws/cloudflare LetsEncrypt provider selection with provider-specific form sections and Cloudflare render support

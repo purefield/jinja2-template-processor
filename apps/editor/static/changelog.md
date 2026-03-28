@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.1
+- **Clusterfile Storage Operators**: Fix LocalVolumeSet API group and CRD gate for Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
+
 ## 3.18.0
 - **Authentication Plugins**: Plugins page now shows an Authentication section for auth plugins
 - **GitHub OAuth Files**: GitHub OAuth credentials are configured as file paths and loaded at render time
