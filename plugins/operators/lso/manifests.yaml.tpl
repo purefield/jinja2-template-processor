@@ -30,7 +30,7 @@ spec:
   source: {{ lso.source | default("redhat-operators") }}
   sourceNamespace: openshift-marketplace
 ---
-apiVersion: local.openshift.io/v1alpha1
+apiVersion: local.storage.openshift.io/v1alpha1
 kind: LocalVolumeSet
 metadata:
   name: local-block

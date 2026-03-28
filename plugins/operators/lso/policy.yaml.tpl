@@ -73,7 +73,7 @@
                   apiVersion: apiextensions.k8s.io/v1
                   kind: CustomResourceDefinition
                   metadata:
-                    name: localvolumesets.local.openshift.io
+                    name: localvolumesets.local.storage.openshift.io
       - extraDependencies:
           - apiVersion: policy.open-cluster-management.io/v1
             kind: ConfigurationPolicy
@@ -90,7 +90,7 @@
             object-templates:
               - complianceType: musthave
                 objectDefinition:
-                  apiVersion: local.openshift.io/v1alpha1
+                  apiVersion: local.storage.openshift.io/v1alpha1
                   kind: LocalVolumeSet
                   metadata:
                     name: local-block

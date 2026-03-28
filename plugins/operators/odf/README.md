@@ -36,6 +36,8 @@ plugins:
 |----------|------|---------|-------------|
 | `storageCluster.name` | string | `ocs-storagecluster` | StorageCluster resource name |
 | `storageCluster.monDataDirHostPath` | string | `/var/lib/rook` | Host path for Ceph monitor data |
+| `storageCluster.defaultStorageClass` | bool | `true` | Mark the Ceph block pool StorageClass as cluster default |
+| `storageCluster.defaultVirtualizationStorageClass` | bool | `true` | Mark the Ceph block pool StorageClass as default KubeVirt class |
 | `storageCluster.storageDeviceSets` | array | *see below* | Storage device set configurations |
 
 When `storageDeviceSets` is omitted, a single default set is created:

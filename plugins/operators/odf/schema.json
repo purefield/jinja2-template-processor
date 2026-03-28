@@ -57,6 +57,18 @@
           "default": "/var/lib/rook",
           "description": "Host path for Ceph monitor data persistence."
         },
+        "defaultStorageClass": {
+          "title": "Default Storage Class",
+          "type": "boolean",
+          "default": true,
+          "description": "Mark the Ceph block pool StorageClass as the cluster default."
+        },
+        "defaultVirtualizationStorageClass": {
+          "title": "Default Virtualization Storage Class",
+          "type": "boolean",
+          "default": true,
+          "description": "Mark the Ceph block pool StorageClass as the default KubeVirt virtualization class."
+        },
         "storageDeviceSets": {
           "title": "Storage Device Sets",
           "type": "array",

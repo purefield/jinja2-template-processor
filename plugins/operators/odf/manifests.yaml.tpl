@@ -38,6 +38,10 @@ metadata:
   name: {{ sc.name | default("ocs-storagecluster") }}
   namespace: openshift-storage
 spec:
+  managedResources:
+    cephBlockPools:
+      defaultStorageClass: {{ sc.defaultStorageClass | default(true) | string | lower }}
+      defaultVirtualizationStorageClass: {{ sc.defaultVirtualizationStorageClass | default(true) | string | lower }}
   monDataDirHostPath: {{ sc.monDataDirHostPath | default("/var/lib/rook") }}
   storageDeviceSets:{% if sc.storageDeviceSets is defined %}{% for sds in sc.storageDeviceSets %}
     - name: {{ sds.name | default("ocs-deviceset") }}

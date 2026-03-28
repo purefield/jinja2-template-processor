@@ -2100,7 +2100,7 @@ class TestLsoOperator:
         assert ready[0]['objectDefinition']['spec']['remediationAction'] == 'inform'
         obj = ready[0]['objectDefinition']['spec']['object-templates'][0]['objectDefinition']
         assert obj['kind'] == 'CustomResourceDefinition', "Readiness gate should check CRD"
-        assert obj['metadata']['name'] == 'localvolumesets.local.openshift.io'
+        assert obj['metadata']['name'] == 'localvolumesets.local.storage.openshift.io'
 
 
 class TestOdfOperator:
@@ -2124,6 +2124,8 @@ class TestOdfOperator:
 
         sc = next(d for d in docs if d['kind'] == 'StorageCluster')
         assert sc['metadata']['name'] == 'ocs-storagecluster'
+        assert sc['spec']['managedResources']['cephBlockPools']['defaultStorageClass'] is True
+        assert sc['spec']['managedResources']['cephBlockPools']['defaultVirtualizationStorageClass'] is True
         assert sc['spec']['storageDeviceSets'][0]['name'] == 'ocs-deviceset'
 
     def test_odf_custom_storage_cluster(self, template_env):
