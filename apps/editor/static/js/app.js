@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.18.3',
+    date: '2026-03-31',
+    changes: [
+      'Derive the ACM ClusterImageSet subscription git branch from the ACM operator release channel instead of hardcoding backplane-2.10',
+      'Add a one-time scripts/update-acm-clusterimageset-branch.sh helper to patch a running hub subscription to the matching backplane branch'
+    ]
+  },
+  {
     version: '3.18.2',
     date: '2026-03-31',
     changes: [

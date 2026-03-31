@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.3
+- **ACM ClusterImageSet Branch Derivation**: Derive the ClusterImageSet subscription git branch from the ACM operator release channel instead of hardcoding `backplane-2.10`
+- **ClusterImageSet Live Fix Script**: Add a one-time `scripts/update-acm-clusterimageset-branch.sh` helper to patch the running hub subscription to the matching `backplane-*` branch
+
 ## 3.18.2
 - **Example Pull Secret Paths**: Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of legacy `2023/pull-secret.json`
 

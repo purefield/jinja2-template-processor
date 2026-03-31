@@ -2503,6 +2503,22 @@ class TestAcmOperator:
         assert len(docs) == 0
 
 
+class TestAcmClusterImageSetSubscription:
+    """Tests for ACM ClusterImageSet subscription rendering."""
+
+    def test_uses_acm_channel_convention(self, template_env):
+        """ClusterImageSet branch should derive from ACM release channel by convention."""
+        data = base_cluster_data()
+        data['plugins'] = {'operators': {'acm': {'channel': 'release-2.14'}}}
+        template = template_env.get_template('acm-clusterimagesets-sub.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        sub = next(item for item in result['items'] if item['kind'] == 'Subscription')
+        branch = sub['metadata']['annotations']['apps.open-cluster-management.io/git-branch']
+        assert branch == 'backplane-2.14'
+
+
 class TestExternalSecretsOperator:
     """Tests for external-secrets operator plugin."""
 

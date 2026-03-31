@@ -121,6 +121,35 @@ templates/includes/platforms/
 
 ---
 
+## Session 2026-03-31
+
+### Prompt 1
+> I tried to install a cluster and got an issue with the ClusterImageSet img4.22.0-x86-64-appsub is not available. This should have been addressed. Can you find the issue and propose a fix
+
+Diagnosed the issue as a stale hardcoded `backplane-2.10` ClusterImageSet subscription branch that does not publish the requested 4.22 image set.
+
+### Prompt 2
+> stop, we are planing, revert. No change to clusterfile!
+
+Reverted the exploratory code changes and stayed in planning mode while summarizing the root cause and safe fix direction.
+
+### Prompt 3
+> where do we get that version from? cofiguration is our last resort see CLAUDE.md for guidance. use convention
+
+Reviewed `CLAUDE.md` and existing repo conventions, then identified `plugins.operators.acm.channel` as the correct source of truth to derive the `backplane-*` branch by convention.
+
+### Prompt 4
+> so a very smal tweak
+
+Confirmed that the intended fix is a small template change that derives the branch instead of hardcoding it.
+
+### Prompt 5
+> ok, make the change and ship it. I need a one time update script to fix it on the running cluster
+
+Implemented the convention-based template fix, added a regression test, created a one-time live patch script for running hubs, and prepared the release bookkeeping for `v3.18.3`.
+
+---
+
 ### Prompt 248
 
 > for clusterfile repo, read the rules, prompts and follow insturctions for a release, including quay.io, prompts and all

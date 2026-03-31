@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.3 (2026-03-31)
+- **acm-clusterimageset-branch** — Derive the ACM ClusterImageSet subscription git branch from the ACM operator channel instead of hardcoding `backplane-2.10`; add a one-time live patch script for existing hubs
+
 ## v3.18.2 (2026-03-31)
 - **example-pull-secret-paths** — Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of the legacy `2023/pull-secret.json` path
 

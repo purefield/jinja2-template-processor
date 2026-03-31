@@ -22,7 +22,10 @@ relatedTemplates:
   - acm-asc.yaml.tpl
 docs: https://github.com/stolostron/acm-hive-openshift-releases/tree/backplane-2.10/subscribe
 -#}
+{%- set operators = plugins.operators | default({}) -%}
+{%- set acm = operators.acm | default({}) -%}
 {%- set channel = cluster.channel | default("fast", true) -%}
+{%- set imageSetBranch = acm.channel | default("release-2.14", true) | replace("release-", "backplane-") -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -57,7 +60,7 @@ items:
     labels:
       app: hive-clusterimagesets
     annotations:
-      apps.open-cluster-management.io/git-branch: backplane-2.10
+      apps.open-cluster-management.io/git-branch: {{ imageSetBranch }}
       apps.open-cluster-management.io/git-path: clusterImageSets/{{ channel }}
   spec:
     channel: hive-clusterimagesets/acm-hive-openshift-releases-chn-0
