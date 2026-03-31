@@ -1,5 +1,5 @@
 account:
-  pullSecret: 2023/pull-secret.json
+  pullSecret: secrets/pull-secret/pull-secret.json
 cluster:
   version: 4.21.0
   platform: none
