@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.2
+- **Example Pull Secret Paths**: Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of legacy `2023/pull-secret.json`
+
 ## 3.18.1
 - **Clusterfile Storage Operators**: Fix LocalVolumeSet API group and CRD gate for Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
 

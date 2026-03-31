@@ -121,7 +121,7 @@ templates/includes/platforms/
 
 ---
 
-### Prompt 247
+### Prompt 248
 
 > for clusterfile repo, read the rules, prompts and follow insturctions for a release, including quay.io, prompts and all
 
@@ -2778,3 +2778,9 @@ Confirmed the local editor state was in good shape with working auth plugin UI, 
 > ship it
 
 Prepared a new clusterfile release containing the auth UI, file-based GitHub credential handling, and cert-manager provider toggle fixes, then updated version metadata and release notes for v3.18.0.
+
+### Prompt 247
+
+> let's wrap up the work on the clusterfile examples. Follow the project rules and ship it
+
+Prepared the `v3.18.2` release for the clusterfile example path cleanup by syncing the version files, updating release notes, and recording this prompt for the audit trail.

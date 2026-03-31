@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.2 (2026-03-31)
+- **example-pull-secret-paths** — Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of the legacy `2023/pull-secret.json` path
+
 ## v3.18.1 (2026-03-27)
 - **operator-storage-reconcile** — Fix LocalVolumeSet API group and ACM CRD gate for the Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
 
