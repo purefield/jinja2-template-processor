@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clusterfile Authoring"
+  short_description: "Change clusterfile schema, templates, and plugins cleanly."
+  default_prompt: "Use this skill when changing generic clusterfile schema, templates, plugins, examples, or tests."
