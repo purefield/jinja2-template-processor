@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.18.4',
+    date: '2026-03-31',
+    changes: [
+      'ACM ZTP and CAPI templates now render the matching ClusterImageSet directly so requested hub versions are created automatically'
+    ]
+  },
+  {
     version: '3.18.3',
     date: '2026-03-31',
     changes: [

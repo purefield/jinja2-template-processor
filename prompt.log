@@ -148,6 +148,42 @@ Confirmed that the intended fix is a small template change that derives the bran
 
 Implemented the convention-based template fix, added a regression test, created a one-time live patch script for running hubs, and prepared the release bookkeeping for `v3.18.3`.
 
+### Prompt 6
+> clusterfile/./scripts/update-acm-clusterimageset-branch.sh
+> Error from server (NotFound): subscriptions.apps.open-cluster-management.io "acm-operator-subscription" not found
+
+Fixed the one-time ACM hub patch script to use explicit `subscriptions.operators.coreos.com` for the ACM operator subscription and explicit `subscriptions.apps.open-cluster-management.io` for the ClusterImageSet app subscription.
+
+### Prompt 7
+> fix the acm hub cluster
+
+Inspected the ACM hub, found the missing `ClusterImageSet` objects, and created the required `4.22.0` and `4.21.0` entries directly on the hub to unblock cluster creation.
+
+### Prompt 8
+> now same for 4.21.0
+
+Created and verified the missing `img4.21.0-x86-64-appsub` ClusterImageSet on the ACM hub.
+
+### Prompt 9
+> what is causing the two clusters to remain drafts
+
+Diagnosed the live ACM cluster states: one cluster was blocked by an invalid/nonexistent release image and the other had a valid image set but no discovered hosts yet.
+
+### Prompt 10
+> lets add that, I do not want to have to worry about missing images again. For ztp and capi with acm
+
+Updated ACM ZTP and CAPI templates to render the matching `ClusterImageSet` directly as part of the hub-side manifests so future requested versions are created automatically.
+
+### Prompt 11
+> ship it
+
+Prepared the follow-up release `v3.18.4` with the inline ACM ClusterImageSet rendering and script fix, including version and changelog updates.
+
+### Prompt 12
+> remove the one time script from the public release. not authorized!
+
+Removed the one-time ACM hub patch script from the unreleased `v3.18.4` change set and trimmed the release notes so the public release only ships the inline ACM ClusterImageSet manifest behavior.
+
 ---
 
 ### Prompt 248

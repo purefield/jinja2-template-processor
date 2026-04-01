@@ -361,7 +361,9 @@ items:
       manifests:
 {{ insecureImageManifest }}{% endif %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}{% if (plugins | default({})).operators is defined %}
+{{ osImagesSync }}
+{%- set clusterImageSetSync %}{% include "includes/clusterimageset-sync.yaml.tpl" %}{% endset %}
+{{ clusterImageSetSync }}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators %}
 - kind: ManagedClusterSetBinding
   apiVersion: cluster.open-cluster-management.io/v1beta2
@@ -386,4 +388,3 @@ items:
 {%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{%- set opPolicy %}{% include "operators/" ~ op_name ~ "/policy.yaml.tpl" ignore missing %}{% endset %}
 {{ opPolicy }}{% endfor -%}
 {% endif %}
-

@@ -1564,6 +1564,30 @@ class TestAcmCapiTemplate:
         assert cn['kind'] == 'ConsoleNotification'
         assert 'Proof of Concept' in cn['spec']['text']
 
+    def test_clusterimageset_manifest_present(self, template_env):
+        """CAPI output should include the matching ClusterImageSet directly."""
+        data = self.acm_capi_data()
+        result = self.render_template(template_env, data)
+
+        cis = next((i for i in result['items']
+                    if i['kind'] == 'ClusterImageSet' and i['metadata']['name'] == 'img4.21.0-x86-64-appsub'), None)
+        assert cis is not None, "ClusterImageSet not found in CAPI template"
+        assert cis['spec']['releaseImage'] == 'quay.io/openshift-release-dev/ocp-release:4.21.0-x86_64'
+
+
+class TestAcmImageSetSync:
+    """Tests for ACM ClusterImageSet inline rendering helpers."""
+
+    def test_ztp_clusterimageset_manifest_present(self, template_env):
+        """ZTP output should include the matching ClusterImageSet directly."""
+        data = TestAcmZtpTemplate().acm_ztp_data(platform='baremetal', tpm=False)
+        result = TestAcmZtpTemplate().render_template(template_env, data)
+
+        cis = next((i for i in result['items']
+                    if i['kind'] == 'ClusterImageSet' and i['metadata']['name'] == 'img4.21.0-x86-64-appsub'), None)
+        assert cis is not None, "ClusterImageSet not found in ZTP template"
+        assert cis['spec']['releaseImage'] == 'quay.io/openshift-release-dev/ocp-release:4.21.0-x86_64'
+
 
 class TestDisconnectedOperatorHub:
     """Test cluster.disconnected flag for air-gapped clusters."""

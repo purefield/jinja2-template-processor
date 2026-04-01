@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.4
+- **Inline ACM ClusterImageSet**: ACM ZTP and CAPI templates now render the matching `ClusterImageSet` directly so requested hub versions are created automatically with the rest of the manifests
+
 ## 3.18.3
 - **ACM ClusterImageSet Branch Derivation**: Derive the ClusterImageSet subscription git branch from the ACM operator release channel instead of hardcoding `backplane-2.10`
 - **ClusterImageSet Live Fix Script**: Add a one-time `scripts/update-acm-clusterimageset-branch.sh` helper to patch the running hub subscription to the matching `backplane-*` branch

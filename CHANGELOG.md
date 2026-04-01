@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.4 (2026-03-31)
+- **acm-inline-clusterimageset** — Render the matching `ClusterImageSet` directly in ACM ZTP and CAPI templates so requested versions are created on the hub alongside the managed cluster resources
+
 ## v3.18.3 (2026-03-31)
 - **acm-clusterimageset-branch** — Derive the ACM ClusterImageSet subscription git branch from the ACM operator channel instead of hardcoding `backplane-2.10`; add a one-time live patch script for existing hubs
 

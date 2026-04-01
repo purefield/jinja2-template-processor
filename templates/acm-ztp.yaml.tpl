@@ -287,7 +287,9 @@ items:
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
 {{ pocBanner }}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}{% if (plugins | default({})).operators is defined %}
+{{ osImagesSync }}
+{%- set clusterImageSetSync %}{% include "includes/clusterimageset-sync.yaml.tpl" %}{% endset %}
+{{ clusterImageSetSync }}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators %}
 - kind: ManagedClusterSetBinding
   apiVersion: cluster.open-cluster-management.io/v1beta2
