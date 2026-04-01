@@ -35,6 +35,9 @@ Use this skill when working inside the `clusterfile` repo.
 3. Keep templates reusable.
 - Prefer configurable fields over embedded environment assumptions.
 - Keep public contracts stable when possible.
+- Keep generated YAML visually primary and template control logic secondary.
+- If readers notice Jinja before the manifest value, simplify the template or move the logic into a shared include/helper.
+- Do not duplicate the same control rule across templates when one shared path can express it.
 
 4. Keep tests aligned.
 - When changing a schema, template, or plugin, update tests in the same change.
@@ -48,6 +51,8 @@ Use this skill when working inside the `clusterfile` repo.
 - Adding `openshift/`, `ola`, or other site-specific conventions to generic templates.
 - Using clusterfile to solve a problem that belongs in a local orchestration repo.
 - Hiding breaking template changes without updating examples and tests.
+- Template edits where the control logic is more prominent than the rendered YAML.
+- Repeating the same Jinja decision rule in multiple templates when it could be shared.
 
 ## Output Style
 

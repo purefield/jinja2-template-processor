@@ -13,6 +13,11 @@
 - Jinja2 control blocks (`{% if %}`, `{% endif %}`, `{% for %}`, `{% endfor %}`) must NOT start on their own line. They go at the **end** of the preceding YAML line, inline.
 - Use `{%- set ... -%}` (with whitespace trim) for variable assignments at the top of templates — these are the exception since they produce no output.
 - `{%- if/elif/else/endif/for/endfor -%}` (with trim dashes on both sides) is only for variable-assignment blocks that must not emit whitespace.
+- Generated YAML must stay visually primary. A reader should see the rendered manifest shape first and the Jinja control logic second.
+- Keep template control logic subordinate to the YAML. If a change makes readers notice Jinja before the manifest value, simplify it or move the logic into a shared include/filter/helper.
+- Prefer exposing final values in-place and keeping decision logic small, local, and easy to fade into the background.
+- If the same control logic appears in more than one template, factor it out. Do not accept duplication that makes future template readers parse the same rule twice.
+- Treat this as a quality gate, not a nice-to-have. Reject template changes that are technically correct but make control flow more visible than the rendered YAML.
 
 ### Correct
 

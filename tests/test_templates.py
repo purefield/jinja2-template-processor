@@ -2518,6 +2518,20 @@ class TestAcmOperator:
         assert asc['spec']['databaseStorage']['resources']['requests']['storage'] == '20Gi'
         assert asc['spec']['imageStorage']['resources']['requests']['storage'] == '100Gi'
 
+    def test_acm_prerelease_os_image_uses_pre_release_path(self, template_env):
+        """Prerelease OCP versions should use mirror pre-release RHCOS artifacts."""
+        data = operator_test_data('acm', {})
+        data['cluster']['version'] = '4.22.0-ec.3'
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+
+        asc = next(d for d in docs if d['kind'] == 'AgentServiceConfig')
+        os_image = asc['spec']['osImages'][0]
+        assert os_image['version'] == '4.22.0-ec.3'
+        assert '/pre-release/4.22.0-ec.3/' in os_image['url']
+        assert '/pre-release/4.22.0-ec.3/' in os_image['rootFSUrl']
+
     def test_acm_disabled(self, template_env):
         """Test ACM disabled produces no output."""
         data = operator_test_data('acm', {'enabled': False})
@@ -2541,6 +2555,23 @@ class TestAcmClusterImageSetSubscription:
         sub = next(item for item in result['items'] if item['kind'] == 'Subscription')
         branch = sub['metadata']['annotations']['apps.open-cluster-management.io/git-branch']
         assert branch == 'backplane-2.14'
+
+
+class TestOsImagesSync:
+    """Tests for os-images-sync include rendering."""
+
+    def test_acm_ztp_prerelease_os_images_job_uses_pre_release_path(self, template_env):
+        """ZTP os-images-sync job should patch prerelease RHCOS URLs correctly."""
+        data = ztp_host_data(base_cluster_data())
+        data['cluster']['version'] = '4.22.0-ec.3'
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        job = next(item for item in result['items'] if item['kind'] == 'Job' and item['metadata']['name'] == 'os-images-sync')
+        script = job['spec']['template']['spec']['containers'][0]['command'][2]
+        assert '/pre-release/4.22.0-ec.3/rhcos-live-iso.x86_64.iso' in script
+        assert '/pre-release/4.22.0-ec.3/rhcos-live-rootfs.x86_64.img' in script
 
 
 class TestExternalSecretsOperator:

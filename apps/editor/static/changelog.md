@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.5
+- **Prerelease RHCOS Paths**: ACM `osImages` and the `os-images-sync` job now use `rhcos/pre-release/<exact-version>` for prerelease OCP versions like `4.22.0-ec.3` instead of the broken `4.22/latest` path
+- **Template Readability Gate**: Guidance now explicitly rejects template changes where Jinja control logic is more visually prominent than the generated YAML
+
 ## 3.18.4
 - **Inline ACM ClusterImageSet**: ACM ZTP and CAPI templates now render the matching `ClusterImageSet` directly so requested hub versions are created automatically with the rest of the manifests
 

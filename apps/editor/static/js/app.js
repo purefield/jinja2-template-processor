@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.2';
+let APP_VERSION = '3.18.5';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.5',
+    date: '2026-04-01',
+    changes: [
+      'ACM osImages and the os-images-sync job now use rhcos/pre-release/<exact-version> for prerelease OCP versions like 4.22.0-ec.3',
+      'Template guidance now explicitly rejects changes where Jinja control logic is more visible than the generated YAML'
+    ]
+  },
   {
     version: '3.18.4',
     date: '2026-03-31',

@@ -119,6 +119,36 @@ templates/includes/platforms/
 ### Planned Features (from plan file)
 1. **Self-contained container** - No volume mounts needed (COPY at build time)
 
+### Prompt 1
+> is this fixed for future cluster creation and use now too?
+
+Explained that the prerelease RHCOS path bug is fixed for future clusterfile-driven ACM cluster creation, while existing hubs still need corrected manifests or a live patch.
+
+### Prompt 2
+> do the template changes comply with our rules for quality of code, no smell or slop? are the changes clean and robust.
+
+Reviewed the change against repo quality expectations and called out one small DRY/readability concern: the same `rhcosPath` rule was duplicated across two templates.
+
+### Prompt 3
+> how about the template readabilty rules?
+
+Reviewed the change against template readability guidance and concluded it was acceptable but not fully ideal because the control logic was a bit more visible than the generated YAML.
+
+### Prompt 4
+> do we see template and control logic first or generated yaml clearly
+
+Clarified the preferred readability balance: readers should see generated YAML first and Jinja control logic second.
+
+### Prompt 5
+> add this to our skills, md file and such to enforce this quality gate, relentlesly
+
+Updated repo guidance and skills to enforce a strict template readability gate: generated YAML must stay visually primary, duplicated template control logic is a smell, and technically-correct but readability-worse template changes should be rejected.
+
+### Prompt 6
+> ship it
+
+Prepared a focused release for the prerelease RHCOS path fix and template readability guidance updates, including version/changelog sync, commit, tag, push, and container release steps.
+
 ---
 
 ## Session 2026-03-31
