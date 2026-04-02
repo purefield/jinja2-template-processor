@@ -23,6 +23,7 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvsc = kv.storageClass | default({}) -%}
 {%- set defaultSC = kvsc.default | default("lvms-vg1") -%}
 {%- set kvmap = kv.storageMapping | default({}) -%}
+{%- set namespace = cluster.name + "-cluster" -%}
 {%- set kvnet = kv.network | default({}) -%}
 {%- set netType = kvnet.type | default("cudn") -%}
 {%- set vlanId = network.primary.vlan | default(kvnet.vlan | default(false), true) -%}
@@ -35,11 +36,11 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- else -%}
   {%- set netName = "virtualmachine-net" -%}
 {%- endif -%}
+{%- set netRef = netName if netType == "nad" and "/" in netName else namespace ~ "/" ~ netName -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set performanceSC = kvsc.performance | default(defaultSC) -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set nsKey = kv.nodeSelector | default("") -%}
-{%- set namespace = cluster.name + "-cluster" -%}
 {%- set bootDelivery = bootDelivery | default("bmc") -%}
 {%- set hasIsoDisk = true if bootDelivery == 'iso' else false -%}
 apiVersion: v1
@@ -212,7 +213,7 @@ items:
         evictionStrategy: None
         networks:
           - multus:
-              networkName: {{ namespace }}/{{ netName }}
+              networkName: {{ netRef }}
             name: {{ ifname }}
         terminationGracePeriodSeconds: 180
         volumes:

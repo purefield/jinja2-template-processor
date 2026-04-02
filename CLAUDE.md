@@ -16,6 +16,7 @@
 - Generated YAML must stay visually primary. A reader should see the rendered manifest shape first and the Jinja control logic second.
 - Keep template control logic subordinate to the YAML. If a change makes readers notice Jinja before the manifest value, simplify it or move the logic into a shared include/filter/helper.
 - Prefer exposing final values in-place and keeping decision logic small, local, and easy to fade into the background.
+- Prefer a ternary expression over a multi-line `if`/`elif`/`else` block when it keeps the rule local and makes the final rendered value easier to read.
 - If the same control logic appears in more than one template, factor it out. Do not accept duplication that makes future template readers parse the same rule twice.
 - Treat this as a quality gate, not a nice-to-have. Reject template changes that are technically correct but make control flow more visible than the rendered YAML.
 
