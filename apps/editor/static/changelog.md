@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.7
+- **Process Image Compatibility**: The `quay.io/dds/process` container now packages the shared render library and uses a direct Python entrypoint so it can run the latest repo templates and plugins cleanly from a mounted working tree
+- **Wrapper + Docs Refresh**: `process.sh` now overrides the image entrypoint explicitly, maps file paths safely, and the docs show both direct container usage and the wrapper workflow
+
 ## 3.18.6
 - **Installer-Compatible install-config**: `install-config.yaml.tpl` now preserves raw multi-document YAML when extra manifests are present, so `openshift-install` sees a valid install-config document instead of `kind: List`
 - **Ship It Skill**: Added a `ship-it` skill documenting the repo's production release workflow, including tests, direct verification, prompt logging, changelog/version sync, image tags, runtime scripts, and health checks

@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.7 (2026-04-06)
+- **process-image-cli** — Fix the `quay.io/dds/process` container contract so it can run the latest repo templates and plugins reliably: package `lib/`, use a direct Python entrypoint, and default to a mounted working directory
+- **process-wrapper** — Make `process.sh` independent of the published image entrypoint by overriding the container entrypoint explicitly, mounting repo/current working tree paths safely, and mapping file arguments into the container
+- **process-docs** — Update CLI container documentation to show direct mounted-worktree usage and the `process.sh` wrapper path
+
 ## v3.18.6 (2026-04-06)
 - **install-config-raw-multidoc** — Preserve native multi-document YAML for `install-config.yaml.tpl` so `openshift-install` receives a real install-config document instead of an unsupported `kind: List` wrapper; keep apply-oriented templates wrapped for `oc apply -f` compatibility
 - **ship-it-skill** — Add a `ship-it` skill that captures the repo's production release discipline: testing, direct verification, prompt logging, changelog/version sync, tags, image pushes, runtime scripts, and health checks

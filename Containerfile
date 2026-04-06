@@ -15,13 +15,16 @@ COPY --chown=1001:0 requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy process.py
+# Copy CLI processor code
 COPY --chown=1001:0 process.py /app/process.py
+COPY --chown=1001:0 lib/ /app/lib/
 RUN chmod +x /app/process.py
 
 # Switch back to non-root user for security
 USER 1001
 
-# Use shell form to properly handle arguments
-ENTRYPOINT ["/bin/bash", "-c"]
-CMD ["python3 /app/process.py"]
+# Default to running against a mounted working tree
+WORKDIR /work
+
+# Exec-form entrypoint preserves argv so container args map directly to process.py
+ENTRYPOINT ["python3", "/app/process.py"]

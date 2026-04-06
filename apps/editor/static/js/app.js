@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.6';
+let APP_VERSION = '3.18.7';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.7',
+    date: '2026-04-06',
+    changes: [
+      'The quay.io/dds/process container now packages lib/, uses a direct Python entrypoint, and works cleanly from a mounted working tree',
+      'process.sh now overrides the image entrypoint explicitly, maps file paths safely, and the docs show the updated CLI workflow'
+    ]
+  },
   {
     version: '3.18.6',
     date: '2026-04-06',
