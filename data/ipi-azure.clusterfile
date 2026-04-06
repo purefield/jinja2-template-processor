@@ -1,7 +1,7 @@
 # Azure IPI Clusterfile Example
 # For use with install-config-azure.yaml.tpl template
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -24,12 +24,12 @@ cluster:
       storage:
         os: 128
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   azure:
     region: eastus
-    credentials: secrets/azure-credentials.json
+    credentials: data/secrets/azure-credentials.json
     baseDomainResourceGroupName: openshift-dns-rg
     # Optional: Use existing VNet (BYO network)
     # networkResourceGroupName: openshift-network-rg

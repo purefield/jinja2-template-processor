@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.8
+- **Safe Example Secrets**: Added `data/secrets/` with obviously fake placeholder files so example clusterfiles render without local secret material and without looking like real credentials
+- **Example Cleanup**: Bundled examples now share one consistent placeholder secret path scheme and the README explains which examples to start from and what each one is meant to teach
+
 ## 3.18.7
 - **Process Image Compatibility**: The `quay.io/dds/process` container now packages the shared render library and uses a direct Python entrypoint so it can run the latest repo templates and plugins cleanly from a mounted working tree
 - **Wrapper + Docs Refresh**: `process.sh` now overrides the image entrypoint explicitly, maps file paths safely, and the docs show both direct container usage and the wrapper workflow

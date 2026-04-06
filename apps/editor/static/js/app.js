@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.7';
+let APP_VERSION = '3.18.8';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.8',
+    date: '2026-04-06',
+    changes: [
+      'Added data/secrets placeholder files so bundled examples render safely without local secret material',
+      'Cleaned up example clusterfiles and README guidance so the examples are easier to start from and easier to understand'
+    ]
+  },
   {
     version: '3.18.7',
     date: '2026-04-06',

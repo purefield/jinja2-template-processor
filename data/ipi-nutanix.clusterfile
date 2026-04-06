@@ -1,7 +1,7 @@
 # Nutanix IPI Clusterfile Example
 # For use with install-config.yaml.tpl unified template
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -23,17 +23,17 @@ cluster:
       storage:
         os: 120
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   nutanix:
-    credentials: secrets/nutanix-credentials.json
+    credentials: data/secrets/nutanix-credentials.json
     prismCentral:
       endpoint:
         address: prism-central.example.com
         port: 9440
       username: admin@example.com
-      password: secrets/nutanix-password.txt
+      password: data/secrets/nutanix-password.txt
     prismElements:
       - name: PE1
         endpoint:

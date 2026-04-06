@@ -2,7 +2,7 @@
 # For use with install-config.yaml.tpl template
 # Reference: https://www.redhat.com/en/blog/how-to-perform-an-ipi-installation-of-openshift-on-vsphere-with-static-ip-addresses
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -24,14 +24,14 @@ cluster:
       storage:
         os: 200
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   vsphere:
     vcenter:
       server: vcenter.example.com
       username: administrator@vsphere.local
-      password: secrets/vcenter-password.txt
+      password: data/secrets/vcenter-password.txt
       datacenter: DC1
       defaultDatastore: vsanDatastore
       cluster: Cluster1
@@ -67,7 +67,7 @@ plugins:
 
 network:
   domain: example.com
-  trustBundle: /etc/pki/ca-trust/source/anchors/internal-ca.pem
+  trustBundle: data/secrets/ca.crt
   proxy:
     httpProxy: http://proxy.example.com:8080
     httpsProxy: http://proxy.example.com:8080

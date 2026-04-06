@@ -1,7 +1,7 @@
 # GCP IPI Clusterfile Example
 # For use with install-config-gcp.yaml.tpl template
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -24,13 +24,13 @@ cluster:
       storage:
         os: 128
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   gcp:
     projectID: my-gcp-project
     region: us-central1
-    credentials: secrets/gcp-credentials.json
+    credentials: data/secrets/gcp-credentials.json
     # Optional: Use existing VPC (shared VPC or BYO network)
     # network: openshift-vpc
     # controlPlaneSubnet: control-plane-subnet

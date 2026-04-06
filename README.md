@@ -451,20 +451,70 @@ IMAGE_REF=quay.io/dds/process:latest ./clusterfile/process.sh \
 - `install-config.yaml.tpl` emits raw multi-document YAML when extra manifests are present.
 - `acm-ztp.yaml.tpl` emits a Kubernetes `kind: List` for direct apply workflows.
 
-## Example clusterfiles
+## Example Clusterfiles
 
-| File | Description |
-|------|-------------|
-| `data/sno.clusterfile` | Single Node OpenShift with LVM + ArgoCD, disconnected, mirrors |
-| `data/acm-hub-sno.clusterfile` | ACM hub on SNO with all 6 operators |
-| `data/baremetal.clusterfile` | Standard 3-node baremetal cluster |
-| `data/baremetal-bond-vlan.clusterfile` | Baremetal with bonded NICs + VLANs |
-| `data/baremetal-compact.clusterfile` | 3-node compact cluster (no workers) |
-| `data/kubevirt.clusterfile` | KubeVirt cluster with CUDN networking |
-| `data/kubevirt-sno.clusterfile` | KubeVirt SNO |
-| `data/ipi-aws.clusterfile` | AWS IPI |
-| `data/ipi-vsphere.clusterfile` | vSphere IPI with static IPs |
-| `data/ipi-nutanix.clusterfile` | Nutanix IPI |
+The examples in `data/` are meant to answer a small number of real questions:
+
+- "What is the simplest starting point for this install style?"
+- "How do I add one specific capability or variation?"
+- "What does a cloud or platform-specific example look like?"
+
+The goal is not to provide dozens of unrelated samples. Start from the closest baseline example, then borrow focused pieces from the variants.
+
+### Safe Example Files
+
+All example clusterfiles now point at placeholder files under `data/secrets/`.
+
+- These files are intentionally fake.
+- They are present so examples render without local secret files.
+- They use obvious placeholder content to avoid looking like real credentials.
+
+Use them for learning and template testing only. Replace them with your real file paths in your own clusterfiles.
+
+### Start Here
+
+| File | Purpose |
+|------|---------|
+| `data/baremetal.clusterfile` | Best general starting point for agent-based baremetal installs. Demonstrates the full baseline shape: pull secret, SSH keys, trust bundle, BMC, network, mirrors, disconnected catalogs, and operator examples. |
+| `data/sno.clusterfile` | Best starting point for Single Node OpenShift. Demonstrates `platform: none`, `clusterType: SNO`, and a minimal single-node install flow. |
+| `data/acm-hub-sno.clusterfile` | Best starting point for "hub on one node" workflows. Demonstrates ACM hub plus operator-driven day-2 content. |
+| `data/siteconfig-sno.clusterfile` | Best starting point when your target output is SiteConfig / ClusterInstance-style content rather than a classic install-config only flow. |
+| `data/kubevirt.clusterfile` | Best starting point for KubeVirt-backed clusters. Demonstrates the KubeVirt platform plugin and VM-oriented sizing/storage mappings. |
+
+### Focused Variants
+
+Use these when you already know the baseline and want one specific difference:
+
+| File | Purpose |
+|------|---------|
+| `data/baremetal-vlan.clusterfile` | Adds VLAN-based primary networking to the baremetal baseline. |
+| `data/baremetal-bond.clusterfile` | Adds bonded NICs to the baremetal baseline. |
+| `data/baremetal-bond-vlan.clusterfile` | Combines bonding and VLANs. Use this when both are needed. |
+| `data/baremetal-compact.clusterfile` | Shows a compact 3-node cluster with no workers. |
+| `data/kubevirt-sno.clusterfile` | KubeVirt Single Node OpenShift. |
+| `data/kubevirt-compact.clusterfile` | KubeVirt compact topology. |
+| `data/agent-nutanix.clusterfile` | Agent-based Nutanix example. Use when Nutanix is the virtualization layer but the install style is still agent-based. |
+
+### Cloud / IPI Examples
+
+Use these when the platform itself is the main thing you need to learn:
+
+| File | Purpose |
+|------|---------|
+| `data/ipi-aws.clusterfile` | AWS IPI baseline. |
+| `data/ipi-azure.clusterfile` | Azure IPI baseline. |
+| `data/ipi-gcp.clusterfile` | GCP IPI baseline. |
+| `data/ipi-ibmcloud.clusterfile` | IBM Cloud IPI baseline. |
+| `data/ipi-openstack.clusterfile` | OpenStack IPI baseline. |
+| `data/ipi-vsphere.clusterfile` | vSphere IPI baseline with static IP handling. |
+| `data/ipi-nutanix.clusterfile` | Nutanix IPI baseline. |
+
+### Practical Guidance
+
+- If you are new, start with `data/baremetal.clusterfile` or `data/sno.clusterfile`.
+- If you need a feature, copy only the relevant section from a variant instead of starting from the most complex file.
+- If you need a cloud, start with the matching `ipi-*` example rather than adapting a baremetal file.
+- Treat `data/secrets/` as render-safe scaffolding, not as production input.
 
 ## Project structure
 

@@ -1,7 +1,7 @@
 # AWS IPI Clusterfile Example
 # For use with install-config-aws.yaml.tpl template
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -24,12 +24,12 @@ cluster:
       storage:
         os: 120
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   aws:
     region: us-east-1
-    credentials: secrets/aws-credentials
+    credentials: data/secrets/aws-credentials
     # Optional: Use existing subnets (BYO VPC)
     # subnets:
     #   - subnet-0123456789abcdef0

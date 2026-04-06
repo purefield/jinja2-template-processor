@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.8 (2026-04-06)
+- **example-secrets-placeholders** — Add `data/secrets/` with obviously fake placeholder files so bundled examples render safely without local secret material and without tripping secret scanners with realistic-looking values
+- **example-path-cleanup** — Repoint bundled example clusterfiles to use the shared placeholder files under `data/secrets/` instead of scattered host-specific paths
+- **example-docs-purpose** — Consolidate the README example guidance around a smaller set of meaningful starting points and document the purpose of the examples and placeholder secret files
+
 ## v3.18.7 (2026-04-06)
 - **process-image-cli** — Fix the `quay.io/dds/process` container contract so it can run the latest repo templates and plugins reliably: package `lib/`, use a direct Python entrypoint, and default to a mounted working directory
 - **process-wrapper** — Make `process.sh` independent of the published image entrypoint by overriding the container entrypoint explicitly, mounting repo/current working tree paths safely, and mapping file arguments into the container

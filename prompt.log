@@ -2846,3 +2846,27 @@ Removed local project assumptions from the example and docs, switching to synthe
 > ugly, confusing, think new user. use generica descriptive names. my-cluster.clusterfile and secrets/pull-secret.json - not nested, ....
 
 Flattened the example and README layout for first-time users with simpler names like `my-project`, `my-cluster.clusterfile`, `secrets/pull-secret.json`, and `manifests/99-crio-config.yaml`.
+
+### Prompt 275
+
+> inside data, create a secrets folder to use with all examples. create something placeholder that is clearly not secrets to prevent errors from gitleaks and such. then update all examples to use them
+
+Created `data/secrets/` with clearly fake placeholder files and updated the bundled examples to share those paths instead of host-specific or scattered secret references.
+
+### Prompt 276
+
+> consolidate examples to make them more meaningful and update the readme with the purpose.
+
+Reworked the README example section so it explains which files are the real starting points, which ones are focused variants, and why the bundled placeholder secret files exist.
+
+### Prompt 277
+
+>   ! data/secrets/id_rsa.pub invalid format
+
+Replaced the invalid SSH public key placeholder with a syntactically valid fake public key so example rendering and validators accept it.
+
+### Prompt 278
+
+> ship it
+
+Prepared the example cleanup release by checking the pending delta, updating release notes, and syncing the version metadata for the next patch release.
