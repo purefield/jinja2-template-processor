@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.6 (2026-04-06)
+- **install-config-raw-multidoc** — Preserve native multi-document YAML for `install-config.yaml.tpl` so `openshift-install` receives a real install-config document instead of an unsupported `kind: List` wrapper; keep apply-oriented templates wrapped for `oc apply -f` compatibility
+- **ship-it-skill** — Add a `ship-it` skill that captures the repo's production release discipline: testing, direct verification, prompt logging, changelog/version sync, tags, image pushes, runtime scripts, and health checks
+
 ## v3.16.0 (2026-02-25)
 - **universal-url-routing** — Every section, editor tab, template, and sample in the URL hash; back/forward restores full state
 - **graceful-render** — Templates always render with sensible defaults for missing data; LoggingUndefined substitutes domain, subnet, macAddress, etc.

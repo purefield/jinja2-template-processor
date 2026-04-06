@@ -2680,3 +2680,70 @@ Verified hosted app is running v3.15.0, APIs work, JS has deep link code. Found 
 > when I select rendered, the url does not change
 
 Added hash updates for editor tabs: clicking Rendered tab sets `#rendered/`, clicking Template tab sets `#templates/`, clicking YAML/Diff restores `#templates`. Uses `replaceState` to avoid flooding history.
+
+### Prompt 248
+
+> install-config.yaml is using kind:list. not supported for openshift-install. plan a fix
+
+Traced the YAML rendering path and identified that multi-document template output was being auto-wrapped into `kind: List`, which is fine for `oc apply` but invalid for `openshift-install`.
+
+### Prompt 249
+
+> do it
+
+Implemented metadata-driven YAML wrapping so `install-config.yaml.tpl` preserves raw multi-document output while apply-oriented templates continue to emit a Kubernetes `List`.
+
+### Prompt 250
+
+> show me the example outputs
+
+Rendered representative examples to verify the raw `install-config` output and the still-wrapped ACM/apply-oriented output.
+
+### Prompt 251
+
+> great, how about agent-config.yaml
+
+Checked `agent-config.yaml.tpl` directly and confirmed it already renders as a single `AgentConfig` document, so it needed no wrapper change.
+
+### Prompt 252
+
+> great, ship it
+
+Prepared the fix for release, including verification of the installer-facing rendering behavior.
+
+### Prompt 253
+
+> how did we ship in the past?
+
+Reviewed tags, changelog history, and `clusterfile-editor.sh` to reconstruct the established shipping flow: version sync, changelog updates, commit, tag, push, image build/push, restart, and health verification.
+
+### Prompt 254
+
+> let's ship it
+
+Started the shipping workflow by checking the branch, worktree, and release state.
+
+### Prompt 255
+
+> ship it pushes to main ( go to prod ) . Those files should be local untracked. merge and cleanup. 
+> create a ship it skill with all the details you can find that make a solid product
+
+Created the first `ship-it` skill, committed the install-config fix, and prepared a branch-to-main merge strategy while keeping local-only files untracked.
+
+### Prompt 256
+
+> does this include the quay.io tag and latest?
+
+Confirmed that no quay.io image release had happened yet and clarified that the historical full editor release flow publishes both the versioned tag and `latest`.
+
+### Prompt 257
+
+> the skill needs to include testing, verification, commit of each prompt into prompt.log, update the change logs, version number and release and run scripts.
+
+Expanded the `ship-it` skill to codify testing, direct verification, prompt logging, changelog/version sync, tag/image release steps, script usage, and post-deploy health checks.
+
+### Prompt 258
+
+> now ship the latest changes
+
+Reset local `main` back to `origin/main`, cherry-picked only the intended install-config and `ship-it` work, and prepared the `v3.18.6` release metadata and prompt log trail from a clean base.

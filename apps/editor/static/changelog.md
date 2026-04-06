@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.6
+- **Installer-Compatible install-config**: `install-config.yaml.tpl` now preserves raw multi-document YAML when extra manifests are present, so `openshift-install` sees a valid install-config document instead of `kind: List`
+- **Ship It Skill**: Added a `ship-it` skill documenting the repo's production release workflow, including tests, direct verification, prompt logging, changelog/version sync, image tags, runtime scripts, and health checks
+
 ## 3.16.0
 - **Universal URL Routing**: Every section, editor tab, template selection, and sample load syncs to the URL (`#section/tab?template=...&sample=...`); back/forward restores full view state
 - **Graceful Rendering**: Templates always render even with missing or incomplete data — undefined variables get sensible defaults (domain, subnet, macAddress, etc.) instead of crashing

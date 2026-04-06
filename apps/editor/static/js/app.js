@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '2.1.0';
+let APP_VERSION = '3.18.6';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.6',
+    date: '2026-04-06',
+    changes: [
+      'install-config.yaml.tpl now preserves raw multi-document YAML for openshift-install while apply-oriented templates keep the List wrapper',
+      'Added a ship-it skill that codifies testing, verification, prompt logging, changelog/version sync, image pushes, scripts, and health checks'
+    ]
+  },
   {
     version: '3.16.0',
     date: '2026-02-25',
