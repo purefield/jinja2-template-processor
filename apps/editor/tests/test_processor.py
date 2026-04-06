@@ -9,6 +9,7 @@ from app.template_processor import (
     apply_params,
     _set_by_path,
     render_template,
+    parse_template_metadata,
     list_templates,
     get_template_content
 )
@@ -199,3 +200,51 @@ class TestRenderTemplate:
         assert result["success"] is False
         # Path traversal is blocked - either by validation or file not found
         assert "Invalid" in result["error"] or "not found" in result["error"]
+
+    def test_install_config_raw_multi_doc_output(self):
+        result = render_template(
+            yaml_text="""
+account:
+  pullSecret: /path/to/pull-secret.json
+cluster:
+  name: test
+  platform: baremetal
+  disconnected: true
+  sshKeys:
+    - /path/to/id_rsa.pub
+  catalogSources:
+    - name: test-operators
+      image: registry.example.com/operators:v4.19
+network:
+  domain: example.com
+  primary:
+    subnet: 10.0.0.0/24
+    api: 10.0.0.100
+    apps: 10.0.0.101
+  cluster:
+    subnet: 10.128.0.0/14
+    hostPrefix: 23
+  service:
+    subnet: 172.30.0.0/16
+hosts:
+  master-0:
+    role: control
+  worker-0:
+    role: worker
+""",
+            template_name="install-config.yaml.tpl",
+            params=[],
+            templates_dir=TEMPLATES_DIR
+        )
+        assert result["success"] is True
+        assert "kind: List" not in result["output"]
+        assert result["output"].count("---") >= 3
+
+
+class TestParseTemplateMetadata:
+    """Tests for template metadata parsing."""
+
+    def test_install_config_declares_raw_yaml_wrapper(self):
+        content = (TEMPLATES_DIR / "install-config.yaml.tpl").read_text()
+        meta = parse_template_metadata(content)
+        assert meta["yamlWrapper"] == "raw"

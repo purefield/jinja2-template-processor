@@ -29,6 +29,7 @@ relatedTemplates:
   - mirror-registry-config.yaml.tpl
   - pre-check.sh.tpl
 docs: https://docs.openshift.com/container-platform/latest/installing/index.html
+yamlWrapper: raw
 -#}
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
