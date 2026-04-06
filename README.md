@@ -58,6 +58,8 @@ Generate `install-config.yaml` and `agent-config.yaml` for the OpenShift agent-b
 ./process.py data/baremetal-bond-vlan.clusterfile templates/agent-config.yaml.tpl > agent-config.yaml
 ```
 
+`install-config.yaml.tpl` preserves native multi-document YAML when extra manifests are present, so the first document remains valid for `openshift-install`.
+
 ### IPI (Installer Provisioned Infrastructure)
 
 Generate platform-specific install configs for cloud providers:

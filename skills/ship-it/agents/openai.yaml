@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ship It"
+  short_description: "Ship clusterfile changes to main or through the editor release flow."
+  default_prompt: "Use this skill when preparing a clusterfile change for production, including validation, branch-to-main merge, push, and the versioned Clusterfile Editor release process."

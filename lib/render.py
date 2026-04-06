@@ -248,3 +248,49 @@ def validate_data_for_template(data, meta):
 
 
 YAMLLINT_CONFIG = 'extends: default\nrules:\n  line-length: disable'
+
+
+def format_yaml_output(processed_template, meta=None):
+    """Parse rendered YAML and serialize it according to template metadata."""
+    docs = [d for d in yaml.safe_load_all(processed_template) if d is not None]
+    yaml_wrapper = (meta or {}).get('yamlWrapper', 'list')
+
+    if len(docs) <= 1:
+        output_obj = docs[0] if docs else None
+        return yaml.dump(
+            output_obj,
+            width=4096,
+            Dumper=IndentDumper,
+            explicit_start=True,
+            indent=2,
+            sort_keys=False,
+            default_style=None,
+            default_flow_style=None,
+            allow_unicode=True
+        )
+
+    if yaml_wrapper == 'raw':
+        return yaml.dump_all(
+            docs,
+            width=4096,
+            Dumper=IndentDumper,
+            explicit_start=True,
+            indent=2,
+            sort_keys=False,
+            default_style=None,
+            default_flow_style=None,
+            allow_unicode=True
+        )
+
+    output_obj = {"apiVersion": "v1", "kind": "List", "items": docs}
+    return yaml.dump(
+        output_obj,
+        width=4096,
+        Dumper=IndentDumper,
+        explicit_start=True,
+        indent=2,
+        sort_keys=False,
+        default_style=None,
+        default_flow_style=None,
+        allow_unicode=True
+    )

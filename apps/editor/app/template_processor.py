@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))  #
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))              # container: /app/
 from lib.render import (
     IndentDumper, LoggingUndefined, base64encode, set_by_path,
-    resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
+    resolve_path, validate_data_for_template, YAMLLINT_CONFIG, format_yaml_output,
 )
 
 
@@ -119,19 +119,7 @@ def render_template(yaml_text: str, template_name: str, params: list, templates_
     # Format YAML output if applicable
     if template_name.endswith('.yaml.tpl') or template_name.endswith('.yaml.tmpl'):
         try:
-            docs = [d for d in yaml.safe_load_all(processed) if d is not None]
-            output_obj = docs[0] if len(docs) == 1 else {"apiVersion": "v1", "kind": "List", "items": docs}
-            output_yaml = yaml.dump(
-                output_obj,
-                width=4096,
-                Dumper=IndentDumper,
-                explicit_start=True,
-                indent=2,
-                sort_keys=False,
-                default_style=None,
-                default_flow_style=None,
-                allow_unicode=True
-            )
+            output_yaml = format_yaml_output(processed, meta)
 
             # Run yamllint
             config = yamllint.config.YamlLintConfig(YAMLLINT_CONFIG)
@@ -172,7 +160,8 @@ def parse_template_metadata(content: str) -> dict:
         "category": "other",
         "platforms": [],
         "requires": [],
-        "docs": ""
+        "docs": "",
+        "yamlWrapper": "list"
     }
 
     # Look for @meta block

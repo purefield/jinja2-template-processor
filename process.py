@@ -17,7 +17,7 @@ except Exception:
 
 from lib.render import (
     IndentDumper, LoggingUndefined, base64encode, set_by_path,
-    resolve_path, validate_data_for_template, YAMLLINT_CONFIG,
+    resolve_path, validate_data_for_template, YAMLLINT_CONFIG, format_yaml_output,
 )
 
 def load_file(path):
@@ -227,23 +227,10 @@ if __name__ == "__main__":
 
     if args.template_file.endswith('yaml.tpl') or args.template_file.endswith('yaml.tmpl'):
         try:
-            docs = [d for d in yaml.safe_load_all(processedTemplate) if d is not None]
+            outputYaml = format_yaml_output(processedTemplate, meta)
         except Exception as e:
             print(e)
             sys.exit(1)
-
-        outputObj = docs[0] if len(docs) == 1 else {"apiVersion": "v1", "kind": "List", "items": docs}
-        outputYaml = yaml.dump(
-            outputObj,
-            width=4096,
-            Dumper=IndentDumper,
-            explicit_start=True,
-            indent=2,
-            sort_keys=False,
-            default_style=None,
-            default_flow_style=None,
-            allow_unicode=True
-        )
 
         try:
             problems = yamllint.linter.run(outputYaml, config)

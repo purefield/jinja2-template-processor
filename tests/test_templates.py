@@ -15,6 +15,8 @@ import shutil
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from jinja2 import Environment, FileSystemLoader
+from lib.render import format_yaml_output
+from process import parse_template_meta
 
 
 # --- Test fixtures and helpers ---
@@ -1717,6 +1719,31 @@ class TestDisconnectedOperatorHub:
         assert catalogsource['kind'] == 'CatalogSource'
         assert catalogsource['metadata']['name'] == 'test-operators'
         assert catalogsource['spec']['image'] == 'registry.example.com/operators:v4.19'
+
+    def test_install_config_cli_output_stays_raw_multi_doc(self, template_env):
+        """CLI formatting should preserve raw multi-doc install-config output."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['cluster']['disconnected'] = True
+        data['cluster']['catalogSources'] = [
+            {
+                'name': 'test-operators',
+                'image': 'registry.example.com/operators:v4.19',
+            }
+        ]
+        data['network']['primary'] = baremetal_vips_data()['primary']
+
+        template = template_env.get_template('install-config.yaml.tpl')
+        rendered = template.render(data)
+        meta = parse_template_meta(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates', 'install-config.yaml.tpl'))
+
+        output = format_yaml_output(rendered, meta)
+        docs = [d for d in yaml.safe_load_all(output) if d]
+
+        assert docs[0]['metadata']['name'] == 'test-cluster'
+        assert docs[1]['kind'] == 'OperatorHub'
+        assert 'kind: List' not in output
+        assert output.count('---') >= 3
 
     def test_disconnected_without_catalogs(self, template_env):
         """Test that disconnected without catalogSources just disables OperatorHub."""
