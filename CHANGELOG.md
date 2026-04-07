@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.10 (2026-04-07)
+- **ship-it-enforcement** — Make the repo-local `skills/ship-it/SKILL.md` mandatory whenever the user says `ship it`, so release behavior follows the repo workflow even if the skill is not surfaced by the session
+
 ## v3.18.9 (2026-04-07)
 - **github-auth-merge** — Merge the long-lived `auth.github` branch into `main` while preserving branch history and the tested GitHub auth integration work
 - **post-merge-cleanup** — Fix post-merge regressions in standalone operator rendering, ACM prerelease manifests, and ACM ZTP BMC detection

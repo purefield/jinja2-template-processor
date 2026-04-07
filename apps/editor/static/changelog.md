@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.10
+- **Repo-Local Ship It Enforcement**: `ship it` now explicitly points to the repo-local `skills/ship-it/SKILL.md`, so release work follows the checked-in workflow even when the session skill list is incomplete
+- **Release Discipline Reminder**: Clarified that the repo-local skill is authoritative for release actions and recorded that expectation in the repo audit trail
+
 ## 3.18.9
 - **GitHub Auth Merge**: Promoted the tested `auth.github` work into `main` while preserving branch history and keeping the editor/plugin discovery changes intact
 - **Post-Merge Cleanup**: Fixed standalone operator rendering, ACM prerelease manifest output, and the bogus ACM ZTP `account.bmc` check so real host BMC data is handled correctly

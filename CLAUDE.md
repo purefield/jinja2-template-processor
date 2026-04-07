@@ -65,6 +65,7 @@
   5. `apps/editor/Containerfile` — version in header comment and build example
 
   The version in `APP_VERSION` must match the git release tag. Never leave these out of sync.
+- **`ship it` must use the repo-local skill.** When the user says `ship it`, `let's ship it`, `commit and ship it`, or equivalent release language, read and follow `skills/ship-it/SKILL.md` before taking release actions. Treat that repo-local skill as authoritative even if it is not surfaced in the session skill list.
 - **"Ship it" means the full release process:**
   1. Update all five version/changelog locations (see above)
   2. Commit, tag (`v<version>`), and `git push && git push --tags`

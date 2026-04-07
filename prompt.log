@@ -2937,12 +2937,25 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 58. "you should, make sure you do wheen I say \"ship it\""
 59. "do it"
 60. "finish it and make sure it gets doen"
+61. "what skill did you use"
+62. "wtf"
+63. "really try harder"
+64. "look for ship it"
+65. "we created a ship it skill and every release now have to re-inforce the use"
+66. "look at the prompt.log and CLAUDE.md"
+67. "where is the skill?"
+68. "where should it be to use it every time?"
+69. "it should be repo specific, not global"
+70. "make sure it will always be used"
+71. "ship it "
 
 ### Summary
 
 - Merged the long-lived `auth.github` branch into `main` without rewriting its history, then shipped a focused cleanup commit for post-merge regressions.
 - Fixed the bogus `account.bmc` ACM ZTP check to look for host-level BMC data, restored standalone cert-manager day-2 rendering, restored ACM prerelease `osImages` output, and restored editor test compatibility.
 - Released editor metadata as `v3.18.9` so changelogs, app version, and container build metadata match the shipped repo state.
+- Confirmed the `ship-it` skill is repo-local at `skills/ship-it/SKILL.md`, not global, and tightened `CLAUDE.md` so `ship it` must explicitly read and follow that repo-local skill every time.
+- Prepared the `v3.18.10` release metadata so the repo-level and editor-level release records all capture the repo-local `ship-it` enforcement change.
 
 ### Verification
 
@@ -2951,3 +2964,5 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 - `python3 -m pytest -q tests/test_templates.py apps/editor/tests/test_processor.py` -> `193 passed`
 - Direct ACM ZTP apply-oriented render path was checked during debugging.
 - `apps/editor/tests/test_api.py` still hangs in this environment because `fastapi.testclient.TestClient` hangs even for a minimal FastAPI app; direct ASGI requests succeed.
+- Verified the repo-local skill path exists at `skills/ship-it/SKILL.md` and is now referenced explicitly from `CLAUDE.md`.
+- Verified all five version-bearing release locations were updated to `3.18.10` before the release commit.
