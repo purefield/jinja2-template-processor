@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.9 (2026-04-07)
+- **github-auth-merge** — Merge the long-lived `auth.github` branch into `main` while preserving branch history and the tested GitHub auth integration work
+- **post-merge-cleanup** — Fix post-merge regressions in standalone operator rendering, ACM prerelease manifests, and ACM ZTP BMC detection
+- **editor-compatibility** — Restore editor template processor compatibility for the current test suite and confirm the main template and processor suites pass after the merge
+
 ## v3.18.8 (2026-04-06)
 - **example-secrets-placeholders** — Add `data/secrets/` with obviously fake placeholder files so bundled examples render safely without local secret material and without tripping secret scanners with realistic-looking values
 - **example-path-cleanup** — Repoint bundled example clusterfiles to use the shared placeholder files under `data/secrets/` instead of scattered host-specific paths

@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.18.9
+- **GitHub Auth Merge**: Promoted the tested `auth.github` work into `main` while preserving branch history and keeping the editor/plugin discovery changes intact
+- **Post-Merge Cleanup**: Fixed standalone operator rendering, ACM prerelease manifest output, and the bogus ACM ZTP `account.bmc` check so real host BMC data is handled correctly
+- **Stability Check**: Restored editor processor test compatibility and re-validated the main template and processor suites after the merge
+
 ## 3.18.8
 - **Safe Example Secrets**: Added `data/secrets/` with obviously fake placeholder files so example clusterfiles render without local secret material and without looking like real credentials
 - **Example Cleanup**: Bundled examples now share one consistent placeholder secret path scheme and the README explains which examples to start from and what each one is meant to teach

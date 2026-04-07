@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.8';
+let APP_VERSION = '3.18.9';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.9',
+    date: '2026-04-07',
+    changes: [
+      'Merged the tested auth.github branch work into main while preserving branch history and the editor/plugin discovery changes',
+      'Fixed post-merge regressions in standalone operator rendering, ACM prerelease manifests, and ACM ZTP BMC detection',
+      'Restored editor processor test compatibility and re-validated the main template and processor suites after the merge'
+    ]
+  },
   {
     version: '3.18.8',
     date: '2026-04-06',

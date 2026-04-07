@@ -2870,3 +2870,84 @@ Replaced the invalid SSH public key placeholder with a syntactically valid fake 
 > ship it
 
 Prepared the example cleanup release by checking the pending delta, updating release notes, and syncing the version metadata for the next patch release.
+
+---
+
+## Session 2026-04-07
+
+### User Prompts Summary
+
+1. "[ ERROR ] ../../clusterfile/process.py -p 'bootDelivery=bmc' ocp-cluster1.generated.clusterfile ../../clusterfile/templates/kubevirt-cluster.yaml.tpl  -s ../../clusterfile/schema/clusterfile.schema.json | oc apply -f -"
+2. "Schema validation errors (data file):"
+3. "plugins.operators.cert-manager.letsencrypt: 'route53' is a required property"
+4. "plugins.operators.cert-manager.letsencrypt: Additional properties are not allowed ('cloudflare', 'provider' were unexpected)"
+5. "error: no objects passed to apply"
+6. "Fix this in the schema. we support route53 and cloudflare for dns"
+7. "did we lose this work?"
+8. "check the auth.github branch"
+9. "did we lose this work?"
+10. "check the auth.github branch"
+11. "merge it into main after careful review"
+12. "plan what we need to do first"
+13. "stop"
+14. "summarize in plain text, the changes between dev auth.github and main branch"
+15. "what changed since the creation of that branch on main?"
+16. "what changed on main after the branch was created"
+17. "we intented to cleanup the auth.github branch before we made the changes to main, how did that fail and can we finish this cleanup now? "
+18. "are there other branches we should consider to merge"
+19. "clean auth.github "
+20. "the auth.github branch has been extensively worked in and tested. would it work to merge the changes in main since the branch into the github branch and then back to main?"
+21. "[long guidance about synchronization merge ending with] Verdict: Yes, merge `main` → `auth.github` first. Fix everything there. Then merge `auth.github` → `main`."
+22. "go for it"
+23. "The provders are aws or cloudeflare, the services are route53 or dns. not mixing services with providers."
+24. "we said not to worry about legacy"
+25. "this was the tested and approved behavior already, we are cleaning up not re-introducing slop"
+26. "why? that is really concering loss of trust. fix the mess, go back in the branch and clean up to the state we left the auth.github branch earlier"
+27. "show me the diff"
+28. "make sure no history is lost and move on"
+29. "yes"
+30. "review"
+31. "../steps/common-create-clusterfile-cert-manager-config.sh:rendered=$(./clusterfile/process.py \"$dataPath\" \"$templatePath/cert-manager.day2-resources.yaml.tpl\" -s clusterfile/schema/clusterfile.schema.json $overrideArgs)"
+32. "this project uses it"
+33. "elaborate"
+34. "The auth.github branch worked during testing, we tried to merge changes as sets into main and that work was not completed before main was changed. how can we avoid making changes and just merge"
+35. "look at the history and graph what we are talking about on the git tree"
+36. "start at the github branch creation"
+37. "so we should be able to capture what changed on main, merge it into auth.github and back to main. considering conflicts carefully"
+38. "so lets move forward with the merge as we have history to go back to if we are stuck"
+39. "install it"
+40. "test now"
+41. "[ OK ] ../../clusterfile/process.py -p 'hosts.*.bmc.address=redfish.apps.virt.ola.purefield.nl' ocp-cluster1.generated.clusterfile ../../clusterfile/templates/acm-ztp.yaml.tpl  -s ../../clusterfile/schema/clusterfile.schema.json | oc apply -f -"
+42. "there is bmc defined"
+43. "what is account.bmc?"
+44. "never existed"
+45. "what does it check for, can we fix it to host bmc"
+46. "obviously, fix that"
+47. "let's finish cleanup"
+48. "do all tests succeed?"
+49. "what is our test coverage?"
+50. "are we stable?"
+51. "run the tests"
+52. "debug it"
+53. "what cahnged in our repo"
+54. "no guessing, look and report"
+55. "ok, to ship it, what will change?"
+56. "ship it"
+57. "did you use the skill?"
+58. "you should, make sure you do wheen I say \"ship it\""
+59. "do it"
+60. "finish it and make sure it gets doen"
+
+### Summary
+
+- Merged the long-lived `auth.github` branch into `main` without rewriting its history, then shipped a focused cleanup commit for post-merge regressions.
+- Fixed the bogus `account.bmc` ACM ZTP check to look for host-level BMC data, restored standalone cert-manager day-2 rendering, restored ACM prerelease `osImages` output, and restored editor test compatibility.
+- Released editor metadata as `v3.18.9` so changelogs, app version, and container build metadata match the shipped repo state.
+
+### Verification
+
+- `python3 -m pytest -q tests/test_templates.py` -> `163 passed`
+- `python3 -m pytest -q apps/editor/tests/test_processor.py` -> `30 passed`
+- `python3 -m pytest -q tests/test_templates.py apps/editor/tests/test_processor.py` -> `193 passed`
+- Direct ACM ZTP apply-oriented render path was checked during debugging.
+- `apps/editor/tests/test_api.py` still hangs in this environment because `fastapi.testclient.TestClient` hangs even for a minimal FastAPI app; direct ASGI requests succeed.
