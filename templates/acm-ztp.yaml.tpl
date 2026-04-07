@@ -257,7 +257,7 @@ items:
     labels:
       agentclusterinstalls.extensions.hive.openshift.io/location: {{ cluster.location }}
       networkType: static
-    annotations:{% if account.bmc %}
+    annotations:{% if hosts.values() | selectattr('bmc', 'defined') | list %}
       infraenv.agent-install.openshift.io/enable-ironic-agent: "true"{% endif %}
   spec:{%- if network.proxy %}
     proxy: {{ network.proxy }}{% endif %}{% if network.trustBundle %}

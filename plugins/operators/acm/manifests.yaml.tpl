@@ -3,6 +3,9 @@
 {%- set mch = acm.multiClusterHub | default({}) -%}
 {%- set asc = acm.agentServiceConfig | default({}) -%}
 {%- set prov = acm.provisioning | default({}) -%}
+{%- set imageArch = cluster.arch | default("x86_64", true) -%}
+{%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
+{%- set rhcosPath = "pre-release/" + cluster.version if "-" in cluster.version else majorMinor + "/latest" -%}
 {%- if acmEnabled %}
 ---
 apiVersion: v1
@@ -66,6 +69,12 @@ spec:
     resources:
       requests:
         storage: {{ asc.imageStorage | default("50Gi") }}
+  osImages:
+    - openshiftVersion: "{{ majorMinor }}"
+      version: "{{ cluster.version }}"
+      cpuArchitecture: {{ imageArch }}
+      url: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ rhcosPath }}/rhcos-live-iso.{{ imageArch }}.iso"
+      rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ rhcosPath }}/rhcos-live-rootfs.{{ imageArch }}.img"
 ---
 apiVersion: metal3.io/v1alpha1
 kind: Provisioning

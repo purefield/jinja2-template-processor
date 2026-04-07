@@ -16,6 +16,9 @@ from lib.render import (
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG, format_yaml_output,
 )
 
+# Backwards-compatible alias retained for the editor test module.
+_set_by_path = set_by_path
+
 
 def load_file(path: str) -> str:
     """Return a placeholder for file paths (browser context)."""

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from jinja2 import Environment, FileSystemLoader
 from lib.render import format_yaml_output
-from process import parse_template_meta
+from process import parse_template_meta, process_template
 
 
 # --- Test fixtures and helpers ---
@@ -322,6 +322,7 @@ def operator_test_data(operator_name, config=None):
 
 def ztp_host_data(data):
     """Enrich all hosts in data with BMC/network/storage for ZTP template rendering."""
+    data.setdefault('network', {}).setdefault('primary', {}).setdefault('vips', {'api': '10.0.0.2', 'apps': '10.0.0.3'})
     for host in data['hosts'].values():
         host['bmc'] = {'vendor': 'dell', 'version': 9, 'address': '10.0.1.1', 'macAddress': 'aa:bb:cc:dd:ee:ff', 'username': 'root', 'password': 'pw'}
         host['network'] = {'interfaces': [{'name': 'eth0', 'macAddress': 'aa:bb:cc:dd:ee:01'}], 'primary': {'address': '10.0.0.10', 'ports': ['eth0']}}
@@ -3524,12 +3525,13 @@ class TestAcmDisconnectedTemplate:
             "releaseImage should not contain tag when digest is set"
 
     def test_disconnected_clusterimageset_uses_mirror(self, template_env):
-        """ClusterImageSet should use mirror registry host, not quay.io."""
+        """ClusterImageSet should preserve the full quay.io mirror prefix."""
         data = self.disconnected_data()
         result = self.render_template(template_env, data)
         cis = self.get_item(result, 'ClusterImageSet')
-        assert cis['spec']['releaseImage'].startswith('registry.local:5000/'), \
-            f"Expected mirror host, got: {cis['spec']['releaseImage']}"
+        assert cis['spec']['releaseImage'] == \
+            f'registry.local:5000/quay-io/openshift-release-dev/ocp-release@{self.DIGEST}', \
+            f"Expected full mirror prefix, got: {cis['spec']['releaseImage']}"
 
     def test_disconnected_clusterimageset_labels(self, template_env):
         """ClusterImageSet should have channel and visible labels."""
@@ -3599,7 +3601,7 @@ class TestAcmDisconnectedTemplate:
         assert '@sha256' not in result['spec']['releaseImage']
 
     def test_clusterimageset_with_mirror_and_digest(self, template_env):
-        """acm-clusterimageset.yaml.tpl should use mirror host + digest."""
+        """acm-clusterimageset.yaml.tpl should preserve mirror prefix + digest."""
         data = {
             'cluster': {
                 'version': '4.20.8',
@@ -3614,7 +3616,42 @@ class TestAcmDisconnectedTemplate:
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
         assert result['spec']['releaseImage'] == \
-            f'registry.local:5000/openshift-release-dev/ocp-release@{self.DIGEST}'
+            f'registry.local:5000/quay-io/openshift-release-dev/ocp-release@{self.DIGEST}'
+
+    def test_clusterimageset_with_mirror_and_tag(self, template_env):
+        """acm-clusterimageset.yaml.tpl should preserve mirror prefix + tag."""
+        data = {
+            'cluster': {
+                'version': '4.20.8',
+                'arch': 'x86_64',
+                'mirrors': [
+                    {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']}
+                ]
+            }
+        }
+        template = template_env.get_template('acm-clusterimageset.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        assert result['spec']['releaseImage'] == \
+            'registry.local:5000/quay-io/openshift-release-dev/ocp-release:4.20.8-x86_64'
+
+    def test_clusterimageset_sync_with_mirror_and_digest(self, template_env):
+        """clusterimageset-sync include should preserve mirror prefix + digest."""
+        data = {
+            'cluster': {
+                'version': '4.20.8',
+                'arch': 'x86_64',
+                'releaseDigest': self.DIGEST,
+                'mirrors': [
+                    {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']}
+                ]
+            }
+        }
+        template = template_env.get_template('includes/clusterimageset-sync.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+        assert result[0]['spec']['releaseImage'] == \
+            f'registry.local:5000/quay-io/openshift-release-dev/ocp-release@{self.DIGEST}'
 
     def test_ztp_mirror_registries_after_include_extraction(self, template_env):
         """Verify acm-ztp still renders mirror-registries ConfigMap after include extraction."""

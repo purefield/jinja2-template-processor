@@ -19,7 +19,7 @@ docs: https://docs.openshift.com/container-platform/4.20/installing/disconnected
 {%- set imageArch = cluster.arch | default("x86_64", true) | replace("-", "_") -%}
 {%- set arch = imageArch | replace("_", "-") -%}
 {%- set quayMirrors = (cluster.mirrors | default([])) | selectattr('source', 'equalto', 'quay.io') | list -%}
-{%- set releaseHost = quayMirrors[0].mirrors[0].split('/')[0] if quayMirrors | length > 0 else 'quay.io' -%}
+{%- set releaseBase = quayMirrors[0].mirrors[0] if quayMirrors | length > 0 else 'quay.io' -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -33,4 +33,4 @@ items:
       channel: fast
       visible: "true"
   spec:
-    releaseImage: {{ releaseHost }}/openshift-release-dev/ocp-release@{{ cluster.releaseDigest }}{% if cluster.mirrors %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% endif %}
+    releaseImage: {{ releaseBase }}/openshift-release-dev/ocp-release@{{ cluster.releaseDigest }}{% if cluster.mirrors %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% endif %}

@@ -20,4 +20,4 @@ docs: https://docs.openshift.com/container-platform/latest/operators/admin/olm-a
 -#}
 {#- Standalone operator manifests for post-install: oc apply -f operators.yaml #}
 {%- set ops = (plugins | default({})).operators | default({}) -%}
-{%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{% include "operators/" ~ op_name ~ "/manifests.yaml.tpl" %}{% include "operators/" ~ op_name ~ "/config.yaml.tpl" ignore missing %}{% endfor -%}
+{%- for op_name, op_config in ops.items() if op_config is mapping and op_config.enabled | default(true) %}{% include "operators/" ~ op_name ~ "/manifests.yaml.tpl" %}{% include "operators/" ~ op_name ~ "/config.yaml.tpl" ignore missing %}{% include "operators/" ~ op_name ~ "/" ~ op_name ~ ".day2-resources.yaml.tpl" ignore missing %}{% endfor -%}
