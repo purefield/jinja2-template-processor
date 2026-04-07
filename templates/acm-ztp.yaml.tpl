@@ -28,7 +28,12 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
 {%- set enableDisconnected = cluster.disconnected | default(false) -%}
+{%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
+{%- set generatedDiscoveryIgnitionOverride = "" -%}
+{%- if enableDisconnected and hasMirrorRegistries -%}
+{%- set generatedDiscoveryIgnitionOverride %}{% include "includes/disconnected-discovery-ignition-override.json.tpl" %}{% endset -%}
+{%- endif -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -228,13 +233,15 @@ items:
   type: Opaque{% endif %}
 - apiVersion: metal3.io/v1alpha1
   kind: BareMetalHost
+  {%- set hasExplicitIgnitionOverride = host.ignitionConfigOverride is defined -%}
+  {%- set effectiveIgnitionOverride = host.ignitionConfigOverride if hasExplicitIgnitionOverride else generatedDiscoveryIgnitionOverride %}
   metadata:
     annotations:
       bmac.agent-install.openshift.io/hostname: {{ name }}
       bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}
       inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{% if host.installerArgs is defined %}
-      bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
-      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
+      bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if hasExplicitIgnitionOverride or effectiveIgnitionOverride %}
+      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ effectiveIgnitionOverride | trim }}'{% endif %}
     labels:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
     name: {{ name }}

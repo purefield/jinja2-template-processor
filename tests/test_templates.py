@@ -6,6 +6,7 @@ Tests all platforms, configuration options, and includes.
 import pytest
 import yaml
 import json
+import base64
 import os
 import sys
 import tempfile
@@ -136,6 +137,21 @@ def base_cluster_data():
         },
         'plugins': {}
     }
+
+
+def decode_ignition_override(annotation_value):
+    """Decode ignition override JSON from an annotation string."""
+    return json.loads(annotation_value)
+
+
+def decode_ignition_file_contents(override_json, path):
+    """Return decoded file contents from an ignition storage.files entry."""
+    ignition = decode_ignition_override(override_json)
+    target = next(f for f in ignition['storage']['files'] if f['path'] == path)
+    source = target['contents']['source']
+    prefix = 'data:text/plain;charset=utf-8;base64,'
+    assert source.startswith(prefix)
+    return base64.b64decode(source[len(prefix):]).decode('utf-8')
 
 
 # --- Platform-specific test data ---
@@ -1552,6 +1568,13 @@ class TestAcmCapiTemplate:
         rendered = template.render(data)
         return yaml.safe_load(rendered)
 
+    def get_bmh(self, result, name='node1.capi-test.example.com'):
+        """Find a BareMetalHost by name."""
+        for item in result['items']:
+            if item.get('kind') == 'BareMetalHost' and item['metadata']['name'] == name:
+                return item
+        return None
+
     def test_poc_banner_present(self, template_env):
         """Test that POC banner ManifestWork is present in CAPI output."""
         data = self.acm_capi_data()
@@ -1576,6 +1599,53 @@ class TestAcmCapiTemplate:
                     if i['kind'] == 'ClusterImageSet' and i['metadata']['name'] == 'img4.21.0-x86-64-appsub'), None)
         assert cis is not None, "ClusterImageSet not found in CAPI template"
         assert cis['spec']['releaseImage'] == 'quay.io/openshift-release-dev/ocp-release:4.21.0-x86_64'
+
+    def test_disconnected_mirrors_generate_bmh_ignition_override(self, template_env):
+        """Disconnected mirrored CAPI clusters should generate a discovery policy override on BMH."""
+        data = self.acm_capi_data()
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
+            {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
+        ]
+
+        result = self.render_template(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        policy = json.loads(decode_ignition_file_contents(override, '/etc/containers/policy.json'))
+
+        assert policy['default'][0]['type'] == 'reject'
+        assert policy['transports']['docker']['registry.local:5000/quay-io'][0]['type'] == 'insecureAcceptAnything'
+        assert policy['transports']['docker']['registry.local:5000/redhat-io'][0]['type'] == 'insecureAcceptAnything'
+
+    def test_explicit_capi_ignition_override_takes_precedence(self, template_env):
+        """Explicit host ignition override should win over the disconnected generated default in CAPI."""
+        data = self.acm_capi_data()
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
+        ]
+        explicit_override = '{"ignition":{"version":"3.1.0"},"storage":{"files":[]}}'
+        data['hosts']['node1.capi-test.example.com']['ignitionConfigOverride'] = explicit_override
+
+        result = self.render_template(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        assert bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides'] == explicit_override
+
+    def test_disconnected_without_mirrors_does_not_generate_capi_ignition_override(self, template_env):
+        """Disconnected CAPI clusters without mirrors should not get the generated BMH override."""
+        data = self.acm_capi_data()
+        data['cluster']['disconnected'] = True
+
+        result = self.render_template(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' not in bmh['metadata']['annotations']
 
 
 class TestAcmImageSetSync:
@@ -2903,6 +2973,51 @@ class TestZtpPerHostFields:
         bmh = self.get_bmh(result)
 
         assert 'bmac.agent-install.openshift.io/ignition-config-overrides' in bmh['metadata']['annotations']
+
+    def test_disconnected_mirrors_generate_discovery_ignition_override(self, template_env):
+        """Disconnected mirrored ZTP clusters should generate a discovery policy override on BMH."""
+        data = self.acm_ztp_data_with_host()
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
+            {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
+        ]
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        policy = json.loads(decode_ignition_file_contents(override, '/etc/containers/policy.json'))
+
+        assert policy['default'][0]['type'] == 'reject'
+        assert policy['transports']['docker']['registry.local:5000/quay-io'][0]['type'] == 'insecureAcceptAnything'
+        assert policy['transports']['docker']['registry.local:5000/redhat-io'][0]['type'] == 'insecureAcceptAnything'
+
+    def test_non_disconnected_clusters_do_not_get_generated_ignition_override(self, template_env):
+        """Non-disconnected ZTP clusters should not get the generated discovery override."""
+        data = self.acm_ztp_data_with_host()
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
+        ]
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' not in bmh['metadata']['annotations']
+
+    def test_explicit_ignition_override_takes_precedence_over_disconnected_default(self, template_env):
+        """Explicit host ignition override should win over the disconnected generated default in ZTP."""
+        explicit_override = '{"ignition":{"version":"3.1.0"},"storage":{"files":[]}}'
+        data = self.acm_ztp_data_with_host({'ignitionConfigOverride': explicit_override})
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
+        ]
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        assert bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides'] == explicit_override
 
     def test_hold_installation_in_aci(self, template_env):
         """Test holdInstallation renders in AgentClusterInstall spec."""

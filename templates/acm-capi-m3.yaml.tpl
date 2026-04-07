@@ -29,7 +29,12 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set imageUrl="" -%}
 {%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
 {%- set enableDisconnected = cluster.disconnected | default(false) -%}
+{%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
+{%- set generatedDiscoveryIgnitionOverride = "" -%}
+{%- if enableDisconnected and hasMirrorRegistries -%}
+{%- set generatedDiscoveryIgnitionOverride %}{% include "includes/disconnected-discovery-ignition-override.json.tpl" %}{% endset -%}
+{%- endif -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 apiVersion: v1
@@ -288,10 +293,12 @@ items:
 {{ nmstate | indent(4,true) }}
 - kind: BareMetalHost
   apiVersion: metal3.io/v1alpha1
+  {%- set hasExplicitIgnitionOverride = host.ignitionConfigOverride is defined -%}
+  {%- set effectiveIgnitionOverride = host.ignitionConfigOverride if hasExplicitIgnitionOverride else generatedDiscoveryIgnitionOverride %}
   metadata:
     annotations:
-      inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{% if host.ignitionConfigOverride is defined %}
-      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride }}'{% endif %}
+      inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{% if hasExplicitIgnitionOverride or effectiveIgnitionOverride %}
+      bmac.agent-install.openshift.io/ignition-config-overrides: '{{ effectiveIgnitionOverride | trim }}'{% endif %}
     labels:
       node: {{ shortname }}
       role: {{ 'controller' if host.role == 'control' else 'worker' }}
