@@ -1,8 +1,7 @@
 #!/bin/bash
-# Wrapper to run process.py in container with file path mapping
-# Usage: ./process-wrapper.sh data.yaml template.yaml.tpl [-p overrides...]
+# Wrapper to run process.py in a container with safe path mapping
 
-set -e
+set -euo pipefail
 
 # Detect container runtime
 if command -v podman &> /dev/null; then
@@ -21,28 +20,60 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 
-# Determine current directory (for volume mount)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="$(pwd)"
+IMAGE_REF="${IMAGE_REF:-quay.io/dds/process:latest}"
 
-# Build volume mounts and transform file paths
-VOLUMES="-v ${WORK_DIR}:/workspace:Z"
+RUN_ARGS=(run --rm)
+if [[ "$CONTAINER_CMD" == "podman" ]]; then
+    RUN_ARGS+=(-v "${SCRIPT_DIR}:/repo:Z")
+    RUN_ARGS+=(-v "${WORK_DIR}:/work:Z")
+else
+    RUN_ARGS+=(-v "${SCRIPT_DIR}:/repo")
+    RUN_ARGS+=(-v "${WORK_DIR}:/work")
+fi
 
-# Collect arguments, transforming local paths to container paths
+EXTRA_MOUNT_INDEX=0
+
+map_path() {
+    local path="$1"
+    local abs_path
+    local rel_path
+    abs_path="$(realpath "$path")"
+
+    if rel_path="$(realpath --relative-to="$SCRIPT_DIR" "$abs_path" 2>/dev/null)" && [[ "$rel_path" != ..* ]]; then
+        printf '/repo/%s\n' "$rel_path"
+        return
+    fi
+
+    if rel_path="$(realpath --relative-to="$WORK_DIR" "$abs_path" 2>/dev/null)" && [[ "$rel_path" != ..* ]]; then
+        printf '/work/%s\n' "$rel_path"
+        return
+    fi
+
+    local parent_dir
+    parent_dir="$(dirname "$abs_path")"
+    local mount_point="/ext${EXTRA_MOUNT_INDEX}"
+    EXTRA_MOUNT_INDEX=$((EXTRA_MOUNT_INDEX + 1))
+    if [[ "$CONTAINER_CMD" == "podman" ]]; then
+        RUN_ARGS+=(-v "${parent_dir}:${mount_point}:Z")
+    else
+        RUN_ARGS+=(-v "${parent_dir}:${mount_point}")
+    fi
+    printf '%s/%s\n' "$mount_point" "$(basename "$abs_path")"
+}
+
 ARGS=()
 for arg in "$@"; do
-    # Check if argument is a file that exists
     if [[ -f "$arg" ]]; then
-        # Convert to absolute path
-        abs_path="$(cd "$(dirname "$arg")" && pwd)/$(basename "$arg")"
-        # Transform to container path
-        container_path="/workspace/$(realpath --relative-to="$WORK_DIR" "$abs_path" 2>/dev/null || basename "$arg")"
-        ARGS+=("$container_path")
+        ARGS+=("$(map_path "$arg")")
     else
-        # Not a file, pass as-is (could be -p override)
         ARGS+=("$arg")
     fi
 done
 
-# Run the container
-$CONTAINER_CMD run --rm $VOLUMES quay.io/dds/process:latest \
-    "python3 /app/process.py ${ARGS[*]}"
+exec "$CONTAINER_CMD" "${RUN_ARGS[@]}" \
+    --workdir /work \
+    --entrypoint python3 \
+    "$IMAGE_REF" \
+    /app/process.py "${ARGS[@]}"

@@ -2,27 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
-## v3.18.4 (2026-03-31)
-- **acm-inline-clusterimageset** — Render the matching `ClusterImageSet` directly in ACM ZTP and CAPI templates so requested versions are created on the hub alongside the managed cluster resources
+## v3.18.8 (2026-04-06)
+- **example-secrets-placeholders** — Add `data/secrets/` with obviously fake placeholder files so bundled examples render safely without local secret material and without tripping secret scanners with realistic-looking values
+- **example-path-cleanup** — Repoint bundled example clusterfiles to use the shared placeholder files under `data/secrets/` instead of scattered host-specific paths
+- **example-docs-purpose** — Consolidate the README example guidance around a smaller set of meaningful starting points and document the purpose of the examples and placeholder secret files
 
-## v3.18.5 (2026-04-01)
-- **acm-prerelease-rhcos-paths** — Fix ACM `osImages` rendering and sync jobs so prerelease OCP versions use `rhcos/pre-release/<exact-version>` instead of the broken `majorMinor/latest` path; add regression coverage and tighten template readability guidance
+## v3.18.7 (2026-04-06)
+- **process-image-cli** — Fix the `quay.io/dds/process` container contract so it can run the latest repo templates and plugins reliably: package `lib/`, use a direct Python entrypoint, and default to a mounted working directory
+- **process-wrapper** — Make `process.sh` independent of the published image entrypoint by overriding the container entrypoint explicitly, mounting repo/current working tree paths safely, and mapping file arguments into the container
+- **process-docs** — Update CLI container documentation to show direct mounted-worktree usage and the `process.sh` wrapper path
 
-## v3.18.3 (2026-03-31)
-- **acm-clusterimageset-branch** — Derive the ACM ClusterImageSet subscription git branch from the ACM operator channel instead of hardcoding `backplane-2.10`; add a one-time live patch script for existing hubs
-
-## v3.18.2 (2026-03-31)
-- **example-pull-secret-paths** — Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of the legacy `2023/pull-secret.json` path
-
-## v3.18.1 (2026-03-27)
-- **operator-storage-reconcile** — Fix LocalVolumeSet API group and ACM CRD gate for the Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
-
-## v3.18.0 (2026-03-26)
-- **auth-ui-files** — Expose `plugins.auth.github` in the editor, switch GitHub OAuth credentials to file-path inputs, and load client ID/secret from files at render time
-- **cert-manager-provider-toggle** — Add aws/cloudflare LetsEncrypt provider selection with provider-specific form sections and Cloudflare render support
-
-## v3.17.0 (2026-03-26)
-- **auth.github** — Add GitHub auth plugin with co-located schema/templates, generic plugin schema discovery, and template-based OAuth app setup, secret rendering, and OpenShift OAuth configuration
+## v3.18.6 (2026-04-06)
+- **install-config-raw-multidoc** — Preserve native multi-document YAML for `install-config.yaml.tpl` so `openshift-install` receives a real install-config document instead of an unsupported `kind: List` wrapper; keep apply-oriented templates wrapped for `oc apply -f` compatibility
+- **ship-it-skill** — Add a `ship-it` skill that captures the repo's production release discipline: testing, direct verification, prompt logging, changelog/version sync, tags, image pushes, runtime scripts, and health checks
 
 ## v3.16.0 (2026-02-25)
 - **universal-url-routing** — Every section, editor tab, template, and sample in the URL hash; back/forward restores full state

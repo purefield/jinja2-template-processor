@@ -1,5 +1,5 @@
 account:
-  pullSecret: secrets/pull-secret/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 cluster:
   version: 4.21.0
   platform: baremetal
@@ -22,8 +22,8 @@ cluster:
           - 1000
           - 1000
   sshKeys:
-    - 2023/acm/id_rsa.pub
-    - 2023/acm/id_rsa.pub
+    - data/secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
   location: dc1
   tpm: true
   manifests:
@@ -68,7 +68,7 @@ plugins:
     external-secrets: {}
 network:
   domain: base.domain
-  trustBundle: /etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem
+  trustBundle: data/secrets/ca.crt
   proxy:
     httpProxy: http://proxy.company.tld:8080/
     httpsProxy: http://proxy.company.tld:8080/
@@ -129,7 +129,7 @@ hosts:
       vendor: dell
       version: 9
       username: root
-      password: bmc-password.txt
+      password: data/secrets/bmc-password.txt
       address: 10.0.1.4
       macAddress: 00:1A:2B:3C:4D:10
     network:
@@ -156,7 +156,7 @@ hosts:
       vendor: dell
       version: 9
       username: root
-      password: bmc-password.txt
+      password: data/secrets/bmc-password.txt
       address: 10.0.1.5
       macAddress: 00:1A:2B:3C:4D:20
     network:
@@ -183,7 +183,7 @@ hosts:
       vendor: dell
       version: 9
       username: root
-      password: bmc-password.txt
+      password: data/secrets/bmc-password.txt
       address: 10.0.1.6
       macAddress: 00:1A:2B:3C:4D:30
     network:
@@ -210,7 +210,7 @@ hosts:
       vendor: dell
       version: 9
       username: root
-      password: bmc-password.txt
+      password: data/secrets/bmc-password.txt
       address: 10.0.1.11
       macAddress: 00:1A:2B:3C:4D:40
     network:
@@ -247,7 +247,7 @@ hosts:
       vendor: dell
       version: 9
       username: root
-      password: bmc-password.txt
+      password: data/secrets/bmc-password.txt
       address: 10.0.1.21
       macAddress: 00:1A:2B:3C:4D:50
     network:

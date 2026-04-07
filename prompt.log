@@ -118,109 +118,6 @@ templates/includes/platforms/
 
 ### Planned Features (from plan file)
 1. **Self-contained container** - No volume mounts needed (COPY at build time)
-
-### Prompt 1
-> is this fixed for future cluster creation and use now too?
-
-Explained that the prerelease RHCOS path bug is fixed for future clusterfile-driven ACM cluster creation, while existing hubs still need corrected manifests or a live patch.
-
-### Prompt 2
-> do the template changes comply with our rules for quality of code, no smell or slop? are the changes clean and robust.
-
-Reviewed the change against repo quality expectations and called out one small DRY/readability concern: the same `rhcosPath` rule was duplicated across two templates.
-
-### Prompt 3
-> how about the template readabilty rules?
-
-Reviewed the change against template readability guidance and concluded it was acceptable but not fully ideal because the control logic was a bit more visible than the generated YAML.
-
-### Prompt 4
-> do we see template and control logic first or generated yaml clearly
-
-Clarified the preferred readability balance: readers should see generated YAML first and Jinja control logic second.
-
-### Prompt 5
-> add this to our skills, md file and such to enforce this quality gate, relentlesly
-
-Updated repo guidance and skills to enforce a strict template readability gate: generated YAML must stay visually primary, duplicated template control logic is a smell, and technically-correct but readability-worse template changes should be rejected.
-
-### Prompt 6
-> ship it
-
-Prepared a focused release for the prerelease RHCOS path fix and template readability guidance updates, including version/changelog sync, commit, tag, push, and container release steps.
-
----
-
-## Session 2026-03-31
-
-### Prompt 1
-> I tried to install a cluster and got an issue with the ClusterImageSet img4.22.0-x86-64-appsub is not available. This should have been addressed. Can you find the issue and propose a fix
-
-Diagnosed the issue as a stale hardcoded `backplane-2.10` ClusterImageSet subscription branch that does not publish the requested 4.22 image set.
-
-### Prompt 2
-> stop, we are planing, revert. No change to clusterfile!
-
-Reverted the exploratory code changes and stayed in planning mode while summarizing the root cause and safe fix direction.
-
-### Prompt 3
-> where do we get that version from? cofiguration is our last resort see CLAUDE.md for guidance. use convention
-
-Reviewed `CLAUDE.md` and existing repo conventions, then identified `plugins.operators.acm.channel` as the correct source of truth to derive the `backplane-*` branch by convention.
-
-### Prompt 4
-> so a very smal tweak
-
-Confirmed that the intended fix is a small template change that derives the branch instead of hardcoding it.
-
-### Prompt 5
-> ok, make the change and ship it. I need a one time update script to fix it on the running cluster
-
-Implemented the convention-based template fix, added a regression test, created a one-time live patch script for running hubs, and prepared the release bookkeeping for `v3.18.3`.
-
-### Prompt 6
-> clusterfile/./scripts/update-acm-clusterimageset-branch.sh
-> Error from server (NotFound): subscriptions.apps.open-cluster-management.io "acm-operator-subscription" not found
-
-Fixed the one-time ACM hub patch script to use explicit `subscriptions.operators.coreos.com` for the ACM operator subscription and explicit `subscriptions.apps.open-cluster-management.io` for the ClusterImageSet app subscription.
-
-### Prompt 7
-> fix the acm hub cluster
-
-Inspected the ACM hub, found the missing `ClusterImageSet` objects, and created the required `4.22.0` and `4.21.0` entries directly on the hub to unblock cluster creation.
-
-### Prompt 8
-> now same for 4.21.0
-
-Created and verified the missing `img4.21.0-x86-64-appsub` ClusterImageSet on the ACM hub.
-
-### Prompt 9
-> what is causing the two clusters to remain drafts
-
-Diagnosed the live ACM cluster states: one cluster was blocked by an invalid/nonexistent release image and the other had a valid image set but no discovered hosts yet.
-
-### Prompt 10
-> lets add that, I do not want to have to worry about missing images again. For ztp and capi with acm
-
-Updated ACM ZTP and CAPI templates to render the matching `ClusterImageSet` directly as part of the hub-side manifests so future requested versions are created automatically.
-
-### Prompt 11
-> ship it
-
-Prepared the follow-up release `v3.18.4` with the inline ACM ClusterImageSet rendering and script fix, including version and changelog updates.
-
-### Prompt 12
-> remove the one time script from the public release. not authorized!
-
-Removed the one-time ACM hub patch script from the unreleased `v3.18.4` change set and trimmed the release notes so the public release only ships the inline ACM ClusterImageSet manifest behavior.
-
----
-
-### Prompt 248
-
-> for clusterfile repo, read the rules, prompts and follow insturctions for a release, including quay.io, prompts and all
-
-Prepared the `v3.18.1` release by reading `CLAUDE.md`, syncing the five version/changelog locations, and recording this prompt for the release audit trail.
 2. **Offline distribution package** - Single tarball with image + scripts
 3. **Browser-only mode** - Standalone HTML with Nunjucks for rendering
 
@@ -2784,98 +2681,192 @@ Verified hosted app is running v3.15.0, APIs work, JS has deep link code. Found 
 
 Added hash updates for editor tabs: clicking Rendered tab sets `#rendered/`, clicking Template tab sets `#templates/`, clicking YAML/Diff restores `#templates`. Uses `replaceState` to avoid flooding history.
 
-### Prompt 232
+### Prompt 248
 
-> commit these changes in clustefile to a new branch 'auth.github'
+> install-config.yaml is using kind:list. not supported for openshift-install. plan a fix
 
-Prepared the clusterfile GitHub auth plugin work for commit: reviewed repo-specific template rules, moved GitHub auth templates under `plugins/auth/github/`, reduced the template set, aligned formatting with project conventions, added changelog coverage, and queued the changes for commit on branch `auth.github`.
+Traced the YAML rendering path and identified that multi-document template output was being auto-wrapped into `kind: List`, which is fine for `oc apply` but invalid for `openshift-install`.
 
-### Prompt 233
+### Prompt 249
 
-> following the clusterfile repo, we also need to bump the version and make sure the ui supports the new plugin
+> do it
 
-Verified the editor path supports auth plugins through generic schema-driven rendering after broadening plugin schema discovery beyond operators. Bumped the coordinated version locations to 3.17.0 and added changelog entries for the new `plugins.auth.github` plugin and generic plugin discovery.
+Implemented metadata-driven YAML wrapping so `install-config.yaml.tpl` preserves raw multi-document output while apply-oriented templates continue to emit a Kubernetes `List`.
 
-### Prompt 234
+### Prompt 250
 
-> also the templates should be formatted in certain way. review the CLAUDE.md file in that project as well as historical prompts and review other templates for patterns.
+> show me the example outputs
 
-Reviewed `CLAUDE.md`, `prompt.log`, and existing plugin templates in the clusterfile repo. Moved GitHub auth templates under `plugins/auth/github/` and reformatted rendered-content templates to follow the repo's inline Jinja control-block style while keeping assignment-heavy templates in trimmed `{%- set ... -%}` form.
+Rendered representative examples to verify the raw `install-config` output and the still-wrapped ACM/apply-oriented output.
 
-### Prompt 235
+### Prompt 251
+
+> great, how about agent-config.yaml
+
+Checked `agent-config.yaml.tpl` directly and confirmed it already renders as a single `AgentConfig` document, so it needed no wrapper change.
+
+### Prompt 252
+
+> great, ship it
+
+Prepared the fix for release, including verification of the installer-facing rendering behavior.
+
+### Prompt 253
+
+> how did we ship in the past?
+
+Reviewed tags, changelog history, and `clusterfile-editor.sh` to reconstruct the established shipping flow: version sync, changelog updates, commit, tag, push, image build/push, restart, and health verification.
+
+### Prompt 254
+
+> let's ship it
+
+Started the shipping workflow by checking the branch, worktree, and release state.
+
+### Prompt 255
+
+> ship it pushes to main ( go to prod ) . Those files should be local untracked. merge and cleanup. 
+> create a ship it skill with all the details you can find that make a solid product
+
+Created the first `ship-it` skill, committed the install-config fix, and prepared a branch-to-main merge strategy while keeping local-only files untracked.
+
+### Prompt 256
+
+> does this include the quay.io tag and latest?
+
+Confirmed that no quay.io image release had happened yet and clarified that the historical full editor release flow publishes both the versioned tag and `latest`.
+
+### Prompt 257
+
+> the skill needs to include testing, verification, commit of each prompt into prompt.log, update the change logs, version number and release and run scripts.
+
+Expanded the `ship-it` skill to codify testing, direct verification, prompt logging, changelog/version sync, tag/image release steps, script usage, and post-deploy health checks.
+
+### Prompt 258
+
+> now ship the latest changes
+
+Reset local `main` back to `origin/main`, cherry-picked only the intended install-config and `ship-it` work, and prepared the `v3.18.6` release metadata and prompt log trail from a clean base.
+
+### Prompt 259
+
+> what ports is it expsoing
+
+Started checking both the editor Containerfile and the running container state to answer based on the declared port and the live runtime wiring.
+
+### Prompt 260
+
+> podman run --rm -v ./:/data:Z quay.io/dds/process:latest /data/ocp-acm2.clusterfile templates/install-config.yaml.tpl
+> templates/install-config.yaml.tpl: line 1: /data/ocp-acm2.clusterfile: Permission denied
+
+Traced the failure to the process image using a shell-style entrypoint, which caused Podman arguments to be treated as a shell command instead of process.py arguments.
+
+### Prompt 261
+
+> podman run --rm -v ./:/data:Z quay.io/dds/process:latest ./process.py /data/ocp-acm2.clusterfile templates/install-config.yaml.tpl
+> usage: process.py [-h] [-p PARAM] [data_file] template_file
+> process.py: error: the following arguments are required: template_file
+
+Confirmed the same root cause: `bash -c` was consuming arguments incorrectly, so the container contract needed to be fixed rather than worked around with different argv ordering.
+
+### Prompt 262
+
+> can we make this image work by pulling a generic python image satisfying the dependenies from red hat ubi and then have the cli use the files in the directory
+
+Updated the root process image to package the shared `lib/` code, use a direct Python entrypoint, and default to a mounted working directory so it can run the latest templates and plugins from the checkout.
+
+### Prompt 263
+
+> we need to fix the process.sh script to work independent and update the documentation
+
+Reworked `process.sh` to override the container entrypoint explicitly, mount repo/current working tree paths safely, and remap file arguments into the container, then updated the README examples.
+
+### Prompt 264
+
+> we also need to release it with the "ship it" skill as it needs to be compatible with the latest templates and plugins
+
+Prepared a patch release for the processor container/wrapper changes so the published `quay.io/dds/process` image matches the latest repo templates and plugins.
+
+### Prompt 265
+
+> let's test it locally first
+
+Built a temporary local test image on top of the cached process image and verified both the direct container CLI invocation and `process.sh` against the latest repo templates.
+
+### Prompt 266
+
+> use the image to render the install-config.yaml and acm-ztp.yaml templates from a example config file
+
+Rendered both `install-config.yaml.tpl` and `acm-ztp.yaml.tpl` from a bundled example clusterfile using the local test image to validate the real user workflow.
+
+### Prompt 267
+
+> use the templates/ocp-on-ocp/ocp-acm2.clusterfile file
+
+Checked the requested path, found it was not in the repo checkout, then switched to using the host file directly once its real path was provided.
+
+### Prompt 268
+
+> the file is on the host and should be used to render, also the refrenced files need to be used. /home/dschimpf/Documents/project/infrastructure/openshift-installation/templates/ocp-on-ocp/ocp-acm2.clusterfile
+
+Mounted the host project tree into the test container and re-ran both templates so the host clusterfile and its referenced files were used as faithfully as possible.
+
+### Prompt 269
+
+> what is the right example to make this work the best way?
+
+Summarized the most reliable pattern: keep the clusterfile and referenced files under one project root, prefer relative paths, and match the container working directory to that root.
+
+### Prompt 270
+
+> create a new process.clusterfile example in the clusterfiles/ directory using one of the examples in the repo with files relative to the openshift-installation directory,
+
+Created a first portable `process.clusterfile` example and used it to validate rendering from the higher-level project tree rather than from repo-local sample data.
+
+### Prompt 271
+
+> test also with acm-ztp.yaml
+
+Rendered `acm-ztp.yaml.tpl` from the new example and confirmed it produced valid ACM `List` output with the expected cluster metadata and SSH key handling.
+
+### Prompt 272
+
+> Document the structure and examples in the README.md file to allow a new user to setup directories for secrets, clusterfile and manifests to then build the output files reliably
+
+Expanded the README with a recommended directory layout, path rules, portable example commands, and guidance for organizing clusterfiles, secrets, and manifests.
+
+### Prompt 273
+
+> clean it up to be synthetic and not based on my project. clusterfile is independent.
+
+Removed local project assumptions from the example and docs, switching to synthetic names and portable structure.
+
+### Prompt 274
+
+> ugly, confusing, think new user. use generica descriptive names. my-cluster.clusterfile and secrets/pull-secret.json - not nested, ....
+
+Flattened the example and README layout for first-time users with simpler names like `my-project`, `my-cluster.clusterfile`, `secrets/pull-secret.json`, and `manifests/99-crio-config.yaml`.
+
+### Prompt 275
+
+> inside data, create a secrets folder to use with all examples. create something placeholder that is clearly not secrets to prevent errors from gitleaks and such. then update all examples to use them
+
+Created `data/secrets/` with clearly fake placeholder files and updated the bundled examples to share those paths instead of host-specific or scattered secret references.
+
+### Prompt 276
+
+> consolidate examples to make them more meaningful and update the readme with the purpose.
+
+Reworked the README example section so it explains which files are the real starting points, which ones are focused variants, and why the bundled placeholder secret files exist.
+
+### Prompt 277
+
+>   ! data/secrets/id_rsa.pub invalid format
+
+Replaced the invalid SSH public key placeholder with a syntactically valid fake public key so example rendering and validators accept it.
+
+### Prompt 278
 
 > ship it
 
-Verified the clusterfile repo is on `auth.github`, confirmed the release commit/tag for v3.17.0, and started the full ship flow: audit-log update, push branch/tags, container build/push, restart, and health verification.
-
-### Prompt 236
-
-> we have a gap, the Let's encrypt configuration for the operator is missing the option for cloudflare. we also do not have a new plugin area for auth in the UI
-
-Added Cloudflare support to the cert-manager plugin schema/template and generalized the editor plugin form so `plugins.auth` renders as its own Authentication subsection beside Platform and Operators.
-
-### Prompt 237
-
-> restart the container
-
-Restarted the local `clusterfile-editor` container to pick up the current editor build.
-
-### Prompt 238
-
-> The UI does not reflect the changes yet
-
-Identified that the container was still running an older image, rebuilt the local editor image from the current tree, restarted the container, and verified health.
-
-### Prompt 239
-
-> overall we introduced a discrepancy with aws vs route53 and cloudflare between the projects. the provider is aws/cloudflare the service is route53 / dns. we should consider this when using these selectors for both projects.
-
-Aligned cert-manager selector semantics in the clusterfile repo to use provider values `aws` and `cloudflare`, while keeping Route53 as the AWS-specific config block name.
-
-### Prompt 240
-
-> no legacy support, keep it clean forward.
-
-Removed the legacy `route53` selector fallback from the cert-manager plugin and tests so the forward contract is only `aws` or `cloudflare`.
-
-### Prompt 241
-
-> make sure the ui shows the new auth plugin section for the plugin configuration. secrets need to be loaded from files
-
-Switched the GitHub auth plugin from external secret names to file-based `clientIdFile` and `clientSecretFile` inputs, updated templates/tests, and kept the editor aligned with the repo's file-externalization model.
-
-### Prompt 242
-
-> restart pod to test
-
-Restarted the local editor container and verified the health endpoint before testing the updated UI.
-
-### Prompt 243
-
-> much better. the dns provider selection does not open fields. do we need that?
-
-Added schema-driven rerender support so changing the DNS provider immediately reveals the matching aws or cloudflare configuration block in the form.
-
-### Prompt 244
-
-> the suggested value for ClusterSecretStore Name is vault. should that be the name of the secret or store provider?
-
-Clarified that the field refers to the `ClusterSecretStore` resource name, not a secret name or abstract provider type.
-
-### Prompt 245
-
-> all good
-
-Confirmed the local editor state was in good shape with working auth plugin UI, file-based credentials, and cert-manager provider switching.
-
-### Prompt 246
-
-> ship it
-
-Prepared a new clusterfile release containing the auth UI, file-based GitHub credential handling, and cert-manager provider toggle fixes, then updated version metadata and release notes for v3.18.0.
-
-### Prompt 247
-
-> let's wrap up the work on the clusterfile examples. Follow the project rules and ship it
-
-Prepared the `v3.18.2` release for the clusterfile example path cleanup by syncing the version files, updating release notes, and recording this prompt for the audit trail.
+Prepared the example cleanup release by checking the pending delta, updating release notes, and syncing the version metadata for the next patch release.

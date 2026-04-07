@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.5';
+let APP_VERSION = '3.18.8';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -109,58 +109,27 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
-    version: '3.18.5',
-    date: '2026-04-01',
+    version: '3.18.8',
+    date: '2026-04-06',
     changes: [
-      'ACM osImages and the os-images-sync job now use rhcos/pre-release/<exact-version> for prerelease OCP versions like 4.22.0-ec.3',
-      'Template guidance now explicitly rejects changes where Jinja control logic is more visible than the generated YAML'
+      'Added data/secrets placeholder files so bundled examples render safely without local secret material',
+      'Cleaned up example clusterfiles and README guidance so the examples are easier to start from and easier to understand'
     ]
   },
   {
-    version: '3.18.4',
-    date: '2026-03-31',
+    version: '3.18.7',
+    date: '2026-04-06',
     changes: [
-      'ACM ZTP and CAPI templates now render the matching ClusterImageSet directly so requested hub versions are created automatically'
+      'The quay.io/dds/process container now packages lib/, uses a direct Python entrypoint, and works cleanly from a mounted working tree',
+      'process.sh now overrides the image entrypoint explicitly, maps file paths safely, and the docs show the updated CLI workflow'
     ]
   },
   {
-    version: '3.18.3',
-    date: '2026-03-31',
+    version: '3.18.6',
+    date: '2026-04-06',
     changes: [
-      'Derive the ACM ClusterImageSet subscription git branch from the ACM operator release channel instead of hardcoding backplane-2.10',
-      'Add a one-time scripts/update-acm-clusterimageset-branch.sh helper to patch a running hub subscription to the matching backplane branch'
-    ]
-  },
-  {
-    version: '3.18.2',
-    date: '2026-03-31',
-    changes: [
-      'Update example clusterfiles to use secrets/pull-secret/pull-secret.json instead of legacy 2023/pull-secret.json'
-    ]
-  },
-  {
-    version: '3.18.1',
-    date: '2026-03-27',
-    changes: [
-      'Fix LocalVolumeSet API group and CRD gate for Local Storage Operator',
-      'Restore ODF default and virtualization default Ceph StorageClass behavior'
-    ]
-  },
-  {
-    version: '3.18.0',
-    date: '2026-03-26',
-    changes: [
-      'Plugins page now shows an Authentication section for auth plugins',
-      'GitHub OAuth credentials are configured as file paths and loaded at render time',
-      'cert-manager LetsEncrypt now supports aws or cloudflare with provider-specific fields and live field switching'
-    ]
-  },
-  {
-    version: '3.17.0',
-    date: '2026-03-26',
-    changes: [
-      'GitHub auth plugin: plugins.auth.github with co-located schema and templates for OAuth app setup, secret rendering, and OpenShift OAuth config',
-      'Generic plugin discovery: editor schema loader now exposes all plugin groups, not just operators'
+      'install-config.yaml.tpl now preserves raw multi-document YAML for openshift-install while apply-oriented templates keep the List wrapper',
+      'Added a ship-it skill that codifies testing, verification, prompt logging, changelog/version sync, image pushes, scripts, and health checks'
     ]
   },
   {

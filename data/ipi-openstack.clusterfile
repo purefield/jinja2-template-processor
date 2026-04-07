@@ -1,7 +1,7 @@
 # OpenStack IPI Clusterfile Example
 # For use with install-config-openstack.yaml.tpl template
 account:
-  pullSecret: secrets/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 
 cluster:
   version: "4.21.0"
@@ -24,12 +24,12 @@ cluster:
       storage:
         os: 120
   sshKeys:
-    - secrets/id_rsa.pub
+    - data/secrets/id_rsa.pub
 
 plugins:
   openstack:
     cloud: openstack
-    credentials: secrets/clouds.yaml
+    credentials: data/secrets/clouds.yaml
     externalNetwork: external-network
     computeFlavor: m1.xlarge
     controlPlaneFlavor: m1.xlarge
@@ -43,7 +43,7 @@ plugins:
 
 network:
   domain: example.com
-  trustBundle: /etc/pki/ca-trust/source/anchors/internal-ca.pem
+  trustBundle: data/secrets/ca.crt
   proxy:
     httpProxy: http://proxy.example.com:8080
     httpsProxy: http://proxy.example.com:8080

@@ -1,30 +1,16 @@
 # Clusterfile Editor Changelog
 
-## 3.18.5
-- **Prerelease RHCOS Paths**: ACM `osImages` and the `os-images-sync` job now use `rhcos/pre-release/<exact-version>` for prerelease OCP versions like `4.22.0-ec.3` instead of the broken `4.22/latest` path
-- **Template Readability Gate**: Guidance now explicitly rejects template changes where Jinja control logic is more visually prominent than the generated YAML
+## 3.18.8
+- **Safe Example Secrets**: Added `data/secrets/` with obviously fake placeholder files so example clusterfiles render without local secret material and without looking like real credentials
+- **Example Cleanup**: Bundled examples now share one consistent placeholder secret path scheme and the README explains which examples to start from and what each one is meant to teach
 
-## 3.18.4
-- **Inline ACM ClusterImageSet**: ACM ZTP and CAPI templates now render the matching `ClusterImageSet` directly so requested hub versions are created automatically with the rest of the manifests
+## 3.18.7
+- **Process Image Compatibility**: The `quay.io/dds/process` container now packages the shared render library and uses a direct Python entrypoint so it can run the latest repo templates and plugins cleanly from a mounted working tree
+- **Wrapper + Docs Refresh**: `process.sh` now overrides the image entrypoint explicitly, maps file paths safely, and the docs show both direct container usage and the wrapper workflow
 
-## 3.18.3
-- **ACM ClusterImageSet Branch Derivation**: Derive the ClusterImageSet subscription git branch from the ACM operator release channel instead of hardcoding `backplane-2.10`
-- **ClusterImageSet Live Fix Script**: Add a one-time `scripts/update-acm-clusterimageset-branch.sh` helper to patch the running hub subscription to the matching `backplane-*` branch
-
-## 3.18.2
-- **Example Pull Secret Paths**: Update example clusterfiles to use `secrets/pull-secret/pull-secret.json` instead of legacy `2023/pull-secret.json`
-
-## 3.18.1
-- **Clusterfile Storage Operators**: Fix LocalVolumeSet API group and CRD gate for Local Storage Operator; restore ODF default and virtualization default Ceph StorageClass behavior
-
-## 3.18.0
-- **Authentication Plugins**: Plugins page now shows an Authentication section for auth plugins
-- **GitHub OAuth Files**: GitHub OAuth credentials are configured as file paths and loaded at render time
-- **cert-manager Provider Toggle**: LetsEncrypt now supports aws or cloudflare with provider-specific fields and live field switching
-
-## 3.17.0
-- **GitHub Auth Plugin**: New `plugins.auth.github` plugin with co-located schema and templates for GitHub OAuth app setup, secret rendering, and OpenShift OAuth configuration
-- **Generic Plugin Discovery**: Schema discovery now loads all plugin groups, not just operators, so the editor automatically exposes auth plugins without custom UI code
+## 3.18.6
+- **Installer-Compatible install-config**: `install-config.yaml.tpl` now preserves raw multi-document YAML when extra manifests are present, so `openshift-install` sees a valid install-config document instead of `kind: List`
+- **Ship It Skill**: Added a `ship-it` skill documenting the repo's production release workflow, including tests, direct verification, prompt logging, changelog/version sync, image tags, runtime scripts, and health checks
 
 ## 3.16.0
 - **Universal URL Routing**: Every section, editor tab, template selection, and sample load syncs to the URL (`#section/tab?template=...&sample=...`); back/forward restores full view state

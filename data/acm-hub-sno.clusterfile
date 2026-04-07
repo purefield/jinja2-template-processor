@@ -1,5 +1,5 @@
 account:
-  pullSecret: secrets/pull-secret/pull-secret.json
+  pullSecret: data/secrets/pull-secret.json
 cluster:
   version: 4.21.0
   platform: none
@@ -15,7 +15,7 @@ cluster:
         data:
           - 500
   sshKeys:
-    - 2023/acm/id_rsa.pub
+    - data/secrets/id_rsa.pub
   location: dc1
 plugins:
   operators:
