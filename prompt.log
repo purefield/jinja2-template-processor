@@ -3165,3 +3165,20 @@ No action requested. Logged prompt as required.
 > what is the repo state
 
 Reported: on main, 3 commits ahead of origin (prompt log only), latest release v3.18.14, untracked node_modules/package.json/package-lock.json.
+
+### Prompt 4
+
+> the clusterfile fails to deploy a cluster in disconnected environments. it hangs
+> [user provided live cluster monitor showing: installing-pending-user-action at 42%, mcs dns:fail vip:fail 22623, os-images sync not present, managedcluster hub connection failing 141m+]
+
+Diagnosed two root-cause bugs:
+1. `registries.conf.tpl`: `prefix = ""` (empty string) acts as a catch-all in containers/image format, intercepting all image pulls regardless of source registry. Bootstrap couldn't pull images from correct mirrors → MCS never started → hang at 42%.
+2. `os-images-sync.yaml.tpl`: hardcoded `mirror.openshift.com` URLs unreachable in disconnected environments → OS images never registered in AgentServiceConfig.
+
+Fixed:
+- `registries.conf.tpl`: only emit `prefix = ...` when non-empty
+- `os-images-sync.yaml.tpl`: support `cluster.osImages.{isoUrl,rootFSUrl}` for custom URLs; skip job in disconnected mode without custom URLs
+- `acm-ztp.yaml.tpl`: gate os-images-sync on connected or custom URLs
+- `schema/clusterfile.schema.json`: add `cluster.osImages` optional fields
+- Added 3 new tests; all 178 pass
+- Committed b67f135, tagged `disconnected-os-images-fix`
