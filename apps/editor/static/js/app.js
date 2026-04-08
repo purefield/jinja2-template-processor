@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.10';
+let APP_VERSION = '3.18.11';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.11',
+    date: '2026-04-07',
+    changes: [
+      'Generated ACM discovery ignition overrides now trust both the original source pull keys and the mirrored endpoints for disconnected installs',
+      'Added decoded-policy coverage for ACM ZTP and ACM CAPI, including source registries, mirror endpoints, and mirror.prefix handling'
+    ]
+  },
   {
     version: '3.18.10',
     date: '2026-04-07',

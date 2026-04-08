@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.11
+- **Disconnected Discovery Source Trust**: Generated ACM discovery ignition overrides now trust both the original source pull keys and the mirrored endpoints, so disconnected hosts can pull assisted-install content before mirror remap fully helps
+- **Render Coverage Upgrade**: Added direct decoded-policy tests for both ACM ZTP and ACM CAPI, including source registries, mirror endpoints, and `mirror.prefix` handling
+
 ## 3.18.10
 - **Repo-Local Ship It Enforcement**: `ship it` now explicitly points to the repo-local `skills/ship-it/SKILL.md`, so release work follows the checked-in workflow even when the session skill list is incomplete
 - **Release Discipline Reminder**: Clarified that the repo-local skill is authoritative for release actions and recorded that expectation in the repo audit trail

@@ -154,6 +154,17 @@ def decode_ignition_file_contents(override_json, path):
     return base64.b64decode(source[len(prefix):]).decode('utf-8')
 
 
+def decode_discovery_policy(override_json):
+    """Decode the generated discovery policy.json from an ignition override."""
+    return json.loads(decode_ignition_file_contents(override_json, '/etc/containers/policy.json'))
+
+
+def assert_policy_allows(policy, locations):
+    """Assert that policy.json allows the given docker pull keys."""
+    for location in locations:
+        assert policy['transports']['docker'][location][0]['type'] == 'insecureAcceptAnything'
+
+
 # --- Platform-specific test data ---
 
 def aws_plugin_data():
@@ -1607,6 +1618,8 @@ class TestAcmCapiTemplate:
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
             {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
+            {'source': 'registry.access.redhat.com', 'mirrors': ['registry.local:5000/access-redhat-com']},
+            {'source': 'registry.connect.redhat.com', 'mirrors': ['registry.local:5000/connect-redhat-com']},
         ]
 
         result = self.render_template(template_env, data)
@@ -1614,11 +1627,50 @@ class TestAcmCapiTemplate:
 
         assert bmh is not None
         override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
-        policy = json.loads(decode_ignition_file_contents(override, '/etc/containers/policy.json'))
+        policy = decode_discovery_policy(override)
 
         assert policy['default'][0]['type'] == 'reject'
-        assert policy['transports']['docker']['registry.local:5000/quay-io'][0]['type'] == 'insecureAcceptAnything'
-        assert policy['transports']['docker']['registry.local:5000/redhat-io'][0]['type'] == 'insecureAcceptAnything'
+        assert_policy_allows(
+            policy,
+            [
+                'quay.io',
+                'registry.redhat.io',
+                'registry.access.redhat.com',
+                'registry.connect.redhat.com',
+                'registry.local:5000/quay-io',
+                'registry.local:5000/redhat-io',
+                'registry.local:5000/access-redhat-com',
+                'registry.local:5000/connect-redhat-com',
+            ],
+        )
+
+    def test_disconnected_mirrors_use_prefix_for_capi_source_pull_keys(self, template_env):
+        """Disconnected generated policy should trust mirror.prefix instead of raw source in CAPI."""
+        data = self.acm_capi_data()
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {
+                'source': 'quay.io/openshift-release-dev',
+                'prefix': 'mirror.example.com/openshift-release-dev',
+                'mirrors': ['registry.local:5000/openshift-release-dev'],
+            },
+        ]
+
+        result = self.render_template(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        policy = decode_discovery_policy(override)
+
+        assert_policy_allows(
+            policy,
+            [
+                'mirror.example.com/openshift-release-dev',
+                'registry.local:5000/openshift-release-dev',
+            ],
+        )
+        assert 'quay.io/openshift-release-dev' not in policy['transports']['docker']
 
     def test_explicit_capi_ignition_override_takes_precedence(self, template_env):
         """Explicit host ignition override should win over the disconnected generated default in CAPI."""
@@ -2981,17 +3033,57 @@ class TestZtpPerHostFields:
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
             {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
+            {'source': 'registry.access.redhat.com', 'mirrors': ['registry.local:5000/access-redhat-com']},
+            {'source': 'registry.connect.redhat.com', 'mirrors': ['registry.local:5000/connect-redhat-com']},
         ]
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
         assert bmh is not None
         override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
-        policy = json.loads(decode_ignition_file_contents(override, '/etc/containers/policy.json'))
+        policy = decode_discovery_policy(override)
 
         assert policy['default'][0]['type'] == 'reject'
-        assert policy['transports']['docker']['registry.local:5000/quay-io'][0]['type'] == 'insecureAcceptAnything'
-        assert policy['transports']['docker']['registry.local:5000/redhat-io'][0]['type'] == 'insecureAcceptAnything'
+        assert_policy_allows(
+            policy,
+            [
+                'quay.io',
+                'registry.redhat.io',
+                'registry.access.redhat.com',
+                'registry.connect.redhat.com',
+                'registry.local:5000/quay-io',
+                'registry.local:5000/redhat-io',
+                'registry.local:5000/access-redhat-com',
+                'registry.local:5000/connect-redhat-com',
+            ],
+        )
+
+    def test_disconnected_mirrors_use_prefix_for_ztp_source_pull_keys(self, template_env):
+        """Disconnected generated policy should trust mirror.prefix instead of raw source in ZTP."""
+        data = self.acm_ztp_data_with_host()
+        data['cluster']['disconnected'] = True
+        data['cluster']['mirrors'] = [
+            {
+                'source': 'quay.io/openshift-release-dev',
+                'prefix': 'mirror.example.com/openshift-release-dev',
+                'mirrors': ['registry.local:5000/openshift-release-dev'],
+            },
+        ]
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert bmh is not None
+        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        policy = decode_discovery_policy(override)
+
+        assert_policy_allows(
+            policy,
+            [
+                'mirror.example.com/openshift-release-dev',
+                'registry.local:5000/openshift-release-dev',
+            ],
+        )
+        assert 'quay.io/openshift-release-dev' not in policy['transports']['docker']
 
     def test_non_disconnected_clusters_do_not_get_generated_ignition_override(self, template_env):
         """Non-disconnected ZTP clusters should not get the generated discovery override."""

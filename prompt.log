@@ -2966,3 +2966,26 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 - `apps/editor/tests/test_api.py` still hangs in this environment because `fastapi.testclient.TestClient` hangs even for a minimal FastAPI app; direct ASGI requests succeed.
 - Verified the repo-local skill path exists at `skills/ship-it/SKILL.md` and is now referenced explicitly from `CLAUDE.md`.
 - Verified all five version-bearing release locations were updated to `3.18.10` before the release commit.
+
+72. "[pasted root-cause analysis for `ocp-cluster1` disconnected discovery policy proposing a main-repo host override fix]"
+73. "The plan pasted was from the main repo. fix it here"
+74. "why would this be necessary in a disconnected install?"
+75. "ok, update the template to address this"
+76. "[pasted implementation plan titled `Update Disconnected Discovery Policy To Trust Source Pull Keys`]"
+77. "what does ship it mean to you"
+78. "ship it"
+
+### Summary
+
+- Fixed the shared disconnected discovery ignition override generator so it now trusts both the effective source pull key and every configured mirror endpoint from `cluster.mirrors`.
+- Preserved explicit per-host `ignitionConfigOverride` precedence and kept the change scoped to the discovery-only `/etc/containers/policy.json` override used by ACM ZTP and ACM CAPI.
+- Expanded render-focused coverage to decode the generated policy directly, checking source registries, mirror endpoints, and the `mirror.prefix` case for both ACM paths.
+- Synced release records for `v3.18.11` across the repo changelog, editor changelog, editor app version, container metadata, and in-app changelog data.
+
+### Verification
+
+- `pytest -q tests/test_templates.py` -> `173 passed`
+- `pytest -q apps/editor/tests/test_processor.py` -> `30 passed`
+- `./process.py data/baremetal.clusterfile templates/acm-ztp.yaml.tpl > /tmp/acm-ztp-render.yaml`
+- `./process.py data/baremetal.clusterfile templates/acm-capi-m3.yaml.tpl > /tmp/acm-capi-render.yaml`
+- Decoded the rendered `BareMetalHost` ignition override from both ACM outputs and confirmed the policy includes `quay.io`, `registry.redhat.io`, `registry.access.redhat.com`, `registry.connect.redhat.com`, and the corresponding internal mirror endpoints

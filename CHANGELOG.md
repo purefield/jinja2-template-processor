@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.11 (2026-04-07)
+- **disconnected-discovery-policy-source-trust** — Generated disconnected discovery ignition overrides now trust both the source pull keys and mirror endpoints from `cluster.mirrors`, so ACM discovery hosts can pull mirrored content before mirror remap fully helps
+
 ## v3.18.10 (2026-04-07)
 - **ship-it-enforcement** — Make the repo-local `skills/ship-it/SKILL.md` mandatory whenever the user says `ship it`, so release behavior follows the repo workflow even if the skill is not surfaced by the session
 
