@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.14 (2026-04-08)
+- **kubevirt-install-config-platform** — `install-config.yaml.tpl` now treats kubevirt SNO as installer `platform: none` while preserving `platform: baremetal` for multi-node kubevirt clusters, with focused render coverage for both cases and simplified template logic
+
 ## v3.18.13 (2026-04-08)
 - **ztp-discovery-infraenv-override** — ACM ZTP now renders the generated disconnected discovery ignition override on `InfraEnv.spec.ignitionConfigOverride`, while leaving explicit per-host ignition overrides on `BareMetalHost`; this matches the live discovery boot path and fixes the pre-registration `policy.json` gap that kept hosts from becoming `Agent` inventory
 

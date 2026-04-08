@@ -34,6 +34,7 @@ yamlWrapper: raw
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
+{%- set installConfigPlatform = 'none' if platform == 'kubevirt' and controlCount == 1 and workerCount == 0 else ('baremetal' if platform == 'kubevirt' else platform) -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set platformPlugin = (plugins | default({}))[platform] | default({}) -%}
 ---
@@ -47,15 +48,15 @@ cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}{% endif %}
 
 controlPlane:
   name: master
-  replicas: {{ controlCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
+  replicas: {{ controlCount }}{% if installConfigPlatform not in ['baremetal', 'none', 'external'] %}
   platform:
-{% include 'platforms/' ~ platform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
+{% include 'platforms/' ~ installConfigPlatform ~ '/controlPlane.yaml.tpl' %}{%- endif %}
 
 compute:
   - name: worker
-    replicas: {{ workerCount }}{% if platform not in ['baremetal', 'kubevirt', 'none', 'external'] %}
+    replicas: {{ workerCount }}{% if installConfigPlatform not in ['baremetal', 'none', 'external'] %}
     platform:
-{% include 'platforms/' ~ platform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
+{% include 'platforms/' ~ installConfigPlatform ~ '/compute.yaml.tpl' %}{%- endif %}{% if network.proxy is defined %}
 
 proxy:
   httpProxy: {{ network.proxy.httpProxy }}
@@ -73,7 +74,7 @@ networking:
     - {{ network.service.subnet }}
 
 platform:
-{% include 'platforms/' ~ platform ~ '/platform.yaml.tpl' %}
+{% include 'platforms/' ~ installConfigPlatform ~ '/platform.yaml.tpl' %}
 
 publish: External
 pullSecret: '{{ load_file(account.pullSecret) | trim }}'
@@ -91,8 +92,8 @@ imageDigestSources:{% for mirror in cluster.mirrors %}
 
 credentialsMode: Manual
 {%- endif %}
-{#- SNO bootstrap disk for platform: none or kubevirt SNO #}
-{%- if platform in ['none', 'kubevirt'] and controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
+{#- SNO bootstrap disk for platform: none, including kubevirt SNO rendered as none #}
+{%- if installConfigPlatform == 'none' and controlCount == 1 and (hosts.values()|first).storage is defined and (hosts.values()|first).storage.os is defined %}
 {%- set bootstrapDisk = (hosts.values()|first).storage.os %}
 
 bootstrapInPlace:

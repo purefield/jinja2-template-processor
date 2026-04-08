@@ -3037,3 +3037,53 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 - Live-host evidence gathered via SSH with `2023/acm/id_rsa`:
   - `agent.service` repeatedly failed image pull with `Source image rejected: A signature was required, but no signature exists`
   - `/etc/containers/registries.conf` had mirror config, but `/etc/containers/policy.json` was still the old live-environment file
+
+### Prompt 93
+
+> update install-config.yaml.tpl to support kubevirt. sno needs plaform none, otherwise baremetal
+
+### Prompt 94
+
+> do we need extra variables to make everything more verbose and harder to read, reduce not bloat
+
+### Prompt 95
+
+> cleanup and simplify, always
+
+### Prompt 96
+
+> Build out openshift developer hub setup for this project to work with coding assistents on openshift using Dev Spaces and trusted software supply chain.
+
+### Prompt 97
+
+> why is the installation stuck
+
+### Prompt 98
+
+> ship it
+
+### Prompt 99
+
+> what changes are pending
+
+### Prompt 100
+
+> ship it
+
+### Summary
+
+- Updated `install-config.yaml.tpl` so kubevirt SNO renders installer `platform: none`, while multi-node kubevirt continues to render `platform: baremetal`.
+- Reduced the kubevirt platform rule to a single derived `installConfigPlatform` value instead of adding extra helper-variable noise.
+- Added focused template coverage for kubevirt SNO and non-SNO installer rendering.
+- Explored a repo-local OpenShift Developer Hub / Dev Spaces / trusted supply chain setup request and produced a plan only; no repo files were changed for that thread.
+- Prepared and shipped release metadata for `v3.18.14` so repo/editor changelogs, app version, container metadata, and in-app changelog stay aligned.
+
+### Verification
+
+- `pytest -q tests/test_templates.py` -> `175 passed`
+- `pytest -q apps/editor/tests/test_processor.py` -> `30 passed`
+- Direct render verification confirmed:
+  - kubevirt SNO renders `platform: { none: {} }`
+  - kubevirt SNO renders `bootstrapInPlace.installationDisk: /dev/vda`
+  - multi-node kubevirt renders `platform: { baremetal: { apiVIPs, ingressVIPs } }`
+  - multi-node kubevirt does not render `bootstrapInPlace`

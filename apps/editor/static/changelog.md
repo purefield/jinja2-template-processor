@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.14
+- **KubeVirt SNO Installer Platform**: `install-config.yaml.tpl` now renders kubevirt single-node installs as `platform: none`, so installer-facing output matches the expected bootstrap-in-place behavior
+- **KubeVirt Multi-Node Stays BareMetal**: Multi-node kubevirt clusters continue to render `platform: baremetal`, and the template logic was reduced to one derived platform value instead of extra helper noise
+
 ## 3.18.13
 - **InfraEnv Discovery Override**: ACM ZTP now renders the generated disconnected discovery `policy.json` override on `InfraEnv`, which is the path the live discovery environment actually consumes before Agent registration
 - **Host Override Precedence Kept**: Explicit per-host `ignitionConfigOverride` values still render on `BareMetalHost`, but the disconnected default now follows the real discovery boot path instead of the BMH fallback path

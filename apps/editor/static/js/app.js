@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.13';
+let APP_VERSION = '3.18.14';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.14',
+    date: '2026-04-08',
+    changes: [
+      'install-config.yaml.tpl now renders kubevirt single-node clusters as installer platform none while keeping bootstrap-in-place behavior aligned with that output',
+      'Multi-node kubevirt installs continue to render as baremetal, and the template logic was simplified down to one derived install-config platform value'
+    ]
+  },
   {
     version: '3.18.13',
     date: '2026-04-08',

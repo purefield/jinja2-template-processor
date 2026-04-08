@@ -548,6 +548,42 @@ class TestInstallConfigTemplate:
         assert 'bootstrapInPlace' in result
         assert result['bootstrapInPlace']['installationDisk'] == '/dev/sda'
 
+    def test_kubevirt_platform_sno_renders_none(self, template_env):
+        """KubeVirt SNO should render install-config platform none."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'kubevirt'
+        data['hosts'] = {
+            'sno.test-cluster.example.com': {
+                'role': 'control',
+                'storage': {
+                    'os': '/dev/vda'
+                }
+            }
+        }
+
+        template = template_env.get_template('install-config.yaml.tpl')
+        result = list(yaml.safe_load_all(template.render(data)))[0]
+
+        assert result['platform'] == {'none': {}}
+        assert result['controlPlane']['replicas'] == 1
+        assert result['compute'][0]['replicas'] == 0
+        assert 'bootstrapInPlace' in result
+        assert result['bootstrapInPlace']['installationDisk'] == '/dev/vda'
+
+    def test_kubevirt_non_sno_renders_baremetal(self, template_env):
+        """KubeVirt non-SNO should render install-config platform baremetal."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'kubevirt'
+        data['network']['primary'] = baremetal_vips_data()['primary']
+
+        template = template_env.get_template('install-config.yaml.tpl')
+        result = list(yaml.safe_load_all(template.render(data)))[0]
+
+        assert 'baremetal' in result['platform']
+        assert result['platform']['baremetal']['apiVIPs'] == ['10.0.0.100']
+        assert result['platform']['baremetal']['ingressVIPs'] == ['10.0.0.101']
+        assert 'bootstrapInPlace' not in result
+
     def test_default_platform_is_baremetal(self, template_env):
         """Test that default platform is baremetal when not specified."""
         data = base_cluster_data()
