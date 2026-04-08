@@ -1,3 +1,7 @@
+{%- set hasCustomOsImages = cluster.osImages is defined and cluster.osImages.isoUrl is defined -%}
+{%- set rhcosPath = "pre-release/" + cluster.version if "-" in cluster.version else majorMinor + "/latest" -%}
+{%- set osIsoUrl = cluster.osImages.isoUrl if hasCustomOsImages else "https://mirror.openshift.com/pub/openshift-v4/" + imageArch + "/dependencies/rhcos/" + rhcosPath + "/rhcos-live-iso." + imageArch + ".iso" -%}
+{%- set osRootFSUrl = cluster.osImages.rootFSUrl if hasCustomOsImages else "https://mirror.openshift.com/pub/openshift-v4/" + imageArch + "/dependencies/rhcos/" + rhcosPath + "/rhcos-live-rootfs." + imageArch + ".img" -%}
 - kind: ServiceAccount
   apiVersion: v1
   metadata:
@@ -20,7 +24,6 @@
   metadata:
     name: os-images-sync
     namespace: {{ cluster.name }}
-{%- set rhcosPath = "pre-release/" + cluster.version if "-" in cluster.version else majorMinor + "/latest" %}
   spec:
     ttlSecondsAfterFinished: 300
     backoffLimit: 3
@@ -44,5 +47,5 @@
                   exit 0
                 fi
                 oc patch agentserviceconfig agent --type json \
-                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ rhcosPath }}/rhcos-live-iso.{{ imageArch }}.iso","rootFSUrl":"https://mirror.openshift.com/pub/openshift-v4/{{ imageArch }}/dependencies/rhcos/{{ rhcosPath }}/rhcos-live-rootfs.{{ imageArch }}.img"}}]'
+                  -p '[{"op":"add","path":"/spec/osImages/-","value":{"openshiftVersion":"{{ majorMinor }}","version":"{{ cluster.version }}","cpuArchitecture":"{{ imageArch }}","url":"{{ osIsoUrl }}","rootFSUrl":"{{ osRootFSUrl }}"}}]'
                 echo "Added osImage for $VERSION"

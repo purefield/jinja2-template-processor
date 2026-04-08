@@ -291,9 +291,9 @@ items:
       matchLabels:
         cluster-name: {{ cluster.name }}
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
-{{ pocBanner }}
+{{ pocBanner }}{% if not enableDisconnected or cluster.osImages is defined %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
-{{ osImagesSync }}
+{{ osImagesSync }}{% endif %}
 {%- set clusterImageSetSync %}{% include "includes/clusterimageset-sync.yaml.tpl" %}{% endset %}
 {{ clusterImageSetSync }}{% if (plugins | default({})).operators is defined %}
 {%- set ops = plugins.operators %}

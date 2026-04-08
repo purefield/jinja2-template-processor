@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **disconnected-os-images-fix** — Fix two disconnected hang bugs: (1) `registries.conf` no longer emits `prefix = ""` for empty mirror prefixes (catch-all that broke mirror routing → MCS couldn't start); (2) `os-images-sync` job is skipped in disconnected mode when no `cluster.osImages` URLs are provided (mirror.openshift.com unreachable); custom `cluster.osImages.isoUrl`/`rootFSUrl` fields added to schema for disconnected OS image registration
+
 ## v3.18.14 (2026-04-08)
 - **kubevirt-install-config-platform** — `install-config.yaml.tpl` now treats kubevirt SNO as installer `platform: none` while preserving `platform: baremetal` for multi-node kubevirt clusters, with focused render coverage for both cases and simplified template logic
 

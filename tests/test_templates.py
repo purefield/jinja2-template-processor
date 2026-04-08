@@ -1427,6 +1427,19 @@ class TestAcmZtpTemplate:
         assert 'Proof of Concept' in cn['spec']['text']
         assert cn['spec']['location'] == 'BannerTop'
 
+    def test_empty_prefix_not_emitted_in_registries_conf(self, template_env):
+        """registries.conf must not emit 'prefix = \"\"' when mirror.prefix is empty — it would catch-all and break routing."""
+        data = self.acm_ztp_data(platform='baremetal', tpm=False)
+        data['cluster']['mirrors'] = [
+            {'source': 'quay.io', 'prefix': '', 'mirrors': ['internal-registry.tld/quay-io']},
+            {'source': 'registry.redhat.io', 'prefix': '', 'mirrors': ['internal-registry.tld/redhat-io']},
+        ]
+        result = self.render_template(template_env, data)
+        cm = self.get_configmap(result, 'mirror-registries-ztp-test')
+        registries_conf = cm['data']['registries.conf']
+        assert 'prefix = ""' not in registries_conf
+        assert "prefix = ''" not in registries_conf
+
     def test_insecure_mirror_registries_conf(self, template_env):
         """Test that insecure = true appears in registries.conf when mirror has insecure: true."""
         data = self.acm_ztp_data(platform='baremetal', tpm=False)
@@ -2758,6 +2771,35 @@ class TestOsImagesSync:
         script = job['spec']['template']['spec']['containers'][0]['command'][2]
         assert '/pre-release/4.22.0-ec.3/rhcos-live-iso.x86_64.iso' in script
         assert '/pre-release/4.22.0-ec.3/rhcos-live-rootfs.x86_64.img' in script
+
+    def test_disconnected_without_custom_os_images_skips_job(self, template_env):
+        """os-images-sync job must be absent in disconnected mode without cluster.osImages (mirror.openshift.com unreachable)."""
+        data = ztp_host_data(base_cluster_data())
+        data['cluster']['disconnected'] = True
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        jobs = [item for item in result['items'] if item['kind'] == 'Job' and item['metadata']['name'] == 'os-images-sync']
+        assert len(jobs) == 0, "os-images-sync job must not be present in disconnected mode without cluster.osImages"
+
+    def test_disconnected_with_custom_os_images_uses_custom_urls(self, template_env):
+        """os-images-sync job must use cluster.osImages URLs in disconnected mode."""
+        data = ztp_host_data(base_cluster_data())
+        data['cluster']['disconnected'] = True
+        data['cluster']['osImages'] = {
+            'isoUrl': 'https://internal-mirror.tld/rhcos/rhcos-4.16-live.iso',
+            'rootFSUrl': 'https://internal-mirror.tld/rhcos/rhcos-4.16-live-rootfs.img',
+        }
+        template = template_env.get_template('acm-ztp.yaml.tpl')
+        rendered = template.render(data)
+        result = yaml.safe_load(rendered)
+
+        job = next(item for item in result['items'] if item['kind'] == 'Job' and item['metadata']['name'] == 'os-images-sync')
+        script = job['spec']['template']['spec']['containers'][0]['command'][2]
+        assert 'internal-mirror.tld/rhcos/rhcos-4.16-live.iso' in script
+        assert 'internal-mirror.tld/rhcos/rhcos-4.16-live-rootfs.img' in script
+        assert 'mirror.openshift.com' not in script
 
 
 class TestExternalSecretsOperator:
