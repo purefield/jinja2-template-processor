@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.11';
+let APP_VERSION = '3.18.12';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.12',
+    date: '2026-04-07',
+    changes: [
+      'generate-mac-in-range.sh now derives stable deterministic MAC addresses from cluster, domain, host, and interface identity instead of shuffling random addresses',
+      'The kubevirt example setup scripts now describe the generated MAC addresses as deterministic so the operator messaging matches the tool behavior'
+    ]
+  },
   {
     version: '3.18.11',
     date: '2026-04-07',

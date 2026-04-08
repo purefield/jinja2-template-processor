@@ -21,7 +21,7 @@ __ "Generated clusterfile file" 3
 if [[ ! -s "$clusterfile" || "$clusterfileSrc" -nt "$clusterfile" ]]; then
 __ "Generated file missing or older than src file" 4
 # generate mac addresses
-__ "Generate random MAC-addresses in cluster range" 4
+__ "Generate deterministic MAC-addresses in cluster range" 4
 export RANGE_START=$(oc get cm/kubemacpool-mac-range-config -n openshift-cnv -o=jsonpath='{.data.RANGE_START}')
 export RANGE_END=$(oc get cm/kubemacpool-mac-range-config -n openshift-cnv -o=jsonpath='{.data.RANGE_END}')
 _: "cat $clusterfileSrc | $processor/generate-mac-in-range.sh > $clusterfile"

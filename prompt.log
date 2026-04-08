@@ -2989,3 +2989,17 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 - `./process.py data/baremetal.clusterfile templates/acm-ztp.yaml.tpl > /tmp/acm-ztp-render.yaml`
 - `./process.py data/baremetal.clusterfile templates/acm-capi-m3.yaml.tpl > /tmp/acm-capi-render.yaml`
 - Decoded the rendered `BareMetalHost` ignition override from both ACM outputs and confirmed the policy includes `quay.io`, `registry.redhat.io`, `registry.access.redhat.com`, `registry.connect.redhat.com`, and the corresponding internal mirror endpoints
+
+79. "what changes are pending?"
+80. "ship it"
+
+### Summary
+
+- Shipped the remaining deterministic MAC generation work by promoting `generate-mac-in-range.sh` from random assignment to stable identity-based assignment and aligning the kubevirt example script log text with that behavior.
+- Synced the release records for `v3.18.12` across the repo changelog, editor changelog, editor app version, container metadata, and the in-app changelog array.
+
+### Verification
+
+- `python3 generate-mac-in-range.sh --range-start 02:00:00:00:00:10 --range-end 02:00:00:00:00:20` produced identical YAML across repeated runs for the same sample clusterfile input
+- Verified the generated sample MAC addresses were unique within the requested range
+- `pytest -q apps/editor/tests/test_processor.py` -> `30 passed`

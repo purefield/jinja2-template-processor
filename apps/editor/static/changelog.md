@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.12
+- **Deterministic MAC Assignment**: `generate-mac-in-range.sh` now derives stable MAC addresses from cluster, domain, host, and interface identity instead of re-randomizing every render
+- **KubeVirt Script Messaging**: The kubevirt example setup scripts now describe the generated addresses as deterministic so the operator messaging matches the actual behavior
+
 ## 3.18.11
 - **Disconnected Discovery Source Trust**: Generated ACM discovery ignition overrides now trust both the original source pull keys and the mirrored endpoints, so disconnected hosts can pull assisted-install content before mirror remap fully helps
 - **Render Coverage Upgrade**: Added direct decoded-policy tests for both ACM ZTP and ACM CAPI, including source registries, mirror endpoints, and `mirror.prefix` handling

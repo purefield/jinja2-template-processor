@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.12 (2026-04-07)
+- **deterministic-mac-generation** — `generate-mac-in-range.sh` now assigns stable deterministic MAC addresses per cluster/host/interface identity instead of shuffling random addresses, and the kubevirt example scripts now describe that behavior accurately
+
 ## v3.18.11 (2026-04-07)
 - **disconnected-discovery-policy-source-trust** — Generated disconnected discovery ignition overrides now trust both the source pull keys and mirror endpoints from `cluster.mirrors`, so ACM discovery hosts can pull mirrored content before mirror remap fully helps
 
