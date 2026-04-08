@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.18.13
+- **InfraEnv Discovery Override**: ACM ZTP now renders the generated disconnected discovery `policy.json` override on `InfraEnv`, which is the path the live discovery environment actually consumes before Agent registration
+- **Host Override Precedence Kept**: Explicit per-host `ignitionConfigOverride` values still render on `BareMetalHost`, but the disconnected default now follows the real discovery boot path instead of the BMH fallback path
+
 ## 3.18.12
 - **Deterministic MAC Assignment**: `generate-mac-in-range.sh` now derives stable MAC addresses from cluster, domain, host, and interface identity instead of re-randomizing every render
 - **KubeVirt Script Messaging**: The kubevirt example setup scripts now describe the generated addresses as deterministic so the operator messaging matches the actual behavior

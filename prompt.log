@@ -3003,3 +3003,37 @@ Prepared the example cleanup release by checking the pending delta, updating rel
 - `python3 generate-mac-in-range.sh --range-start 02:00:00:00:00:10 --range-end 02:00:00:00:00:20` produced identical YAML across repeated runs for the same sample clusterfile input
 - Verified the generated sample MAC addresses were unique within the requested range
 - `pytest -q apps/editor/tests/test_processor.py` -> `30 passed`
+
+81. "the nodes in the disconnected acm-ztp installation boot the discovery iso and can be reached but never become inventory. what are we doing to help this and what could be missing? Short concise summary only, this is to share with a peer in a message."
+82. "https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/disconnected_environments/about-installing-oc-mirror-v2#oc-mirror-about-sig-mirroring-verification_about-installing-oc-mirror-v2 look at 2b"
+83. "[status correction explaining `ocp-cluster1` is stuck before inventory with 0 Agent CRs and that current BMH objects already contain the policy fix]"
+84. "what should we do next"
+85. "you can ssh into the host and check"
+86. "use 2023/acm/id_rsa"
+87. "can you create an infographic prompt for nano banana to outline the full sequence of acm-ztp with all pods, configuration files, services, setttings and anything pertinent to configure, verify and troubleshoot. so I can use this for this and other installations"
+88. "2"
+89. "ssh core@10.14.10.13 -i 2023/acm/id_rsa cat /etc/containers/policy.json [output omitted here in prompt log summary block]"
+90. "what is the fix to the clusterfile template?"
+91. "go for it"
+92. "ship iut"
+
+### Summary
+
+- Diagnosed the live `ocp-cluster1` discovery environment over SSH and proved the root cause from inside the booted host: `agent.service` was crash-looping on `registry.redhat.io/multicluster-engine/assisted-installer-agent-rhel9@sha256:...` with `Source image rejected: A signature was required, but no signature exists`.
+- Verified that the live host had the mirrored `registries.conf` and trust bundle, but not the generated disconnected discovery `policy.json`; this showed the generated override was rendered in the wrong ACM ZTP location for pre-registration boot.
+- Fixed `acm-ztp.yaml.tpl` so the generated disconnected discovery override now renders on `InfraEnv.spec.ignitionConfigOverride`, while explicit per-host `ignitionConfigOverride` remains on the `BareMetalHost`.
+- Updated the ZTP tests to validate the generated disconnected policy from `InfraEnv` and retain `BareMetalHost` checks only for explicit host overrides.
+- Synced release records for `v3.18.13` across the repo changelog, editor changelog, editor app version, container metadata, and in-app changelog array.
+
+### Verification
+
+- `pytest -q tests/test_templates.py` -> `173 passed`
+- `pytest -q apps/editor/tests/test_processor.py` -> `30 passed`
+- `./process.py data/baremetal.clusterfile templates/acm-ztp.yaml.tpl > /tmp/acm-ztp-render.yaml`
+- Decoded the real rendered ACM ZTP output and confirmed:
+  - `InfraEnv.spec.ignitionConfigOverride` is present
+  - `BareMetalHost` no longer gets the generated disconnected default override
+  - the decoded `policy.json` contains both source registries and mirror endpoints
+- Live-host evidence gathered via SSH with `2023/acm/id_rsa`:
+  - `agent.service` repeatedly failed image pull with `Source image rejected: A signature was required, but no signature exists`
+  - `/etc/containers/registries.conf` had mirror config, but `/etc/containers/policy.json` was still the old live-environment file

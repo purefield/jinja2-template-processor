@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.13 (2026-04-08)
+- **ztp-discovery-infraenv-override** — ACM ZTP now renders the generated disconnected discovery ignition override on `InfraEnv.spec.ignitionConfigOverride`, while leaving explicit per-host ignition overrides on `BareMetalHost`; this matches the live discovery boot path and fixes the pre-registration `policy.json` gap that kept hosts from becoming `Agent` inventory
+
 ## v3.18.12 (2026-04-07)
 - **deterministic-mac-generation** — `generate-mac-in-range.sh` now assigns stable deterministic MAC addresses per cluster/host/interface identity instead of shuffling random addresses, and the kubevirt example scripts now describe that behavior accurately
 

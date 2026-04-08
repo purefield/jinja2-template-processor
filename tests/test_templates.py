@@ -2956,6 +2956,13 @@ class TestZtpPerHostFields:
                 return item
         return None
 
+    def get_infraenv(self, result, name='host-test'):
+        """Find an InfraEnv by name."""
+        for item in result['items']:
+            if item.get('kind') == 'InfraEnv' and item['metadata']['name'] == name:
+                return item
+        return None
+
     def test_boot_mode_in_bmh(self, template_env):
         """Test bootMode renders in BareMetalHost spec."""
         data = self.acm_ztp_data_with_host({'bootMode': 'UEFISecureBoot'})
@@ -3027,7 +3034,7 @@ class TestZtpPerHostFields:
         assert 'bmac.agent-install.openshift.io/ignition-config-overrides' in bmh['metadata']['annotations']
 
     def test_disconnected_mirrors_generate_discovery_ignition_override(self, template_env):
-        """Disconnected mirrored ZTP clusters should generate a discovery policy override on BMH."""
+        """Disconnected mirrored ZTP clusters should generate a discovery policy override on InfraEnv."""
         data = self.acm_ztp_data_with_host()
         data['cluster']['disconnected'] = True
         data['cluster']['mirrors'] = [
@@ -3037,10 +3044,10 @@ class TestZtpPerHostFields:
             {'source': 'registry.connect.redhat.com', 'mirrors': ['registry.local:5000/connect-redhat-com']},
         ]
         result = self.render_ztp(template_env, data)
-        bmh = self.get_bmh(result)
+        infraenv = self.get_infraenv(result)
 
-        assert bmh is not None
-        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        assert infraenv is not None
+        override = infraenv['spec']['ignitionConfigOverride']
         policy = decode_discovery_policy(override)
 
         assert policy['default'][0]['type'] == 'reject'
@@ -3059,7 +3066,7 @@ class TestZtpPerHostFields:
         )
 
     def test_disconnected_mirrors_use_prefix_for_ztp_source_pull_keys(self, template_env):
-        """Disconnected generated policy should trust mirror.prefix instead of raw source in ZTP."""
+        """Disconnected InfraEnv policy should trust mirror.prefix instead of raw source in ZTP."""
         data = self.acm_ztp_data_with_host()
         data['cluster']['disconnected'] = True
         data['cluster']['mirrors'] = [
@@ -3070,10 +3077,10 @@ class TestZtpPerHostFields:
             },
         ]
         result = self.render_ztp(template_env, data)
-        bmh = self.get_bmh(result)
+        infraenv = self.get_infraenv(result)
 
-        assert bmh is not None
-        override = bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides']
+        assert infraenv is not None
+        override = infraenv['spec']['ignitionConfigOverride']
         policy = decode_discovery_policy(override)
 
         assert_policy_allows(
@@ -3086,19 +3093,19 @@ class TestZtpPerHostFields:
         assert 'quay.io/openshift-release-dev' not in policy['transports']['docker']
 
     def test_non_disconnected_clusters_do_not_get_generated_ignition_override(self, template_env):
-        """Non-disconnected ZTP clusters should not get the generated discovery override."""
+        """Non-disconnected ZTP clusters should not get the generated InfraEnv discovery override."""
         data = self.acm_ztp_data_with_host()
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
         ]
         result = self.render_ztp(template_env, data)
-        bmh = self.get_bmh(result)
+        infraenv = self.get_infraenv(result)
 
-        assert bmh is not None
-        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' not in bmh['metadata']['annotations']
+        assert infraenv is not None
+        assert 'ignitionConfigOverride' not in infraenv['spec']
 
     def test_explicit_ignition_override_takes_precedence_over_disconnected_default(self, template_env):
-        """Explicit host ignition override should win over the disconnected generated default in ZTP."""
+        """Explicit host ignition override should stay on BMH while disconnected default renders on InfraEnv."""
         explicit_override = '{"ignition":{"version":"3.1.0"},"storage":{"files":[]}}'
         data = self.acm_ztp_data_with_host({'ignitionConfigOverride': explicit_override})
         data['cluster']['disconnected'] = True
@@ -3107,9 +3114,12 @@ class TestZtpPerHostFields:
         ]
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
+        infraenv = self.get_infraenv(result)
 
         assert bmh is not None
+        assert infraenv is not None
         assert bmh['metadata']['annotations']['bmac.agent-install.openshift.io/ignition-config-overrides'] == explicit_override
+        assert 'ignitionConfigOverride' in infraenv['spec']
 
     def test_hold_installation_in_aci(self, template_env):
         """Test holdInstallation renders in AgentClusterInstall spec."""

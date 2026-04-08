@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.12';
+let APP_VERSION = '3.18.13';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.13',
+    date: '2026-04-08',
+    changes: [
+      'ACM ZTP now renders the generated disconnected discovery ignition override on InfraEnv, which is the path the live discovery environment actually consumes before Agent registration',
+      'Explicit per-host ignition overrides still render on BareMetalHost, but the disconnected default now follows the real discovery boot path instead of the BMH fallback path'
+    ]
+  },
   {
     version: '3.18.12',
     date: '2026-04-07',
