@@ -3344,3 +3344,9 @@ Added two lines after the oc apply in `steps/acm-create-rhcos-images.sh`:
 > executed the script. test against openshift
 
 Apache 404 on first test (old httpd pod still running), then 503 (router has no healthy backend). New nginx pod is likely crash-looping in OpenShift. Awaiting pod logs from user.
+
+### Prompt 27
+
+> scaling hangs / shows 0 pods and none are starting / [SCC error: fsGroup 1001 not allowed]
+
+Root cause: `fsGroup: 1001` is outside the namespace's allowed supplemental groups range (OpenShift assigns ranges like 1000660000/10000). SCC admission rejects the pod. Fix: remove `fsGroup: 1001` from pod securityContext — OpenShift's restricted-v2 SCC auto-assigns an fsGroup from the namespace range and chowns the PVC mount correctly. Also added `strategy: type: Recreate` to prevent RollingUpdate hang on RWO PVC.
