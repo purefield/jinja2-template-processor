@@ -27,7 +27,9 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
-{%- set enableDisconnected = cluster.disconnected | default(false) -%}
+{%- set disc = cluster.disconnected | default({}) -%}
+{%- set enableDisconnected = cluster.disconnected is defined -%}
+{%- set osImageHost = disc.osImageHost | default("") -%}
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set generatedDiscoveryIgnitionOverride = "" -%}
@@ -291,7 +293,7 @@ items:
       matchLabels:
         cluster-name: {{ cluster.name }}
 {%- set pocBanner %}{% include "includes/poc-banner-manifestwork.yaml.tpl" %}{% endset %}
-{{ pocBanner }}{% if not enableDisconnected or cluster.osImages is defined %}
+{{ pocBanner }}{% if not enableDisconnected or osImageHost %}
 {%- set osImagesSync %}{% include "includes/os-images-sync.yaml.tpl" %}{% endset %}
 {{ osImagesSync }}{% endif %}
 {%- set clusterImageSetSync %}{% include "includes/clusterimageset-sync.yaml.tpl" %}{% endset %}

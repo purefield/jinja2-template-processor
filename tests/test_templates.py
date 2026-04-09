@@ -1663,7 +1663,7 @@ class TestAcmCapiTemplate:
     def test_disconnected_mirrors_generate_bmh_ignition_override(self, template_env):
         """Disconnected mirrored CAPI clusters should generate a discovery policy override on BMH."""
         data = self.acm_capi_data()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
             {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
@@ -1696,7 +1696,7 @@ class TestAcmCapiTemplate:
     def test_disconnected_mirrors_use_prefix_for_capi_source_pull_keys(self, template_env):
         """Disconnected generated policy should trust mirror.prefix instead of raw source in CAPI."""
         data = self.acm_capi_data()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {
                 'source': 'quay.io/openshift-release-dev',
@@ -1724,7 +1724,7 @@ class TestAcmCapiTemplate:
     def test_explicit_capi_ignition_override_takes_precedence(self, template_env):
         """Explicit host ignition override should win over the disconnected generated default in CAPI."""
         data = self.acm_capi_data()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
         ]
@@ -1740,7 +1740,7 @@ class TestAcmCapiTemplate:
     def test_disconnected_without_mirrors_does_not_generate_capi_ignition_override(self, template_env):
         """Disconnected CAPI clusters without mirrors should not get the generated BMH override."""
         data = self.acm_capi_data()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
 
         result = self.render_template(template_env, data)
         bmh = self.get_bmh(result)
@@ -1779,7 +1779,7 @@ class TestDisconnectedOperatorHub:
                 'location': 'dc1',
                 'platform': 'baremetal',
                 'sshKeys': ['secrets/id_rsa.pub'],
-                'disconnected': disconnected
+                **({'disconnected': {}} if disconnected else {})
             },
             'network': {
                 'domain': 'example.com',
@@ -1891,7 +1891,7 @@ class TestDisconnectedOperatorHub:
         """Test install-config output includes OperatorHub + CatalogSource docs."""
         data = base_cluster_data()
         data['cluster']['platform'] = 'baremetal'
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['catalogSources'] = [
             {
                 'name': 'test-operators',
@@ -1920,7 +1920,7 @@ class TestDisconnectedOperatorHub:
         """CLI formatting should preserve raw multi-doc install-config output."""
         data = base_cluster_data()
         data['cluster']['platform'] = 'baremetal'
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['catalogSources'] = [
             {
                 'name': 'test-operators',
@@ -2772,33 +2772,30 @@ class TestOsImagesSync:
         assert '/pre-release/4.22.0-ec.3/rhcos-live-iso.x86_64.iso' in script
         assert '/pre-release/4.22.0-ec.3/rhcos-live-rootfs.x86_64.img' in script
 
-    def test_disconnected_without_custom_os_images_skips_job(self, template_env):
-        """os-images-sync job must be absent in disconnected mode without cluster.osImages (mirror.openshift.com unreachable)."""
+    def test_disconnected_without_osImageHost_skips_job(self, template_env):
+        """os-images-sync job must be absent in disconnected mode without osImageHost (mirror.openshift.com unreachable)."""
         data = ztp_host_data(base_cluster_data())
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
 
         jobs = [item for item in result['items'] if item['kind'] == 'Job' and item['metadata']['name'] == 'os-images-sync']
-        assert len(jobs) == 0, "os-images-sync job must not be present in disconnected mode without cluster.osImages"
+        assert len(jobs) == 0, "os-images-sync job must not be present in disconnected mode without disconnected.osImageHost"
 
-    def test_disconnected_with_custom_os_images_uses_custom_urls(self, template_env):
-        """os-images-sync job must use cluster.osImages URLs in disconnected mode."""
+    def test_disconnected_osImageHost_derives_full_urls(self, template_env):
+        """os-images-sync job must derive full ISO and rootFS paths from disconnected.osImageHost + cluster.version."""
         data = ztp_host_data(base_cluster_data())
-        data['cluster']['disconnected'] = True
-        data['cluster']['osImages'] = {
-            'isoUrl': 'https://internal-mirror.tld/rhcos/rhcos-4.16-live.iso',
-            'rootFSUrl': 'https://internal-mirror.tld/rhcos/rhcos-4.16-live-rootfs.img',
-        }
+        data['cluster']['disconnected'] = {'osImageHost': 'https://internal-mirror.tld'}
         template = template_env.get_template('acm-ztp.yaml.tpl')
         rendered = template.render(data)
         result = yaml.safe_load(rendered)
 
         job = next(item for item in result['items'] if item['kind'] == 'Job' and item['metadata']['name'] == 'os-images-sync')
         script = job['spec']['template']['spec']['containers'][0]['command'][2]
-        assert 'internal-mirror.tld/rhcos/rhcos-4.16-live.iso' in script
-        assert 'internal-mirror.tld/rhcos/rhcos-4.16-live-rootfs.img' in script
+        assert 'internal-mirror.tld/pub/openshift-v4/x86_64/dependencies/rhcos/' in script
+        assert 'rhcos-live-iso.x86_64.iso' in script
+        assert 'rhcos-live-rootfs.x86_64.img' in script
         assert 'mirror.openshift.com' not in script
 
 
@@ -3114,7 +3111,7 @@ class TestZtpPerHostFields:
     def test_disconnected_mirrors_generate_discovery_ignition_override(self, template_env):
         """Disconnected mirrored ZTP clusters should generate a discovery policy override on InfraEnv."""
         data = self.acm_ztp_data_with_host()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
             {'source': 'registry.redhat.io', 'mirrors': ['registry.local:5000/redhat-io']},
@@ -3146,7 +3143,7 @@ class TestZtpPerHostFields:
     def test_disconnected_mirrors_use_prefix_for_ztp_source_pull_keys(self, template_env):
         """Disconnected InfraEnv policy should trust mirror.prefix instead of raw source in ZTP."""
         data = self.acm_ztp_data_with_host()
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {
                 'source': 'quay.io/openshift-release-dev',
@@ -3186,7 +3183,7 @@ class TestZtpPerHostFields:
         """Explicit host ignition override should stay on BMH while disconnected default renders on InfraEnv."""
         explicit_override = '{"ignition":{"version":"3.1.0"},"storage":{"files":[]}}'
         data = self.acm_ztp_data_with_host({'ignitionConfigOverride': explicit_override})
-        data['cluster']['disconnected'] = True
+        data['cluster']['disconnected'] = {}
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
         ]

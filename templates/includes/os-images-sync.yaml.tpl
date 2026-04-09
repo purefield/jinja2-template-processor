@@ -1,7 +1,8 @@
-{%- set hasCustomOsImages = cluster.osImages is defined and cluster.osImages.isoUrl is defined -%}
 {%- set rhcosPath = "pre-release/" + cluster.version if "-" in cluster.version else majorMinor + "/latest" -%}
-{%- set osIsoUrl = cluster.osImages.isoUrl if hasCustomOsImages else "https://mirror.openshift.com/pub/openshift-v4/" + imageArch + "/dependencies/rhcos/" + rhcosPath + "/rhcos-live-iso." + imageArch + ".iso" -%}
-{%- set osRootFSUrl = cluster.osImages.rootFSUrl if hasCustomOsImages else "https://mirror.openshift.com/pub/openshift-v4/" + imageArch + "/dependencies/rhcos/" + rhcosPath + "/rhcos-live-rootfs." + imageArch + ".img" -%}
+{%- set rhcosDir = "/pub/openshift-v4/" + imageArch + "/dependencies/rhcos/" + rhcosPath -%}
+{%- set osBase = osImageHost.rstrip('/') + rhcosDir if osImageHost else "https://mirror.openshift.com" + rhcosDir -%}
+{%- set osIsoUrl = osBase + "/rhcos-live-iso." + imageArch + ".iso" -%}
+{%- set osRootFSUrl = osBase + "/rhcos-live-rootfs." + imageArch + ".img" -%}
 - kind: ServiceAccount
   apiVersion: v1
   metadata:

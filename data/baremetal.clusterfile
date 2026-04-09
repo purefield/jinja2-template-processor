@@ -52,7 +52,7 @@ cluster:
       prefix: ''
       mirrors:
         - internal-registry.tld/registry-connect-redhat-com
-  disconnected: true
+  disconnected: {}
   catalogSources:
     - name: disconnected-redhat-operators
       displayName: Red Hat Operators

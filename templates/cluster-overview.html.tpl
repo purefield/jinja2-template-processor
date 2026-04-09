@@ -209,7 +209,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
     <tr><td>Version</td><td>{{ cluster.version | default('—') }}</td></tr>{% if cluster.arch is defined %}
     <tr><td>Architecture</td><td>{{ cluster.arch }}</td></tr>{% endif %}{% if cluster.location is defined %}
     <tr><td>Location</td><td>{{ cluster.location }}</td></tr>{% endif %}{% if cluster.tpm | default(false) %}
-    <tr><td>TPM Encryption</td><td>Enabled — LUKS disk encryption with TPM 2.0</td></tr>{% endif %}{% if cluster.disconnected | default(false) %}
+    <tr><td>TPM Encryption</td><td>Enabled — LUKS disk encryption with TPM 2.0</td></tr>{% endif %}{% if cluster.disconnected is defined %}
     <tr><td>Disconnected</td><td>Air-gapped — default OperatorHub sources disabled</td></tr>{% endif %}
   </table>
 </section>

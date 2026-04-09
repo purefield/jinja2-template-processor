@@ -2,6 +2,9 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **disconnected-osImageHost** — `cluster.disconnected` is now an object (presence = disconnected mode) with an optional `osImageHost` field (scheme+host only); the template derives the full RHCOS ISO and rootFS paths from `cluster.version` using the same directory structure as mirror.openshift.com, eliminating the need for explicit URL inputs. Replaces the former `cluster.disconnected: true` boolean and `cluster.osImages` field.
+
 ## v3.18.15 (2026-04-08)
 - **disconnected-os-images-fix** — Fix two disconnected hang bugs: (1) `registries.conf` no longer emits `prefix = ""` for empty mirror prefixes (catch-all that broke mirror routing → MCS couldn't start); (2) `os-images-sync` job is skipped in disconnected mode when no `cluster.osImages` URLs are provided (mirror.openshift.com unreachable); custom `cluster.osImages.isoUrl`/`rootFSUrl` fields added to schema for disconnected OS image registration
 

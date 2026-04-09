@@ -35,7 +35,7 @@ cluster:
       prefix: ''
       mirrors:
         - internal-registry.tld/quay-io
-  disconnected: true
+  disconnected: {}
   catalogSources:
     - name: disconnected-redhat-operators
       displayName: Red Hat Operators

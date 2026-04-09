@@ -47,7 +47,7 @@ cluster:
       mirrors:
         - internal-registry.tld/registry-connect-redhat-com
   tpm: false
-  disconnected: true
+  disconnected: {}
   catalogSources:
     - name: disconnected-redhat-operators
       displayName: Red Hat Operators

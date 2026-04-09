@@ -341,30 +341,16 @@
           "title": "Disconnected",
           "x-group": "Disconnected",
           "x-group-collapsed": true,
-          "type": "boolean",
-          "default": false,
-          "description": "Air-gapped cluster: disables default OperatorHub catalog sources and enables custom CatalogSources from mirrored operator indexes.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html"
-        },
-        "osImages": {
-          "title": "OS Image URLs",
-          "x-group": "Disconnected",
-          "x-group-collapsed": true,
           "type": "object",
+          "description": "Air-gapped cluster configuration. Presence of this key enables disconnected mode: disables default OperatorHub sources and skips internet-dependent sync jobs.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html",
           "properties": {
-            "isoUrl": {
-              "title": "RHCOS Live ISO URL",
+            "osImageHost": {
+              "title": "RHCOS Mirror Host",
               "type": "string",
-              "description": "URL to the RHCOS live ISO for this cluster version. Required in disconnected environments where mirror.openshift.com is unreachable. Must be served from an internal HTTP server."
-            },
-            "rootFSUrl": {
-              "title": "RHCOS RootFS URL",
-              "type": "string",
-              "description": "URL to the RHCOS live rootfs image for this cluster version. Required alongside isoUrl in disconnected environments."
+              "description": "Scheme + hostname of the internal HTTP server hosting RHCOS images (no trailing slash). The template derives full ISO and rootFS paths from cluster.version using the same directory structure as mirror.openshift.com. Omit to skip os-images-sync."
             }
-          },
-          "required": ["isoUrl", "rootFSUrl"],
-          "description": "Custom RHCOS OS image URLs for disconnected environments. When set, os-images-sync patches AgentServiceConfig using these URLs instead of mirror.openshift.com. In disconnected mode without this field, os-images-sync is skipped entirely."
+          }
         },
         "releaseDigest": {
           "title": "Release Image Digest",

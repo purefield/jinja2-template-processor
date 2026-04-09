@@ -98,7 +98,7 @@ credentialsMode: Manual
 
 bootstrapInPlace:
   installationDisk: {{ bootstrapDisk if bootstrapDisk is string else bootstrapDisk.deviceName }}
-{%- endif %}{% if cluster.disconnected | default(false) %}
+{%- endif %}{% if cluster.disconnected is defined %}
 ---
 # Place in openshift/ directory for ABI/IPI
 apiVersion: config.openshift.io/v1
