@@ -3312,3 +3312,9 @@ Script successfully deployed proxy and patched 4.21.7. Output was truncated — 
 > test again
 
 Proxy still returns 404 for both ISO and rootFS. No cluster access from local machine to check logs. Instructed user to run `oc logs -n rhcos-images deployment/rhcos-images` to diagnose — likely cause is mod_proxy_ssl not loaded or httpd.d/ config directory not included by ubi8/httpd-24.
+
+### Prompt 23
+
+> oc logs showing httpd returns 404 locally (not proxying)
+
+Root cause: httpd-24 has its own <VirtualHost *:8080> that takes precedence over our global ProxyPass directives. Switch back to nginx-120. The S2I "prints help and exits" issue is because the run script looks for content — fix is to mount a COMPLETE nginx.conf at /opt/app-root/etc/nginx.conf (where the run script looks), bypassing the S2I content check entirely. nginx.conf uses /tmp for pid and temp paths (non-root writable), PVC at /var/cache/nginx for cache. ConfigMap name changed to rhcos-images-nginx.
