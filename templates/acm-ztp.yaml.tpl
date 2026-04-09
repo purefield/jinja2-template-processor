@@ -33,7 +33,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set generatedDiscoveryIgnitionOverride = "" -%}
-{%- if enableDisconnected and hasMirrorRegistries -%}
+{%- if hasMirrorRegistries -%}
 {%- set generatedDiscoveryIgnitionOverride %}{% include "includes/disconnected-discovery-ignition-override.json.tpl" %}{% endset -%}
 {%- endif -%}
 apiVersion: v1

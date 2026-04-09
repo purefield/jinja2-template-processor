@@ -32,7 +32,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set generatedDiscoveryIgnitionOverride = "" -%}
-{%- if enableDisconnected and hasMirrorRegistries -%}
+{%- if hasMirrorRegistries -%}
 {%- set generatedDiscoveryIgnitionOverride %}{% include "includes/disconnected-discovery-ignition-override.json.tpl" %}{% endset -%}
 {%- endif -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}

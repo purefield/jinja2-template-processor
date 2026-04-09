@@ -3167,12 +3167,23 @@ class TestZtpPerHostFields:
         )
         assert 'quay.io/openshift-release-dev' not in policy['transports']['docker']
 
-    def test_non_disconnected_clusters_do_not_get_generated_ignition_override(self, template_env):
-        """Non-disconnected ZTP clusters should not get the generated InfraEnv discovery override."""
+    def test_mirrors_without_disconnected_still_generate_ignition_override(self, template_env):
+        """Clusters with mirrors should always get the discovery policy override, even without disconnected mode."""
         data = self.acm_ztp_data_with_host()
         data['cluster']['mirrors'] = [
             {'source': 'quay.io', 'mirrors': ['registry.local:5000/quay-io']},
         ]
+        result = self.render_ztp(template_env, data)
+        infraenv = self.get_infraenv(result)
+
+        assert infraenv is not None
+        override = infraenv['spec']['ignitionConfigOverride']
+        policy = decode_discovery_policy(override)
+        assert_policy_allows(policy, ['quay.io', 'registry.local:5000/quay-io'])
+
+    def test_no_mirrors_does_not_generate_ignition_override(self, template_env):
+        """Clusters without mirrors should not get the generated InfraEnv discovery override."""
+        data = self.acm_ztp_data_with_host()
         result = self.render_ztp(template_env, data)
         infraenv = self.get_infraenv(result)
 
