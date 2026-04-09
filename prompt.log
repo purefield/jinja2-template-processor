@@ -3399,3 +3399,9 @@ Curled https://rhcos.apps.acm.ola.purefield.nl/healthz — 200 OK. Proxy is runn
 > [nginx logs showing IPv6 connection failures to mirror.openshift.com]
 
 Root cause: nginx resolving mirror.openshift.com to CloudFront IPv6 addresses (2600:9000:...), pod has no IPv6 connectivity. Fix: changed resolver from `8.8.8.8 ipv6=off` to `172.30.0.10 valid=30s ipv6=off` (cluster-internal DNS, returns IPv4 only) in templates/acm/rhcos-static-host.yaml.tmpl. Template is untracked by git. User needs to re-apply template and rollout restart the deployment.
+
+### Prompt 35
+
+> I copy the changes to the workstation and run them after diff, you can retry
+
+Retried curl after IPv6 resolver fix. IPv6 errors gone — nginx now connecting via IPv4 (CloudFront responded with full headers). 404 is expected (test path doesn't exist on mirror.openshift.com). Proxy is healthy. Asked user to provide actual AgentServiceConfig osImage URLs for 4.22.0-ec.3 to do a targeted test.
