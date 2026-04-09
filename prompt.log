@@ -3350,3 +3350,14 @@ Apache 404 on first test (old httpd pod still running), then 503 (router has no 
 > scaling hangs / shows 0 pods and none are starting / [SCC error: fsGroup 1001 not allowed]
 
 Root cause: `fsGroup: 1001` is outside the namespace's allowed supplemental groups range (OpenShift assigns ranges like 1000660000/10000). SCC admission rejects the pod. Fix: remove `fsGroup: 1001` from pod securityContext — OpenShift's restricted-v2 SCC auto-assigns an fsGroup from the namespace range and chowns the PVC mount correctly. Also added `strategy: type: Recreate` to prevent RollingUpdate hang on RWO PVC.
+
+### Prompt 28
+
+> [pod Running] / test it
+
+Proxy fully operational on OpenShift:
+- healthz: ok
+- ISO 4.22.0-ec.3: 200 OK
+- rootFS 4.22.0-ec.3: 200 OK
+- Cache: x-cache-status: HIT on second GET (confirmed working)
+Final fix was removing fsGroup: 1001 — OpenShift auto-assigns from namespace range via restricted-v2 SCC.
