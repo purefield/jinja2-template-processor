@@ -3478,3 +3478,9 @@ Clarified: cluster has internet access, not truly air-gapped. osImage URLs on mi
 > Warning: Restart required / non-live-updatable field changed in template spec / Boot disk / is this the root cause?
 
 Yes — root cause confirmed. Assisted Installer updated VM template spec to boot from vda (installed disk) but KubeVirt can't apply live. VMs still running from ISO. Fix: virtctl restart the two stuck master VMs so they reboot from vda and contact MCS.
+
+### Prompt 48-49
+
+> node1 is waiting for ignition now too / all 3 control nodes
+
+All 3 masters now correctly waiting for ignition from API VIP 10.14.10.11. VIP not yet up (bootstrap still initializing). Polling MCS in background. Waiting for bootstrap master to claim VIP and serve ignition configs.
