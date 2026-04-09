@@ -3375,3 +3375,9 @@ Identified the install script: `templates/ocp-on-ocp/setup.sh`. Takes args: clus
 > kicked off via manage-cluster.sh create ocp-cluster1 bmc agent
 
 Install running. Flow: acm-create-quay-config → acm-create-rhcos-images → setup.sh (bmc/agent/virt) → common-monitor-cluster-install. Note: acm-create-rhcos-images runs before setup.sh so 4.22.0-ec.3 may not be in AgentServiceConfig yet — needs re-run after ZTP apply completes.
+
+### Prompt 31
+
+> ready to create the cluster now?
+
+Informed user that cluster creation was already kicked off in the previous session (Prompt 30 via manage-cluster.sh create ocp-cluster1 bmc agent). Offered to check current install status.
