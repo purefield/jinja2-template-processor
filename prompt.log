@@ -3411,3 +3411,9 @@ Retried curl after IPv6 resolver fix. IPv6 errors gone — nginx now connecting 
 > [nginx logs still showing IPv6 errors at 14:04:54]
 
 Fix not yet applied — logs timestamped 14:04:54 match my previous curl, before deployment update. Instructed user to re-apply template + rollout restart before retrying.
+
+### Prompt 37
+
+> can we watch the configmap and restart on change
+
+Updated acm-create-rhcos-images.sh: after oc apply, computes sha256 of live ConfigMap's nginx.conf and patches deployment pod template annotation checksum/config. Kubernetes rolls out automatically only when hash changes. No extra operators needed.
