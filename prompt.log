@@ -3454,3 +3454,9 @@ Produced plan: Phase 1 = Dev Spaces (new operator template, checluster.yaml.tmpl
 > [schema boolean error / planning agent hit limit / MCS issue]
 
 Schema boolean issue: user had not pulled latest (already fixed in prior commit). Planning agent hit token limit — shelved. Pivoting to MCS (Machine Config Server port 22623) issue blocking cluster install. Waiting for user to share MCS error details.
+
+### Prompt 44
+
+> oc get agentclusterinstall ocp-cluster1 -n ocp-cluster1 ... Cluster has hosts pending user action
+
+Hosts discovered but pending user action. Checking agents for approval status and validation failures.
