@@ -3182,3 +3182,16 @@ Fixed:
 - `schema/clusterfile.schema.json`: add `cluster.osImages` optional fields
 - Added 3 new tests; all 178 pass
 - Committed b67f135, tagged `disconnected-os-images-fix`
+
+### Prompt 5
+
+> ship it
+
+Versioned editor release v3.18.15:
+- Updated all 5 version locations (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js)
+- 178 tests pass
+- Committed 321678d "Release v3.18.15", tagged v3.18.15 and disconnected-os-images-fix
+- Pushed main and tags to github.com/purefield/clusterfile
+- Built quay.io/dds/clusterfile-editor:v3.18.15 and :latest
+- Pushed both image tags to quay.io
+- Restarted container; healthz confirmed version 3.18.15
