@@ -3436,3 +3436,9 @@ Both URLs return HTTP 200 with x-cache-status: HIT through the proxy. ISO (1.28G
 > are we ready to create the cluster now?
 
 Cluster creation was already kicked off in Prompt 30. RHCOS proxy confirmed working. Flagged two checks: (1) current install state via agentclusterinstall/clusterdeployment, (2) whether acm-create-rhcos-images.sh needs re-run after ZTP applied (osImage URLs may not be patched to local proxy yet).
+
+### Prompt 41
+
+> I had wiped it earlier
+
+Cluster was wiped. Confirmed ready to create fresh. Proxy working, IPv6 fix applied. Instructed to run manage-cluster.sh create ocp-cluster1 bmc agent and reminded to re-run acm-create-rhcos-images.sh after ZTP applies osImages.
