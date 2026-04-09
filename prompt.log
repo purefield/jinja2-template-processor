@@ -3306,3 +3306,9 @@ Checked proxy at https://rhcos.apps.acm.ola.purefield.nl. URLs derived from temp
 > steps/acm-create-rhcos-images.sh [output showing proxy deployed, 4.21.7 patched, 4.22.0-ec.3 missing]
 
 Script successfully deployed proxy and patched 4.21.7. Output was truncated — script likely errored after with "No osImages found in AgentServiceConfig for 4.22.0-ec.3" because the os-images-sync Job (from clusterfile templates) must run first to add the 4.22.0-ec.3 entry to AgentServiceConfig. Script only patches existing entries, doesn't create them.
+
+### Prompt 22
+
+> test again
+
+Proxy still returns 404 for both ISO and rootFS. No cluster access from local machine to check logs. Instructed user to run `oc logs -n rhcos-images deployment/rhcos-images` to diagnose — likely cause is mod_proxy_ssl not loaded or httpd.d/ config directory not included by ubi8/httpd-24.
