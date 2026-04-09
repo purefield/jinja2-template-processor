@@ -3229,3 +3229,16 @@ Started implementing consolidation of cluster.mirrors/disconnected/releaseDigest
 > [context from prompts 9-10: mirrors stay top-level (proxy cache use case); design principle: smart defaults, less user input]
 
 Implemented: cluster.disconnected becomes an object (presence = disconnected mode enabled). Single sub-field cluster.disconnected.osImageHost (scheme+host, no trailing slash) — template derives full RHCOS ISO and rootFS paths from osImageHost + cluster.version using mirror.openshift.com directory convention. Removes cluster.disconnected boolean and cluster.osImages entirely. Updated schema, 5 templates, 3 data files, tests. 178 tests pass. Committed fed7d8f, tagged disconnected-osImageHost.
+
+### Prompt 11
+
+> did you update the examples and schemas as well as the editor
+
+Found 3 missed locations:
+1. apps/editor/tests/test_processor.py: disconnected: true → disconnected: {}
+2. apps/editor/static/changelog.md: corrected stale osImages reference in 3.18.15 entry
+3. apps/editor/static/js/app.js: corrected stale osImages reference in CHANGELOG array
+
+Schema and data/examples were already updated in the prior commit (fed7d8f).
+Pre-existing test failure (test_get_schema_returns_valid_json_schema) confirmed unrelated — /app/plugins path only exists inside the container.
+Committed e5f6418.
