@@ -3276,3 +3276,21 @@ Rewrote `templates/acm/rhcos-static-host.yaml.tmpl` from scratch. Key fixes:
 1. Split nginx config into two files: `00-cache.conf` in `nginx.d/` (http context, for `proxy_cache_path`) and `proxy.conf` in `nginx.default.d/` (server context, location blocks only — no `server {}` wrapper)
 2. Added `fsGroup: 1001` so PVC is writable by the nginx user
 3. Removed erroneous `IMAGE` parameter (hub is connected)
+
+### Prompt 17
+
+> [confirmed root cause: ubi8/nginx-120 exits immediately printing S2I help, previous working revision used ubi8/httpd-24]
+
+Rewrote `templates/acm/rhcos-static-host.yaml.tmpl` to use `ubi8/httpd-24` (confirmed working base image). Configured Apache mod_proxy with mod_cache_disk: SSLProxyEngine, CacheEnable disk, ProxyPass to mirror.openshift.com, /healthz via server-status. Config mounted to `/opt/app-root/etc/httpd.d/`, PVC at `/var/cache/httpd/proxy`, fsGroup: 1001.
+
+### Prompt 18
+
+> what is my limit / continue
+
+Interpreted as: continue with the ocp-cluster1 clusterfile update (from prior queued task).
+
+### Prompt 19
+
+> next: update the clusterfile for ocp-cluster1.*clusterfile in ../templates/ocp-on-ocp/ with the new disconnected options
+
+Updated `ocp-cluster1.clusterfile` and `ocp-cluster1.generated.clusterfile`: replaced `disconnected: true` with `disconnected:\n  osImageHost: https://rhcos.apps.acm.ola.purefield.nl`. Only cluster1 was disconnected. osImageHost derived from hub cluster name (acm) + domain (ola.purefield.nl) matching the rhcos proxy route default.
