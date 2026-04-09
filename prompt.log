@@ -3544,3 +3544,9 @@ Template already correct: allow-extra-patch-ports: true under bridge.options in 
 > not bridge.options, just bridge
 
 Moved allow-extra-patch-ports: true to direct child of bridge (not bridge.options) in vm-network-infra.yaml.tpl.
+
+### Prompt 60
+
+> [node2 SSH / agent.service failing: Source image rejected: A signature was required, but no signature exists]
+
+Root cause identified: node2 is in discovery/live ISO phase. agent.service tries to pull registry.redhat.io/multicluster-engine/assisted-installer-agent-rhel9 but (1) mirror redirects not in live ISO and (2) signature policy blocks unsigned mirror images. Fix: regenerate InfraEnv to rebuild ISO with mirror config, then reboot nodes.
