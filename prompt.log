@@ -3442,3 +3442,9 @@ Cluster creation was already kicked off in Prompt 30. RHCOS proxy confirmed work
 > I had wiped it earlier
 
 Cluster was wiped. Confirmed ready to create fresh. Proxy working, IPv6 fix applied. Instructed to run manage-cluster.sh create ocp-cluster1 bmc agent and reminded to re-run acm-create-rhcos-images.sh after ZTP applies osImages.
+
+### Prompt 42
+
+> I would like to do development on the cluster using developer hub and dev spaces. can you plan how to set this up for the two separate projects openshift-installation and clusterfile?
+
+Produced plan: Phase 1 = Dev Spaces (new operator template, checluster.yaml.tmpl, devfiles for both projects, plugin entry in clusterfile schema). Phase 2 = Developer Hub catalog wiring (catalog-info.yaml for both repos, backstage app-config update for Dev Spaces plugin, optional software templates). Delivery order: templates → step script → devfiles → catalog entries → backstage config update → clusterfile plugin entry. Existing common-create-developer-hub.sh and backstage-configuration.yaml.tmpl already in place.
