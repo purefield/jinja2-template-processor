@@ -3318,3 +3318,15 @@ Proxy still returns 404 for both ISO and rootFS. No cluster access from local ma
 > oc logs showing httpd returns 404 locally (not proxying)
 
 Root cause: httpd-24 has its own <VirtualHost *:8080> that takes precedence over our global ProxyPass directives. Switch back to nginx-120. The S2I "prints help and exits" issue is because the run script looks for content — fix is to mount a COMPLETE nginx.conf at /opt/app-root/etc/nginx.conf (where the run script looks), bypassing the S2I content check entirely. nginx.conf uses /tmp for pid and temp paths (non-root writable), PVC at /var/cache/nginx for cache. ConfigMap name changed to rhcos-images-nginx.
+
+### Prompt 24
+
+> develop it local with podman until it is ready
+
+Iterated locally with podman to find and fix all issues:
+1. Image CMD is `$STI_SCRIPTS_PATH/usage` (prints help) — need `command: [/usr/libexec/s2i/run]` in Deployment
+2. NGINX_CONFIGURATION_PATH is /opt/app-root/etc/nginx.d (a directory); actual nginx.conf is /etc/nginx/nginx.conf — mount there instead
+3. /var/cache/nginx not writable by container UID — chmod 777 locally; fsGroup: 1001 in OpenShift
+4. IPv6 failures on CloudFront DNS — added `resolver 8.8.8.8 ipv6=off`
+5. Missing `include /usr/share/nginx/modules/*.conf` for SSL module
+All changes validated locally: healthz 200, proxy 200, cache HIT on second GET. Template updated.
