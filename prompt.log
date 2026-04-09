@@ -3484,3 +3484,9 @@ Yes — root cause confirmed. Assisted Installer updated VM template spec to boo
 > node1 is waiting for ignition now too / all 3 control nodes
 
 All 3 masters now correctly waiting for ignition from API VIP 10.14.10.11. VIP not yet up (bootstrap still initializing). Polling MCS in background. Waiting for bootstrap master to claim VIP and serve ignition configs.
+
+### Prompt 50
+
+> all 3 nodes are stuck / install monitor showing error 42% / dns:fail vip:fail / os-images sync: not present
+
+Install failed at 42%. DNS resolves correctly externally. VIP not up = bootstrap on node1 stuck (image pull suspected). os-images-sync job missing from namespace = ZTP likely applied before osImageHost template change. All 3 masters waiting for ignition but MCS never came up. Investigating bootstrap state and os-images-sync.
