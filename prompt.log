@@ -3242,3 +3242,9 @@ Found 3 missed locations:
 Schema and data/examples were already updated in the prior commit (fed7d8f).
 Pre-existing test failure (test_get_schema_returns_valid_json_schema) confirmed unrelated — /app/plugins path only exists inside the container.
 Committed e5f6418.
+
+### Prompt 12
+
+> ship it
+
+Released v3.18.16. All 5 version locations updated (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). 178 tests pass. Committed 3a293d9, tagged v3.18.16. Pushed main and tags. Built and pushed quay.io/dds/clusterfile-editor:v3.18.16 and :latest. Restarted container. Health check confirmed {"status":"ok","version":"3.18.16"}.
