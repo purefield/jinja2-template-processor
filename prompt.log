@@ -3520,3 +3520,9 @@ Root cause: nmstate verifies OVS bridge port list strictly. OVN-K adds dynamic p
 > double check this suggested change, I have a fix to allow this behavior
 
 Reverted vm-network-infra.yaml.tpl change. My controller: approach is incorrect for OVS — port membership must be declared from bridge side via bridge.port. controller: works for Linux bridges/bonds but not OVS. Waiting for user's fix.
+
+### Prompt 56
+
+> add allow-extra-patch-ports to bridge options
+
+Added allow-extra-patch-ports: true to bridge.options in the OVS bridge NNCP spec in vm-network-infra.yaml.tpl. This tells nmstate to not fail verification when OVN-K adds extra patch ports to the bridge beyond what's in the desired state.
