@@ -3472,3 +3472,9 @@ Root cause confirmed: acm-create-rhcos-images.sh was not re-run after ZTP applie
 > the proxy has no logs asking for them, manually I can verify they deliver / osImages pointing to mirror.openshift.com / cluster is not air-gapped
 
 Clarified: cluster has internet access, not truly air-gapped. osImage URLs on mirror.openshift.com are fine. RHCOS proxy not being hit is expected (not patched). MCS failure is separate — likely bootstrap can't pull control plane container images from mirror registry (registry.apps.acm.ola.purefield.nl). Asked user to share bootstrap logs / release-image.service journal.
+
+### Prompt 47
+
+> Warning: Restart required / non-live-updatable field changed in template spec / Boot disk / is this the root cause?
+
+Yes — root cause confirmed. Assisted Installer updated VM template spec to boot from vda (installed disk) but KubeVirt can't apply live. VMs still running from ISO. Fix: virtctl restart the two stuck master VMs so they reboot from vda and contact MCS.
