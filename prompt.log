@@ -3338,3 +3338,9 @@ All changes validated locally: healthz 200, proxy 200, cache HIT on second GET. 
 Added two lines after the oc apply in `steps/acm-create-rhcos-images.sh`:
 1. `oc delete cm ${appName}-httpd -n $namespace --ignore-not-found` — cleans up orphaned httpd ConfigMap from previous iteration
 2. `oc rollout status deployment/$appName -n $namespace --timeout=120s` — waits for the rollout to complete before polling readyReplicas (handles ConfigMap/Deployment spec changes that trigger a new rollout)
+
+### Prompt 26
+
+> executed the script. test against openshift
+
+Apache 404 on first test (old httpd pod still running), then 503 (router has no healthy backend). New nginx pod is likely crash-looping in OpenShift. Awaiting pod logs from user.
