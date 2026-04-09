@@ -3266,3 +3266,13 @@ Reviewed `steps/acm-create-rhcos-images.sh` and `templates/acm/rhcos-static-host
 > [S2I image info pasted] / the idea is that this runs on a bridge between connected and disconnected
 
 Identified crash cause in `templates/acm/rhcos-static-host.yaml.tmpl`: nginx config was mounted into `nginx.default.d/` (server-block context) but contained `proxy_cache_path` which is an http-level directive — nginx fails to start. Fixed by moving mount to `nginx.d/` (http-block context). Reverted unnecessary IMAGE parameter (hub is connected, image pull works fine). File is outside clusterfile git repo.
+
+### Prompt 16
+
+> just start over and create a clean proxy for our osImages
+> [context: runs on hub cluster which is connected — bridge to disconnected spokes]
+
+Rewrote `templates/acm/rhcos-static-host.yaml.tmpl` from scratch. Key fixes:
+1. Split nginx config into two files: `00-cache.conf` in `nginx.d/` (http context, for `proxy_cache_path`) and `proxy.conf` in `nginx.default.d/` (server context, location blocks only — no `server {}` wrapper)
+2. Added `fsGroup: 1001` so PVC is writable by the nginx user
+3. Removed erroneous `IMAGE` parameter (hub is connected)
