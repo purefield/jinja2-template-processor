@@ -3381,3 +3381,9 @@ Install running. Flow: acm-create-quay-config → acm-create-rhcos-images → se
 > ready to create the cluster now?
 
 Informed user that cluster creation was already kicked off in the previous session (Prompt 30 via manage-cluster.sh create ocp-cluster1 bmc agent). Offered to check current install status.
+
+### Prompt 32
+
+> I just ran it, confirm one more time.
+
+Attempted to check cluster status via oc get clusterdeployment/agentclusterinstall but no kubeconfig is configured in this session. Asked user to set KUBECONFIG or paste output.
