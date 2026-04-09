@@ -3393,3 +3393,9 @@ Attempted to check cluster status via oc get clusterdeployment/agentclusterinsta
 > curl against the rhcos proxy
 
 Curled https://rhcos.apps.acm.ola.purefield.nl/healthz — 200 OK. Proxy is running. 404s on specific paths expected (paths don't exist upstream on mirror.openshift.com). Asked user to paste AgentServiceConfig osImage URLs for 4.22.0-ec.3 to do a targeted curl.
+
+### Prompt 34
+
+> [nginx logs showing IPv6 connection failures to mirror.openshift.com]
+
+Root cause: nginx resolving mirror.openshift.com to CloudFront IPv6 addresses (2600:9000:...), pod has no IPv6 connectivity. Fix: changed resolver from `8.8.8.8 ipv6=off` to `172.30.0.10 valid=30s ipv6=off` (cluster-internal DNS, returns IPv4 only) in templates/acm/rhcos-static-host.yaml.tmpl. Template is untracked by git. User needs to re-apply template and rollout restart the deployment.
