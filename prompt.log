@@ -3538,3 +3538,9 @@ NNCP renders correctly with allow-extra-patch-ports: true under bridge.options. 
 > update the template
 
 Template already correct: allow-extra-patch-ports: true under bridge.options in vm-network-infra.yaml.tpl. Confirmed to user.
+
+### Prompt 59
+
+> not bridge.options, just bridge
+
+Moved allow-extra-patch-ports: true to direct child of bridge (not bridge.options) in vm-network-infra.yaml.tpl.
