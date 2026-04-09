@@ -3248,3 +3248,15 @@ Committed e5f6418.
 > ship it
 
 Released v3.18.16. All 5 version locations updated (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). 178 tests pass. Committed 3a293d9, tagged v3.18.16. Pushed main and tags. Built and pushed quay.io/dds/clusterfile-editor:v3.18.16 and :latest. Restarted container. Health check confirmed {"status":"ok","version":"3.18.16"}.
+
+### Prompt 13
+
+> continue
+
+New session started. Last release was v3.18.16. No in-progress work to resume. Asked user what they want to continue with.
+
+### Prompt 14
+
+> checkout the parent directory for the step/acm-create-rhcos* image proxy for our osImageHost what needs fixing
+
+Reviewed `steps/acm-create-rhcos-images.sh` and `templates/acm/rhcos-static-host.yaml.tmpl`. Found one bug: `append_target_from_clusterfile` checked `cluster.disconnected == "true"` (old boolean schema). Since the disconnected-osImageHost refactor (prompt 10), `cluster.disconnected` is now an object — yq returns `{}` not `"true"`, so all disconnected clusters were silently skipped. Fixed line 33 to use `.cluster.disconnected != null` check. File is outside clusterfile git repo, no commit possible.
