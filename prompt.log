@@ -3466,3 +3466,9 @@ Hosts discovered but pending user action. Checking agents for approval status an
 > we know that the MCS is failing due to image pull issues, the rhcos proxy is now showing any logs for the img or iso files
 
 Root cause confirmed: acm-create-rhcos-images.sh was not re-run after ZTP applied 4.22.0-ec.3 to AgentServiceConfig. osImage URLs still point to mirror.openshift.com, not local proxy. assisted-image-service can't pull in disconnected env. Fix: re-run acm-create-rhcos-images.sh, verify URLs patched to local proxy, then reset stuck agents.
+
+### Prompt 46
+
+> the proxy has no logs asking for them, manually I can verify they deliver / osImages pointing to mirror.openshift.com / cluster is not air-gapped
+
+Clarified: cluster has internet access, not truly air-gapped. osImage URLs on mirror.openshift.com are fine. RHCOS proxy not being hit is expected (not patched). MCS failure is separate — likely bootstrap can't pull control plane container images from mirror registry (registry.apps.acm.ola.purefield.nl). Asked user to share bootstrap logs / release-image.service journal.
