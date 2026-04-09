@@ -3496,3 +3496,9 @@ Install failed at 42%. DNS resolves correctly externally. VIP not up = bootstrap
 > [events + assisted-service logs]
 
 os-images-sync completed twice (fine). Workers in error (expected - no control plane). No pull errors visible in assisted-service. MCS not running on node1:22623. Bootstrap stuck before bootkube/MCS start. Root cause: likely container image pull failure on bootstrap node. virtctl console is only access path since SSH refused. Suggested journalctl -u release-image.service and bootkube.service via console.
+
+### Prompt 52
+
+> bootstrap confirmed up with VIP + machine IP / SSH key fails (Connection reset at kex) / after reboot to ISO SSH works but no VIP
+
+VIP IS claimed. Inference machine on 10.14.10.9 cannot reach CUDN network — all prior curl tests irrelevant. SSH reset is stale known_hosts conflict (different host key from installed RHCOS vs live ISO). Instructed user to ssh-keygen -R 10.14.10.15 then SSH in to check bootkube.service + release-image.service.
