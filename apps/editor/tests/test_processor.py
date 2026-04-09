@@ -209,7 +209,7 @@ account:
 cluster:
   name: test
   platform: baremetal
-  disconnected: true
+  disconnected: {}
   sshKeys:
     - /path/to/id_rsa.pub
   catalogSources:

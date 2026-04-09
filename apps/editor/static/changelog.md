@@ -2,7 +2,7 @@
 
 ## 3.18.15
 - **Disconnected Hang Fix**: `registries.conf` no longer emits `prefix = ""` for mirrors with an empty prefix — that empty string matched all registries and broke mirror routing, causing MCS on port 22623 to never start and installation to hang at ~42%
-- **Disconnected OS Images**: `os-images-sync` job is skipped in disconnected mode when no `cluster.osImages` URLs are set (mirror.openshift.com is unreachable); add `cluster.osImages.isoUrl` and `cluster.osImages.rootFSUrl` to your clusterfile to register RHCOS images from an internal mirror
+- **Disconnected API Change**: `cluster.disconnected` is now an object (presence = air-gapped mode); add `osImageHost: https://your-mirror` inside it and the template derives full RHCOS ISO and rootFS paths from the version automatically — no explicit URLs needed. Replaces `cluster.disconnected: true` and `cluster.osImages`.
 
 ## 3.18.14
 - **KubeVirt SNO Installer Platform**: `install-config.yaml.tpl` now renders kubevirt single-node installs as `platform: none`, so installer-facing output matches the expected bootstrap-in-place behavior

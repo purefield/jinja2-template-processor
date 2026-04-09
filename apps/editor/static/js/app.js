@@ -113,7 +113,7 @@ const CHANGELOG = [
     date: '2026-04-08',
     changes: [
       'registries.conf no longer emits prefix = "" for mirrors with an empty prefix — that empty string matched all registries and broke mirror routing, causing MCS (port 22623) to never start and installation to hang at ~42%',
-      'os-images-sync job is skipped in disconnected mode when no cluster.osImages URLs are set; add cluster.osImages.isoUrl and cluster.osImages.rootFSUrl to register RHCOS images from an internal mirror'
+      'os-images-sync job is skipped in disconnected mode without disconnected.osImageHost; cluster.disconnected is now an object (presence = air-gapped mode) with an optional osImageHost field — the template derives full RHCOS paths from the version automatically'
     ]
   },
   {
