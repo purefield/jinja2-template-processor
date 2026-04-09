@@ -3502,3 +3502,9 @@ os-images-sync completed twice (fine). Workers in error (expected - no control p
 > bootstrap confirmed up with VIP + machine IP / SSH key fails (Connection reset at kex) / after reboot to ISO SSH works but no VIP
 
 VIP IS claimed. Inference machine on 10.14.10.9 cannot reach CUDN network — all prior curl tests irrelevant. SSH reset is stale known_hosts conflict (different host key from installed RHCOS vs live ISO). Instructed user to ssh-keygen -R 10.14.10.15 then SSH in to check bootkube.service + release-image.service.
+
+### Prompt 53
+
+> cannot access bootstrap via SSH - key is correct but gets kicked out
+
+Root cause: Fedora 43 / OpenSSH 10.0 offers mlkem768x25519-sha256 (post-quantum KEX) first. Older RHCOS SSH daemon rejects it and resets at kex_exchange_identification. Fix: -o KexAlgorithms=-mlkem768x25519-sha256
