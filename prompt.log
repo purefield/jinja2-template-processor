@@ -3361,3 +3361,11 @@ Proxy fully operational on OpenShift:
 - rootFS 4.22.0-ec.3: 200 OK
 - Cache: x-cache-status: HIT on second GET (confirmed working)
 Final fix was removing fsGroup: 1001 — OpenShift auto-assigns from namespace range via restricted-v2 SCC.
+
+### Prompt 29
+
+> can we start to install?
+
+Identified the install script: `templates/ocp-on-ocp/setup.sh`. Takes args: clusterfile, bootDelivery (bmc/iso), api (agent/capi), virtualizationTarget. Sequence:
+1. `./setup.sh ocp-cluster1.clusterfile bmc agent <virt|acm>` — creates KubeVirt VMs + ACM ZTP resources; os-images-sync Job adds 4.22.0-ec.3 to AgentServiceConfig
+2. `./steps/acm-create-rhcos-images.sh ocp-cluster1.clusterfile` — patches AgentServiceConfig URLs to use local proxy
