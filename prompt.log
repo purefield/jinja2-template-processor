@@ -3508,3 +3508,9 @@ VIP IS claimed. Inference machine on 10.14.10.9 cannot reach CUDN network — al
 > cannot access bootstrap via SSH - key is correct but gets kicked out
 
 Root cause: Fedora 43 / OpenSSH 10.0 offers mlkem768x25519-sha256 (post-quantum KEX) first. Older RHCOS SSH daemon rejects it and resets at kex_exchange_identification. Fix: -o KexAlgorithms=-mlkem768x25519-sha256
+
+### Prompt 54
+
+> NNCP error: br-bond0-vmdata desired [bond0] but current [bond0, patch-cluster_udn_cudn...] / we need to update template
+
+Root cause: nmstate verifies OVS bridge port list strictly. OVN-K adds dynamic patch ports, NNCP desired state only has bond0 → verification fails. Fix: removed bridge.port stanza from OVS bridge spec in vm-network-infra.yaml.tpl, added bond0 as separate interface with controller: ovsBridge. nmstate now ensures bond0 membership without owning the complete port list.
