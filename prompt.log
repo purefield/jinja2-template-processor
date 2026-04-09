@@ -3260,3 +3260,9 @@ New session started. Last release was v3.18.16. No in-progress work to resume. A
 > checkout the parent directory for the step/acm-create-rhcos* image proxy for our osImageHost what needs fixing
 
 Reviewed `steps/acm-create-rhcos-images.sh` and `templates/acm/rhcos-static-host.yaml.tmpl`. Found one bug: `append_target_from_clusterfile` checked `cluster.disconnected == "true"` (old boolean schema). Since the disconnected-osImageHost refactor (prompt 10), `cluster.disconnected` is now an object — yq returns `{}` not `"true"`, so all disconnected clusters were silently skipped. Fixed line 33 to use `.cluster.disconnected != null` check. File is outside clusterfile git repo, no commit possible.
+
+### Prompt 15
+
+> [S2I image info pasted] / the idea is that this runs on a bridge between connected and disconnected
+
+Identified crash cause in `templates/acm/rhcos-static-host.yaml.tmpl`: nginx config was mounted into `nginx.default.d/` (server-block context) but contained `proxy_cache_path` which is an http-level directive — nginx fails to start. Fixed by moving mount to `nginx.d/` (http-block context). Reverted unnecessary IMAGE parameter (hub is connected, image pull works fine). File is outside clusterfile git repo.
