@@ -3369,3 +3369,9 @@ Final fix was removing fsGroup: 1001 — OpenShift auto-assigns from namespace r
 Identified the install script: `templates/ocp-on-ocp/setup.sh`. Takes args: clusterfile, bootDelivery (bmc/iso), api (agent/capi), virtualizationTarget. Sequence:
 1. `./setup.sh ocp-cluster1.clusterfile bmc agent <virt|acm>` — creates KubeVirt VMs + ACM ZTP resources; os-images-sync Job adds 4.22.0-ec.3 to AgentServiceConfig
 2. `./steps/acm-create-rhcos-images.sh ocp-cluster1.clusterfile` — patches AgentServiceConfig URLs to use local proxy
+
+### Prompt 30
+
+> kicked off via manage-cluster.sh create ocp-cluster1 bmc agent
+
+Install running. Flow: acm-create-quay-config → acm-create-rhcos-images → setup.sh (bmc/agent/virt) → common-monitor-cluster-install. Note: acm-create-rhcos-images runs before setup.sh so 4.22.0-ec.3 may not be in AgentServiceConfig yet — needs re-run after ZTP apply completes.
