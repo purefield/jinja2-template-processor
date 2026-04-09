@@ -3405,3 +3405,9 @@ Root cause: nginx resolving mirror.openshift.com to CloudFront IPv6 addresses (2
 > I copy the changes to the workstation and run them after diff, you can retry
 
 Retried curl after IPv6 resolver fix. IPv6 errors gone — nginx now connecting via IPv4 (CloudFront responded with full headers). 404 is expected (test path doesn't exist on mirror.openshift.com). Proxy is healthy. Asked user to provide actual AgentServiceConfig osImage URLs for 4.22.0-ec.3 to do a targeted test.
+
+### Prompt 36
+
+> [nginx logs still showing IPv6 errors at 14:04:54]
+
+Fix not yet applied — logs timestamped 14:04:54 match my previous curl, before deployment update. Instructed user to re-apply template + rollout restart before retrying.
