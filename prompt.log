@@ -3294,3 +3294,9 @@ Interpreted as: continue with the ocp-cluster1 clusterfile update (from prior qu
 > next: update the clusterfile for ocp-cluster1.*clusterfile in ../templates/ocp-on-ocp/ with the new disconnected options
 
 Updated `ocp-cluster1.clusterfile` and `ocp-cluster1.generated.clusterfile`: replaced `disconnected: true` with `disconnected:\n  osImageHost: https://rhcos.apps.acm.ola.purefield.nl`. Only cluster1 was disconnected. osImageHost derived from hub cluster name (acm) + domain (ola.purefield.nl) matching the rhcos proxy route default.
+
+### Prompt 20
+
+> query the rhos-images proxy and check if the 4.22.0-ec-3 img and iso are available
+
+Checked proxy at https://rhcos.apps.acm.ola.purefield.nl. URLs derived from template: pre-release path for versions with "-". Upstream mirror.openshift.com returns 200 for both files (ISO 1.25GB, rootFS 1.13GB). Proxy returns 404 — httpd-24 is running but the new proxy ConfigMap likely hasn't been deployed. Provided deploy command and re-check instructions.
