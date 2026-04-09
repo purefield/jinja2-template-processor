@@ -3460,3 +3460,9 @@ Schema boolean issue: user had not pulled latest (already fixed in prior commit)
 > oc get agentclusterinstall ocp-cluster1 -n ocp-cluster1 ... Cluster has hosts pending user action
 
 Hosts discovered but pending user action. Checking agents for approval status and validation failures.
+
+### Prompt 45
+
+> we know that the MCS is failing due to image pull issues, the rhcos proxy is now showing any logs for the img or iso files
+
+Root cause confirmed: acm-create-rhcos-images.sh was not re-run after ZTP applied 4.22.0-ec.3 to AgentServiceConfig. osImage URLs still point to mirror.openshift.com, not local proxy. assisted-image-service can't pull in disconnected env. Fix: re-run acm-create-rhcos-images.sh, verify URLs patched to local proxy, then reset stuck agents.
