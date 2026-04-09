@@ -3330,3 +3330,11 @@ Iterated locally with podman to find and fix all issues:
 4. IPv6 failures on CloudFront DNS — added `resolver 8.8.8.8 ipv6=off`
 5. Missing `include /usr/share/nginx/modules/*.conf` for SSL module
 All changes validated locally: healthz 200, proxy 200, cache HIT on second GET. Template updated.
+
+### Prompt 25
+
+> add it to the steps/acm-create-rhcos-images.sh to apply to openshift
+
+Added two lines after the oc apply in `steps/acm-create-rhcos-images.sh`:
+1. `oc delete cm ${appName}-httpd -n $namespace --ignore-not-found` — cleans up orphaned httpd ConfigMap from previous iteration
+2. `oc rollout status deployment/$appName -n $namespace --timeout=120s` — waits for the rollout to complete before polling readyReplicas (handles ConfigMap/Deployment spec changes that trigger a new rollout)
