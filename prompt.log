@@ -3417,3 +3417,9 @@ Fix not yet applied — logs timestamped 14:04:54 match my previous curl, before
 > can we watch the configmap and restart on change
 
 Updated acm-create-rhcos-images.sh: after oc apply, computes sha256 of live ConfigMap's nginx.conf and patches deployment pod template annotation checksum/config. Kubernetes rolls out automatically only when hash changes. No extra operators needed.
+
+### Prompt 38
+
+> applied, retest
+
+IPv6 fix confirmed working — proxy now connects upstream via IPv4 (CloudFront 404 response received, no connection errors). 404s are expected (test paths don't exist). healthz: 200. Asked user to provide actual AgentServiceConfig osImage URLs for real end-to-end test.
