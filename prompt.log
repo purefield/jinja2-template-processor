@@ -3526,3 +3526,9 @@ Reverted vm-network-infra.yaml.tpl change. My controller: approach is incorrect 
 > add allow-extra-patch-ports to bridge options
 
 Added allow-extra-patch-ports: true to bridge.options in the OVS bridge NNCP spec in vm-network-infra.yaml.tpl. This tells nmstate to not fail verification when OVN-K adds extra patch ports to the bridge beyond what's in the desired state.
+
+### Prompt 57
+
+> still failing after change / [shows spec with bridge.options.allow-extra-patch-ports: true rendered correctly]
+
+NNCP renders correctly with allow-extra-patch-ports: true under bridge.options. Option is accepted by API server but nmstate on node still fails. Investigating whether nmstate 2.2.56 honors this option at runtime, or if it was introduced in a later version.
