@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.14';
+let APP_VERSION = '3.18.15';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.15',
+    date: '2026-04-08',
+    changes: [
+      'registries.conf no longer emits prefix = "" for mirrors with an empty prefix — that empty string matched all registries and broke mirror routing, causing MCS (port 22623) to never start and installation to hang at ~42%',
+      'os-images-sync job is skipped in disconnected mode when no cluster.osImages URLs are set; add cluster.osImages.isoUrl and cluster.osImages.rootFSUrl to register RHCOS images from an internal mirror'
+    ]
+  },
   {
     version: '3.18.14',
     date: '2026-04-08',
