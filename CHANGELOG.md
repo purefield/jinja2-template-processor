@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## v3.18.16 (2026-04-08)
 - **disconnected-osImageHost** — `cluster.disconnected` is now an object (presence = disconnected mode) with an optional `osImageHost` field (scheme+host only); the template derives the full RHCOS ISO and rootFS paths from `cluster.version` using the same directory structure as mirror.openshift.com, eliminating the need for explicit URL inputs. Replaces the former `cluster.disconnected: true` boolean and `cluster.osImages` field.
 
 ## v3.18.15 (2026-04-08)

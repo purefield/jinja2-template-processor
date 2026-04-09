@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.16
+- **Disconnected API**: `cluster.disconnected` is now an object — its presence enables air-gapped mode. Set `osImageHost: https://your-mirror` inside it and the template derives full RHCOS ISO and rootFS paths from the cluster version automatically. Replaces `cluster.disconnected: true` and `cluster.osImages`.
+
 ## 3.18.15
 - **Disconnected Hang Fix**: `registries.conf` no longer emits `prefix = ""` for mirrors with an empty prefix — that empty string matched all registries and broke mirror routing, causing MCS on port 22623 to never start and installation to hang at ~42%
 - **Disconnected API Change**: `cluster.disconnected` is now an object (presence = air-gapped mode); add `osImageHost: https://your-mirror` inside it and the template derives full RHCOS ISO and rootFS paths from the version automatically — no explicit URLs needed. Replaces `cluster.disconnected: true` and `cluster.osImages`.

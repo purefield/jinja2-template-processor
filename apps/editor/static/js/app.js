@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.15';
+let APP_VERSION = '3.18.16';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.16',
+    date: '2026-04-08',
+    changes: [
+      'cluster.disconnected is now an object — its presence enables air-gapped mode, replacing the boolean cluster.disconnected: true',
+      'Set disconnected.osImageHost to your internal mirror hostname and the template derives full RHCOS ISO and rootFS paths from the cluster version automatically — no explicit URLs needed',
+      'cluster.osImages removed; migration: disconnected: true → disconnected: {} (or disconnected: {osImageHost: https://...})'
+    ]
+  },
   {
     version: '3.18.15',
     date: '2026-04-08',
