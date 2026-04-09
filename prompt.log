@@ -3387,3 +3387,9 @@ Informed user that cluster creation was already kicked off in the previous sessi
 > I just ran it, confirm one more time.
 
 Attempted to check cluster status via oc get clusterdeployment/agentclusterinstall but no kubeconfig is configured in this session. Asked user to set KUBECONFIG or paste output.
+
+### Prompt 33
+
+> curl against the rhcos proxy
+
+Curled https://rhcos.apps.acm.ola.purefield.nl/healthz — 200 OK. Proxy is running. 404s on specific paths expected (paths don't exist upstream on mirror.openshift.com). Asked user to paste AgentServiceConfig osImage URLs for 4.22.0-ec.3 to do a targeted curl.
