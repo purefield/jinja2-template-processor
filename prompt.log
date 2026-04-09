@@ -3514,3 +3514,9 @@ Root cause: Fedora 43 / OpenSSH 10.0 offers mlkem768x25519-sha256 (post-quantum 
 > NNCP error: br-bond0-vmdata desired [bond0] but current [bond0, patch-cluster_udn_cudn...] / we need to update template
 
 Root cause: nmstate verifies OVS bridge port list strictly. OVN-K adds dynamic patch ports, NNCP desired state only has bond0 → verification fails. Fix: removed bridge.port stanza from OVS bridge spec in vm-network-infra.yaml.tpl, added bond0 as separate interface with controller: ovsBridge. nmstate now ensures bond0 membership without owning the complete port list.
+
+### Prompt 55
+
+> double check this suggested change, I have a fix to allow this behavior
+
+Reverted vm-network-infra.yaml.tpl change. My controller: approach is incorrect for OVS — port membership must be declared from bridge side via bridge.port. controller: works for Linux bridges/bonds but not OVS. Waiting for user's fix.
