@@ -3490,3 +3490,9 @@ All 3 masters now correctly waiting for ignition from API VIP 10.14.10.11. VIP n
 > all 3 nodes are stuck / install monitor showing error 42% / dns:fail vip:fail / os-images sync: not present
 
 Install failed at 42%. DNS resolves correctly externally. VIP not up = bootstrap on node1 stuck (image pull suspected). os-images-sync job missing from namespace = ZTP likely applied before osImageHost template change. All 3 masters waiting for ignition but MCS never came up. Investigating bootstrap state and os-images-sync.
+
+### Prompt 51
+
+> [events + assisted-service logs]
+
+os-images-sync completed twice (fine). Workers in error (expected - no control plane). No pull errors visible in assisted-service. MCS not running on node1:22623. Bootstrap stuck before bootkube/MCS start. Root cause: likely container image pull failure on bootstrap node. virtctl console is only access path since SSH refused. Suggested journalctl -u release-image.service and bootkube.service via console.
