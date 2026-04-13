@@ -68,7 +68,8 @@ items:
         "name": "{{ netName }}",
         "type": "bridge",
         "bridge": "{{ bridge }}",
-        "promiscMode": true
+        "promiscMode": true,
+        "macspoofchk": false
       }{% endif %}{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}

@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+- **linux-bridge-macspoofchk** — Disable MAC spoofing check (`macspoofchk: false`) in linux-bridge NAD config so nested KubeVirt VMs with locally-administered MACs can pass traffic through the bridge without being dropped
+- **devfile** — Add OpenShift Dev Spaces devfile for developing this project with Claude Code, Python, and Node tooling
+- **claude-debug-rbac** — Add scoped `claude-debug` service account RBAC for KubeVirt/OVN network troubleshooting (no secrets access)
+
 ## v3.18.16 (2026-04-08)
 - **disconnected-osImageHost** — `cluster.disconnected` is now an object (presence = disconnected mode) with an optional `osImageHost` field (scheme+host only); the template derives the full RHCOS ISO and rootFS paths from `cluster.version` using the same directory structure as mirror.openshift.com, eliminating the need for explicit URL inputs. Replaces the former `cluster.disconnected: true` boolean and `cluster.osImages` field.
 
