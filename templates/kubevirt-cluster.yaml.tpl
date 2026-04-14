@@ -68,8 +68,7 @@ items:
         "name": "{{ netName }}",
         "type": "bridge",
         "bridge": "{{ bridge }}",
-        "promiscMode": true,
-        "macspoofchk": false
+        "promiscMode": true
       }{% endif %}{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}
 {%- set role    = 'master' if host.role == 'control' else 'worker' -%}
@@ -151,9 +150,10 @@ items:
           node: {{ vmname }}
           cluster: {{ cluster.name }}
           role: {{ role }}
-      spec:{% if nsKey %}
+      spec:{% if nsKey and controlCount > 1 %}
         nodeSelector:
           {{ nsKey }}: {{ nsKey }}{{ vgNode }}{% endif %}
+{% if controlCount > 1 %}
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
@@ -168,8 +168,9 @@ items:
                     - key: role
                       operator: In
                       values:
-                      - {{ role }}
+                        - {{ role }}
                   topologyKey: "kubernetes.io/hostname"
+{% endif %}
         domain:
           memory:
             guest: {{ memory }}Gi
