@@ -3556,3 +3556,13 @@ Root cause identified: node2 is in discovery/live ISO phase. agent.service tries
 > fix our templates to prevent this in the future
 
 Root cause: ignitionConfigOverride (policy.json) was only generated for disconnected+mirrors. But mirror-by-digest-only=true forces ALL pulls through mirror regardless of disconnected flag. Mirror has no signatures → RHCOS policy rejects. Fix: changed condition from `enableDisconnected and hasMirrorRegistries` to just `hasMirrorRegistries` in acm-ztp.yaml.tpl and acm-capi-m3.yaml.tpl. Updated tests accordingly. Committed + tagged.
+
+### Prompt 62
+
+> [plan pasted]: Normalize KubeVirt VM Networking Defaults and Remove Lab-Specific VLAN Assumptions
+
+Removed lab-specific `bridge-1410` defaults from schema and template. Changes:
+- `schema/clusterfile.schema.json`: removed `default: "bridge-1410"` from `linuxBridge.bridge`, added `required: ["bridge"]` to `linuxBridge` object, updated descriptions to note site-specific naming convention.
+- `templates/kubevirt-cluster.yaml.tpl`: changed `| default("bridge-1410")` to `| default("")` so no VLAN-specific bridge name is ever inferred.
+- `tests/test_templates.py`: added `test_linux_bridge_no_default_bridge_name` asserting the rendered NAD never contains `bridge-1410` when no bridge is provided.
+- All 181 tests pass. Committed `af7dedc`, tagged `remove-lab-bridge-defaults`, pushed.
