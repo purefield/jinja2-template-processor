@@ -1240,6 +1240,40 @@ class TestKubevirtClusterTemplate:
             assert pvc['spec']['storageClassName'] == 'lvms-vg1', \
                 f"Data PVC should use performance (lvms-vg1), got {pvc['spec']['storageClassName']}"
 
+    def test_linux_bridge_network_override(self, template_env):
+        """linux-bridge network renders a NAD and uses the requested host bridge."""
+        data = self.kubevirt_cluster_data(num_control=1, num_worker=0)
+        data['network']['primary']['vlan'] = 1420
+        data['plugins']['kubevirt']['network'] = {
+            'type': 'linux-bridge',
+            'linuxBridge': {
+                'bridge': 'br-bond0-v1420'
+            }
+        }
+
+        result = self.render_template(template_env, data)
+        items = result['items']
+        nad = next(item for item in items if item['kind'] == 'NetworkAttachmentDefinition')
+        vm = self.get_vm(result)
+        namespace = next(item for item in items if item['kind'] == 'Namespace')
+
+        assert namespace['metadata']['name'] == 'kv-test-cluster'
+        assert 'labels' not in namespace['metadata'], "linux-bridge mode should not add CUDN vlan labels"
+        assert nad['metadata']['name'] == 'virtualmachine-net'
+        assert '"bridge": "br-bond0-v1420"' in nad['spec']['config']
+        assert vm['spec']['template']['spec']['networks'][0]['multus']['networkName'] == 'kv-test-cluster/virtualmachine-net'
+
+    def test_linux_bridge_no_default_bridge_name(self, template_env):
+        """linux-bridge with no bridge specified must not fall back to a lab-specific default."""
+        data = self.kubevirt_cluster_data(num_control=1, num_worker=0)
+        data['plugins']['kubevirt']['network'] = {'type': 'linux-bridge'}
+
+        result = self.render_template(template_env, data)
+        nad = next(item for item in result['items'] if item['kind'] == 'NetworkAttachmentDefinition')
+
+        assert 'bridge-1410' not in nad['spec']['config'], \
+            "linux-bridge NAD must not embed a lab-specific bridge name when none is provided"
+
 
 class TestAcmZtpTemplate:
     """Test the acm-ztp.yaml.tpl template for TPM at cluster level."""

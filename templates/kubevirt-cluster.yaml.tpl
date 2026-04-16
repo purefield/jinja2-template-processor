@@ -27,8 +27,8 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- set kvnet = kv.network | default({}) -%}
 {%- set netType = kvnet.type | default("cudn") -%}
 {%- set vlanId = network.primary.vlan | default(kvnet.vlan | default(false), true) -%}
-{%- set lbOpts = kvnet.linuxBridge | default({}) -%}
-{%- set bridge = lbOpts.bridge | default("bridge-1410") -%}
+{%- set lbOpts = kvnet.linuxBridge | default(kvnet['linux-bridge'] | default({}), true) -%}
+{%- set bridge = lbOpts.bridge | default("") -%}
 {%- if netType == "cudn" -%}
   {%- set netName = kvnet.name | default("cudn-vmdata-" + vlanId | string) -%}
 {%- elif netType == "nad" -%}
