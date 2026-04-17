@@ -33,7 +33,7 @@ docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-v
 {%- elif netType == "nad" -%}
   {%- set netName = kvnet.name -%}
 {%- else -%}
-  {%- set netName = kvnet.name | default("vmnet-" + vlanId | string) -%}
+  {%- set netName = kvnet.name | default("vmnet-" + (vlanId | string if vlanId else "trunk")) -%}
 {%- endif -%}
 {%- set netRef = netName if netType == "nad" and "/" in netName else namespace ~ "/" ~ netName -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}

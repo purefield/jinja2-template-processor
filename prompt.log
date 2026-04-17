@@ -3636,3 +3636,25 @@ Reverted linuxBridge to a plain string in schema, simplified template (dropped l
 > ship it, this time with the skill and all the trimmings, not in plan mode anymore
 
 Full versioned release v3.18.17: bumped APP_VERSION, updated CHANGELOG.md, static/changelog.md, app.js CHANGELOG array and APP_VERSION. Building and deploying container.
+
+### Prompt 68
+
+> continue
+
+Fixed vmnet-False edge case. Surfaced second NIC gap.
+
+> use trunk if vlan-id is not set
+
+Changed fallback from vmnet-net to vmnet-trunk.
+
+> I currently have a template to setup the trunk linux-bridge...
+
+Recommended keeping trunk NNCP outside kubevirt-cluster.yaml.tpl — it's virt infra, not per-cluster resources.
+
+> ok, whats the final plan
+
+Summarized: vmnet-trunk fix (uncommitted), second NIC for nested VMs, MTU propagation, trunk NNCP stays external.
+
+> br-bond0-trunk is the only interface, we will use vlan inside the kubevirt provisioned cluster. so move on, no need for secondary network, focus on mtu next
+
+Dropped second NIC work. Moving to MTU propagation.
