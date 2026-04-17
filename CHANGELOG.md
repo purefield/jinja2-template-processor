@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## v3.18.18 (2026-04-17)
+
+- **mtu-propagation** — `network.primary.mtu` now flows through to linux-bridge NAD CNI config in `kubevirt-cluster`; secondary-network-setup NNCP bridge interface and NAD CNI config also carry MTU when set
+
 ## v3.18.17 (2026-04-17)
 
 - **linux-bridge-normalize** — `linuxBridge` is now a plain string (bridge device name); removes lab-specific `bridge-1410` default; NAD named `vmnet-{vlanId}` parallel to `cudn-vmdata-{vlanId}`; `macspoofchk: false` on linux-bridge NADs for nested VM traffic

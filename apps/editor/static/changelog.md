@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.18
+- **MTU Propagation**: `network.primary.mtu` now sets MTU on the linux-bridge NAD CNI config in `kubevirt-cluster`. Secondary network NNCP bridge interfaces and NAD CNI configs also carry MTU when set. All conditional — omitted when mtu is not defined.
+
 ## 3.18.17
 - **linux-bridge Normalization**: `linuxBridge` is now a plain string (the bridge device name, e.g. `br-bond0-1410`). Removes the lab-specific `bridge-1410` default — bridge must be explicit. NADs are now named `vmnet-{vlanId}` (parallel to `cudn-vmdata-{vlanId}`). `macspoofchk: false` added to linux-bridge NADs for nested VM traffic.
 

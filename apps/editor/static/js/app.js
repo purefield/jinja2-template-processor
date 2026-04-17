@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.17';
+let APP_VERSION = '3.18.18';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.18',
+    date: '2026-04-17',
+    changes: [
+      'network.primary.mtu now sets MTU on the linux-bridge NAD CNI config in kubevirt-cluster',
+      'Secondary network NNCP bridge interfaces and NAD CNI configs also carry MTU when set',
+      'All conditional — field omitted when mtu is not defined'
+    ]
+  },
   {
     version: '3.18.17',
     date: '2026-04-17',
