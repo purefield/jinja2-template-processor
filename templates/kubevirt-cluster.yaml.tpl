@@ -67,7 +67,8 @@ items:
         "name": "{{ netName }}",
         "type": "bridge",
         "bridge": "{{ bridge }}",
-        "macspoofchk": false,
+        "macspoofchk": false,{% if network.primary.mtu %}
+        "mtu": {{ network.primary.mtu }},{% endif %}
         "promiscMode": true
       }{% endif %}{% for name, host in hosts.items() %}
 {%- set vmname  = name.replace('.', '-') -%}

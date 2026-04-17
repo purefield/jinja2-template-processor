@@ -3658,3 +3658,9 @@ Summarized: vmnet-trunk fix (uncommitted), second NIC for nested VMs, MTU propag
 > br-bond0-trunk is the only interface, we will use vlan inside the kubevirt provisioned cluster. so move on, no need for secondary network, focus on mtu next
 
 Dropped second NIC work. Moving to MTU propagation.
+
+### Prompt 69
+
+> ok, whats the final plan / br-bond0-trunk is the only interface... focus on mtu next
+
+Committed vmnet-trunk fallback. Implemented MTU propagation: NNCP bridge + NAD CNI in secondary-network-setup.yaml.tpl; NAD CNI in kubevirt-cluster.yaml.tpl via network.primary.mtu. Removed separate mtu schema field — derives from network.primary.mtu directly. Dropped lbMtu variable (noise). 181 tests pass.

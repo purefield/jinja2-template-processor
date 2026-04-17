@@ -40,7 +40,8 @@ items:{%- set enabledFalse='{"enabled":false}' %}{% for network in network.secon
           ipv6: { enabled: false }{% endif %}{% if network.type == 'bridge' %}{% set interfaceName='br-' ~ interface | replace('.', '-v')%}
         - name: {{ interfaceName }}
           type: linux-bridge
-          state: {{ network.state|default('up')}}
+          state: {{ network.state|default('up')}}{% if network.mtu %}
+          mtu: {{ network.mtu }}{% endif %}
           bridge:
             options: { stp: { enabled: false }}
             port:
@@ -68,7 +69,8 @@ items:{%- set enabledFalse='{"enabled":false}' %}{% for network in network.secon
         "type": "macvlan",
         "master": "{{ interface }}",
         "linkInContainer": false,
-        "mode": "bridge",{% endif %}
+        "mode": "bridge",{% endif %}{% if network.mtu %}
+        "mtu": {{ network.mtu }},{% endif %}
         "cniVersion": "0.3.1",
         "ipam": {{% if network.subnet == 'dhcp' %}
            "type": "dhcp"{% else %}
