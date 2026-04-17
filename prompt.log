@@ -3588,3 +3588,9 @@ Added `if/then` constraint to `plugins.kubevirt.network` in `schema/clusterfile.
 > I need to have a clean repo and linux-bridge on my cluster, go
 
 [ExitPlanMode rejected — user asked to explain schema changes first; addressed in this prompt]
+
+### Prompt 64
+
+> review our current changes, I also setup the nesting support. we need to rename our NAD to support multiple virtualmachine-net instances. maybe use vlan-{vlanid} in the name, come up with something clean following other patterns
+
+Reviewed working tree: user added `macspoofchk: false` to linux-bridge NAD and updated test assertions. Renamed linux-bridge NAD from hardcoded `"virtualmachine-net"` to `kvnet.name | default("vmnet-" + vlanId | string)`, following the CUDN pattern of `cudn-vmdata-{vlanId}`. Updated test assertions for new name. All 181 tests pass.

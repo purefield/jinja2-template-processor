@@ -1259,9 +1259,11 @@ class TestKubevirtClusterTemplate:
 
         assert namespace['metadata']['name'] == 'kv-test-cluster'
         assert 'labels' not in namespace['metadata'], "linux-bridge mode should not add CUDN vlan labels"
-        assert nad['metadata']['name'] == 'virtualmachine-net'
+        assert nad['metadata']['name'] == 'vmnet-1420'
         assert '"bridge": "br-bond0-v1420"' in nad['spec']['config']
-        assert vm['spec']['template']['spec']['networks'][0]['multus']['networkName'] == 'kv-test-cluster/virtualmachine-net'
+        assert '"macspoofchk": false' in nad['spec']['config']
+        assert '"promiscMode": true' in nad['spec']['config']
+        assert vm['spec']['template']['spec']['networks'][0]['multus']['networkName'] == 'kv-test-cluster/vmnet-1420'
 
     def test_linux_bridge_no_default_bridge_name(self, template_env):
         """linux-bridge with no bridge specified must not fall back to a lab-specific default."""
