@@ -2202,12 +2202,12 @@
                       "title": "Bridge Name",
                       "type": "string",
                       "minLength": 1,
-                      "default": "bridge-1410",
-                      "description": "Linux bridge device name for the NetworkAttachmentDefinition CNI config."
+                      "description": "Linux bridge device name for the NetworkAttachmentDefinition CNI config. Required when type is linux-bridge. Use the site bridge name, e.g. br-<interface>-<vlan>."
                     }
                   },
+                  "required": ["bridge"],
                   "additionalProperties": false,
-                  "description": "Options for linux-bridge NetworkAttachmentDefinition."
+                  "description": "Options for linux-bridge NetworkAttachmentDefinition. Required when type is linux-bridge."
                 },
                 "nad": {
                   "title": "NAD Options",
@@ -2216,6 +2216,13 @@
                   "additionalProperties": false,
                   "description": "Placeholder for NAD-specific options. Use network.name for the NAD name."
                 }
+              },
+              "if": {
+                "properties": { "type": { "const": "linux-bridge" } },
+                "required": ["type"]
+              },
+              "then": {
+                "required": ["linuxBridge"]
               },
               "required": [
                 "type"
