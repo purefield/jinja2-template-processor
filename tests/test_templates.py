@@ -1246,9 +1246,7 @@ class TestKubevirtClusterTemplate:
         data['network']['primary']['vlan'] = 1420
         data['plugins']['kubevirt']['network'] = {
             'type': 'linux-bridge',
-            'linuxBridge': {
-                'bridge': 'br-bond0-v1420'
-            }
+            'linuxBridge': 'br-bond0-v1420'
         }
 
         result = self.render_template(template_env, data)

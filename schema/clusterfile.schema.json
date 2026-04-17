@@ -2195,19 +2195,10 @@
                   "description": "VLAN ID for CUDN mode. Labels the namespace with vlan-<id> for CUDN selector match and derives the default network name."
                 },
                 "linuxBridge": {
-                  "title": "Linux Bridge Options",
-                  "type": "object",
-                  "properties": {
-                    "bridge": {
-                      "title": "Bridge Name",
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Linux bridge device name for the NetworkAttachmentDefinition CNI config. Required when type is linux-bridge. Use the site bridge name, e.g. br-<interface>-<vlan>."
-                    }
-                  },
-                  "required": ["bridge"],
-                  "additionalProperties": false,
-                  "description": "Options for linux-bridge NetworkAttachmentDefinition. Required when type is linux-bridge."
+                  "title": "Linux Bridge Name",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Linux bridge device name for the NAD CNI config, e.g. br-bond0-1410."
                 },
                 "nad": {
                   "title": "NAD Options",

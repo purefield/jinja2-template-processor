@@ -3616,3 +3616,17 @@ Showed clean diff from main across all three changed files.
 > ship it if clean
 
 Exited plan mode. Running ship-it: branch-to-main, 181 tests pass, committing cleanup, updating CHANGELOG, merging to main.
+
+### Prompt 66
+
+> [ ERROR ] Schema validation errors: plugins.kubevirt.network.linuxBridge: 'br-bond0-trunk' is not of type 'object'
+
+Diagnosed: ocp-cluster1.generated.clusterfile uses `linuxBridge: br-bond0-trunk` (string) but schema required an object. Root cause: af7dedc introduced the object structure this session.
+
+> when did that change?
+
+Identified af7dedc as the commit that changed linuxBridge from a simple value to an object with bridge key.
+
+> it should just be a string
+
+Reverted linuxBridge to a plain string in schema, simplified template (dropped lbOpts, read kvnet.linuxBridge directly), updated test fixture. 181 tests pass.
