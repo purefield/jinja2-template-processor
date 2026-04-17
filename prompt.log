@@ -3566,3 +3566,25 @@ Removed lab-specific `bridge-1410` defaults from schema and template. Changes:
 - `templates/kubevirt-cluster.yaml.tpl`: changed `| default("bridge-1410")` to `| default("")` so no VLAN-specific bridge name is ever inferred.
 - `tests/test_templates.py`: added `test_linux_bridge_no_default_bridge_name` asserting the rendered NAD never contains `bridge-1410` when no bridge is provided.
 - All 181 tests pass. Committed `af7dedc`, tagged `remove-lab-bridge-defaults`, pushed.
+
+### Prompt 63
+
+> explain the schema change from default to required
+
+Explained that `required: ["bridge"]` inside `linuxBridge` only fires when the author includes a `linuxBridge:` block — CUDN users are unaffected. Identified gap: `type: linux-bridge` with no `linuxBridge` block at all passes schema validation silently.
+
+> with cudn bridge is not required, explain
+
+Confirmed the constraint is scoped to the `linuxBridge` sub-object. Proposed `if/then` to close the gap: require `linuxBridge` when `type == linux-bridge`.
+
+> schema supports this universally?
+
+Checked: schema uses draft 2020-12. `if/then` supported since draft-07 — no compat concern.
+
+> ok, implement it
+
+Added `if/then` constraint to `plugins.kubevirt.network` in `schema/clusterfile.schema.json`. Validated JSON and ran tests (2 passed). Smoke-tested: missing `linuxBridge` with `type: linux-bridge` correctly raises `'linuxBridge' is a required property`.
+
+> I need to have a clean repo and linux-bridge on my cluster, go
+
+[ExitPlanMode rejected — user asked to explain schema changes first; addressed in this prompt]

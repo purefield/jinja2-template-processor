@@ -2217,6 +2217,13 @@
                   "description": "Placeholder for NAD-specific options. Use network.name for the NAD name."
                 }
               },
+              "if": {
+                "properties": { "type": { "const": "linux-bridge" } },
+                "required": ["type"]
+              },
+              "then": {
+                "required": ["linuxBridge"]
+              },
               "required": [
                 "type"
               ],
