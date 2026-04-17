@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.18.17
+- **linux-bridge Normalization**: `linuxBridge` is now a plain string (the bridge device name, e.g. `br-bond0-1410`). Removes the lab-specific `bridge-1410` default — bridge must be explicit. NADs are now named `vmnet-{vlanId}` (parallel to `cudn-vmdata-{vlanId}`). `macspoofchk: false` added to linux-bridge NADs for nested VM traffic.
+
 ## 3.18.16
 - **Disconnected API**: `cluster.disconnected` is now an object — its presence enables air-gapped mode. Set `osImageHost: https://your-mirror` inside it and the template derives full RHCOS ISO and rootFS paths from the cluster version automatically. Replaces `cluster.disconnected: true` and `cluster.osImages`.
 

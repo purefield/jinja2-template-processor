@@ -3630,3 +3630,9 @@ Identified af7dedc as the commit that changed linuxBridge from a simple value to
 > it should just be a string
 
 Reverted linuxBridge to a plain string in schema, simplified template (dropped lbOpts, read kvnet.linuxBridge directly), updated test fixture. 181 tests pass.
+
+### Prompt 67
+
+> ship it, this time with the skill and all the trimmings, not in plan mode anymore
+
+Full versioned release v3.18.17: bumped APP_VERSION, updated CHANGELOG.md, static/changelog.md, app.js CHANGELOG array and APP_VERSION. Building and deploying container.

@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.16';
+let APP_VERSION = '3.18.17';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.17',
+    date: '2026-04-17',
+    changes: [
+      'linuxBridge is now a plain string (the bridge device name, e.g. br-bond0-1410) — no more nested object wrapper',
+      'Removes the lab-specific bridge-1410 default — bridge must be explicit',
+      'linux-bridge NADs named vmnet-{vlanId}, parallel to cudn-vmdata-{vlanId}',
+      'macspoofchk: false added to linux-bridge NADs to allow nested VM MAC traffic'
+    ]
+  },
   {
     version: '3.18.16',
     date: '2026-04-08',
