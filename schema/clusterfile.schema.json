@@ -853,9 +853,7 @@
                 "enum": [
                   "linux-bridge",
                   "bond",
-                  "vlan",
-                  "ethernet",
-                  "ovs-bridge"
+                  "vlan"
                 ],
                 "description": "NMState interface type.",
                 "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
@@ -2181,31 +2179,24 @@
                     "nad"
                   ],
                   "default": "cudn",
-                  "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition by name."
+                  "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition — set nad to its name."
                 },
-                "name": {
-                  "title": "Network Name",
+                "nad": {
+                  "title": "NAD Name",
                   "type": "string",
                   "minLength": 1,
-                  "description": "Name of the network resource VMs attach to. For 'cudn' defaults to cudn-vmdata-<vlan>. For 'nad' this is the pre-existing NAD name. Not used for 'linux-bridge'."
+                  "description": "NetworkAttachmentDefinition name. Use 'namespace/name' for cross-namespace. For type: nad — the pre-existing NAD to attach VMs to. For type: cudn — overrides the default cudn-vmdata-<vlan> name. For type: linux-bridge — overrides the auto-generated vmnet-<vlan> name."
                 },
                 "vlan": {
-                  "title": "VLAN ID",
+                  "title": "VM VLAN ID",
                   "$ref": "#/$defs/vlanId",
-                  "description": "VLAN ID for CUDN mode. Labels the namespace with vlan-<id> for CUDN selector match and derives the default network name."
+                  "description": "VM data-plane VLAN ID. Transparent to OpenShift — used to name the NAD (vmnet-<vlan> or cudn-vmdata-<vlan>). Defaults to network.primary.vlan when not set."
                 },
                 "linuxBridge": {
                   "title": "Linux Bridge Name",
                   "type": "string",
                   "minLength": 1,
                   "description": "Linux bridge device name for the NAD CNI config, e.g. br-bond0-1410."
-                },
-                "nad": {
-                  "title": "NAD Options",
-                  "type": "object",
-                  "properties": {},
-                  "additionalProperties": false,
-                  "description": "Placeholder for NAD-specific options. Use network.name for the NAD name."
                 }
               },
               "if": {
