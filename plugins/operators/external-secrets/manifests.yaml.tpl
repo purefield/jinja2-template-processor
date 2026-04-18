@@ -12,5 +12,6 @@ spec:
   installPlanApproval: {{ es.approval | default("Automatic") }}
   name: external-secrets-operator
   source: {{ es.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if es.version %}
+  startingCSV: {{ es.version }}{% endif %}
 {%- endif -%}

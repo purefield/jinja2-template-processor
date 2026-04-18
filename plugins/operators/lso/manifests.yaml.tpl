@@ -28,7 +28,8 @@ spec:
   installPlanApproval: {{ lso.approval | default("Automatic") }}
   name: local-storage-operator
   source: {{ lso.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if lso.version %}
+  startingCSV: {{ lso.version }}{% endif %}
 ---
 apiVersion: local.storage.openshift.io/v1alpha1
 kind: LocalVolumeSet

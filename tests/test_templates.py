@@ -2166,7 +2166,7 @@ class TestLvmOperator:
         assert 'LVMCluster' in kinds
 
         sub = next(d for d in docs if d['kind'] == 'Subscription')
-        assert sub['spec']['channel'] == 'stable'
+        assert sub['spec']['channel'] == 'stable-4.18'
         assert sub['spec']['name'] == 'lvms-operator'
         assert sub['metadata']['namespace'] == 'openshift-storage'
 
@@ -2727,7 +2727,7 @@ class TestAcmOperator:
         assert 'Provisioning' in kinds
 
         sub = next(d for d in docs if d['kind'] == 'Subscription')
-        assert sub['spec']['channel'] == 'release-2.14'
+        assert sub['spec']['channel'] == 'release-2.15'
         assert sub['spec']['name'] == 'advanced-cluster-management'
 
         mch = next(d for d in docs if d['kind'] == 'MultiClusterHub')

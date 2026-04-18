@@ -26,5 +26,6 @@ spec:
   installPlanApproval: {{ cm.approval | default("Automatic") }}
   name: openshift-cert-manager-operator
   source: {{ cm.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if cm.version %}
+  startingCSV: {{ cm.version }}{% endif %}
 {%- endif -%}

@@ -30,7 +30,8 @@ spec:
   installPlanApproval: {{ odf.approval | default("Automatic") }}
   name: odf-operator
   source: {{ odf.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if odf.version %}
+  startingCSV: {{ odf.version }}{% endif %}
 ---
 apiVersion: ocs.openshift.io/v1
 kind: StorageCluster

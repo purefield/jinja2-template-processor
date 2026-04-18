@@ -29,7 +29,8 @@ spec:
   installPlanApproval: {{ argo.approval | default("Automatic") }}
   name: openshift-gitops-operator
   source: {{ argo.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if argo.version %}
+  startingCSV: {{ argo.version }}{% endif %}
 ---
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD

@@ -32,11 +32,12 @@ metadata:
   name: acm-operator-subscription
   namespace: open-cluster-management
 spec:
-  channel: {{ acm.channel | default("release-2.14") }}
+  channel: {{ acm.channel | default("release-2.15") }}
   installPlanApproval: {{ acm.approval | default("Automatic") }}
   name: advanced-cluster-management
   source: {{ acm.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if acm.version %}
+  startingCSV: {{ acm.version }}{% endif %}
 ---
 apiVersion: operator.open-cluster-management.io/v1
 kind: MultiClusterHub

@@ -3664,3 +3664,21 @@ Dropped second NIC work. Moving to MTU propagation.
 > ok, whats the final plan / br-bond0-trunk is the only interface... focus on mtu next
 
 Committed vmnet-trunk fallback. Implemented MTU propagation: NNCP bridge + NAD CNI in secondary-network-setup.yaml.tpl; NAD CNI in kubevirt-cluster.yaml.tpl via network.primary.mtu. Removed separate mtu schema field — derives from network.primary.mtu directly. Dropped lbMtu variable (noise). 181 tests pass.
+
+### Prompt 70
+
+> look back at the git history for the last two weeks and see what all changed in detail, be incredibly critical and see if we introduced slop, bloat, tech debt or any smell. / review mtu, vlan, network type, versions for operators relative to the openshift version. gitops and secrets/vault integration, certmanager. All with regards to overly complex, smelly, sloppy implementations. / one thing to add, all commands for any purpose should use format.sh to handle errors and pause execution. fail early if the official CertManager API is absent. fail early if ESO/Vault prerequisites are absent. do not let partial oc apply errors scroll by.
+
+Code quality audit of last two weeks. Plan written to fizzy-greeting-brook.md. Items identified: Jinja2 syntax error in secondary-network-setup (ipam block), type enum mismatch, miimon inconsistency, dual VLAN sourcing, unused nad placeholder, operator channel hygiene, cert-manager DNS comment, external-secrets backends, ArgoCD duplication. Non-clusterfile items (format.sh, pre-flight validation) documented for other contexts.
+
+### Prompt 71
+
+> [various plan refinement prompts] / execute it
+
+Audit cleanup committed (0e36880): fixed Jinja2 syntax error in secondary-network-setup ipam block, aligned type check bridge→linux-bridge, removed dead macvlan branch, standardized miimon 100→150ms, renamed plugins.kubevirt.network.name→nad (breaking schema change), removed empty nad object placeholder, trimmed secondary network type enum (dropped ethernet/ovs-bridge), clarified vlan field descriptions (nodeVlan vs vmVlan). 181 tests pass.
+
+### Prompt 72
+
+> what do you want to know about 6 / we want to use stable by default and latest, however we can do that and allow version and channel to be specified in the clusterfile too / well, version is different than channel, look up what the naming convention is for each and use that as the default for stable. use the version where it aligns and current version where it does not. / execute it / ship it
+
+Operator channel cleanup: LVM now derives channel from cluster.version (stable-4.Y, matching ODF pattern). ACM updated from release-2.14→release-2.15. All operators now support startingCSV via op.version field. Tests updated. 181 tests pass.

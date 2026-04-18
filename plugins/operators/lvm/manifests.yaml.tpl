@@ -1,5 +1,6 @@
 {%- set lvm = plugins.operators.lvm -%}
 {%- set lvmEnabled = lvm.enabled | default(true) -%}
+{%- set lvmChannel = lvm.channel | default("stable-" + cluster.version.split(".")[:2] | join(".")) -%}
 {%- if lvmEnabled %}
 ---
 apiVersion: v1
@@ -25,11 +26,12 @@ metadata:
   labels:
     operators.coreos.com/lvms-operator.openshift-storage: ""
 spec:
-  channel: {{ lvm.channel | default("stable") }}
+  channel: {{ lvmChannel }}
   installPlanApproval: {{ lvm.approval | default("Automatic") }}
   name: lvms-operator
   source: {{ lvm.source | default("redhat-operators") }}
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: openshift-marketplace{% if lvm.version %}
+  startingCSV: {{ lvm.version }}{% endif %}
 ---
 apiVersion: lvm.topolvm.io/v1alpha1
 kind: LVMCluster
