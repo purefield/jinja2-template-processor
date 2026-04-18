@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.18';
+let APP_VERSION = '3.18.19';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,20 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.18.19',
+    date: '2026-04-18',
+    changes: [
+      'LVM operator channel now derives from cluster.version (stable-4.Y), matching ODF',
+      'ACM default channel updated from release-2.14 to release-2.15',
+      'All operators now support version field to pin startingCSV',
+      'Fix Jinja2 syntax error in secondary-network-setup ipam block',
+      'Secondary network type check aligned to linux-bridge (was bridge)',
+      'Dead macvlan branch removed; miimon standardized to 150ms',
+      'plugins.kubevirt.network.name renamed to nad',
+      'Secondary network type enum trimmed (removed ethernet, ovs-bridge)'
+    ]
+  },
   {
     version: '3.18.18',
     date: '2026-04-17',

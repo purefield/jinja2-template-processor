@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.18.19
+- **Operator Channel Cleanup**: LVM channel now derives from `cluster.version` (`stable-4.Y`) matching ODF. ACM default updated to `release-2.15`. All operators now accept `version` field to pin `startingCSV`.
+- **Secondary Network Fixes**: Jinja2 syntax error in ipam block fixed. Type check aligned (`bridge`→`linux-bridge`). Dead macvlan branch removed. miimon standardized to 150ms.
+- **Schema Cleanup**: `plugins.kubevirt.network.name` renamed to `nad`. Secondary network type enum trimmed (removed `ethernet`, `ovs-bridge`).
+
 ## 3.18.18
 - **MTU Propagation**: `network.primary.mtu` now sets MTU on the linux-bridge NAD CNI config in `kubevirt-cluster`. Secondary network NNCP bridge interfaces and NAD CNI configs also carry MTU when set. All conditional — omitted when mtu is not defined.
 

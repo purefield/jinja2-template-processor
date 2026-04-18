@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.18.19 (2026-04-18)
+
 - **operator-channel-cleanup** — LVM channel now derives from `cluster.version` (`stable-4.Y`) matching ODF; ACM default updated to `release-2.15`; all operators now accept `version` field to pin `startingCSV`
 - **audit-cleanup-secondary-nad** — Fix Jinja2 syntax error in `secondary-network-setup` ipam block; align type check `bridge`→`linux-bridge`; remove dead macvlan branch; standardize miimon to 150ms; rename `plugins.kubevirt.network.name`→`nad`; trim secondary network type enum
 
