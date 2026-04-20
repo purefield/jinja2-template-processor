@@ -2527,7 +2527,7 @@ function getSchemaFieldInfo(dotPath) {
       node = resolved || node;
     }
   }
-  return { title: node?.title || '', description: node?.description || '' };
+  return { title: node?.title || '', description: node?.description || '', docUrl: node?.['x-doc-url'] || '' };
 }
 
 function renderValidationSection(container) {
@@ -2651,12 +2651,15 @@ function renderTodoSection(container) {
         const info = getSchemaFieldInfo(t.path);
         const title = info.title || t.path.split('.').pop();
         const desc = info.description || `Fill in ${t.placeholder}`;
+        const docLink = info.docUrl
+          ? `<a href="${Help.escapeHtml(info.docUrl)}" target="_blank" rel="noopener noreferrer">Documentation ↗</a>`
+          : '';
         return `
         <div class="change-item change-item--todo">
           <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
           <div class="change-item__todo-detail">
             <strong>${Help.escapeHtml(title)}</strong>
-            <span>${renderDescriptionHtml(desc)}</span>
+            <span>${renderDescriptionHtml(desc)}</span>${docLink ? `<span>${docLink}</span>` : ''}
           </div>
         </div>`;
       }).join('')}
