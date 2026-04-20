@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.19.0 (2026-04-19)
+
 - **nmstate-operator-auto-install** — nmstate operator Namespace/OperatorGroup/Subscription/NMState auto-injected in `operators.yaml` for `platform: baremetal` clusters
 - **vip-as-list** — New `as_list` Jinja2 filter normalizes VIP input to list; supports single string or array uniformly across all platform templates and utility scripts
 - **schema-network-defaults** — Schema defaults for OCP constants: `network.cluster.subnet` (10.128.0.0/14), `network.service.subnet` (172.30.0.0/16), `network.primary.bond/vlan` (false); stripped from all example files

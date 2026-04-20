@@ -1,5 +1,15 @@
 # Clusterfile Editor Changelog
 
+## 3.19.0
+- **nmstate Auto-Install**: nmstate operator (Namespace, OperatorGroup, Subscription, NMState CR) is automatically injected for all `platform: baremetal` clusters.
+- **VIP as String or Array**: New `as_list` filter normalizes VIP input — write `api: 10.0.0.2` or `api: [10.0.0.2, fd00::2]`, both work everywhere.
+- **Schema Defaults for OCP Constants**: `network.cluster.subnet` (10.128.0.0/14), `network.service.subnet` (172.30.0.0/16), `network.primary.bond/vlan` (false) are now schema defaults — omit them from clusterfiles.
+- **Machine Sizing Defaults**: All nodes default to `cpus: 8`, `memory: 32` GiB — only specify when overriding.
+- **BREAKING — KubeVirt Platform Model**: `platform: kubevirt` is removed. KubeVirt-hosted clusters use `platform: baremetal` + `plugins.kubevirt`. Migrate existing clusterfiles.
+- **SNO from Host Count**: `cluster.clusterType: SNO` is no longer needed — templates derive SNO from a single control host automatically. Only set for `HighlyAvailableArbiter`.
+- **Role Consistency**: CAPI-M3 NMStateConfig/BareMetalHost labels and selectors now use `role: control` (was `controller`).
+- **Example Consolidation**: 19 overlapping example files replaced by 3 lean starter files (`start-sno`, `start-compact`, `start-full`) and 9 platform plugin examples (one per platform).
+
 ## 3.18.19
 - **Operator Channel Cleanup**: LVM channel now derives from `cluster.version` (`stable-4.Y`) matching ODF. ACM default updated to `release-2.15`. All operators now accept `version` field to pin `startingCSV`.
 - **Secondary Network Fixes**: Jinja2 syntax error in ipam block fixed. Type check aligned (`bridge`→`linux-bridge`). Dead macvlan branch removed. miimon standardized to 150ms.

@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.18.19';
+let APP_VERSION = '3.19.0';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,20 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.19.0',
+    date: '2026-04-19',
+    changes: [
+      'nmstate operator auto-installed on platform: baremetal clusters',
+      'New as_list filter — VIPs accept single string or array uniformly across all templates',
+      'Schema defaults for OCP network constants (cluster subnet, service subnet, bond/vlan: false) — omit from clusterfiles',
+      'Machine sizing defaults: cpus: 8, memory: 32 GiB for all nodes',
+      'BREAKING: platform: kubevirt removed — use platform: baremetal + plugins.kubevirt instead',
+      'cluster.clusterType is now optional override only — SNO derived from host count automatically',
+      'Role consistency: CAPI-M3 NMStateConfig/BareMetalHost labels use role: control (was controller)',
+      '19 example files replaced by 3 starter files (start-sno, start-compact, start-full) + 9 platform plugin examples'
+    ]
+  },
   {
     version: '3.18.19',
     date: '2026-04-18',
