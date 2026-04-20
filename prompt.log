@@ -3826,3 +3826,15 @@ Doc verification found one bug: ZTP was using spec.installConfigOverrides (non-e
 > ship it (after fips schema reorder)
 
 v3.19.5 — cluster.fips moved to first in Security group.
+
+### Prompt 69
+
+> now move the todo items into a todo menu item away from validation
+
+Added a dedicated "Todo" sidebar nav item (unchecked checkbox icon, info-blue badge). Extracted `renderTodoSection` from `renderValidationSection` — shows each `<placeholder>` field with schema title, full description, and doc URLs as clickable links via `renderDescriptionHtml`. Validation section restored to schema errors + render warnings only, with independent badges. Committed as `todo-sidebar` (e9af5f1).
+
+### Prompt 70
+
+> use the description below the field incl. documentation link if available
+
+Already implemented in `renderTodoSection`: full `info.description` text rendered below the field title, with URLs converted to `<a target="_blank">` links by `renderDescriptionHtml`. No additional changes needed.
