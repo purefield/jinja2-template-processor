@@ -3844,3 +3844,9 @@ Already implemented in `renderTodoSection`: full `info.description` text rendere
 > great, now group the validation and todo like the changes with headers
 
 Both Validation and Todo panels now use the same `changes-section` grouped layout as Changes: items bucketed by top-level path segment, each group with a clickable section header link and a colored count badge (red for schema errors, blue for todos, yellow for render warnings). Added `groupBySection()` shared helper. Added `.changes-section__count--error` and `--info` CSS variants. Committed as `validation-todo-grouped` (03c5c42).
+
+### Prompt 72
+
+> ship it using skill
+
+Versioned editor release. Read `skills/ship-it/SKILL.md`. Pre-populated `static/changelog.md` and `app.js` CHANGELOG array for v3.20.0 (minor bump — two new features). Ran `./clusterfile-editor.sh release 3.20.0` with `EDITOR=true`. Script synced all 5 version locations, committed `Release v3.20.0` (71bf6db), tagged `v3.20.0`, pushed branch and tag, built and pushed `quay.io/dds/clusterfile-editor:3.20.0` and `:latest`. Killed dev server holding port 8000, restarted container. Health verified: `{"status":"ok","version":"3.20.0"}`.
