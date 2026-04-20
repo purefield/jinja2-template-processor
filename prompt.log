@@ -3820,3 +3820,9 @@ Releasing v3.19.3 — GitHub auth templates silent when unconfigured.
 
 Implemented cluster.fips boolean across install-config, ACM ZTP, and CAPI-M3.
 Doc verification found one bug: ZTP was using spec.installConfigOverrides (non-existent field) instead of metadata.annotations[agent-install.openshift.io/install-config-overrides]. Fixed and releasing as v3.19.4.
+
+### Prompt 68
+
+> ship it (after fips schema reorder)
+
+v3.19.5 — cluster.fips moved to first in Security group.

@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.19.5
+- **FIPS field order**: `cluster.fips` is now first in the Security group, above TPM and disk encryption.
+
 ## 3.19.4
 - **FIPS Support**: Set `cluster.fips: true` to enable FIPS 140-2/140-3. Propagates correctly to `install-config.yaml` (direct field), ACM ZTP (`agent-install.openshift.io/install-config-overrides` annotation on `AgentClusterInstall`), and CAPI-M3 (`install-config-override` annotation JSON).
 
