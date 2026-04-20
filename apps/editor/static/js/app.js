@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.20.1',
+    date: '2026-04-20',
+    changes: [
+      'Todo items now show a Documentation ↗ link when the schema field has an x-doc-url'
+    ]
+  },
+  {
     version: '3.20.0',
     date: '2026-04-20',
     changes: [

@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.20.1
+- **Todo Doc Links**: Each Todo item now shows a **Documentation ↗** link when the schema field has an `x-doc-url` — direct link to the relevant OpenShift docs page.
+
 ## 3.20.0
 - **Todo Section**: Unfilled `<placeholder>` values now appear in a dedicated **Todo** sidebar panel — separate from Validation. Each item shows the field path, schema title, and full description with clickable documentation links.
 - **Grouped Panels**: Validation, Todo, and Changes all group items by schema section (cluster, network, hosts, …) with colored count badges — red for errors, blue for todos, yellow for warnings/changes.
