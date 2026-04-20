@@ -1584,6 +1584,8 @@ function renderCurrentSection() {
     renderChangesSection(container);
   } else if (section === 'validation') {
     renderValidationSection(container);
+  } else if (section === 'todo') {
+    renderTodoSection(container);
   } else if (section === 'changelog') {
     renderChangelogSection(container);
   } else if (section === 'privacy') {
@@ -1594,8 +1596,9 @@ function renderCurrentSection() {
     Form.renderSection(section, container);
   }
 
-  // Update validation count
+  // Update badges
   updateValidationBadge();
+  updateTodoBadge();
   updateChangesBadge();
 }
 
@@ -1903,6 +1906,7 @@ async function selectPlatform(platform) {
   // Update header and badges
   updateHeader();
   updateValidationBadge();
+  updateTodoBadge();
   updateChangesBadge();
 
   // Refresh plugins section if it's currently displayed
@@ -2037,6 +2041,7 @@ async function autoRenderTemplate() {
     // Store render warnings in state and update validation badge
     State.state.renderWarnings = result.warnings || [];
     updateValidationBadge();
+    updateTodoBadge();
 
     if (result.warnings?.length > 0) {
       showToast(`Rendered with ${result.warnings.length} warning(s) — see Validation tab`, 'warning');
@@ -2053,6 +2058,7 @@ async function autoRenderTemplate() {
     CodeMirror.setRenderedValue(`# Error rendering template\n# ${e.message}`);
     State.state.renderWarnings = [e.message];
     updateValidationBadge();
+    updateTodoBadge();
   }
 }
 
@@ -2380,6 +2386,7 @@ function renderChangesSection(container) {
       // Sync to YAML and update UI
       syncEditorFromState();
       updateValidationBadge();
+      updateTodoBadge();
       updateChangesBadge();
       updateHeader();
       renderCurrentSection();
@@ -2463,6 +2470,24 @@ function findPlaceholders(obj, prefix = '') {
 }
 
 /**
+ * Render a description string as HTML, turning URLs into clickable links.
+ */
+function renderDescriptionHtml(text) {
+  if (!text) return '';
+  const urlRe = /(https?:\/\/[^\s<>"]+)/g;
+  const parts = [];
+  let last = 0, m;
+  while ((m = urlRe.exec(text)) !== null) {
+    parts.push(Help.escapeHtml(text.slice(last, m.index)));
+    const url = m[1];
+    parts.push(`<a href="${Help.escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${Help.escapeHtml(url)}</a>`);
+    last = m.index + url.length;
+  }
+  parts.push(Help.escapeHtml(text.slice(last)));
+  return parts.join('');
+}
+
+/**
  * Walk the schema to get title/description for a dot-separated path.
  */
 function getSchemaFieldInfo(dotPath) {
@@ -2488,12 +2513,10 @@ function renderValidationSection(container) {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
   const renderWarnings = State.state.renderWarnings || [];
-  const todos = findPlaceholders(State.state.currentObject || {});
   const hasSchemaErrors = result.errors.length > 0;
   const hasRenderWarnings = renderWarnings.length > 0;
-  const hasTodos = todos.length > 0;
 
-  if (!hasSchemaErrors && !hasRenderWarnings && !hasTodos) {
+  if (!hasSchemaErrors && !hasRenderWarnings) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state__icon">
@@ -2509,29 +2532,8 @@ function renderValidationSection(container) {
     return;
   }
 
-  const todoHtml = hasTodos ? `
-    <h3 style="margin: 0 0 12px 0;">${todos.length} Todo${todos.length !== 1 ? 's' : ''}</h3>
-    ${todos.map(t => {
-      const info = getSchemaFieldInfo(t.path);
-      const title = info.title || t.path.split('.').pop();
-      const desc = info.description || `Fill in ${t.placeholder}`;
-      return `
-      <div class="validation-item">
-        <span class="validation-item__icon validation-item__icon--todo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-            <rect x="3" y="5" width="18" height="14" rx="2"/>
-            <line x1="7" y1="9" x2="17" y2="9"/>
-            <line x1="7" y1="13" x2="13" y2="13"/>
-          </svg>
-        </span>
-        <div class="validation-item__content">
-          <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
-          <div class="validation-item__message"><strong>${Help.escapeHtml(title)}</strong> — ${Help.escapeHtml(desc)}</div>
-        </div>
-      </div>`; }).join('')}` : '';
-
   const schemaHtml = hasSchemaErrors ? `
-    <h3 style="margin: ${hasTodos ? '24px' : '0'} 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
+    <h3 style="margin: 0 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
     ${result.errors.map(e => `
       <div class="validation-item">
         <span class="validation-item__icon validation-item__icon--error">
@@ -2549,7 +2551,7 @@ function renderValidationSection(container) {
     `).join('')}` : '';
 
   const renderHtml = hasRenderWarnings ? `
-    <h3 style="margin: ${hasSchemaErrors || hasTodos ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
+    <h3 style="margin: ${hasSchemaErrors ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
     ${renderWarnings.map(w => `
       <div class="validation-item">
         <span class="validation-item__icon validation-item__icon--warning">
@@ -2565,17 +2567,74 @@ function renderValidationSection(container) {
       </div>
     `).join('')}` : '';
 
-  container.innerHTML = `<div class="validation-panel">${todoHtml}${schemaHtml}${renderHtml}</div>`;
+  container.innerHTML = `<div class="validation-panel">${schemaHtml}${renderHtml}</div>`;
 
-  // Set up path click handlers for schema errors
+  // Set up path click handlers
   container.querySelectorAll('.validation-item__path').forEach(pathEl => {
     pathEl.addEventListener('click', () => {
       const path = pathEl.dataset.path;
       if (path) {
         const parts = State.parsePath(path);
-        if (parts.length > 0) {
-          navigateToSection(parts[0]);
-        }
+        if (parts.length > 0) navigateToSection(parts[0]);
+        CodeMirror.goToPath(path);
+      }
+    });
+  });
+}
+
+/**
+ * Render Todo section — unfilled <placeholder> fields from the current document.
+ */
+function renderTodoSection(container) {
+  const todos = findPlaceholders(State.state.currentObject || {});
+
+  if (todos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="color: var(--pf-global--success-color--100)">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+        </div>
+        <div class="empty-state__title">All Done</div>
+        <div class="empty-state__description">No placeholder values remain in this document.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const itemsHtml = todos.map(t => {
+    const info = getSchemaFieldInfo(t.path);
+    const title = info.title || t.path.split('.').pop();
+    const desc = info.description || `Fill in ${t.placeholder}`;
+    return `
+    <div class="validation-item">
+      <span class="validation-item__icon validation-item__icon--todo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+        </svg>
+      </span>
+      <div class="validation-item__content">
+        <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
+        <div class="validation-item__message"><strong>${Help.escapeHtml(title)}</strong></div>
+        <div class="validation-item__message" style="margin-top:2px;opacity:0.85;">${renderDescriptionHtml(desc)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="validation-panel">
+      <h3 style="margin: 0 0 12px 0;">${todos.length} Todo${todos.length !== 1 ? 's' : ''}</h3>
+      ${itemsHtml}
+    </div>`;
+
+  container.querySelectorAll('.validation-item__path').forEach(pathEl => {
+    pathEl.addEventListener('click', () => {
+      const path = pathEl.dataset.path;
+      if (path) {
+        const parts = State.parsePath(path);
+        if (parts.length > 0) navigateToSection(parts[0]);
         CodeMirror.goToPath(path);
       }
     });
@@ -2603,12 +2662,13 @@ function onYamlChange(yamlText) {
 
   // Update badges immediately - don't re-render form to avoid losing focus
   updateValidationBadge();
+  updateTodoBadge();
   updateChangesBadge();
   updateHeader();
 
-  // Only re-render validation/changes sections if they're active (they show dynamic content)
+  // Only re-render validation/changes/todo sections if they're active (they show dynamic content)
   const currentSection = State.state.currentSection;
-  if (currentSection === 'validation' || currentSection === 'changes') {
+  if (currentSection === 'validation' || currentSection === 'changes' || currentSection === 'todo') {
     renderCurrentSection();
   }
   // Mark that form needs refresh when editor loses focus
@@ -2633,6 +2693,7 @@ function onFormChange() {
   }, 400);
 
   updateValidationBadge();
+  updateTodoBadge();
   updateChangesBadge();
   updateHeader();
 
@@ -2656,13 +2717,24 @@ function updateValidationBadge() {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
   const renderWarnings = State.state.renderWarnings || [];
-  const todos = findPlaceholders(State.state.currentObject || {});
-  const total = result.errors.length + renderWarnings.length + todos.length;
+  const total = result.errors.length + renderWarnings.length;
 
   const badge = document.querySelector('[data-section="validation"] .sidebar-nav__item-badge');
   if (badge) {
     badge.textContent = total;
     badge.style.display = total > 0 ? 'inline' : 'none';
+  }
+}
+
+/**
+ * Update todo badge count
+ */
+function updateTodoBadge() {
+  const count = findPlaceholders(State.state.currentObject || {}).length;
+  const badge = document.querySelector('[data-section="todo"] .sidebar-nav__item-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline' : 'none';
   }
 }
 
@@ -2768,6 +2840,7 @@ function loadDocument(yamlText, filename = 'untitled.clusterfile', setAsBaseline
 
   // Update validation
   updateValidationBadge();
+  updateTodoBadge();
 
   // Re-render template if Rendered tab is active
   const renderedTab = document.querySelector('.tab[data-tab="rendered"]');
