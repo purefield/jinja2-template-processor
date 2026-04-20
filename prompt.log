@@ -3850,3 +3850,9 @@ Both Validation and Todo panels now use the same `changes-section` grouped layou
 > ship it using skill
 
 Versioned editor release. Read `skills/ship-it/SKILL.md`. Pre-populated `static/changelog.md` and `app.js` CHANGELOG array for v3.20.0 (minor bump — two new features). Ran `./clusterfile-editor.sh release 3.20.0` with `EDITOR=true`. Script synced all 5 version locations, committed `Release v3.20.0` (71bf6db), tagged `v3.20.0`, pushed branch and tag, built and pushed `quay.io/dds/clusterfile-editor:3.20.0` and `:latest`. Killed dev server holding port 8000, restarted container. Health verified: `{"status":"ok","version":"3.20.0"}`.
+
+### Prompt 73
+
+> can we make sure we put the entire description with the todo incl. the documentation link
+
+`getSchemaFieldInfo` now returns `docUrl` from the schema `x-doc-url` field. `renderTodoSection` appends a "Documentation ↗" link below the description when `x-doc-url` is present. Committed as `todo-doc-links` (3df92e3).
