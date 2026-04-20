@@ -9,7 +9,7 @@ result=$(dig +short test.apps.{{ cluster.name }}.{{ network.domain }} 2>/dev/nul
 result=$(dig +short "{{ name }}" 2>/dev/null | tail -1)
 [ -n "$result" ] && pass "{{ name }} → $result" || warn "{{ name }} not found"{% endfor %}{% if network.primary is defined and network.primary.vips is defined and network.primary.vips.api is defined %}
 
-section "DNS Reverse"{% for vip in network.primary.vips.api %}
+section "DNS Reverse"{% for vip in network.primary.vips.api | as_list %}
 result=$(dig +short -x "{{ vip }}" 2>/dev/null | head -1)
 [ -n "$result" ] && pass "{{ vip }} → $result" || warn "{{ vip }} no PTR"{% endfor %}{% for name, host in (hosts | default({})).items()
     if host.network is defined and host.network.primary is defined and host.network.primary.address is defined %}

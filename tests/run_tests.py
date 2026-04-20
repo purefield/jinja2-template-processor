@@ -81,8 +81,12 @@ def create_template_env():
             s = s.encode("utf-8")
         return base64.b64encode(s).decode("utf-8")
 
+    def as_list(v):
+        return [v] if isinstance(v, str) else list(v)
+
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
+    env.filters["as_list"] = as_list
     return env
 
 

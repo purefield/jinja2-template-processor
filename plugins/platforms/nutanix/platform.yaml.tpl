@@ -1,11 +1,9 @@
 {% set nutanix = plugins.nutanix %}
   nutanix:
-    apiVIPs:{% if network.primary.vips.api is iterable and network.primary.vips.api is not string %}{% for vip in network.primary.vips.api %}
-      - {{ vip }}{%- endfor %}{% else %}
-      - {{ network.primary.vips.api }}{%- endif %}
-    ingressVIPs:{% if network.primary.vips.apps is iterable and network.primary.vips.apps is not string %}{% for vip in network.primary.vips.apps %}
-      - {{ vip }}{%- endfor %}{% else %}
-      - {{ network.primary.vips.apps }}{%- endif %}{% if nutanix.prismCentral is defined %}
+    apiVIPs:{% for vip in network.primary.vips.api | as_list %}
+      - {{ vip }}{%- endfor %}
+    ingressVIPs:{% for vip in network.primary.vips.apps | as_list %}
+      - {{ vip }}{%- endfor %}{% if nutanix.prismCentral is defined %}
     prismCentral:
       endpoint:
         address: {{ nutanix.prismCentral.endpoint.address }}

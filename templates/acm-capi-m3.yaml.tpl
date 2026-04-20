@@ -121,8 +121,10 @@ items:
           role: controller
     distributionVersion: {{ cluster.version }}
     config:{% if controlCount > 1 %}
-      apiVIPs: {{ network.primary.vips.api }}
-      ingressVIPs: {{ network.primary.vips.apps }}{% endif %}
+      apiVIPs:{% for vip in network.primary.vips.api | as_list %}
+        - {{ vip }}{% endfor %}
+      ingressVIPs:{% for vip in network.primary.vips.apps | as_list %}
+        - {{ vip }}{% endfor %}{% endif %}
       baseDomain: {{ network.domain }}
       pullSecretRef:
         name: pullsecret-{{ cluster.name }}

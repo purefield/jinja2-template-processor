@@ -313,8 +313,8 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   <h3>Virtual IPs</h3>
   <table>
     <thead><tr><th>Purpose</th><th>Address</th></tr></thead>
-    <tbody>{% for vip in network.primary.vips.api | default([]) %}
-      <tr><td>API</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% for vip in network.primary.vips.apps | default([]) %}
+    <tbody>{% for vip in network.primary.vips.api | as_list %}
+      <tr><td>API</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% for vip in network.primary.vips.apps | as_list %}
       <tr><td>Ingress (*.apps)</td><td><code>{{ vip }}</code></td></tr>{% endfor %}
     </tbody>
   </table>{% endif %}{% if network.nameservers is defined %}
@@ -425,9 +425,9 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
   <p style="color:var(--muted);font-size:14px;margin-bottom:12px">Create these records before installation.</p>
   <table>
     <thead><tr><th>Record</th><th>Type</th><th>Value</th></tr></thead>
-    <tbody>{% if network.primary is defined and network.primary.vips is defined %}{% for vip in network.primary.vips.api | default([]) %}
+    <tbody>{% if network.primary is defined and network.primary.vips is defined %}{% for vip in network.primary.vips.api | as_list %}
       <tr><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}
-      <tr><td><code>api-int.{{ cluster.name }}.{{ network.domain }}</code></td><td>CNAME</td><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td></tr>{% for vip in network.primary.vips.apps | default([]) %}
+      <tr><td><code>api-int.{{ cluster.name }}.{{ network.domain }}</code></td><td>CNAME</td><td><code>api.{{ cluster.name }}.{{ network.domain }}</code></td></tr>{% for vip in network.primary.vips.apps | as_list %}
       <tr><td><code>*.apps.{{ cluster.name }}.{{ network.domain }}</code></td><td>A</td><td><code>{{ vip }}</code></td></tr>{% endfor %}{% endif %}{% for item in detailedHosts %}
       <tr><td><code>{{ item.name }}</code></td><td>A</td><td><code>{{ item.host.network.primary.address }}</code></td></tr>{% endfor %}
     </tbody>

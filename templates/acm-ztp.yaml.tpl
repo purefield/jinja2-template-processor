@@ -75,8 +75,10 @@ items:
       name: mirror-registries-{{ cluster.name }}
       namespace: multicluster-engine{% endif %}
     platformType: {% if controlCount > 1 %}BareMetal
-    apiVIPs: {{ network.primary.vips.api }}
-    ingressVIPs: {{ network.primary.vips.apps }}{% else %}None{% endif %}
+    apiVIPs:{% for vip in network.primary.vips.api | as_list %}
+      - {{ vip }}{% endfor %}
+    ingressVIPs:{% for vip in network.primary.vips.apps | as_list %}
+      - {{ vip }}{% endfor %}{% else %}None{% endif %}
     networking:
       userManagedNetworking: {{ false if controlCount > 1 else true }}
       networkType: {{ network.primary.type|default("OVNKubernetes", true) }}

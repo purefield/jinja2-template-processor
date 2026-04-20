@@ -128,6 +128,11 @@ def base64encode(s):
     return base64.b64encode(s).decode("utf-8")
 
 
+def as_list(v):
+    """Normalize a value to a list — wraps a string in a list, passes lists through."""
+    return [v] if isinstance(v, str) else list(v)
+
+
 # --- JSONPath upsert helpers -------------------------------------------------
 
 _key_index_re = re.compile(r"([^.\[\]]+)|(\[(\d+)\])")
