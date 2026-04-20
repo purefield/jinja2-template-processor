@@ -109,7 +109,8 @@
           "title": "CPUs",
           "type": "integer",
           "minimum": 1,
-          "description": "CPU cores per socket."
+          "default": 8,
+          "description": "CPU cores per socket. Defaults to 8 (OCP minimum best practice)."
         },
         "sockets": {
           "title": "Sockets",
@@ -122,7 +123,8 @@
           "title": "Memory",
           "type": "integer",
           "minimum": 1,
-          "description": "Memory in GiB."
+          "default": 32,
+          "description": "Memory in GiB. Defaults to 32 (OCP minimum best practice)."
         },
         "storage": {
           "title": "Storage",

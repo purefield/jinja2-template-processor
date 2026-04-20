@@ -76,8 +76,8 @@ items:
 {%- set roleMachine = controlMachine if host.role == 'control' else workerMachine -%}
 {%- set hm = host.machine | default(roleMachine) -%}
 {%- set hms = hm.storage | default({}) -%}
-{%- set memory  = hm.memory | default(64) -%}
-{%- set cores   = hm.cpus | default(16) -%}
+{%- set memory  = hm.memory | default(32) -%}
+{%- set cores   = hm.cpus | default(8) -%}
 {%- set sockets = hm.sockets | default(1) -%}
 {%- set osDiskSize = hms.os | default(120) -%}
 {%- set dataDisks = hms.data | default([]) -%}
