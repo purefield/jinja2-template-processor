@@ -61,8 +61,12 @@ def template_env():
             s = s.encode("utf-8")
         return base64.b64encode(s).decode("utf-8")
 
+    def as_list(v):
+        return [v] if isinstance(v, str) else list(v)
+
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
+    env.filters["as_list"] = as_list
 
     return env
 
@@ -2017,7 +2021,7 @@ class TestOperatorsPlugin:
         assert 'Subscription' in kinds
         assert 'ArgoCD' in kinds
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'openshift-gitops-operator')
         assert sub['spec']['channel'] == 'latest'
         assert sub['spec']['source'] == 'redhat-operators'
         assert sub['spec']['installPlanApproval'] == 'Automatic'
@@ -2029,7 +2033,7 @@ class TestOperatorsPlugin:
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'openshift-gitops-operator')
         assert sub['spec']['channel'] == 'gitops-1.14'
 
         argo = next(d for d in docs if d['kind'] == 'ArgoCD')
@@ -2048,13 +2052,14 @@ class TestOperatorsPlugin:
         assert argo['spec']['rbac']['defaultPolicy'] == 'role:admin'
 
     def test_argocd_disabled(self, template_env):
-        """Test ArgoCD with enabled: false produces no output."""
+        """Test ArgoCD with enabled: false produces no ArgoCD resources."""
         data = operator_test_data('argocd', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
-        # Should produce no YAML docs
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        kinds = [d['kind'] for d in docs]
+        assert 'ArgoCD' not in kinds
+        assert 'openshift-gitops-operator' not in [d.get('metadata', {}).get('name') for d in docs]
 
     def test_no_operators_plugin(self, template_env):
         """Test templates work fine without operators plugin."""
@@ -2165,7 +2170,7 @@ class TestLvmOperator:
         assert 'Subscription' in kinds
         assert 'LVMCluster' in kinds
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'lvms-operator')
         assert sub['spec']['channel'] == 'stable-4.18'
         assert sub['spec']['name'] == 'lvms-operator'
         assert sub['metadata']['namespace'] == 'openshift-storage'
@@ -2181,7 +2186,7 @@ class TestLvmOperator:
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'lvms-operator')
         assert sub['spec']['channel'] == 'stable-4.19'
         assert sub['spec']['source'] == 'my-catalog'
 
@@ -2206,12 +2211,14 @@ class TestLvmOperator:
         assert dcs[1]['default'] is True
 
     def test_lvm_disabled(self, template_env):
-        """Test LVM disabled produces no output."""
+        """Test LVM disabled produces no LVM resources."""
         data = operator_test_data('lvm', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'lvms-operator' not in names
+        assert 'LVMCluster' not in [d['kind'] for d in docs]
 
     def test_lvm_acm_policy(self, template_env):
         """Test LVM generates ACM Policy in ZTP template."""
@@ -2277,10 +2284,10 @@ class TestLsoOperator:
         assert 'Subscription' in kinds
         assert 'LocalVolumeSet' in kinds
 
-        ns = next(d for d in docs if d['kind'] == 'Namespace')
+        ns = next(d for d in docs if d['kind'] == 'Namespace' and d['metadata']['name'] == 'openshift-local-storage')
         assert ns['metadata']['name'] == 'openshift-local-storage'
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'local-storage-operator')
         assert sub['spec']['channel'] == 'stable'
         assert sub['spec']['name'] == 'local-storage-operator'
         assert sub['metadata']['namespace'] == 'openshift-local-storage'
@@ -2315,12 +2322,14 @@ class TestLsoOperator:
         assert lvs['spec']['deviceInclusionSpec']['maxSize'] == '2Ti'
 
     def test_lso_disabled(self, template_env):
-        """Test LSO disabled produces no output."""
+        """Test LSO disabled produces no LSO resources."""
         data = operator_test_data('lso', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'local-storage-operator' not in names
+        assert 'LocalVolumeSet' not in [d['kind'] for d in docs]
 
     def test_lso_acm_policy(self, template_env):
         """Test LSO generates ACM Policy with 3 policy-templates + PlacementBinding."""
@@ -2375,7 +2384,7 @@ class TestOdfOperator:
         assert 'Subscription' in kinds
         assert 'StorageCluster' in kinds
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'odf-operator')
         assert sub['spec']['channel'] == 'stable-4.18'
         assert sub['spec']['name'] == 'odf-operator'
 
@@ -2408,12 +2417,14 @@ class TestOdfOperator:
         assert sds['dataPVCTemplate']['spec']['storageClassName'] == 'nvme-sc'
 
     def test_odf_disabled(self, template_env):
-        """Test ODF disabled produces no output."""
+        """Test ODF disabled produces no ODF resources."""
         data = operator_test_data('odf', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'odf-operator' not in names
+        assert 'StorageCluster' not in [d['kind'] for d in docs]
 
     def test_odf_acm_policy(self, template_env):
         """Test ODF generates ACM Policy in ZTP template."""
@@ -2493,7 +2504,7 @@ class TestCertManagerOperator:
         assert 'OperatorGroup' in kinds
         assert 'Subscription' in kinds
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'openshift-cert-manager-operator')
         assert sub['spec']['channel'] == 'stable-v1'
         assert sub['spec']['name'] == 'openshift-cert-manager-operator'
         assert sub['metadata']['namespace'] == 'cert-manager-operator'
@@ -2505,17 +2516,18 @@ class TestCertManagerOperator:
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'openshift-cert-manager-operator')
         assert sub['spec']['source'] == 'custom-catalog'
         assert sub['spec']['installPlanApproval'] == 'Manual'
 
     def test_certmanager_disabled(self, template_env):
-        """Test cert-manager disabled produces no output."""
+        """Test cert-manager disabled produces no cert-manager resources."""
         data = operator_test_data('cert-manager', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'openshift-cert-manager-operator' not in names
 
     def test_certmanager_acm_policy(self, template_env):
         """Test cert-manager generates ACM Policy in ZTP template."""
@@ -2726,7 +2738,7 @@ class TestAcmOperator:
         assert 'AgentServiceConfig' in kinds
         assert 'Provisioning' in kinds
 
-        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'acm-operator-subscription')
         assert sub['spec']['channel'] == 'release-2.15'
         assert sub['spec']['name'] == 'advanced-cluster-management'
 
@@ -2766,12 +2778,14 @@ class TestAcmOperator:
         assert '/pre-release/4.22.0-ec.3/' in os_image['rootFSUrl']
 
     def test_acm_disabled(self, template_env):
-        """Test ACM disabled produces no output."""
+        """Test ACM disabled produces no ACM resources."""
         data = operator_test_data('acm', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'acm-operator-subscription' not in names
+        assert 'MultiClusterHub' not in [d['kind'] for d in docs]
 
 
 class TestAcmClusterImageSetSubscription:
@@ -2833,6 +2847,54 @@ class TestOsImagesSync:
         assert 'mirror.openshift.com' not in script
 
 
+class TestNmstateOperator:
+    """Tests for nmstate operator auto-install."""
+
+    def test_nmstate_auto_install_baremetal(self, template_env):
+        """nmstate installs automatically on baremetal without explicit config."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {}
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        kinds = [d['kind'] for d in docs]
+        assert 'NMState' in kinds
+        sub = next(d for d in docs if d['kind'] == 'Subscription')
+        assert sub['metadata']['name'] == 'kubernetes-nmstate-operator'
+        assert sub['spec']['channel'] == 'stable'
+
+    def test_nmstate_auto_install_kubevirt(self, template_env):
+        """nmstate installs automatically on kubevirt without explicit config."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'kubevirt'
+        data['plugins'] = {}
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        assert 'NMState' in [d['kind'] for d in docs]
+
+    def test_nmstate_skipped_on_cloud(self, template_env):
+        """nmstate does not install on cloud platforms."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'aws'
+        data['plugins'] = {}
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        assert 'NMState' not in [d['kind'] for d in docs]
+
+    def test_nmstate_disabled_explicitly(self, template_env):
+        """nmstate can be disabled via explicit config."""
+        data = base_cluster_data()
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {'operators': {'nmstate': {'enabled': False}}}
+        template = template_env.get_template('operators.yaml.tpl')
+        rendered = template.render(data)
+        docs = [d for d in yaml.safe_load_all(rendered) if d]
+        assert 'NMState' not in [d['kind'] for d in docs]
+
+
 class TestExternalSecretsOperator:
     """Tests for external-secrets operator plugin."""
 
@@ -2843,9 +2905,7 @@ class TestExternalSecretsOperator:
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
-        assert len(docs) == 1
-        sub = docs[0]
-        assert sub['kind'] == 'Subscription'
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'external-secrets-operator')
         assert sub['spec']['name'] == 'external-secrets-operator'
         assert sub['spec']['channel'] == 'stable-v1'
         assert sub['metadata']['namespace'] == 'openshift-operators'
@@ -2857,16 +2917,17 @@ class TestExternalSecretsOperator:
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
 
-        sub = docs[0]
+        sub = next(d for d in docs if d['kind'] == 'Subscription' and d['metadata']['name'] == 'external-secrets-operator')
         assert sub['spec']['source'] == 'disconnected-catalog'
 
     def test_externalsecrets_disabled(self, template_env):
-        """Test external-secrets disabled produces no output."""
+        """Test external-secrets disabled produces no ESO resources."""
         data = operator_test_data('external-secrets', {'enabled': False})
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
-        assert len(docs) == 0
+        names = [d.get('metadata', {}).get('name') for d in docs]
+        assert 'external-secrets-operator' not in names
 
     def test_externalsecrets_acm_policy(self, template_env):
         """Test external-secrets generates ACM Policy in ZTP template."""
