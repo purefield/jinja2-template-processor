@@ -1,10 +1,14 @@
+{%- set _github = (auth | default({})).get('github', {}) -%}
+{%- set providers = _github.get('providers', []) -%}
+{%- if providers %}
 apiVersion: v1
 kind: List
-items:{% for provider in auth.github.providers | default([]) %}
+items:{% for provider in providers %}
   - apiVersion: v1
     kind: Secret
     metadata:
       name: {{ provider.secretName }}
-      namespace: {{ auth.github.secretNamespace | default("openshift-config") }}
+      namespace: {{ _github.get('secretNamespace', 'openshift-config') }}
     stringData:
       clientSecret: {{ provider.clientSecret | tojson }}{% endfor %}
+{%- endif -%}
