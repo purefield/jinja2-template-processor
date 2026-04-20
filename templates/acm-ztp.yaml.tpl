@@ -62,7 +62,9 @@ items:
     name: {{ cluster.name }}
     namespace: {{ cluster.name }}
     labels:
-      cluster-name: {{ cluster.name }}
+      cluster-name: {{ cluster.name }}{% if cluster.fips | default(false) %}
+    annotations:
+      agent-install.openshift.io/install-config-overrides: '{"fips": true}'{% endif %}
   spec:{%- if cluster.holdInstallation | default(false) %}
     holdInstallation: true{% endif %}{%- if network.proxy %}
     proxy: {{ network.proxy }}{% endif %}
@@ -91,8 +93,7 @@ items:
     provisionRequirements:
       controlPlaneAgents: {{ controlCount }}
       workerAgents: {{ workerCount }}
-    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.fips | default(false) %}
-    installConfigOverrides: '{"fips": true}'{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
+    sshPublicKey: '{{load_file(cluster.sshKeys|first)|safe}}'{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
     manifestsConfigMapRef:
       name: extraclustermanifests{% endif %}{% if cluster.mirrors %}{% include "includes/mirror-registries-configmap.yaml.tpl" %}{% endif %}{% if cluster.manifests or cluster.mirrors or enableTPM or enableTang or isKubevirt or enableDisconnected or insecureMirrors %}
 - kind: ConfigMap
