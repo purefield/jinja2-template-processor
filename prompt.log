@@ -3746,3 +3746,17 @@ Implemented all 8 findings from the architectural plan:
 - Committed: tag `example-consolidation`
 
 185 tests passing throughout.
+
+### Prompt 64
+
+> ship it
+
+Released v3.19.0 — versioned editor release:
+- 185 tests passing
+- Version bumped to 3.19.0 (minor bump for breaking changes: platform:kubevirt removed)
+- All 5 version locations updated (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js)
+- Committed and tagged v3.19.0; pushed main + all feature tags
+- Container built: quay.io/dds/clusterfile-editor:v3.19.0 and :latest
+- Both image tags pushed to quay.io/dds
+- App restarted: `podman run -d --replace --network host --name clusterfile-editor`
+- Health check: `{"status":"ok","version":"3.19.0"}` ✓
