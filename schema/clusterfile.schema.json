@@ -420,11 +420,10 @@
                 "openstack",
                 "ibmcloud",
                 "nutanix",
-                "kubevirt",
                 "none",
                 "external"
               ],
-              "description": "Supported infrastructure platform."
+              "description": "Supported infrastructure platform. For KubeVirt-hosted clusters use platform: baremetal and add plugins.kubevirt."
             },
             {
               "type": "string",

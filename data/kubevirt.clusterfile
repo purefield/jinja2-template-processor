@@ -2,7 +2,7 @@ account:
   pullSecret: data/secrets/pull-secret.json
 cluster:
   version: 4.21.0
-  platform: kubevirt
+  platform: baremetal
   name: kubevirt-cluster
   machine:
     control:

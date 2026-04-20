@@ -5,7 +5,6 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
-  - kubevirt
 requires:
   - network.proxy (optional)
 relatedTemplates:

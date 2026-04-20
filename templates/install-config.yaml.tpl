@@ -12,7 +12,6 @@ platforms:
   - ibmcloud
   - nutanix
   - baremetal
-  - kubevirt
   - none
 requires:
   - account.pullSecret
@@ -34,7 +33,8 @@ yamlWrapper: raw
 {%- set controlCount = hosts.values() | selectattr('role', 'in', ['control', 'master']) | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker') | list | length -%}
 {%- set platform = cluster.platform | default('baremetal', true) -%}
-{%- set installConfigPlatform = 'none' if platform == 'kubevirt' and controlCount == 1 and workerCount == 0 else ('baremetal' if platform == 'kubevirt' else platform) -%}
+{%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
+{%- set installConfigPlatform = 'none' if isKubevirt and controlCount == 1 and workerCount == 0 else platform -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
 {%- set platformPlugin = (plugins | default({}))[platform] | default({}) -%}
 ---
@@ -127,7 +127,7 @@ metadata:
 spec:
   registrySources:
     insecureRegistries:{% for mirror in insecureMirrors %}{% for location in mirror.mirrors %}
-      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if platform == "kubevirt" %}{%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
+      - {{ location }}{% endfor %}{% endfor %}{% endif %}{% if isKubevirt %}{%- set ssdUdev %}{% include "includes/kubevirt-ssd-udev.yaml.tpl" %}{% endset %}
 ---
 # Place in openshift/ directory for ABI/IPI — forces virtual disks to report as SSD
 {{ ssdUdev }}{% endif %}{% if (plugins | default({})).operators is defined %}

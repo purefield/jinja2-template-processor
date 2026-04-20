@@ -5,7 +5,6 @@ type: clusterfile
 category: utility
 platforms:
   - baremetal
-  - kubevirt
 requires:
   - cluster.name
   - cluster.version

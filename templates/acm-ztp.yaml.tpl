@@ -5,7 +5,6 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
-  - kubevirt
 requires:
   - account.pullSecret
   - cluster.name
@@ -26,7 +25,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
-{%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
+{%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
 {%- set disc = cluster.disconnected | default({}) -%}
 {%- set enableDisconnected = cluster.disconnected is defined -%}
 {%- set osImageHost = disc.osImageHost | default("") -%}

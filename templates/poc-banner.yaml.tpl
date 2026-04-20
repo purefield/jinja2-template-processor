@@ -5,7 +5,6 @@ type: clusterfile
 category: configuration
 platforms:
   - baremetal
-  - kubevirt
   - aws
   - azure
   - gcp

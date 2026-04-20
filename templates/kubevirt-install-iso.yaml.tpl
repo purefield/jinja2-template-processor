@@ -4,12 +4,12 @@ description: DataVolume to download a discovery ISO for KubeVirt VM boot
 type: clusterfile
 category: installation
 platforms:
-  - kubevirt
+  - baremetal
 requires:
   - cluster.name
   - imageUrl (pass via -p imageUrl=<url>)
 relatedTemplates:
-  - kubevirt-cluster.yaml.tpl
+  - baremetal-cluster.yaml.tpl
   - acm-ztp.yaml.tpl
 docs: https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html
 -#}

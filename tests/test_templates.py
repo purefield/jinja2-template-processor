@@ -553,9 +553,10 @@ class TestInstallConfigTemplate:
         assert result['bootstrapInPlace']['installationDisk'] == '/dev/sda'
 
     def test_kubevirt_platform_sno_renders_none(self, template_env):
-        """KubeVirt SNO should render install-config platform none."""
+        """KubeVirt SNO (baremetal + plugins.kubevirt) renders install-config platform none."""
         data = base_cluster_data()
-        data['cluster']['platform'] = 'kubevirt'
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {'kubevirt': {}}
         data['hosts'] = {
             'sno.test-cluster.example.com': {
                 'role': 'control',
@@ -575,9 +576,10 @@ class TestInstallConfigTemplate:
         assert result['bootstrapInPlace']['installationDisk'] == '/dev/vda'
 
     def test_kubevirt_non_sno_renders_baremetal(self, template_env):
-        """KubeVirt non-SNO should render install-config platform baremetal."""
+        """KubeVirt non-SNO (baremetal + plugins.kubevirt) renders install-config platform baremetal."""
         data = base_cluster_data()
-        data['cluster']['platform'] = 'kubevirt'
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {'kubevirt': {}}
         data['network']['primary'] = baremetal_vips_data()['primary']
 
         template = template_env.get_template('install-config.yaml.tpl')
@@ -1283,7 +1285,10 @@ class TestAcmZtpTemplate:
     """Test the acm-ztp.yaml.tpl template for TPM at cluster level."""
 
     def acm_ztp_data(self, platform='baremetal', tpm=False):
-        """Return data for acm-ztp template rendering."""
+        """Return data for acm-ztp template rendering.
+        platform='kubevirt' is translated to platform='baremetal' + plugins.kubevirt.
+        """
+        kubevirt = platform == 'kubevirt'
         data = {
             'account': {
                 'pullSecret': 'secrets/pull-secret.json'
@@ -1293,7 +1298,7 @@ class TestAcmZtpTemplate:
                 'version': '4.21.0',
                 'arch': 'x86_64',
                 'location': 'dc1',
-                'platform': platform,
+                'platform': 'baremetal' if kubevirt else platform,
                 'tpm': tpm,
                 'sshKeys': ['secrets/id_rsa.pub']
             },
@@ -1383,7 +1388,7 @@ class TestAcmZtpTemplate:
                     }
                 }
             },
-            'plugins': {}
+            'plugins': {'kubevirt': {}} if kubevirt else {}
         }
         return data
 
@@ -2865,10 +2870,10 @@ class TestNmstateOperator:
         assert sub['spec']['channel'] == 'stable'
 
     def test_nmstate_auto_install_kubevirt(self, template_env):
-        """nmstate installs automatically on kubevirt without explicit config."""
+        """nmstate installs automatically on baremetal+kubevirt without explicit config."""
         data = base_cluster_data()
-        data['cluster']['platform'] = 'kubevirt'
-        data['plugins'] = {}
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {'kubevirt': {}}
         template = template_env.get_template('operators.yaml.tpl')
         rendered = template.render(data)
         docs = [d for d in yaml.safe_load_all(rendered) if d]
@@ -3682,9 +3687,10 @@ class TestKubevirtSsdUdev:
         assert cm is None
 
     def test_ssd_udev_in_install_config_kubevirt(self, template_env):
-        """SSD udev MachineConfig appears in install-config output for kubevirt platform."""
+        """SSD udev MachineConfig appears in install-config output for baremetal+kubevirt."""
         data = base_cluster_data()
-        data['cluster']['platform'] = 'kubevirt'
+        data['cluster']['platform'] = 'baremetal'
+        data['plugins'] = {'kubevirt': {}}
         data['hosts'] = {
             'node1.test.example.com': {
                 'role': 'control',

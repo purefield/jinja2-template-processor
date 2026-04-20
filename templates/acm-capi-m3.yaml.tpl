@@ -5,7 +5,6 @@ type: clusterfile
 category: acm
 platforms:
   - baremetal
-  - kubevirt
 requires:
   - cluster.name
   - cluster.sshKeys
@@ -23,7 +22,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
-{%- set isKubevirt = cluster.platform | default("baremetal") == "kubevirt" -%}
+{%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
 {%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
 {%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
 {%- set imageUrl="" -%}

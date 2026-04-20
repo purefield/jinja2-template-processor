@@ -4,7 +4,6 @@ description: KubeVirt VirtualMachine resources for OpenShift Virtualization clus
 type: clusterfile
 category: installation
 platforms:
-  - kubevirt
   - baremetal
 requires:
   - cluster.name
