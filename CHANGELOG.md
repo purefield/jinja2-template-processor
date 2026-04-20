@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.19.3 (2026-04-20)
+
+- **fix-github-auth-silent-when-unconfigured** — all four GitHub auth templates (`github-oauth-secrets`, `github-oauth`, `github-oauth-patch`, `github-oauth-app-data`) produce empty output with no warnings when `auth.github` is not configured; same `dict.get()` + if-guard pattern as cert-manager fix
+
 ## v3.19.2 (2026-04-19)
 
 - **fix-cert-manager-logging-undefined** — cert-manager day2 template uses `dict.get()` instead of Jinja2 attribute access for optional plugins chain; eliminates spurious `operators undefined` warnings when cert-manager is not configured

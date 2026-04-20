@@ -3799,3 +3799,9 @@ Committed as `fix-cert-manager-logging-undefined` in clusterfile repo.
 > ship it
 
 Releasing v3.19.2 — cert-manager dict.get() fix. Updated all 5 version locations, running tests, committing, tagging, pushing, building image, deploying.
+
+### Prompt 66
+
+> ship it (after GitHub auth templates fix)
+
+Releasing v3.19.3 — GitHub auth templates silent when unconfigured.

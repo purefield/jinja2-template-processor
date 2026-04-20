@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.19.3
+- **GitHub Auth Fix**: All four GitHub OAuth templates are now silent when `auth.github` is not configured — no warnings, no empty YAML skeletons, no `oc apply` errors.
+
 ## 3.19.2
 - **cert-manager Fix (complete)**: Template now uses `dict.get()` instead of Jinja2 attribute access for optional plugins chain — no warnings emitted when `plugins.operators` is absent or unconfigured.
 
