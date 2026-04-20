@@ -56,11 +56,6 @@ network:
         - 192.168.1.100
       apps:
         - 192.168.1.101
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 23
-  service:
-    subnet: 172.30.0.0/16
 
 hosts:
   control-0.osp-cluster.example.com:

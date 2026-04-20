@@ -22,15 +22,8 @@ network:
   nameservers:
     - 10.10.0.1
   primary:
-    bond: false
-    vlan: false
     gateway: 10.10.0.1
     subnet: 10.10.0.0/24
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 23
-  service:
-    subnet: 172.30.0.0/16
 hosts:
   sno.edge.example.com:
     role: control

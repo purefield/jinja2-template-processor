@@ -77,16 +77,9 @@ network:
     search:
       - base.domain
   primary:
-    bond: false
-    vlan: false
     mtu: 9000
     gateway: 10.0.0.1
     subnet: 10.0.0.0/24
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 22
-  service:
-    subnet: 172.30.0.0/16
   secondary:
     - name: vm
       type: linux-bridge

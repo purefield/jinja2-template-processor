@@ -60,7 +60,6 @@ network:
     search:
       - base.domain
   primary:
-    bond: false
     vlan: 1234
     mtu: 9000
     gateway: 10.0.0.1
@@ -70,11 +69,6 @@ network:
         - 10.0.0.2
       apps:
         - 10.0.0.3
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 23
-  service:
-    subnet: 172.30.0.0/16
 hosts:
   control01.base.domain:
     role: control

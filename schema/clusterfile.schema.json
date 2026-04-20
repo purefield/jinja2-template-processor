@@ -678,6 +678,7 @@
           "properties": {
             "bond": {
               "title": "Bond Mode",
+              "default": false,
               "oneOf": [
                 {
                   "$ref": "#/$defs/bondMode"
@@ -687,11 +688,12 @@
                   "const": false
                 }
               ],
-              "description": "Linux bonding mode. Use false to disable bonding.",
+              "description": "Linux bonding mode (active-backup, balance-rr, etc.). Omit or set false for no bonding.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "vlan": {
               "title": "VLAN ID",
+              "default": false,
               "oneOf": [
                 {
                   "$ref": "#/$defs/vlanId"
@@ -701,7 +703,7 @@
                   "const": false
                 }
               ],
-              "description": "VLAN tag (1-4094). Use false for untagged.",
+              "description": "VLAN tag for OCP node traffic (1-4094). Omit or set false for untagged.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "mtu": {
@@ -796,7 +798,8 @@
             "subnet": {
               "title": "Pod Network CIDR",
               "$ref": "#/$defs/cidr",
-              "description": "IP range for pod networking (e.g., 10.128.0.0/14).",
+              "default": "10.128.0.0/14",
+              "description": "IP range for pod networking. Defaults to the OCP standard 10.128.0.0/14.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             },
             "hostPrefix": {
@@ -822,7 +825,8 @@
             "subnet": {
               "title": "Service CIDR",
               "$ref": "#/$defs/cidr",
-              "description": "IP range for Kubernetes Services (e.g., 172.30.0.0/16).",
+              "default": "172.30.0.0/16",
+              "description": "IP range for Kubernetes Services. Defaults to the OCP standard 172.30.0.0/16.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },

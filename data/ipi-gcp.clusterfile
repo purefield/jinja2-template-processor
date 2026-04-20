@@ -63,11 +63,6 @@ network:
   #   noProxy: .cluster.local,.svc,127.0.0.1,localhost,169.254.169.254,metadata.google.internal
   primary:
     subnet: 10.0.0.0/16
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 23
-  service:
-    subnet: 172.30.0.0/16
 
 hosts:
   control-0.gcp-cluster.example.com:

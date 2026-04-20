@@ -80,8 +80,6 @@ network:
     search:
       - example.com
   primary:
-    bond: false
-    vlan: false
     mtu: 1500
     gateway: 192.168.1.1
     subnet: 192.168.1.0/24
@@ -90,11 +88,6 @@ network:
         - 192.168.1.100
       apps:
         - 192.168.1.101
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 23
-  service:
-    subnet: 172.30.0.0/16
 
 # Hosts with static IP configuration (TechPreview in OCP 4.17+)
 # When network.primary.address is defined, static IPs are generated

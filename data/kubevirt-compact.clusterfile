@@ -26,8 +26,6 @@ network:
     search:
       - base.domain
   primary:
-    bond: false
-    vlan: false
     gateway: 10.0.0.1
     subnet: 10.0.0.0/24
     vips:
@@ -35,11 +33,6 @@ network:
         - 10.0.0.2
       apps:
         - 10.0.0.3
-  cluster:
-    subnet: 10.128.0.0/14
-    hostPrefix: 22
-  service:
-    subnet: 172.30.0.0/16
 plugins:
   kubevirt:
     storageClass:
