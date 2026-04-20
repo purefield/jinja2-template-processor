@@ -1,0 +1,45 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: gcp-cluster
+  version: 4.21.0
+  platform: gcp
+  location: us-central1
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+plugins:
+  gcp:
+    projectID: my-gcp-project
+    region: us-central1
+    credentials: data/secrets/gcp-credentials.json
+    controlPlane:
+      type: n2-standard-4
+      zones: [us-central1-a, us-central1-b, us-central1-c]
+      osDisk:
+        diskSizeGB: 128
+        diskType: pd-ssd
+    compute:
+      type: n2-standard-4
+      zones: [us-central1-a, us-central1-b, us-central1-c]
+      osDisk:
+        diskSizeGB: 128
+        diskType: pd-ssd
+
+network:
+  domain: example.com
+  primary:
+    subnet: 10.0.0.0/16
+
+hosts:
+  control-0.gcp-cluster.example.com:
+    role: control
+  control-1.gcp-cluster.example.com:
+    role: control
+  control-2.gcp-cluster.example.com:
+    role: control
+  worker-0.gcp-cluster.example.com:
+    role: worker
+  worker-1.gcp-cluster.example.com:
+    role: worker

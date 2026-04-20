@@ -1,0 +1,39 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: ibm-cluster
+  version: 4.21.0
+  platform: ibmcloud
+  location: us-south
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+plugins:
+  ibmcloud:
+    region: us-south
+    credentials: data/secrets/ibmcloud-api-key.txt
+    resourceGroupName: openshift-rg
+    controlPlane:
+      type: bx2-8x32
+      zones: [us-south-1, us-south-2, us-south-3]
+    compute:
+      type: bx2-4x16
+      zones: [us-south-1, us-south-2, us-south-3]
+
+network:
+  domain: example.com
+  primary:
+    subnet: 10.0.0.0/16
+
+hosts:
+  control-0.ibm-cluster.example.com:
+    role: control
+  control-1.ibm-cluster.example.com:
+    role: control
+  control-2.ibm-cluster.example.com:
+    role: control
+  worker-0.ibm-cluster.example.com:
+    role: worker
+  worker-1.ibm-cluster.example.com:
+    role: worker

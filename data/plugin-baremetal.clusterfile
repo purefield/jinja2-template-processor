@@ -1,8 +1,13 @@
 account:
   pullSecret: data/secrets/pull-secret.json
+
 cluster:
-  version: 4.21.0
   name: cluster
+  version: 4.21.0
+  platform: baremetal
+  location: dc1
+  sshKeys:
+    - data/secrets/id_rsa.pub
   machine:
     control:
       cpus: 16
@@ -19,32 +24,18 @@ cluster:
         data:
           - 1000
           - 1000
-  sshKeys:
-    - data/secrets/id_rsa.pub
-    - data/secrets/id_rsa.pub
-  location: dc1
-  manifests:
-    - name: crio-config
-      file: templates/installer/99-crio-config.yaml
-    - name: set-core-passwd-master
-      file: templates/installer/99-set-core-passwd-master.yaml
   mirrors:
     - source: registry.access.redhat.com
-      prefix: ''
       mirrors:
         - internal-registry.tld/registry-access-redhat-com
     - source: registry.redhat.io
-      prefix: ''
       mirrors:
         - internal-registry.tld/registry-redhat-io
     - source: quay.io
-      prefix: ''
       mirrors:
         - internal-registry.tld/quay-io
-    - source: registry.connect.redhat.com
-      prefix: ''
-      mirrors:
-        - internal-registry.tld/registry-connect-redhat-com
+  tpm: false
+
 network:
   domain: base.domain
   trustBundle: data/secrets/ca.crt
@@ -56,9 +47,6 @@ network:
     - 10.0.0.100
   nameservers:
     - 10.0.0.100
-  dnsResolver:
-    search:
-      - base.domain
   primary:
     bond: 802.3ad
     vlan: 1234
@@ -66,10 +54,18 @@ network:
     gateway: 10.0.0.1
     subnet: 10.0.0.0/24
     vips:
-      api:
-        - 10.0.0.2
-      apps:
-        - 10.0.0.3
+      api: 10.0.0.2
+      apps: 10.0.0.3
+  secondary:
+    - name: vm
+      type: linux-bridge
+      state: up
+      namespace: demo
+      vlan: 100
+      ports:
+        - eth2
+      subnet: dhcp
+
 hosts:
   control01.base.domain:
     role: control
@@ -89,15 +85,10 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:11
         - name: eth1
           macAddress: 00:1A:2B:3C:4D:12
-        - name: eth2
-          macAddress: 00:1A:2B:3C:4D:13
-        - name: eth3
-          macAddress: 00:1A:2B:3C:4D:14
       primary:
         address: 10.0.0.4
-        ports:
-          - eth0
-          - eth1
+        ports: [eth0, eth1]
+
   control02.base.domain:
     role: control
     storage:
@@ -116,15 +107,10 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:21
         - name: eth1
           macAddress: 00:1A:2B:3C:4D:22
-        - name: eth2
-          macAddress: 00:1A:2B:3C:4D:23
-        - name: eth3
-          macAddress: 00:1A:2B:3C:4D:24
       primary:
         address: 10.0.0.5
-        ports:
-          - eth0
-          - eth1
+        ports: [eth0, eth1]
+
   control03.base.domain:
     role: control
     storage:
@@ -143,20 +129,15 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:31
         - name: eth1
           macAddress: 00:1A:2B:3C:4D:32
-        - name: eth2
-          macAddress: 00:1A:2B:3C:4D:33
-        - name: eth3
-          macAddress: 00:1A:2B:3C:4D:34
       primary:
         address: 10.0.0.6
-        ports:
-          - eth0
-          - eth1
+        ports: [eth0, eth1]
+
   worker01.base.domain:
     role: worker
     storage:
       os:
-        wwn: wwn13
+        wwn: wwn11
     bmc:
       vendor: dell
       version: 9
@@ -170,39 +151,6 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:41
         - name: eth1
           macAddress: 00:1A:2B:3C:4D:42
-        - name: eth2
-          macAddress: 00:1A:2B:3C:4D:43
-        - name: eth3
-          macAddress: 00:1A:2B:3C:4D:44
       primary:
         address: 10.0.0.11
-        ports:
-          - eth0
-          - eth1
-  worker02.base.domain:
-    role: worker
-    storage:
-      os:
-        wwn: wwn14
-    bmc:
-      vendor: dell
-      version: 9
-      username: root
-      password: data/secrets/bmc-password.txt
-      address: 10.0.1.21
-      macAddress: 00:1A:2B:3C:4D:50
-    network:
-      interfaces:
-        - name: eth0
-          macAddress: 00:1A:2B:3C:4D:51
-        - name: eth1
-          macAddress: 00:1A:2B:3C:4D:52
-        - name: eth2
-          macAddress: 00:1A:2B:3C:4D:53
-        - name: eth3
-          macAddress: 00:1A:2B:3C:4D:54
-      primary:
-        address: 10.0.0.21
-        ports:
-          - eth0
-          - eth1
+        ports: [eth0, eth1]

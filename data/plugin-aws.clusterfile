@@ -1,0 +1,45 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: aws-cluster
+  version: 4.21.0
+  platform: aws
+  location: us-east-1
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+plugins:
+  aws:
+    region: us-east-1
+    credentials: data/secrets/aws-credentials
+    controlPlane:
+      type: m6i.xlarge
+      zones: [us-east-1a, us-east-1b, us-east-1c]
+      rootVolume:
+        size: 120
+        type: gp3
+        iops: 4000
+    compute:
+      type: m6i.xlarge
+      zones: [us-east-1a, us-east-1b, us-east-1c]
+      rootVolume:
+        size: 120
+        type: gp3
+
+network:
+  domain: example.com
+  primary:
+    subnet: 10.0.0.0/16
+
+hosts:
+  control-0.aws-cluster.example.com:
+    role: control
+  control-1.aws-cluster.example.com:
+    role: control
+  control-2.aws-cluster.example.com:
+    role: control
+  worker-0.aws-cluster.example.com:
+    role: worker
+  worker-1.aws-cluster.example.com:
+    role: worker

@@ -1,0 +1,61 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: nutanix-cluster
+  version: 4.21.0
+  platform: nutanix
+  location: datacenter1
+  sshKeys:
+    - data/secrets/id_rsa.pub
+  machine:
+    control:
+      cpus: 8
+      memory: 32
+      storage:
+        os: 120
+    worker:
+      cpus: 8
+      memory: 32
+      storage:
+        os: 200
+
+plugins:
+  nutanix:
+    prismCentral:
+      endpoint:
+        address: 192.168.1.100
+        port: 9440
+      username: admin
+      password: data/secrets/nutanix-password.txt
+    prismElements:
+      - name: PE-cluster
+        endpoint:
+          address: 192.168.1.101
+          port: 9440
+        uuid: <pe-uuid>
+    subnetUUIDs:
+      - <subnet-uuid>
+
+network:
+  domain: example.com
+  nameservers:
+    - 192.168.1.5
+  primary:
+    gateway: 192.168.1.1
+    subnet: 192.168.1.0/24
+    vips:
+      api: 192.168.1.100
+      apps: 192.168.1.101
+
+hosts:
+  control-0.nutanix-cluster.example.com:
+    role: control
+  control-1.nutanix-cluster.example.com:
+    role: control
+  control-2.nutanix-cluster.example.com:
+    role: control
+  worker-0.nutanix-cluster.example.com:
+    role: worker
+  worker-1.nutanix-cluster.example.com:
+    role: worker

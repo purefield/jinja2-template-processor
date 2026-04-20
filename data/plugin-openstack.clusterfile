@@ -1,0 +1,42 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: osp-cluster
+  version: 4.21.0
+  platform: openstack
+  location: us-east
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+plugins:
+  openstack:
+    cloud: openstack
+    credentials: data/secrets/clouds.yaml
+    externalNetwork: external-network
+    computeFlavor: m1.xlarge
+    trunkSupport: false
+    octaviaSupport: true
+
+network:
+  domain: example.com
+  nameservers:
+    - 192.168.1.5
+  primary:
+    gateway: 192.168.1.1
+    subnet: 192.168.1.0/24
+    vips:
+      api: 192.168.1.100
+      apps: 192.168.1.101
+
+hosts:
+  control-0.osp-cluster.example.com:
+    role: control
+  control-1.osp-cluster.example.com:
+    role: control
+  control-2.osp-cluster.example.com:
+    role: control
+  worker-0.osp-cluster.example.com:
+    role: worker
+  worker-1.osp-cluster.example.com:
+    role: worker

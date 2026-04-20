@@ -1,0 +1,72 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: vsphere-cluster
+  version: 4.21.0
+  platform: vsphere
+  location: datacenter1
+  sshKeys:
+    - data/secrets/id_rsa.pub
+  machine:
+    control:
+      cpus: 4
+      memory: 16
+      storage:
+        os: 120
+    worker:
+      cpus: 8
+      memory: 32
+      storage:
+        os: 200
+
+plugins:
+  vsphere:
+    vcenter:
+      server: vcenter.example.com
+      username: administrator@vsphere.local
+      password: data/secrets/vcenter-password.txt
+      datacenter: DC1
+      defaultDatastore: vsanDatastore
+      cluster: Cluster1
+      folder: openshift
+      resourcePool: openshift-pool
+    network: VM Network
+
+network:
+  domain: example.com
+  nameservers:
+    - 192.168.1.5
+  primary:
+    gateway: 192.168.1.1
+    subnet: 192.168.1.0/24
+    vips:
+      api: 192.168.1.100
+      apps: 192.168.1.101
+
+hosts:
+  control-0.vsphere-cluster.example.com:
+    role: control
+    network:
+      primary:
+        address: 192.168.1.11
+  control-1.vsphere-cluster.example.com:
+    role: control
+    network:
+      primary:
+        address: 192.168.1.12
+  control-2.vsphere-cluster.example.com:
+    role: control
+    network:
+      primary:
+        address: 192.168.1.13
+  worker-0.vsphere-cluster.example.com:
+    role: worker
+    network:
+      primary:
+        address: 192.168.1.21
+  worker-1.vsphere-cluster.example.com:
+    role: worker
+    network:
+      primary:
+        address: 192.168.1.22

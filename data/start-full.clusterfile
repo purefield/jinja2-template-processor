@@ -1,0 +1,96 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: <cluster-name>
+  version: 4.21.0
+  platform: baremetal
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+network:
+  domain: <base-domain>
+  nameservers:
+    - <dns-server>
+  primary:
+    gateway: <gateway>
+    subnet: <subnet-cidr>
+    vips:
+      api: <api-vip>
+      apps: <apps-vip>
+
+hosts:
+  control01.<cluster-name>.<base-domain>:
+    role: control
+    bmc:
+      vendor: <bmc-vendor>
+      address: <bmc-address>
+      username: <bmc-username>
+      password: data/secrets/bmc-password.txt
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: <mac>
+      primary:
+        address: <host-ip>
+        ports: [eth0]
+
+  control02.<cluster-name>.<base-domain>:
+    role: control
+    bmc:
+      vendor: <bmc-vendor>
+      address: <bmc-address>
+      username: <bmc-username>
+      password: data/secrets/bmc-password.txt
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: <mac>
+      primary:
+        address: <host-ip>
+        ports: [eth0]
+
+  control03.<cluster-name>.<base-domain>:
+    role: control
+    bmc:
+      vendor: <bmc-vendor>
+      address: <bmc-address>
+      username: <bmc-username>
+      password: data/secrets/bmc-password.txt
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: <mac>
+      primary:
+        address: <host-ip>
+        ports: [eth0]
+
+  worker01.<cluster-name>.<base-domain>:
+    role: worker
+    bmc:
+      vendor: <bmc-vendor>
+      address: <bmc-address>
+      username: <bmc-username>
+      password: data/secrets/bmc-password.txt
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: <mac>
+      primary:
+        address: <host-ip>
+        ports: [eth0]
+
+  worker02.<cluster-name>.<base-domain>:
+    role: worker
+    bmc:
+      vendor: <bmc-vendor>
+      address: <bmc-address>
+      username: <bmc-username>
+      password: data/secrets/bmc-password.txt
+    network:
+      interfaces:
+        - name: eth0
+          macAddress: <mac>
+      primary:
+        address: <host-ip>
+        ports: [eth0]

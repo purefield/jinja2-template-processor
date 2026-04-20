@@ -1,0 +1,46 @@
+account:
+  pullSecret: data/secrets/pull-secret.json
+
+cluster:
+  name: azure-cluster
+  version: 4.21.0
+  platform: azure
+  location: eastus
+  sshKeys:
+    - data/secrets/id_rsa.pub
+
+plugins:
+  azure:
+    region: eastus
+    credentials: data/secrets/azure-credentials.json
+    baseDomainResourceGroupName: openshift-dns-rg
+    cloudName: AzurePublicCloud
+    controlPlane:
+      type: Standard_D8s_v3
+      zones: ["1", "2", "3"]
+      osDisk:
+        diskSizeGB: 1024
+        diskType: Premium_LRS
+    compute:
+      type: Standard_D4s_v3
+      zones: ["1", "2", "3"]
+      osDisk:
+        diskSizeGB: 128
+        diskType: Premium_LRS
+
+network:
+  domain: example.com
+  primary:
+    subnet: 10.0.0.0/16
+
+hosts:
+  control-0.azure-cluster.example.com:
+    role: control
+  control-1.azure-cluster.example.com:
+    role: control
+  control-2.azure-cluster.example.com:
+    role: control
+  worker-0.azure-cluster.example.com:
+    role: worker
+  worker-1.azure-cluster.example.com:
+    role: worker

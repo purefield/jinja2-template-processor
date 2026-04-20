@@ -1,9 +1,13 @@
 account:
   pullSecret: data/secrets/pull-secret.json
+
 cluster:
+  name: kubevirt-compact
   version: 4.21.0
   platform: baremetal
-  name: kubevirt-cluster
+  location: dc1
+  sshKeys:
+    - data/secrets/id_rsa.pub
   machine:
     control:
       cpus: 16
@@ -13,53 +17,36 @@ cluster:
         os: 120
         data:
           - 345
-    worker:
-      cpus: 16
-      sockets: 1
-      memory: 64
-      storage:
-        os: 120
-        data:
-          - 345
-  sshKeys:
-    - data/secrets/id_rsa.pub
-  location: dc1
-  tpm: true
+
 network:
   domain: base.domain
   ntpservers:
     - 10.0.0.100
   nameservers:
     - 10.0.0.100
-  dnsResolver:
-    search:
-      - base.domain
   primary:
     gateway: 10.0.0.1
     subnet: 10.0.0.0/24
     vips:
-      api:
-        - 10.0.0.2
-      apps:
-        - 10.0.0.3
+      api: 10.0.0.2
+      apps: 10.0.0.3
+
 plugins:
   kubevirt:
     storageClass:
-      default: ocs-storagecluster-ceph-rbd
+      default: lvms-vg1
       performance: lvms-vg1
     storageMapping:
       control:
-        os: performance
-        data: performance
-      worker:
         os: default
-        data: performance
+        data: default
     network:
       type: cudn
-      vlan: 1410
-    nodeSelector: vgNode
+      physicalNetwork: physnet
+      nodeSelector: vgNode
+
 hosts:
-  node1.kubevirt-cluster.base.domain:
+  node1.kubevirt-compact.base.domain:
     role: control
     storage:
       os:
@@ -75,9 +62,9 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:11
       primary:
         address: 10.0.0.4
-        ports:
-          - eth0
-  node2.kubevirt-cluster.base.domain:
+        ports: [eth0]
+
+  node2.kubevirt-compact.base.domain:
     role: control
     storage:
       os:
@@ -93,9 +80,9 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:21
       primary:
         address: 10.0.0.5
-        ports:
-          - eth0
-  node3.kubevirt-cluster.base.domain:
+        ports: [eth0]
+
+  node3.kubevirt-compact.base.domain:
     role: control
     storage:
       os:
@@ -111,41 +98,4 @@ hosts:
           macAddress: 00:1A:2B:3C:4D:31
       primary:
         address: 10.0.0.6
-        ports:
-          - eth0
-  node4.kubevirt-cluster.base.domain:
-    role: worker
-    storage:
-      os:
-        deviceName: /dev/vda
-    bmc:
-      vendor: kubevirt-redfish
-      username: admin
-      password: data/secrets/bmc-password.txt
-      address: redfish
-    network:
-      interfaces:
-        - name: eth0
-          macAddress: 00:1A:2B:3C:4D:41
-      primary:
-        address: 10.0.0.11
-        ports:
-          - eth0
-  node5.kubevirt-cluster.base.domain:
-    role: worker
-    storage:
-      os:
-        deviceName: /dev/vda
-    bmc:
-      vendor: kubevirt-redfish
-      username: admin
-      password: data/secrets/bmc-password.txt
-      address: redfish
-    network:
-      interfaces:
-        - name: eth0
-          macAddress: 00:1A:2B:3C:4D:51
-      primary:
-        address: 10.0.0.12
-        ports:
-          - eth0
+        ports: [eth0]
