@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.19.0';
+let APP_VERSION = '3.19.1';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.19.1',
+    date: '2026-04-19',
+    changes: [
+      'cert-manager day2 template no longer emits null YAML when plugins.operators is absent',
+      'New button opens starter picker modal: SNO / Compact / Full HA / Blank',
+      'Example clusterfiles use secrets/ path instead of data/secrets/'
+    ]
+  },
   {
     version: '3.19.0',
     date: '2026-04-19',

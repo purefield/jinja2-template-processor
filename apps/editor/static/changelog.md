@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.19.1
+- **cert-manager Fix**: Day-2 resources template no longer emits `null` YAML when `plugins.operators` is absent — safe to run against any cluster configuration.
+- **New Document Picker**: Clicking **New** now opens a starter picker — choose SNO, Compact (3-node), Full HA, or Blank instead of double-click confirm.
+- **Secrets Path**: Example clusterfiles now reference `secrets/` instead of `data/secrets/` for a cleaner project layout.
+
 ## 3.19.0
 - **nmstate Auto-Install**: nmstate operator (Namespace, OperatorGroup, Subscription, NMState CR) is automatically injected for all `platform: baremetal` clusters.
 - **VIP as String or Array**: New `as_list` filter normalizes VIP input — write `api: 10.0.0.2` or `api: [10.0.0.2, fd00::2]`, both work everywhere.

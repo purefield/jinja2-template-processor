@@ -3760,3 +3760,24 @@ Released v3.19.0 — versioned editor release:
 - Both image tags pushed to quay.io/dds
 - App restarted: `podman run -d --replace --network host --name clusterfile-editor`
 - Health check: `{"status":"ok","version":"3.19.0"}` ✓
+
+### Prompt 62
+
+> (session continued from prior context — cert-manager day2 null output bug was in progress)
+
+Fixed `cert-manager.day2-resources.yaml.tpl` emitting `null` YAML when `plugins.operators` absent:
+- Changed line 1 from unsafe `plugins.operators['cert-manager']` to safe `.get('cert-manager', {})` pattern (matching nmstate template)
+- Fixed `format_yaml_output` in `lib/render.py` to return `""` for empty doc list instead of `yaml.dump(None)` → `"null\n"`
+- All 185 tests pass; committed as `fix-cert-manager-null-output`
+
+### Prompt 63
+
+> next after confirmation: change data/secrets/ to just secrets/ for examples. list starter files with new button, so new will require you to chose one of start files, stop the start word, or blank.
+
+- Replaced `data/secrets/` → `secrets/` in all 12 example clusterfiles
+- Replaced New button double-click confirm flow with a starter picker modal:
+  - Shows SNO / Compact (3-node) / Full HA / Blank options
+  - Loading a starter loads that file from the samples API as `untitled.clusterfile`
+  - Blank still calls `newDocument()` with empty template
+  - Removed "Confirm?" ceremony entirely
+- Committed as `new-doc-starter-picker`

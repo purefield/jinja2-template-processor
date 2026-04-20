@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.19.1 (2026-04-19)
+
+- **fix-cert-manager-null-output** — cert-manager day2 template no longer emits `null` YAML when `plugins.operators` is absent; `format_yaml_output` returns empty string instead of `null` for empty templates
+- **new-doc-starter-picker** — New button opens a starter picker modal (SNO / Compact / Full HA / Blank) instead of double-click confirm; secrets paths simplified to `secrets/` in all examples
+
 ## v3.19.0 (2026-04-19)
 
 - **nmstate-operator-auto-install** — nmstate operator Namespace/OperatorGroup/Subscription/NMState auto-injected in `operators.yaml` for `platform: baremetal` clusters
