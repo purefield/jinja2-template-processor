@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.19.2 (2026-04-19)
+
+- **fix-cert-manager-logging-undefined** — cert-manager day2 template uses `dict.get()` instead of Jinja2 attribute access for optional plugins chain; eliminates spurious `operators undefined` warnings when cert-manager is not configured
+
 ## v3.19.1 (2026-04-19)
 
 - **fix-cert-manager-null-output** — cert-manager day2 template no longer emits `null` YAML when `plugins.operators` is absent; `format_yaml_output` returns empty string instead of `null` for empty templates

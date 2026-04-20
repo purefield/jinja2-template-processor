@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.19.2
+- **cert-manager Fix (complete)**: Template now uses `dict.get()` instead of Jinja2 attribute access for optional plugins chain — no warnings emitted when `plugins.operators` is absent or unconfigured.
+
 ## 3.19.1
 - **cert-manager Fix**: Day-2 resources template no longer emits `null` YAML when `plugins.operators` is absent — safe to run against any cluster configuration.
 - **New Document Picker**: Clicking **New** now opens a starter picker — choose SNO, Compact (3-node), Full HA, or Blank instead of double-click confirm.

@@ -3781,3 +3781,21 @@ Fixed `cert-manager.day2-resources.yaml.tpl` emitting `null` YAML when `plugins.
   - Blank still calls `newDocument()` with empty template
   - Removed "Confirm?" ceremony entirely
 - Committed as `new-doc-starter-picker`
+
+### Prompt 64
+
+> [ WARNING: operators undefined, substituted 'CHANGEME' ... error parsing STDIN: invalid Yaml document separator: null ] ... cert not found (user showing script still failing + diff of operators config they added to fix it)
+
+Root cause analysis: `LoggingUndefined.__getattr__` adds to `_missing` via `setdefault` on attribute access itself — before `| default({})` can intercept. My v3.19.1 fix used `.operators | default({})` which still triggers the warning via attribute access. The `.get('cert-manager', {})` call then landed on a LoggingUndefined (from `.get` via `__getattr__`), triggering `__getitem__` which calls `_log()` → "operators undefined".
+
+Two bugs fixed:
+1. Template: replaced Jinja2 attribute access `.operators` / `.letsencrypt` with Python dict.get() — never creates LoggingUndefined. Verified: completely silent output when operators absent.
+2. Script (`steps/common-create-clusterfile-cert-manager-config.sh`): added early exit when provider empty — prevents oc apply on empty output + wrong cert name fallback `letsencrypt-cert`. Script not in git repo, changed in place.
+
+Committed as `fix-cert-manager-logging-undefined` in clusterfile repo.
+
+### Prompt 65
+
+> ship it
+
+Releasing v3.19.2 — cert-manager dict.get() fix. Updated all 5 version locations, running tests, committing, tagging, pushing, building image, deploying.
