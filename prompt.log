@@ -3856,3 +3856,9 @@ Versioned editor release. Read `skills/ship-it/SKILL.md`. Pre-populated `static/
 > can we make sure we put the entire description with the todo incl. the documentation link
 
 `getSchemaFieldInfo` now returns `docUrl` from the schema `x-doc-url` field. `renderTodoSection` appends a "Documentation ↗" link below the description when `x-doc-url` is present. Committed as `todo-doc-links` (3df92e3).
+
+### Prompt 74
+
+> ship it
+
+Versioned editor release v3.20.1 (patch). Read skills/ship-it/SKILL.md. Pre-populated static/changelog.md and app.js CHANGELOG array. Ran ./clusterfile-editor.sh release 3.20.1 — synced all 5 version locations, committed Release v3.20.1 (d5d7bd7), tagged v3.20.1, pushed branch and tag. Built and pushed quay.io/dds/clusterfile-editor:3.20.1 and :latest. Killed dev server, restarted container. Health verified: {"status":"ok","version":"3.20.1"}.
