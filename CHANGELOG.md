@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.20.0 (2026-04-20)
+
 ## v3.19.5 (2026-04-20)
 
 - **fips-schema-order** — `cluster.fips` moved to first position in Security group (before TPM and diskEncryption)

@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.20.0
+- **Todo Section**: Unfilled `<placeholder>` values now appear in a dedicated **Todo** sidebar panel — separate from Validation. Each item shows the field path, schema title, and full description with clickable documentation links.
+- **Grouped Panels**: Validation, Todo, and Changes all group items by schema section (cluster, network, hosts, …) with colored count badges — red for errors, blue for todos, yellow for warnings/changes.
+
 ## 3.19.5
 - **FIPS field order**: `cluster.fips` is now first in the Security group, above TPM and disk encryption.
 

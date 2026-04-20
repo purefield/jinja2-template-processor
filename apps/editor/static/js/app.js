@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.20.0',
+    date: '2026-04-20',
+    changes: [
+      'Todo Section: unfilled <placeholder> values get a dedicated sidebar panel with schema title, description, and doc links',
+      'Grouped Panels: Validation, Todo, and Changes all group by schema section with colored count badges'
+    ]
+  },
+  {
     version: '3.19.5',
     date: '2026-04-20',
     changes: [
