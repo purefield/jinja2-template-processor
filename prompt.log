@@ -3838,3 +3838,9 @@ Added a dedicated "Todo" sidebar nav item (unchecked checkbox icon, info-blue ba
 > use the description below the field incl. documentation link if available
 
 Already implemented in `renderTodoSection`: full `info.description` text rendered below the field title, with URLs converted to `<a target="_blank">` links by `renderDescriptionHtml`. No additional changes needed.
+
+### Prompt 71
+
+> great, now group the validation and todo like the changes with headers
+
+Both Validation and Todo panels now use the same `changes-section` grouped layout as Changes: items bucketed by top-level path segment, each group with a clickable section header link and a colored count badge (red for schema errors, blue for todos, yellow for render warnings). Added `groupBySection()` shared helper. Added `.changes-section__count--error` and `--info` CSS variants. Committed as `validation-todo-grouped` (03c5c42).
