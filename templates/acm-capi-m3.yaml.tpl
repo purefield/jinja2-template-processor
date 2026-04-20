@@ -117,7 +117,7 @@ items:
           - 'metal3.io/uuid="${METADATA_UUID}"'
       nmStateConfigLabelSelector: 
         matchLabels:
-          role: controller
+          role: control
     distributionVersion: {{ cluster.version }}
     config:{% if controlCount > 1 %}
       apiVIPs:{% for vip in network.primary.vips.api | as_list %}
@@ -164,10 +164,10 @@ items:
       spec:
         hostSelector:
           matchLabels:
-            role: controller
+            role: control
         automatedCleaningMode: disabled
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-controller{% if imageUrl %}
+          name: {{ cluster.name }}-machine-template-control{% if imageUrl %}
         image:
           format: qcow2
           checksumType: sha256
@@ -178,7 +178,7 @@ items:
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
-     name: {{ cluster.name }}-machine-template-controller
+     name: {{ cluster.name }}-machine-template-control
      namespace: {{ cluster.name }}
   spec:
     clusterName: {{ cluster.name }}{% if workerCount > 0 %}
@@ -286,7 +286,7 @@ items:
   metadata:
     labels:
       node: {{ shortname }}
-      role: {{ 'controller' if host.role == 'control' else 'worker' }}
+      role: {{ 'control' if host.role == 'control' else 'worker' }}
     name: {{ shortname }}-nmstate
     namespace: {{ cluster.name }}
   spec:
@@ -302,7 +302,7 @@ items:
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ effectiveIgnitionOverride | trim }}'{% endif %}
     labels:
       node: {{ shortname }}
-      role: {{ 'controller' if host.role == 'control' else 'worker' }}
+      role: {{ 'control' if host.role == 'control' else 'worker' }}
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
