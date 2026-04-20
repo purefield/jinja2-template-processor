@@ -2444,14 +2444,56 @@ function formatChangeValue(value) {
 /**
  * Render validation section
  */
+/**
+ * Recursively find all <placeholder> values in the parsed YAML object.
+ * Returns [{path, placeholder}] for each unfilled placeholder.
+ */
+function findPlaceholders(obj, prefix = '') {
+  const results = [];
+  if (!obj || typeof obj !== 'object') return results;
+  for (const [key, value] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'string' && /^<[^>]+>$/.test(value)) {
+      results.push({ path, placeholder: value });
+    } else if (value && typeof value === 'object') {
+      results.push(...findPlaceholders(value, path));
+    }
+  }
+  return results;
+}
+
+/**
+ * Walk the schema to get title/description for a dot-separated path.
+ */
+function getSchemaFieldInfo(dotPath) {
+  const schema = State.state?.schema;
+  if (!schema) return { title: '', description: '' };
+  const parts = dotPath.split('.');
+  let node = schema;
+  for (const part of parts) {
+    node = node?.properties?.[part] || node?.additionalProperties;
+    if (!node) return { title: '', description: '' };
+    // Resolve $ref
+    if (node?.$ref) {
+      const refPath = node.$ref.replace('#/', '').split('/');
+      let resolved = schema;
+      for (const seg of refPath) resolved = resolved?.[seg];
+      node = resolved || node;
+    }
+  }
+  return { title: node?.title || '', description: node?.description || '' };
+}
+
 function renderValidationSection(container) {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
   const renderWarnings = State.state.renderWarnings || [];
+  const todos = findPlaceholders(State.state.currentObject || {});
   const hasSchemaErrors = result.errors.length > 0;
   const hasRenderWarnings = renderWarnings.length > 0;
+  const hasTodos = todos.length > 0;
 
-  if (!hasSchemaErrors && !hasRenderWarnings) {
+  if (!hasSchemaErrors && !hasRenderWarnings && !hasTodos) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state__icon">
@@ -2467,8 +2509,29 @@ function renderValidationSection(container) {
     return;
   }
 
+  const todoHtml = hasTodos ? `
+    <h3 style="margin: 0 0 12px 0;">${todos.length} Todo${todos.length !== 1 ? 's' : ''}</h3>
+    ${todos.map(t => {
+      const info = getSchemaFieldInfo(t.path);
+      const title = info.title || t.path.split('.').pop();
+      const desc = info.description || `Fill in ${t.placeholder}`;
+      return `
+      <div class="validation-item">
+        <span class="validation-item__icon validation-item__icon--todo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <line x1="7" y1="9" x2="17" y2="9"/>
+            <line x1="7" y1="13" x2="13" y2="13"/>
+          </svg>
+        </span>
+        <div class="validation-item__content">
+          <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
+          <div class="validation-item__message"><strong>${Help.escapeHtml(title)}</strong> — ${Help.escapeHtml(desc)}</div>
+        </div>
+      </div>`; }).join('')}` : '';
+
   const schemaHtml = hasSchemaErrors ? `
-    <h3 style="margin: 0 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
+    <h3 style="margin: ${hasTodos ? '24px' : '0'} 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
     ${result.errors.map(e => `
       <div class="validation-item">
         <span class="validation-item__icon validation-item__icon--error">
@@ -2486,11 +2549,11 @@ function renderValidationSection(container) {
     `).join('')}` : '';
 
   const renderHtml = hasRenderWarnings ? `
-    <h3 style="margin: ${hasSchemaErrors ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
+    <h3 style="margin: ${hasSchemaErrors || hasTodos ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
     ${renderWarnings.map(w => `
       <div class="validation-item">
         <span class="validation-item__icon validation-item__icon--warning">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="color: var(--pf-global--warning-color--100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -2502,7 +2565,7 @@ function renderValidationSection(container) {
       </div>
     `).join('')}` : '';
 
-  container.innerHTML = `<div class="validation-panel">${schemaHtml}${renderHtml}</div>`;
+  container.innerHTML = `<div class="validation-panel">${todoHtml}${schemaHtml}${renderHtml}</div>`;
 
   // Set up path click handlers for schema errors
   container.querySelectorAll('.validation-item__path').forEach(pathEl => {
@@ -2593,7 +2656,8 @@ function updateValidationBadge() {
   const result = Validator.validateDocument(State.state.currentObject);
   State.state.validationErrors = result.errors;
   const renderWarnings = State.state.renderWarnings || [];
-  const total = result.errors.length + renderWarnings.length;
+  const todos = findPlaceholders(State.state.currentObject || {});
+  const total = result.errors.length + renderWarnings.length + todos.length;
 
   const badge = document.querySelector('[data-section="validation"] .sidebar-nav__item-badge');
   if (badge) {

@@ -1171,6 +1171,10 @@ html, body {
   color: var(--pf-global--warning-color--100);
 }
 
+.validation-item__icon--todo {
+  color: var(--pf-global--info-color--100);
+}
+
 .validation-item__content {
   flex: 1;
 }
