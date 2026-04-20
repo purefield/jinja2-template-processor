@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: osp-cluster
@@ -7,12 +7,12 @@ cluster:
   platform: openstack
   location: us-east
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
 
 plugins:
   openstack:
     cloud: openstack
-    credentials: data/secrets/clouds.yaml
+    credentials: secrets/clouds.yaml
     externalNetwork: external-network
     computeFlavor: m1.xlarge
     trunkSupport: false

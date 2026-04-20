@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: kubevirt-compact
@@ -7,7 +7,7 @@ cluster:
   platform: baremetal
   location: dc1
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
   machine:
     control:
       cpus: 16
@@ -54,7 +54,7 @@ hosts:
     bmc:
       vendor: kubevirt-redfish
       username: admin
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
       address: redfish
     network:
       interfaces:
@@ -72,7 +72,7 @@ hosts:
     bmc:
       vendor: kubevirt-redfish
       username: admin
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
       address: redfish
     network:
       interfaces:
@@ -90,7 +90,7 @@ hosts:
     bmc:
       vendor: kubevirt-redfish
       username: admin
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
       address: redfish
     network:
       interfaces:

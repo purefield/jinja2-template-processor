@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: vsphere-cluster
@@ -7,7 +7,7 @@ cluster:
   platform: vsphere
   location: datacenter1
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
   machine:
     control:
       cpus: 4
@@ -25,7 +25,7 @@ plugins:
     vcenter:
       server: vcenter.example.com
       username: administrator@vsphere.local
-      password: data/secrets/vcenter-password.txt
+      password: secrets/vcenter-password.txt
       datacenter: DC1
       defaultDatastore: vsanDatastore
       cluster: Cluster1

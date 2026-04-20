@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: ibm-cluster
@@ -7,12 +7,12 @@ cluster:
   platform: ibmcloud
   location: us-south
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
 
 plugins:
   ibmcloud:
     region: us-south
-    credentials: data/secrets/ibmcloud-api-key.txt
+    credentials: secrets/ibmcloud-api-key.txt
     resourceGroupName: openshift-rg
     controlPlane:
       type: bx2-8x32

@@ -1,12 +1,12 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: <cluster-name>
   version: 4.21.0
   platform: baremetal
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
 
 network:
   domain: <base-domain>
@@ -26,7 +26,7 @@ hosts:
       vendor: <bmc-vendor>
       address: <bmc-address>
       username: <bmc-username>
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
     network:
       interfaces:
         - name: eth0
@@ -41,7 +41,7 @@ hosts:
       vendor: <bmc-vendor>
       address: <bmc-address>
       username: <bmc-username>
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
     network:
       interfaces:
         - name: eth0
@@ -56,7 +56,7 @@ hosts:
       vendor: <bmc-vendor>
       address: <bmc-address>
       username: <bmc-username>
-      password: data/secrets/bmc-password.txt
+      password: secrets/bmc-password.txt
     network:
       interfaces:
         - name: eth0

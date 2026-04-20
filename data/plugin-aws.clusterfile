@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: aws-cluster
@@ -7,12 +7,12 @@ cluster:
   platform: aws
   location: us-east-1
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
 
 plugins:
   aws:
     region: us-east-1
-    credentials: data/secrets/aws-credentials
+    credentials: secrets/aws-credentials
     controlPlane:
       type: m6i.xlarge
       zones: [us-east-1a, us-east-1b, us-east-1c]

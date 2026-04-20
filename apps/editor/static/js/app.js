@@ -1349,29 +1349,8 @@ function updateModeUI() {
  * Set up header action buttons
  */
 function setupHeaderActions() {
-  // New button — double-click or click twice to confirm
-  const btnNew = document.getElementById('btn-new');
-  if (btnNew) {
-    let pendingNew = false;
-    btnNew.addEventListener('click', () => {
-      if (pendingNew) {
-        newDocument();
-        pendingNew = false;
-        btnNew.textContent = btnNew.dataset.originalText || 'New';
-        btnNew.classList.remove('btn--danger');
-        return;
-      }
-      pendingNew = true;
-      btnNew.dataset.originalText = btnNew.textContent;
-      btnNew.textContent = 'Confirm?';
-      btnNew.classList.add('btn--danger');
-      setTimeout(() => {
-        pendingNew = false;
-        btnNew.textContent = btnNew.dataset.originalText || 'New';
-        btnNew.classList.remove('btn--danger');
-      }, 3000);
-    });
-  }
+  // New button — show starter picker modal
+  document.getElementById('btn-new')?.addEventListener('click', showNewDocumentModal);
 
   // Load button
   document.getElementById('btn-load')?.addEventListener('click', () => {
@@ -2861,6 +2840,71 @@ function populateTemplatesDropdown() {
 /**
  * Show welcome tour modal
  */
+/**
+ * Show new document modal with starter file choices
+ */
+function showNewDocumentModal() {
+  const STARTERS = [
+    { filename: 'start-sno.clusterfile', label: 'Single Node (SNO)', desc: '1 control node, no workers' },
+    { filename: 'start-compact.clusterfile', label: 'Compact (3-node)', desc: '3 control nodes, no workers' },
+    { filename: 'start-full.clusterfile', label: 'Full HA', desc: '3 control nodes + workers' },
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title">New Clusterfile</h2>
+        <span class="modal__close">×</span>
+      </div>
+      <div class="modal__body">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${STARTERS.map(s => `
+            <button class="btn btn--secondary starter-choice" data-filename="${s.filename}" style="text-align:left;padding:10px 14px;">
+              <strong>${s.label}</strong>
+              <span style="margin-left:8px;opacity:0.65;font-size:0.85em;">${s.desc}</span>
+            </button>`).join('')}
+          <button class="btn btn--secondary starter-choice" data-filename="" style="text-align:left;padding:10px 14px;margin-top:4px;opacity:0.7;">
+            <strong>Blank</strong>
+            <span style="margin-left:8px;opacity:0.65;font-size:0.85em;">Empty document</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeModal = () => overlay.remove();
+
+  overlay.querySelector('.modal__close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  overlay.querySelectorAll('.starter-choice').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      closeModal();
+      const filename = btn.dataset.filename;
+      if (!filename) { newDocument(); return; }
+      try {
+        let content;
+        if (isStandaloneMode) {
+          const sample = EMBEDDED_SAMPLES.find(s => s.filename === filename);
+          if (!sample) throw new Error('Starter not found');
+          content = sample.content;
+        } else {
+          const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(filename)}`);
+          if (!resp.ok) throw new Error('Failed to load starter');
+          content = (await resp.json()).content;
+        }
+        loadDocument(content, 'untitled.clusterfile', true);
+      } catch (e) {
+        showToast(`Error: ${e.message}`, 'error');
+      }
+    });
+  });
+}
+
 function showWelcomeTour() {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';

@@ -1,5 +1,5 @@
 account:
-  pullSecret: data/secrets/pull-secret.json
+  pullSecret: secrets/pull-secret.json
 
 cluster:
   name: azure-cluster
@@ -7,12 +7,12 @@ cluster:
   platform: azure
   location: eastus
   sshKeys:
-    - data/secrets/id_rsa.pub
+    - secrets/id_rsa.pub
 
 plugins:
   azure:
     region: eastus
-    credentials: data/secrets/azure-credentials.json
+    credentials: secrets/azure-credentials.json
     baseDomainResourceGroupName: openshift-dns-rg
     cloudName: AzurePublicCloud
     controlPlane:
