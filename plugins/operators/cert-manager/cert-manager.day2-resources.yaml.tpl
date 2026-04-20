@@ -1,4 +1,4 @@
-{%- set cm = plugins.operators['cert-manager'] -%}
+{%- set cm = ((plugins | default({})).operators | default({})).get('cert-manager', {}) -%}
 {%- if cm.letsencrypt is defined -%}
 {%- set le = cm.letsencrypt -%}
 {%- set clusterDomain = cluster.name ~ '.' ~ network.domain %}

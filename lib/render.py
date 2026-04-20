@@ -260,8 +260,11 @@ def format_yaml_output(processed_template, meta=None):
     docs = [d for d in yaml.safe_load_all(processed_template) if d is not None]
     yaml_wrapper = (meta or {}).get('yamlWrapper', 'list')
 
-    if len(docs) <= 1:
-        output_obj = docs[0] if docs else None
+    if not docs:
+        return ""
+
+    if len(docs) == 1:
+        output_obj = docs[0]
         return yaml.dump(
             output_obj,
             width=4096,
