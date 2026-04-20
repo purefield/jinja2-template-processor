@@ -1,6 +1,6 @@
-{%- set cm = ((plugins | default({})).operators | default({})).get('cert-manager', {}) -%}
-{%- if cm.letsencrypt is defined -%}
-{%- set le = cm.letsencrypt -%}
+{%- set cm = (plugins | default({})).get('operators', {}).get('cert-manager', {}) -%}
+{%- if cm.get('letsencrypt') -%}
+{%- set le = cm.get('letsencrypt') -%}
 {%- set clusterDomain = cluster.name ~ '.' ~ network.domain %}
 {%- set provider = le.provider -%}
 ---
