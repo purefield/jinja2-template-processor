@@ -483,7 +483,7 @@
             "HighlyAvailable",
             "HighlyAvailableArbiter"
           ],
-          "description": "Cluster topology. Auto-detected from host count if not set (1 host = SNO, 3+ controls = HighlyAvailable).",
+          "description": "Cluster topology. Derived from host count — do not set unless using HighlyAvailableArbiter. 1 control = SNO, 3+ controls = HighlyAvailable.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
         },
         "cpuPartitioningMode": {

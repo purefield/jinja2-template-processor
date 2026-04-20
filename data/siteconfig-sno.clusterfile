@@ -5,7 +5,6 @@ cluster:
   platform: none
   arch: x86_64
   name: edge-sno-01
-  clusterType: SNO
   cpuPartitioningMode: AllNodes
   sshKeys:
     - data/secrets/id_rsa.pub
