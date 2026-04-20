@@ -2243,6 +2243,19 @@ function updatePreviewButton(templateName) {
 }
 
 /**
+ * Group an array of items by schema section (first path segment).
+ * pathFn(item) should return the dot-path string.
+ */
+function groupBySection(items, pathFn) {
+  const groups = {};
+  items.forEach(item => {
+    const section = State.parsePath(pathFn(item))[0] || 'other';
+    (groups[section] = groups[section] || []).push(item);
+  });
+  return groups;
+}
+
+/**
  * Render changes section
  */
 function renderChangesSection(container) {
@@ -2532,44 +2545,49 @@ function renderValidationSection(container) {
     return;
   }
 
-  const schemaHtml = hasSchemaErrors ? `
-    <h3 style="margin: 0 0 12px 0;">${result.errors.length} Schema Error${result.errors.length !== 1 ? 's' : ''}</h3>
-    ${result.errors.map(e => `
-      <div class="validation-item">
-        <span class="validation-item__icon validation-item__icon--error">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
+  const total = result.errors.length + renderWarnings.length;
+  const errorGroups = groupBySection(result.errors, e => e.path || '');
+
+  const schemaHtml = hasSchemaErrors ? Object.entries(errorGroups).map(([section, errs]) => `
+    <div class="changes-section">
+      <div class="changes-section__header">
+        <a class="changes-section__link" data-section="${Help.escapeHtml(section)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+            <path d="M9 18l6-6-6-6"/>
           </svg>
-        </span>
-        <div class="validation-item__content">
-          <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
-          <div class="validation-item__message">${Help.escapeHtml(e.message)}</div>
-        </div>
+          ${Help.escapeHtml(section)}
+        </a>
+        <span class="changes-section__count changes-section__count--error">${errs.length}</span>
       </div>
-    `).join('')}` : '';
+      ${errs.map(e => `
+        <div class="change-item">
+          <span class="validation-item__path" data-path="${Help.escapeHtml(e.path)}">${Help.escapeHtml(e.path || '(root)')}</span>
+          <span class="change-item__values">${Help.escapeHtml(e.message)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('') : '';
 
   const renderHtml = hasRenderWarnings ? `
-    <h3 style="margin: ${hasSchemaErrors ? '24px' : '0'} 0 12px 0;">${renderWarnings.length} Render Warning${renderWarnings.length !== 1 ? 's' : ''}</h3>
-    ${renderWarnings.map(w => `
-      <div class="validation-item">
-        <span class="validation-item__icon validation-item__icon--warning">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        </span>
-        <div class="validation-item__content">
-          <div class="validation-item__message">${Help.escapeHtml(w)}</div>
-        </div>
+    <div class="changes-section">
+      <div class="changes-section__header">
+        <span class="changes-section__link" style="cursor:default;">Render Warnings</span>
+        <span class="changes-section__count">${renderWarnings.length}</span>
       </div>
-    `).join('')}` : '';
+      ${renderWarnings.map(w => `
+        <div class="change-item">
+          <span class="change-item__values">${Help.escapeHtml(w)}</span>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
 
-  container.innerHTML = `<div class="validation-panel">${schemaHtml}${renderHtml}</div>`;
+  container.innerHTML = `
+    <div class="changes-list">
+      <h3 style="margin: 0 0 16px 0;">${total} Issue${total !== 1 ? 's' : ''}</h3>
+      ${schemaHtml}${renderHtml}
+    </div>`;
 
-  // Set up path click handlers
   container.querySelectorAll('.validation-item__path').forEach(pathEl => {
     pathEl.addEventListener('click', () => {
       const path = pathEl.dataset.path;
@@ -2579,6 +2597,10 @@ function renderValidationSection(container) {
         CodeMirror.goToPath(path);
       }
     });
+  });
+
+  container.querySelectorAll('.changes-section__link[data-section]').forEach(link => {
+    link.addEventListener('click', () => navigateToSection(link.dataset.section));
   });
 }
 
@@ -2604,29 +2626,39 @@ function renderTodoSection(container) {
     return;
   }
 
-  const itemsHtml = todos.map(t => {
-    const info = getSchemaFieldInfo(t.path);
-    const title = info.title || t.path.split('.').pop();
-    const desc = info.description || `Fill in ${t.placeholder}`;
-    return `
-    <div class="validation-item">
-      <span class="validation-item__icon validation-item__icon--todo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-          <rect x="3" y="3" width="18" height="18" rx="3"/>
-        </svg>
-      </span>
-      <div class="validation-item__content">
-        <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
-        <div class="validation-item__message"><strong>${Help.escapeHtml(title)}</strong></div>
-        <div class="validation-item__message" style="margin-top:2px;opacity:0.85;">${renderDescriptionHtml(desc)}</div>
+  const todoGroups = groupBySection(todos, t => t.path);
+
+  const groupsHtml = Object.entries(todoGroups).map(([section, items]) => `
+    <div class="changes-section">
+      <div class="changes-section__header">
+        <a class="changes-section__link" data-section="${Help.escapeHtml(section)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+          ${Help.escapeHtml(section)}
+        </a>
+        <span class="changes-section__count changes-section__count--info">${items.length}</span>
       </div>
-    </div>`;
-  }).join('');
+      ${items.map(t => {
+        const info = getSchemaFieldInfo(t.path);
+        const title = info.title || t.path.split('.').pop();
+        const desc = info.description || `Fill in ${t.placeholder}`;
+        return `
+        <div class="change-item change-item--todo">
+          <span class="validation-item__path" data-path="${Help.escapeHtml(t.path)}">${Help.escapeHtml(t.path)}</span>
+          <div class="change-item__todo-detail">
+            <strong>${Help.escapeHtml(title)}</strong>
+            <span>${renderDescriptionHtml(desc)}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
 
   container.innerHTML = `
-    <div class="validation-panel">
-      <h3 style="margin: 0 0 12px 0;">${todos.length} Todo${todos.length !== 1 ? 's' : ''}</h3>
-      ${itemsHtml}
+    <div class="changes-list">
+      <h3 style="margin: 0 0 16px 0;">${todos.length} Todo${todos.length !== 1 ? 's' : ''}</h3>
+      ${groupsHtml}
     </div>`;
 
   container.querySelectorAll('.validation-item__path').forEach(pathEl => {
@@ -2638,6 +2670,10 @@ function renderTodoSection(container) {
         CodeMirror.goToPath(path);
       }
     });
+  });
+
+  container.querySelectorAll('.changes-section__link[data-section]').forEach(link => {
+    link.addEventListener('click', () => navigateToSection(link.dataset.section));
   });
 }
 

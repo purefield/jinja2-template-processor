@@ -1246,6 +1246,16 @@ html, body {
   border-radius: 10px;
 }
 
+.changes-section__count--error {
+  background: var(--pf-global--danger-color--100);
+  color: #fff;
+}
+
+.changes-section__count--info {
+  background: var(--pf-global--info-color--100);
+  color: #fff;
+}
+
 .change-item {
   display: flex;
   align-items: center;
@@ -1253,6 +1263,23 @@ html, body {
   border-bottom: 1px solid var(--pf-global--BorderColor--100);
   gap: var(--pf-global--spacer--sm);
   background: var(--pf-global--BackgroundColor--100);
+}
+
+.change-item--todo {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.change-item__todo-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  color: var(--pf-global--Color--200);
+}
+
+.change-item__todo-detail a {
+  color: var(--pf-global--link--Color);
 }
 
 .change-item:last-child {
