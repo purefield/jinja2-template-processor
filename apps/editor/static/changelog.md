@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.19.4
+- **FIPS Support**: Set `cluster.fips: true` to enable FIPS 140-2/140-3. Propagates correctly to `install-config.yaml` (direct field), ACM ZTP (`agent-install.openshift.io/install-config-overrides` annotation on `AgentClusterInstall`), and CAPI-M3 (`install-config-override` annotation JSON).
+
 ## 3.19.3
 - **GitHub Auth Fix**: All four GitHub OAuth templates are now silent when `auth.github` is not configured — no warnings, no empty YAML skeletons, no `oc apply` errors.
 

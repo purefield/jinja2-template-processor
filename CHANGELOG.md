@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.19.4 (2026-04-20)
+
+- **fips-support** — `cluster.fips: true` enables FIPS 140-2/140-3 across all install paths: top-level field in `install-config.yaml`, `agent-install.openshift.io/install-config-overrides` annotation on `AgentClusterInstall` (ZTP), and `install-config-override` annotation JSON (CAPI-M3)
+
 ## v3.19.3 (2026-04-20)
 
 - **fix-github-auth-silent-when-unconfigured** — all four GitHub auth templates (`github-oauth-secrets`, `github-oauth`, `github-oauth-patch`, `github-oauth-app-data`) produce empty output with no warnings when `auth.github` is not configured; same `dict.get()` + if-guard pattern as cert-manager fix

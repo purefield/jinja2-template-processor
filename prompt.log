@@ -3805,3 +3805,18 @@ Releasing v3.19.2 — cert-manager dict.get() fix. Updated all 5 version locatio
 > ship it (after GitHub auth templates fix)
 
 Releasing v3.19.3 — GitHub auth templates silent when unconfigured.
+
+---
+
+### Prompt 67
+
+> I've implemented FIPS support in an OpenShift cluster configuration tool. Please verify the implementation against current OpenShift documentation and report back on correctness and any gaps.
+>
+> Verified the FIPS implementation across install-config.yaml.tpl, acm-ztp.yaml.tpl, and acm-capi-m3.yaml.tpl against OCP 4.16/4.17 documentation. Found one correctness issue: ACM ZTP uses `spec.installConfigOverrides` but the documented mechanism is the `agent-install.openshift.io/install-config-overrides` annotation. The install-config and CAPI-M3 implementations are correct. Reported findings including FIPS 140-3 note, architecture constraints, and the missing installer-binary prerequisite caveat.
+
+### Prompt 67
+
+> do we have fips support? / yes, implement across all / great, verify it against documentation and report back / ship it
+
+Implemented cluster.fips boolean across install-config, ACM ZTP, and CAPI-M3.
+Doc verification found one bug: ZTP was using spec.installConfigOverrides (non-existent field) instead of metadata.annotations[agent-install.openshift.io/install-config-overrides]. Fixed and releasing as v3.19.4.

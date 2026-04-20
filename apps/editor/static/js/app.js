@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.19.3';
+let APP_VERSION = '3.19.4';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.19.4',
+    date: '2026-04-20',
+    changes: [
+      'cluster.fips: true — FIPS 140-2/140-3 support across install-config, ACM ZTP, and CAPI-M3'
+    ]
+  },
   {
     version: '3.19.3',
     date: '2026-04-20',
