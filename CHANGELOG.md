@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+- **nmstate-operator-auto-install** — nmstate operator Namespace/OperatorGroup/Subscription/NMState auto-injected in `operators.yaml` for `platform: baremetal` clusters
+- **vip-as-list** — New `as_list` Jinja2 filter normalizes VIP input to list; supports single string or array uniformly across all platform templates and utility scripts
+- **schema-network-defaults** — Schema defaults for OCP constants: `network.cluster.subnet` (10.128.0.0/14), `network.service.subnet` (172.30.0.0/16), `network.primary.bond/vlan` (false); stripped from all example files
+- **machine-sizing-defaults** — Schema defaults `cpus: 8`, `memory: 32` for all nodes; kubevirt-cluster template uses same defaults
+- **platform-kubevirt-to-plugins** — BREAKING: `platform: kubevirt` removed from schema enum; KubeVirt clusters now use `platform: baremetal` + `plugins.kubevirt`
+- **sno-derived-from-hosts** — `cluster.clusterType` is now optional override only; templates derive SNO from host count; removed redundant `clusterType: SNO` from examples
+- **role-consistency** — CAPI-M3 NMStateConfig/BareMetalHost labels and selectors use `role: control` (was `controller`)
+- **example-consolidation** — 19 example files → 3 starter files (start-sno, start-compact, start-full) + 9 platform plugin examples (one per platform)
+
 ## v3.18.19 (2026-04-18)
 
 - **operator-channel-cleanup** — LVM channel now derives from `cluster.version` (`stable-4.Y`) matching ODF; ACM default updated to `release-2.15`; all operators now accept `version` field to pin `startingCSV`

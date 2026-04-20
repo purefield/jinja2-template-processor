@@ -3682,3 +3682,67 @@ Audit cleanup committed (0e36880): fixed Jinja2 syntax error in secondary-networ
 > what do you want to know about 6 / we want to use stable by default and latest, however we can do that and allow version and channel to be specified in the clusterfile too / well, version is different than channel, look up what the naming convention is for each and use that as the default for stable. use the version where it aligns and current version where it does not. / execute it / ship it
 
 Operator channel cleanup: LVM now derives channel from cluster.version (stable-4.Y, matching ODF pattern). ACM updated from release-2.14→release-2.15. All operators now support startingCSV via op.version field. Tests updated. 181 tests pass.
+
+### Prompt 62
+
+> (session continued from prior context, plan approved via ExitPlanMode, user rejected with "support vips as string and array")
+
+Added Finding 0 (VIP normalization) to the architectural plan. Implemented:
+- `as_list(v)` filter in `lib/render.py`
+- Registered in all four render environments
+- Replaced manual string/iterable guards in 5 platform templates with `| as_list`
+- Fixed utility templates (pre-check dns/network, test-dns.sh, cluster-overview) to use `| as_list`
+- Fixed acm-ztp and acm-capi-m3 to render proper YAML lists for VIPs
+- Committed pending nmstate changes: tag `nmstate-operator-auto-install`
+- Committed VIP normalization: tag `vip-as-list`
+- 185 tests passing
+
+### Prompt 63
+
+> (Continued from Prompt 62 — plan approved, implementing architectural review findings)
+
+Implemented all 8 findings from the architectural plan:
+
+**Finding 0 — VIP normalization:**
+- Added `as_list(v)` filter to `lib/render.py`
+- Registered in all 4 render environments
+- Simplified 5 platform templates (removed 10-line string/iterable guards)
+- Fixed 6 utility templates that broke on string VIP input
+- Committed: tag `vip-as-list`
+
+**nmstate pending commit:**
+- Committed nmstate operator auto-install changes: tag `nmstate-operator-auto-install`
+
+**Finding 1 — Schema defaults for OCP constants:**
+- Added defaults: `network.cluster.subnet` (10.128.0.0/14), `network.service.subnet` (172.30.0.0/16), `network.primary.bond` (false), `network.primary.vlan` (false)
+- Stripped all from 19 example clusterfiles
+- Committed: tag `schema-network-defaults`
+
+**Finding 2 — Machine sizing defaults:**
+- Added `default: 8` (cpus) and `default: 32` (memory) to `machineSpec` in schema
+- Updated kubevirt-cluster template defaults from 64/16 to 32/8
+- Committed: tag `machine-sizing-defaults`
+
+**Finding 3 — Replace `platform: kubevirt` with `platform: baremetal` + `plugins.kubevirt`:**
+- BREAKING: removed `kubevirt` from platform enum
+- `isKubevirt = (plugins | default({})).kubevirt is defined` in install-config, acm-ztp, acm-capi-m3
+- Migrated 3 kubevirt data files, updated 11 template platform lists, updated tests
+- Committed: tag `platform-kubevirt-to-plugins`
+
+**Finding 4 — Derive SNO from host count:**
+- Schema description updated: "Derived from host count — do not set unless using HighlyAvailableArbiter"
+- Stripped `clusterType: SNO` from 2 example files
+- Committed: tag `sno-derived-from-hosts`
+
+**Finding 5 — Role consistency:**
+- Changed `role: controller` → `role: control` in CAPI-M3 NMStateConfig/BareMetalHost labels + selectors
+- `machine-template-controller` → `machine-template-control`
+- Committed: tag `role-consistency`
+
+**Finding 7 — Consolidate example files:**
+- Deleted 19 old example files
+- Created 3 starter files with `<PLACEHOLDER>` values
+- Created 9 platform plugin files (one per platform)
+- Committed: tag `example-consolidation`
+
+185 tests passing throughout.
