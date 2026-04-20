@@ -44,7 +44,9 @@ metadata:
 
 baseDomain: {{ network.domain }}{% if cluster.cpuPartitioningMode is defined and cluster.cpuPartitioningMode != "None" %}
 
-cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}{% endif %}
+cpuPartitioningMode: {{ cluster.cpuPartitioningMode }}{% endif %}{% if cluster.fips | default(false) %}
+
+fips: true{% endif %}
 
 controlPlane:
   name: master

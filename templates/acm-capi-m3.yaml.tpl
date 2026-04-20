@@ -103,7 +103,7 @@ items:
     namespace: {{ cluster.name }}
     annotations: 
       controlplane.cluster.x-k8s.io/install-config-override: |
-        { "networking": { "machineNetwork": [ {"cidr": "{{ network.primary.subnet }}"} ],
+        { {% if cluster.fips | default(false) %}"fips": true, {% endif %}"networking": { "machineNetwork": [ {"cidr": "{{ network.primary.subnet }}"} ],
                           "clusterNetwork": [ {"cidr": "{{ network.cluster.subnet }}", "hostPrefix": {{ network.cluster.hostPrefix|default(23, true) }}} ] },
           "compute": [ { "name": "worker", "replicas": {{ workerCount }} } ] }
       #cluster.x-k8s.io/release-image-repository-override: registry.ci.openshift.org/ocp/release
