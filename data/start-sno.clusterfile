@@ -19,9 +19,6 @@ network:
 hosts:
   <fqdn>:
     role: control
-    storage:
-      os:
-        deviceName: <device-path>
     bmc:
       vendor: <bmc-vendor>
       address: <bmc-address>

@@ -249,8 +249,8 @@ items:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
     name: {{ name }}
     namespace: {{ cluster.name }}
-  spec:
-    rootDeviceHints:  {{ host.storage.os }}{% if host.bootMode is defined %}
+  spec:{% if host.storage.os %}
+    rootDeviceHints:  {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
     automatedCleaningMode: {{ host.automatedCleaningMode | default("metadata") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
