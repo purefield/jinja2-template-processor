@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.21.0',
+    date: '2026-04-21',
+    changes: [
+      'cluster.corePassword: set a file path to auto-inject SHA-512 crypt MachineConfig for the core OS user (master + worker) via operators.yaml.tpl'
+    ]
+  },
+  {
     version: '3.20.1',
     date: '2026-04-20',
     changes: [

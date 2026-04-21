@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.21.0
+- **Core User Password**: Set `cluster.corePassword` to a file path containing the plaintext password. Rendering `operators.yaml.tpl` automatically emits two MachineConfigs (master + worker) with a SHA-512 crypt `passwordHash` — equivalent to `openssl passwd -6`. No separate template to select.
+
 ## 3.20.1
 - **Todo Doc Links**: Each Todo item now shows a **Documentation ↗** link when the schema field has an `x-doc-url` — direct link to the relevant OpenShift docs page.
 
