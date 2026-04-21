@@ -3874,3 +3874,9 @@ Added cluster.corePassword (Security group, x-is-file). When set, operators.yaml
 > ship it
 
 Versioned editor release v3.21.0 (minor — new feature). Read skills/ship-it/SKILL.md. Pre-populated static/changelog.md and app.js CHANGELOG array. Ran ./clusterfile-editor.sh release 3.21.0 — synced all 5 version locations, committed Release v3.21.0 (24c1ac7), tagged v3.21.0, pushed branch and tag. Built and pushed quay.io/dds/clusterfile-editor:3.21.0 and :latest (passlib included in image). Container restarted. Health verified: {"status":"ok","version":"3.21.0"}.
+
+### Prompt 77
+
+> storage.os is optional
+
+Removed storage.os (root device hints) placeholder block from start-sno.clusterfile — it was causing a spurious Todo item. Only start-sno had it; start-compact and start-full were already clean. Committed as storage-os-optional (d5d4d68).
