@@ -3880,3 +3880,9 @@ Versioned editor release v3.21.0 (minor — new feature). Read skills/ship-it/SK
 > storage.os is optional
 
 Removed storage.os (root device hints) placeholder block from start-sno.clusterfile — it was causing a spurious Todo item. Only start-sno had it; start-compact and start-full were already clean. Committed as storage-os-optional (d5d4d68).
+
+### Prompt 78
+
+> the schema sets it to "CHANGEME" if missing. keep it in the examples and starter
+
+Reverted previous removal — restored storage.os placeholder in start-sno.clusterfile. LoggingUndefined substitutes "CHANGEME" silently when the field is absent, so the explicit placeholder is necessary to surface it as a Todo item. Committed ad64fc1.
