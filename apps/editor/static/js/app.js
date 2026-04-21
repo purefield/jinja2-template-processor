@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.21.1',
+    date: '2026-04-21',
+    changes: [
+      'rootDeviceHints fix: storage.os is optional — absent hosts no longer emit rootDeviceHints: CHANGEME in ACM ZTP, CAPI-M3, and nodes-config'
+    ]
+  },
+  {
     version: '3.21.0',
     date: '2026-04-21',
     changes: [

@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.21.1
+- **rootDeviceHints fix**: `storage.os` is now optional. `rootDeviceHints` is only emitted when the field is explicitly set — absent hosts no longer produce `rootDeviceHints: CHANGEME` (invalid object type) in ACM ZTP, CAPI-M3, and nodes-config output.
+
 ## 3.21.0
 - **Core User Password**: Set `cluster.corePassword` to a file path containing the plaintext password. Rendering `operators.yaml.tpl` automatically emits two MachineConfigs (master + worker) with a SHA-512 crypt `passwordHash` — equivalent to `openssl passwd -6`. No separate template to select.
 
