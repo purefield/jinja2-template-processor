@@ -3886,3 +3886,9 @@ Removed storage.os (root device hints) placeholder block from start-sno.clusterf
 > the schema sets it to "CHANGEME" if missing. keep it in the examples and starter
 
 Reverted previous removal — restored storage.os placeholder in start-sno.clusterfile. LoggingUndefined substitutes "CHANGEME" silently when the field is absent, so the explicit placeholder is necessary to surface it as a Todo item. Committed ad64fc1.
+
+### Prompt 79
+
+> storage.os is optional and should not trigger CHANGEME
+
+Guarded rootDeviceHints in all three templates that emitted it unconditionally (acm-ztp, acm-capi-m3, nodes-config). When storage.os is absent, LoggingUndefined substitutes string 'CHANGEME', causing ACM ZTP validation failure: "rootDeviceHints in body must be of type object: string". Fixed with {% if host.storage.os %} guards per CLAUDE.md inline-control rules. Removed storage.os from start-sno starter and nodes-config requires. 185 tests pass. Committed as storage-os-optional (74e1d38).
