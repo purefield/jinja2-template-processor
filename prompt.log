@@ -3862,3 +3862,9 @@ Versioned editor release. Read `skills/ship-it/SKILL.md`. Pre-populated `static/
 > ship it
 
 Versioned editor release v3.20.1 (patch). Read skills/ship-it/SKILL.md. Pre-populated static/changelog.md and app.js CHANGELOG array. Ran ./clusterfile-editor.sh release 3.20.1 — synced all 5 version locations, committed Release v3.20.1 (d5d7bd7), tagged v3.20.1, pushed branch and tag. Built and pushed quay.io/dds/clusterfile-editor:3.20.1 and :latest. Killed dev server, restarted container. Health verified: {"status":"ok","version":"3.20.1"}.
+
+### Prompt 75
+
+> add feature to accept root password and inject it as custom manifest openssl passwd -6 --stdin <<<"$pw"
+
+Added cluster.corePassword (Security group, x-is-file). When set, operators.yaml.tpl auto-includes templates/includes/core-user-password.yaml.tpl which emits two MachineConfig docs (master + worker) with the SHA-512 crypt passwordHash. Added passwd_hash Jinja2 filter to lib/render.py (passlib primary, stdlib crypt fallback). Registered filter in process.py, template_processor.py, tests/run_tests.py. Added passlib to Containerfile. 185 tests pass. Committed as core-user-password (27834f3).
