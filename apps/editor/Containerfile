@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir \
     jsonpath-ng \
     jsonschema \
     pyyaml \
-    uvicorn
+    uvicorn \
+    passlib
 
 # Copy application code from apps/editor/
 COPY --chown=editor:editor apps/editor/app/ /app/app/

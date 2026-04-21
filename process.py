@@ -16,7 +16,7 @@ except Exception:
     jsonschema = None
 
 from lib.render import (
-    IndentDumper, LoggingUndefined, base64encode, as_list, set_by_path,
+    IndentDumper, LoggingUndefined, base64encode, as_list, passwd_hash, set_by_path,
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG, format_yaml_output,
 )
 
@@ -65,6 +65,7 @@ def process_template(config_data, template_file, data_file):
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
+    env.filters["passwd_hash"] = passwd_hash
     try:
         template = env.get_template(os.path.basename(template_file))
     except TemplateNotFound:

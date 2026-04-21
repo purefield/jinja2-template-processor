@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))  # dev: repo root
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))              # container: /app/
 from lib.render import (
-    IndentDumper, LoggingUndefined, base64encode, as_list, set_by_path,
+    IndentDumper, LoggingUndefined, base64encode, as_list, passwd_hash, set_by_path,
     resolve_path, validate_data_for_template, YAMLLINT_CONFIG, format_yaml_output,
 )
 
@@ -66,6 +66,7 @@ def process_template(config_data: dict, template_content: str, template_dir: str
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
+    env.filters["passwd_hash"] = passwd_hash
 
     LoggingUndefined._missing = {}
     template = env.from_string(template_content)

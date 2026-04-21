@@ -552,6 +552,15 @@
           "description": "Structured disk encryption configuration. Use cluster.tpm as shorthand for TPM2.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/install_config/installing-customizing.html"
         },
+        "corePassword": {
+          "title": "Core User Password",
+          "x-group": "Security",
+          "x-group-collapsed": true,
+          "type": "string",
+          "description": "Path to file containing the plaintext password for the 'core' OS user. Automatically included as a MachineConfig (master + worker) when operators.yaml.tpl is rendered.",
+          "x-is-file": true,
+          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html"
+        },
         "installConfigOverrides": {
           "title": "Install Config Overrides",
           "x-group": "Advanced",

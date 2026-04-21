@@ -84,9 +84,17 @@ def create_template_env():
     def as_list(v):
         return [v] if isinstance(v, str) else list(v)
 
+    def passwd_hash(password):
+        if not password or not isinstance(password, str):
+            return ""
+        if password.startswith("<") and password.endswith(">"):
+            return password
+        return "$6$rounds=5000$testhash$stubbedvalue"
+
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
+    env.filters["passwd_hash"] = passwd_hash
     return env
 
 

@@ -133,6 +133,25 @@ def as_list(v):
     return [v] if isinstance(v, str) else list(v)
 
 
+def passwd_hash(password):
+    """Hash plaintext with SHA-512 crypt ($6$) for MachineConfig passwd.users.passwordHash.
+    Passes browser placeholders (<file:path>) through unchanged.
+    """
+    if not password or not isinstance(password, str):
+        return ""
+    if password.startswith("<") and password.endswith(">"):
+        return password  # browser context placeholder — pass through
+    try:
+        from passlib.hash import sha512_crypt
+        return sha512_crypt.hash(password.strip())
+    except ImportError:
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import crypt
+            return crypt.crypt(password.strip(), crypt.mksalt(crypt.METHOD_SHA512))
+
+
 # --- JSONPath upsert helpers -------------------------------------------------
 
 _key_index_re = re.compile(r"([^.\[\]]+)|(\[(\d+)\])")
