@@ -1173,7 +1173,7 @@
                     "kubevirt-redfish",
                     "other"
                   ],
-                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell\u2192idrac-virtualmedia, hpe/hp\u2192ilo5-virtualmedia, others\u2192redfish-virtualmedia.",
+                  "description": "BMC hardware vendor. Controls the Redfish driver: dell\u2192idrac-virtualmedia (iDRAC 9+) or redfish-virtualmedia (older), hp/hpe\u2192ilo5-virtualmedia (avoids iLO insert/eject loop), others\u2192redfish-virtualmedia.",
                   "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
                 },
                 "version": {
