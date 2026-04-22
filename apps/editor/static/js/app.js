@@ -1619,6 +1619,8 @@ function renderCurrentSection() {
     renderChangelogSection(container);
   } else if (section === 'privacy') {
     renderPrivacySection(container);
+  } else if (section === 'guide') {
+    renderGuideSection(container);
   } else if (section === 'about') {
     renderAboutSection(container);
   } else {
@@ -3345,6 +3347,43 @@ function renderPrivacySection(container) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Render Guide section — step-by-step getting-started walkthrough
+ */
+const _guideCache = {};
+
+function renderGuideSection(container) {
+  container.innerHTML = `
+    <div class="form-section">
+      <h2 class="form-section__title">Getting Started</h2>
+      <p class="form-description">Step-by-step guide to creating and rendering a cluster configuration.</p>
+      <div id="guide-content"><em>Loading…</em></div>
+    </div>`;
+  loadGuideContent(container.querySelector('#guide-content'));
+}
+
+async function loadGuideContent(el) {
+  if (!_guideCache.content) {
+    try {
+      const resp = await fetch('/static/collateral/guide.md');
+      _guideCache.content = resp.ok ? await resp.text() : '# Guide unavailable';
+    } catch (e) {
+      _guideCache.content = '# Guide unavailable';
+    }
+  }
+  el.innerHTML = `<div class="collateral-md guide-md">${marked.parse(_guideCache.content)}</div>`;
+  el.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const action = btn.dataset.action;
+      if (action === 'new-document') showNewDocumentModal();
+      else if (action === 'goto-todo') navigateToSection('todo');
+      else if (action === 'goto-templates') navigateToSection('templates');
+      else if (action === 'goto-validation') navigateToSection('validation');
+    });
+  });
 }
 
 /**

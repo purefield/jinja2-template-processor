@@ -1771,6 +1771,25 @@ html, body {
   height: auto;
 }
 
+/* Guide section */
+.guide-md .guide-action-btn {
+  display: inline-block;
+  margin: 6px 0 14px;
+  padding: 6px 14px;
+  background: var(--pf-global--primary-color--100);
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.guide-md .guide-action-btn:hover {
+  background: var(--pf-global--primary-color--200);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* Welcome Tour */
 .tour-step {
   margin-bottom: var(--pf-global--spacer--lg);
