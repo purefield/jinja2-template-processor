@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.6
+- **Remove ksushy**: dropped `ksushy` BMC vendor from schema enum and bmc-url template
+
 ## 3.22.5
 - **HP iLO BMC fix**: `hp`/`hpe` now uses `redfish-virtualmedia://` (drops invalid `ilo5-virtualmedia` and removes `+https` suffix that caused insert/eject loop)
 
