@@ -3967,3 +3967,8 @@ Root cause: hp vendor was mapped to `redfish-virtualmedia+https` (generic Redfis
 > ship it
 
 Released v3.22.4. HP iLO insert/eject media loop fix. All five version locations updated. Built and pushed quay.io/dds/clusterfile-editor:v3.22.4 and :latest. Health check confirmed version 3.22.4.
+
+### Prompt 71
+> just change it and ship it using the skill
+
+Corrected HP iLO BMC URL: hp/hpe now uses `redfish-virtualmedia://address/redfish/v1/Systems/1`. Drops invalid `ilo5-virtualmedia` scheme from v3.22.4 and removes `+https` suffix. Released v3.22.5, deployed, health check confirmed.
