@@ -23,10 +23,6 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
-{%- set imageChecksum="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/sha256sum.txt" -%}
-{%- set imageUrl="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.19/4.19.10/rhcos-4.19.10-x86_64-nutanix.x86_64.qcow2" -%}
-{%- set imageUrl="" -%}
-{%- set ignitionOverride='{"ignition":{"version":"3.1.0"},"passwd":{"users":[{"groups":["sudo"],"name":"core","passwordHash":"$6$f4/AcN1ComFGli0Z$CJ5GkVIc6H4ofkzfY5uml78bAjgMsoh2oRG.zDBca1DxR0ljGm/xllwYGZpj91u3Dev/VFO.C1HlzEOjldoIC."}]}}' -%}
 {%- set enableDisconnected = cluster.disconnected is defined -%}
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
@@ -167,14 +163,9 @@ items:
             role: control
         automatedCleaningMode: disabled
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-control{% if imageUrl %}
-        image:
-          format: qcow2
-          checksumType: sha256
-          checksum: {{ imageChecksum }}
-          url: {{ imageUrl }}{% else %}
+          name: {{ cluster.name }}-machine-template-control
         customDeploy:
-          method: install_coreos{% endif %}
+          method: install_coreos
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
@@ -196,14 +187,9 @@ items:
             role: worker
         automatedCleaningMode: disabled
         dataTemplate:
-          name: {{ cluster.name }}-machine-template-worker{% if imageUrl %}
-        image:
-          format: qcow2
-          checksumType: sha256
-          checksum: {{ imageChecksum }}
-          url: {{ imageUrl }}{% else %}
+          name: {{ cluster.name }}-machine-template-worker
         customDeploy:
-          method: install_coreos{% endif %}
+          method: install_coreos
 - kind: Metal3DataTemplate
   apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
   metadata:
@@ -248,9 +234,9 @@ items:
       cluster.x-k8s.io/cluster-name: {{ cluster.name }}
   spec:
     template:
-      metadata:
+      metadata:{% if generatedDiscoveryIgnitionOverride %}
         annotations:
-          openshiftassistedconfig.cluster.x-k8s.io/discovery-ignition-override: '{{ ignitionOverride }}'
+          openshiftassistedconfig.cluster.x-k8s.io/discovery-ignition-override: '{{ generatedDiscoveryIgnitionOverride | trim }}'{% endif %}
       spec:
         nodeRegistration:
           kubeletExtraLabels:
