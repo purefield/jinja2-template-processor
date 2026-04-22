@@ -493,7 +493,7 @@
             "HighlyAvailable",
             "HighlyAvailableArbiter"
           ],
-          "description": "Cluster topology. Derived from host count — do not set unless using HighlyAvailableArbiter. 1 control = SNO, 3+ controls = HighlyAvailable.",
+          "description": "Cluster topology. Derived from host count \u2014 do not set unless using HighlyAvailableArbiter. 1 control = SNO, 3+ controls = HighlyAvailable.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
         },
         "cpuPartitioningMode": {
@@ -1003,103 +1003,6 @@
               ],
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
-            "zone": {
-              "title": "Availability Zone",
-              "x-group": "Basics",
-              "type": "string",
-              "description": "Logical availability zone for this node. Injected as the 'topology.kubernetes.io/zone' node label — used by ODF rack awareness, scheduler topology constraints, and placement policies.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html"
-            },
-            "storage": {
-              "title": "Storage",
-              "type": "object",
-              "description": "Disk hints for OS installation.",
-              "properties": {
-                "os": {
-                  "title": "OS Disk",
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "description": "Root device hints for OS disk selection.",
-                      "properties": {
-                        "deviceName": {
-                          "title": "Device Path",
-                          "$ref": "#/$defs/devicePath",
-                          "description": "Device path (e.g., /dev/sda)."
-                        },
-                        "byId": {
-                          "title": "By-ID",
-                          "type": "string",
-                          "minLength": 1,
-                          "description": "Stable /dev/disk/by-id identifier."
-                        },
-                        "wwn": {
-                          "title": "WWN",
-                          "type": "string",
-                          "minLength": 1,
-                          "description": "World Wide Name identifier.",
-                          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
-                        },
-                        "serialNumber": {
-                          "title": "Serial Number",
-                          "type": "string",
-                          "minLength": 1,
-                          "description": "Disk serial number."
-                        },
-                        "hctl": {
-                          "title": "HCTL",
-                          "type": "string",
-                          "pattern": "^[0-9]+:[0-9]+:[0-9]+:[0-9]+$",
-                          "description": "SCSI address (H:C:T:L format)."
-                        },
-                        "model": {
-                          "title": "Model",
-                          "type": "string",
-                          "minLength": 1,
-                          "description": "Disk model string."
-                        },
-                        "vendor": {
-                          "title": "Vendor",
-                          "type": "string",
-                          "minLength": 1,
-                          "description": "Disk vendor string."
-                        },
-                        "rotational": {
-                          "title": "Rotational",
-                          "type": "boolean",
-                          "description": "True for HDD, false for SSD."
-                        },
-                        "minSizeGigabytes": {
-                          "title": "Minimum Size (GB)",
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 65536,
-                          "description": "Minimum disk size in GiB."
-                        },
-                        "paths": {
-                          "title": "Candidate Paths",
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/$defs/devicePath"
-                          },
-                          "minItems": 1,
-                          "description": "List of candidate device paths."
-                        }
-                      },
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Simple device path or by-id string."
-                    }
-                  ],
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
-                }
-              },
-              "additionalProperties": true,
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
-            },
             "bmc": {
               "title": "BMC",
               "type": "object",
@@ -1119,7 +1022,7 @@
                     "kubevirt-redfish",
                     "other"
                   ],
-                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell→idrac-virtualmedia, hpe/hp→ilo5-virtualmedia, others→redfish-virtualmedia.",
+                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell\u2192idrac-virtualmedia, hpe/hp\u2192ilo5-virtualmedia, others\u2192redfish-virtualmedia.",
                   "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
                 },
                 "version": {
@@ -1245,10 +1148,110 @@
               "description": "Host-specific network configuration.",
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
-            "machine": {
-              "title": "Machine Resources",
-              "$ref": "#/$defs/machineSpec",
-              "description": "Per-host resource override. Takes precedence over cluster.machine role defaults."
+            "storage": {
+              "title": "Storage",
+              "type": "object",
+              "description": "Disk hints for OS installation.",
+              "properties": {
+                "os": {
+                  "title": "OS Disk",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "description": "Root device hints for OS disk selection.",
+                      "properties": {
+                        "deviceName": {
+                          "title": "Device Path",
+                          "$ref": "#/$defs/devicePath",
+                          "description": "Device path (e.g., /dev/sda)."
+                        },
+                        "byId": {
+                          "title": "By-ID",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Stable /dev/disk/by-id identifier."
+                        },
+                        "wwn": {
+                          "title": "WWN",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "World Wide Name identifier.",
+                          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
+                        },
+                        "serialNumber": {
+                          "title": "Serial Number",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk serial number."
+                        },
+                        "hctl": {
+                          "title": "HCTL",
+                          "type": "string",
+                          "pattern": "^[0-9]+:[0-9]+:[0-9]+:[0-9]+$",
+                          "description": "SCSI address (H:C:T:L format)."
+                        },
+                        "model": {
+                          "title": "Model",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk model string."
+                        },
+                        "vendor": {
+                          "title": "Vendor",
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Disk vendor string."
+                        },
+                        "rotational": {
+                          "title": "Rotational",
+                          "type": "boolean",
+                          "description": "True for HDD, false for SSD."
+                        },
+                        "minSizeGigabytes": {
+                          "title": "Minimum Size (GB)",
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 65536,
+                          "description": "Minimum disk size in GiB."
+                        },
+                        "paths": {
+                          "title": "Candidate Paths",
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/devicePath"
+                          },
+                          "minItems": 1,
+                          "description": "List of candidate device paths."
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Simple device path or by-id string."
+                    }
+                  ],
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
+                }
+              },
+              "additionalProperties": true,
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
+            },
+            "zone": {
+              "title": "Availability Zone",
+              "x-group": "Basics",
+              "type": "string",
+              "description": "Logical availability zone for this node. Injected as the 'topology.kubernetes.io/zone' node label \u2014 used by ODF rack awareness, scheduler topology constraints, and placement policies.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html"
+            },
+            "nodeLabels": {
+              "title": "Node Labels",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Custom Kubernetes labels applied to the node."
             },
             "bootMode": {
               "title": "Boot Mode",
@@ -1262,13 +1265,10 @@
               "description": "Host boot mode for BareMetalHost provisioning.",
               "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
             },
-            "nodeLabels": {
-              "title": "Node Labels",
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              },
-              "description": "Custom Kubernetes labels applied to the node."
+            "machine": {
+              "title": "Machine Resources",
+              "$ref": "#/$defs/machineSpec",
+              "description": "Per-host resource override. Takes precedence over cluster.machine role defaults."
             },
             "automatedCleaningMode": {
               "title": "Automated Cleaning Mode",
@@ -1301,7 +1301,7 @@
             "ignitionConfigOverride": {
               "title": "Ignition Config Override",
               "type": "string",
-              "description": "JSON ignition config merged during discovery for this BareMetalHost. Overrides auto-generated mirror/registry config. Use sparingly — prefer cluster.mirrors for registry mirroring.",
+              "description": "JSON ignition config merged during discovery for this BareMetalHost. Overrides auto-generated mirror/registry config. Use sparingly \u2014 prefer cluster.mirrors for registry mirroring.",
               "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html"
             }
           },
@@ -2213,18 +2213,18 @@
                     "nad"
                   ],
                   "default": "cudn",
-                  "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition — set nad to its name."
+                  "description": "VM network backend. 'cudn' uses a ClusterUserDefinedNetwork with OVN Localnet (CUDN created separately, namespace labeled for selector match). 'linux-bridge' creates a NetworkAttachmentDefinition with a Linux bridge CNI config. 'nad' references a pre-existing NetworkAttachmentDefinition \u2014 set nad to its name."
                 },
                 "nad": {
                   "title": "NAD Name",
                   "type": "string",
                   "minLength": 1,
-                  "description": "NetworkAttachmentDefinition name. Use 'namespace/name' for cross-namespace. For type: nad — the pre-existing NAD to attach VMs to. For type: cudn — overrides the default cudn-vmdata-<vlan> name. For type: linux-bridge — overrides the auto-generated vmnet-<vlan> name."
+                  "description": "NetworkAttachmentDefinition name. Use 'namespace/name' for cross-namespace. For type: nad \u2014 the pre-existing NAD to attach VMs to. For type: cudn \u2014 overrides the default cudn-vmdata-<vlan> name. For type: linux-bridge \u2014 overrides the auto-generated vmnet-<vlan> name."
                 },
                 "vlan": {
                   "title": "VM VLAN ID",
                   "$ref": "#/$defs/vlanId",
-                  "description": "VM data-plane VLAN ID. Transparent to OpenShift — used to name the NAD (vmnet-<vlan> or cudn-vmdata-<vlan>). Defaults to network.primary.vlan when not set."
+                  "description": "VM data-plane VLAN ID. Transparent to OpenShift \u2014 used to name the NAD (vmnet-<vlan> or cudn-vmdata-<vlan>). Defaults to network.primary.vlan when not set."
                 },
                 "linuxBridge": {
                   "title": "Linux Bridge Name",
@@ -2234,11 +2234,19 @@
                 }
               },
               "if": {
-                "properties": { "type": { "const": "linux-bridge" } },
-                "required": ["type"]
+                "properties": {
+                  "type": {
+                    "const": "linux-bridge"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
               },
               "then": {
-                "required": ["linuxBridge"]
+                "required": [
+                  "linuxBridge"
+                ]
               },
               "required": [
                 "type"
