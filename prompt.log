@@ -3942,3 +3942,8 @@ Released v3.22.2. Updated all five version locations. Built and pushed quay.io/d
 > not clean, cleanup host to be logically based on most common needed, highest priority, name, role, ...
 
 Reordered host schema properties: role → bmc → network → storage → zone → nodeLabels → bootMode → machine → automatedCleaningMode → ironicInspect → installerArgs → ignitionConfigOverride. Used Python to reorder the JSON object in-place preserving all content. Tests pass. Starter files already had the correct order (role → bmc → network). Tagged host-field-order.
+
+### Prompt 67
+> now bmc is only for baremetal, so while important there, for all other installations, should be after name, role, storage, network, ...
+
+Moved bmc after the universal fields. New order: role → storage → network → bmc → zone → nodeLabels → bootMode → machine → automatedCleaningMode → ironicInspect → installerArgs → ignitionConfigOverride. Tests pass.
