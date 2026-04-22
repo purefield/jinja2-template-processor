@@ -3932,3 +3932,8 @@ Released v3.22.1. Updated all five version locations (APP_VERSION, Containerfile
 > add a new optional field for each node to capture availability zone for odf and other use cases similar to location for the cluster
 
 Added `host.zone` — optional string field on each host. Schema: `x-group: Basics`, description explains ODF rack awareness and scheduler topology use cases, links to OCP docs. Templates: when set, injects `bmac.agent-install.openshift.io/node-labels: '{"topology.kubernetes.io/zone": "<value>"}'` annotation on BareMetalHost in acm-ztp.yaml.tpl and acm-capi-m3.yaml.tpl. When absent, no annotation emitted. Verified with smoke render test. Committed as host-zone, pushed.
+
+### Prompt 65
+> ship it
+
+Released v3.22.2. Updated all five version locations. Built and pushed quay.io/dds/clusterfile-editor:v3.22.2 and :latest. Deployed container, health check confirmed version 3.22.2.
