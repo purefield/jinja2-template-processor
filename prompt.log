@@ -3952,3 +3952,8 @@ Moved bmc after the universal fields. New order: role → storage → network �
 > maybe add group baremetal
 
 Added x-group: "Baremetal" to bmc, bootMode, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride. Universal host fields (role, storage, network, zone, nodeLabels, machine) remain ungrouped/Basics so non-baremetal platforms stay clean.
+
+### Prompt 68
+> ship iut
+
+Released v3.22.3. Host field order cleanup with Baremetal group. All five version locations updated. Built and pushed quay.io/dds/clusterfile-editor:v3.22.3 and :latest. Health check confirmed version 3.22.3.
