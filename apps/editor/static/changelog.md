@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.2
+- **host.zone**: optional availability zone field per node — injects `topology.kubernetes.io/zone` node label via BareMetalHost annotation in ACM ZTP and CAPI-M3; used for ODF rack awareness and scheduler topology constraints
+
 ## 3.22.1
 - **Guide first**: Guide moved to top of sidebar nav for easier onboarding
 - **Relative CLI paths**: guide.md examples now use `./` relative paths (run from repo root)

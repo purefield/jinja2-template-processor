@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.1';
+let APP_VERSION = '3.22.2';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.2',
+    date: '2026-04-22',
+    changes: [
+      'host.zone: optional availability zone field — injects topology.kubernetes.io/zone node label via BareMetalHost annotation in ACM ZTP and CAPI-M3'
+    ]
+  },
   {
     version: '3.22.1',
     date: '2026-04-22',
