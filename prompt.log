@@ -3916,3 +3916,9 @@ Tags: schema-quality-pass, fix-nmstate-subnet-split, fix-capi-m3-ignition-overri
 ### Prompt 80 (continued — ship)
 
 Released v3.22.0. All 5 version locations synced. Tests: 185 passed. Container built and pushed to quay.io/dds/clusterfile-editor:v3.22.0 and :latest. Health: {"status":"ok","version":"3.22.0"}.
+
+### Prompt 62
+> make the guid relative to your current directory. add an empty acm.clusterfile and workload.clusterfile
+> Move guide as the first menu option followed with divider
+
+Updated guide.md CLI paths from `~/clusterfile/` to `./` (relative, assumes repo root). Added `data/acm.clusterfile` and `data/workload.clusterfile` as minimal placeholder-based starters. Moved Guide to first position in sidebar nav with a divider separating it from Account/Cluster/Network/Hosts/Plugins. Committed as `guide-nav-first`, pushed.
