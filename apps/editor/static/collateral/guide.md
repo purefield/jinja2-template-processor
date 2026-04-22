@@ -26,7 +26,8 @@ Keep one directory per cluster. Secrets stay out of the clusterfile itself — t
 Clone the repo once. All clusters share the same templates.
 
 ```bash
-git clone https://github.com/dds/clusterfile ~/clusterfile
+git clone https://github.com/dds/clusterfile
+cd clusterfile
 mkdir -p ~/clusters/my-cluster/secrets
 ```
 
@@ -42,16 +43,13 @@ Or from the CLI:
 
 ```bash
 # Single node (SNO)
-cp ~/clusterfile/data/start-sno.clusterfile \
-   ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-sno.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
 
 # Compact (3 control nodes, no workers)
-cp ~/clusterfile/data/start-compact.clusterfile \
-   ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-compact.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
 
 # Full HA (3 control + workers)
-cp ~/clusterfile/data/start-full.clusterfile \
-   ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-full.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
 ```
 
 ---
@@ -106,20 +104,20 @@ Use the **Templates** section to choose and preview the install method:
 
 ```bash
 # Render to stdout
-python3 ~/clusterfile/process.py \
+python3 ./process.py \
   ~/clusters/my-cluster/my-cluster.clusterfile \
-  ~/clusterfile/templates/acm-ztp.yaml.tpl
+  ./templates/acm-ztp.yaml.tpl
 
 # Render to file
-python3 ~/clusterfile/process.py \
+python3 ./process.py \
   ~/clusters/my-cluster/my-cluster.clusterfile \
-  ~/clusterfile/templates/acm-ztp.yaml.tpl \
+  ./templates/acm-ztp.yaml.tpl \
   > ~/clusters/my-cluster/manifests/acm-ztp.yaml
 
 # Apply directly to a cluster
-python3 ~/clusterfile/process.py \
+python3 ./process.py \
   ~/clusters/my-cluster/my-cluster.clusterfile \
-  ~/clusterfile/templates/acm-ztp.yaml.tpl \
+  ./templates/acm-ztp.yaml.tpl \
   | oc apply -f -
 ```
 
@@ -135,7 +133,6 @@ podman run -d -p 8000:8000 --name clusterfile-editor \
   quay.io/dds/clusterfile-editor:latest
 
 # From source
-cd ~/clusterfile
 pip install -r requirements.txt
 uvicorn apps.editor.app.main:app --reload --port 8000
 ```
