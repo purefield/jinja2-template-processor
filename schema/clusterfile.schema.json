@@ -1003,6 +1003,13 @@
               ],
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
+            "zone": {
+              "title": "Availability Zone",
+              "x-group": "Basics",
+              "type": "string",
+              "description": "Logical availability zone for this node. Injected as the 'topology.kubernetes.io/zone' node label — used by ODF rack awareness, scheduler topology constraints, and placement policies.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html"
+            },
             "storage": {
               "title": "Storage",
               "type": "object",
