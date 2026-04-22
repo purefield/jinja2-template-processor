@@ -3983,3 +3983,8 @@ Removed ksushy from bmc-url.yaml.tpl (deleted the elif branch) and from the sche
 > continue
 
 Shipped v3.22.6 — ksushy removal. curl -sI healthz returned 405 (HEAD not allowed); used --request GET. Health check confirmed 3.22.6.
+
+### Prompt 74
+> the fix worked redfish-virtualmedia://
+
+Confirmed fix. Updated bmc.vendor schema description to document that hp/hpe uses redfish-virtualmedia:// and that +https suffix caused the insert/eject loop.
