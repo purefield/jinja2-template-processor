@@ -3972,3 +3972,8 @@ Released v3.22.4. HP iLO insert/eject media loop fix. All five version locations
 > just change it and ship it using the skill
 
 Corrected HP iLO BMC URL: hp/hpe now uses `redfish-virtualmedia://address/redfish/v1/Systems/1`. Drops invalid `ilo5-virtualmedia` scheme from v3.22.4 and removes `+https` suffix. Released v3.22.5, deployed, health check confirmed.
+
+### Prompt 72
+> remove ksushy support from everywhere
+
+Removed ksushy from bmc-url.yaml.tpl (deleted the elif branch) and from the schema bmc.vendor enum. No other references in templates or clusterfiles. Tests pass.
