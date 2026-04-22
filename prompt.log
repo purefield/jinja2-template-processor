@@ -3892,3 +3892,23 @@ Reverted previous removal — restored storage.os placeholder in start-sno.clust
 > storage.os is optional and should not trigger CHANGEME
 
 Guarded rootDeviceHints in all three templates that emitted it unconditionally (acm-ztp, acm-capi-m3, nodes-config). When storage.os is absent, LoggingUndefined substitutes string 'CHANGEME', causing ACM ZTP validation failure: "rootDeviceHints in body must be of type object: string". Fixed with {% if host.storage.os %} guards per CLAUDE.md inline-control rules. Removed storage.os from start-sno starter and nodes-config requires. 185 tests pass. Committed as storage-os-optional (74e1d38).
+
+### Prompt 80
+
+> what can we do next? (backlog review + priority selection)
+> Priority order accepted: 6, 2, 3, 4 (with description refresh), 5, 7 (explain), 8, 9, 1
+
+Generated numbered backlog list (items 1–9). Explained item 7 (hardcoded core password hash in acm-capi-m3 is a security artifact). Implemented all 9 items:
+
+6. cluster.corePassword x-group: Security → Basics
+2. cluster.location: added to schema (with ACM doc URL) + all 3 starters
+3. network.ntpservers: moved to Basics group, improved description; added to all 3 starters
+4. Schema audit: fips/tpm doc URLs, ironicInspect/installerArgs/ignitionConfigOverride descriptions + doc URLs, bmc.vendor description, LSO doc URLs, GitHub auth doc URLs, cert-manager letsencrypt doc URL, external-secrets vault doc URL
+5. Fix nmstate.config.yaml.tpl: split('/')[-1]|int(24) avoids IndexError when subnet is a placeholder
+7. Remove hardcoded SHA-512 password hash + dead imageChecksum/imageUrl from acm-capi-m3; worker annotation now conditional on generatedDiscoveryIgnitionOverride
+8. Persist selected template to localStorage (CLUSTERFILE_SELECTED_TEMPLATE key)
+9. Copy-rendered already existed (copy-rendered-btn) — no change needed
+1. Guide sidebar section: compass nav item, renderGuideSection(), guide.md with 6-step walkthrough, action buttons navigate to Todo/Validation/Templates, .guide-action-btn CSS
+
+Commits: bde14f2, 21fd16a, c724b68, 7d690c8, b03ffc4
+Tags: schema-quality-pass, fix-nmstate-subnet-split, fix-capi-m3-ignition-override, persist-template-selection, guide-section
