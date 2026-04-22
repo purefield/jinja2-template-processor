@@ -1,7 +1,7 @@
 {%- set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first -%}
 {%- set nextHopInterface=host.network.primary.ports[0] %}
 {%- set enabledFalse='{"enabled":false}' %}
-{%- set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[1]|int}],"dhcp":false} %}
+{%- set ipv4={"enabled":true,"address":[{"ip":host.network.primary.address,"prefix-length":network.primary.subnet.split('/')[-1]|int(24)}],"dhcp":false} %}
 hostname:
   running: {{ name }}
   config: {{ name }}
