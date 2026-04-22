@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.3';
+let APP_VERSION = '3.22.4';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.4',
+    date: '2026-04-22',
+    changes: [
+      'HP iLO fix: hp/hpe vendor now uses ilo5-virtualmedia driver — fixes insert/eject media loop during ACM boot; hpe was also missing from bmc-url and falling through to bare address'
+    ]
+  },
   {
     version: '3.22.3',
     date: '2026-04-22',

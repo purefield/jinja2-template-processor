@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.4
+- **HP iLO fix**: `hp`/`hpe` vendor now uses `ilo5-virtualmedia` driver instead of `redfish-virtualmedia+https` — fixes continuous insert/eject media loop during ACM-driven boot; also fixes `hpe` falling through to bare address
+
 ## 3.22.3
 - **Host field order**: universal fields first (role → storage → network → zone → nodeLabels → machine), then Baremetal group (bmc → bootMode → automatedCleaningMode → ironicInspect → installerArgs → ignitionConfigOverride)
 
