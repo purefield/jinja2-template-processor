@@ -3957,3 +3957,8 @@ Added x-group: "Baremetal" to bmc, bootMode, automatedCleaningMode, ironicInspec
 > ship iut
 
 Released v3.22.3. Host field order cleanup with Baremetal group. All five version locations updated. Built and pushed quay.io/dds/clusterfile-editor:v3.22.3 and :latest. Health check confirmed version 3.22.3.
+
+### Prompt 69
+> HP ilo keeps inserting and ejecting media when booting from ACM.
+
+Root cause: hp vendor was mapped to `redfish-virtualmedia+https` (generic Redfish driver) which causes iLO to loop on insert/eject. Fix: both `hp` and `hpe` now map to `ilo5-virtualmedia://host/redfish/v1/Systems/1` — the native iLO5 driver that handles virtual media lifecycle correctly. Also fixed `hpe` falling through to bare address (was missing from bmc-url.yaml.tpl). Updated schema description to explain the driver selection. Tagged fix-hp-ilo-media-loop.
