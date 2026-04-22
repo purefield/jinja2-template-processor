@@ -3912,3 +3912,7 @@ Generated numbered backlog list (items 1–9). Explained item 7 (hardcoded core 
 
 Commits: bde14f2, 21fd16a, c724b68, 7d690c8, b03ffc4
 Tags: schema-quality-pass, fix-nmstate-subnet-split, fix-capi-m3-ignition-override, persist-template-selection, guide-section
+
+### Prompt 80 (continued — ship)
+
+Released v3.22.0. All 5 version locations synced. Tests: 185 passed. Container built and pushed to quay.io/dds/clusterfile-editor:v3.22.0 and :latest. Health: {"status":"ok","version":"3.22.0"}.
