@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.3
+- **Host field order**: universal fields first (role → storage → network → zone → nodeLabels → machine), then Baremetal group (bmc → bootMode → automatedCleaningMode → ironicInspect → installerArgs → ignitionConfigOverride)
+
 ## 3.22.2
 - **host.zone**: optional availability zone field per node — injects `topology.kubernetes.io/zone` node label via BareMetalHost annotation in ACM ZTP and CAPI-M3; used for ODF rack awareness and scheduler topology constraints
 
