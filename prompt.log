@@ -3922,3 +3922,8 @@ Released v3.22.0. All 5 version locations synced. Tests: 185 passed. Container b
 > Move guide as the first menu option followed with divider
 
 Updated guide.md CLI paths from `~/clusterfile/` to `./` (relative, assumes repo root). Added `data/acm.clusterfile` and `data/workload.clusterfile` as minimal placeholder-based starters. Moved Guide to first position in sidebar nav with a divider separating it from Account/Cluster/Network/Hosts/Plugins. Committed as `guide-nav-first`, pushed.
+
+### Prompt 63
+> ship it
+
+Released v3.22.1. Updated all five version locations (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). Built and pushed quay.io/dds/clusterfile-editor:v3.22.1 and :latest. Deployed container, health check confirmed version 3.22.1.
