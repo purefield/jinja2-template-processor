@@ -1003,151 +1003,6 @@
               ],
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
-            "bmc": {
-              "title": "BMC",
-              "type": "object",
-              "properties": {
-                "vendor": {
-                  "title": "Vendor",
-                  "type": "string",
-                  "enum": [
-                    "dell",
-                    "hp",
-                    "hpe",
-                    "supermicro",
-                    "lenovo",
-                    "cisco",
-                    "fujitsu",
-                    "ksushy",
-                    "kubevirt-redfish",
-                    "other"
-                  ],
-                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell\u2192idrac-virtualmedia, hpe/hp\u2192ilo5-virtualmedia, others\u2192redfish-virtualmedia.",
-                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
-                },
-                "version": {
-                  "title": "Version",
-                  "anyOf": [
-                    {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    {
-                      "type": "string",
-                      "pattern": "^[0-9.]+$"
-                    }
-                  ],
-                  "description": "BMC/iDRAC/iLO firmware version."
-                },
-                "username": {
-                  "title": "Username",
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 64,
-                  "description": "BMC login username."
-                },
-                "password": {
-                  "title": "Password",
-                  "type": "string",
-                  "minLength": 1,
-                  "description": "Path to file containing BMC password.",
-                  "x-is-file": true
-                },
-                "address": {
-                  "title": "Address",
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "pattern": "^(idrac-virtualmedia|redfish-virtualmedia|redfish|ipmi|ilo5-virtualmedia)://.+$",
-                      "description": "BMC URI with protocol."
-                    },
-                    {
-                      "$ref": "#/$defs/ipAddress"
-                    },
-                    {
-                      "$ref": "#/$defs/fqdn"
-                    }
-                  ],
-                  "description": "BMC endpoint (IP, FQDN, or protocol://host).",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
-                },
-                "macAddress": {
-                  "title": "MAC Address",
-                  "$ref": "#/$defs/macAddress",
-                  "description": "BMC management interface MAC."
-                },
-                "disableCertificateVerification": {
-                  "title": "Disable TLS Verification",
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Skip BMC TLS certificate validation."
-                }
-              },
-              "additionalProperties": true,
-              "description": "Baseboard Management Controller settings.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
-            },
-            "network": {
-              "title": "Network",
-              "type": "object",
-              "properties": {
-                "interfaces": {
-                  "title": "Interfaces",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "title": "Name",
-                        "$ref": "#/$defs/interfaceName",
-                        "description": "Interface name (e.g., eth0, ens3)."
-                      },
-                      "macAddress": {
-                        "title": "MAC Address",
-                        "$ref": "#/$defs/macAddress",
-                        "description": "Interface MAC address."
-                      }
-                    },
-                    "required": [
-                      "name",
-                      "macAddress"
-                    ],
-                    "additionalProperties": true
-                  },
-                  "minItems": 1,
-                  "description": "Physical network interfaces on the host.",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
-                },
-                "primary": {
-                  "title": "Primary",
-                  "type": "object",
-                  "properties": {
-                    "address": {
-                      "title": "IP Address",
-                      "$ref": "#/$defs/ipAddress",
-                      "description": "Host IP on the primary network."
-                    },
-                    "ports": {
-                      "title": "Ports",
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/$defs/interfaceName"
-                      },
-                      "minItems": 1,
-                      "description": "Interface names for primary network."
-                    }
-                  },
-                  "required": [
-                    "address"
-                  ],
-                  "additionalProperties": true,
-                  "description": "Primary network assignment for this host."
-                }
-              },
-              "additionalProperties": true,
-              "description": "Host-specific network configuration.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
-            },
             "storage": {
               "title": "Storage",
               "type": "object",
@@ -1237,6 +1092,151 @@
               },
               "additionalProperties": true,
               "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#root-device-hints_ipi-install-installation-workflow"
+            },
+            "network": {
+              "title": "Network",
+              "type": "object",
+              "properties": {
+                "interfaces": {
+                  "title": "Interfaces",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "title": "Name",
+                        "$ref": "#/$defs/interfaceName",
+                        "description": "Interface name (e.g., eth0, ens3)."
+                      },
+                      "macAddress": {
+                        "title": "MAC Address",
+                        "$ref": "#/$defs/macAddress",
+                        "description": "Interface MAC address."
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "macAddress"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "minItems": 1,
+                  "description": "Physical network interfaces on the host.",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                },
+                "primary": {
+                  "title": "Primary",
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "title": "IP Address",
+                      "$ref": "#/$defs/ipAddress",
+                      "description": "Host IP on the primary network."
+                    },
+                    "ports": {
+                      "title": "Ports",
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/interfaceName"
+                      },
+                      "minItems": 1,
+                      "description": "Interface names for primary network."
+                    }
+                  },
+                  "required": [
+                    "address"
+                  ],
+                  "additionalProperties": true,
+                  "description": "Primary network assignment for this host."
+                }
+              },
+              "additionalProperties": true,
+              "description": "Host-specific network configuration.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+            },
+            "bmc": {
+              "title": "BMC",
+              "type": "object",
+              "properties": {
+                "vendor": {
+                  "title": "Vendor",
+                  "type": "string",
+                  "enum": [
+                    "dell",
+                    "hp",
+                    "hpe",
+                    "supermicro",
+                    "lenovo",
+                    "cisco",
+                    "fujitsu",
+                    "ksushy",
+                    "kubevirt-redfish",
+                    "other"
+                  ],
+                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell\u2192idrac-virtualmedia, hpe/hp\u2192ilo5-virtualmedia, others\u2192redfish-virtualmedia.",
+                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
+                },
+                "version": {
+                  "title": "Version",
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9.]+$"
+                    }
+                  ],
+                  "description": "BMC/iDRAC/iLO firmware version."
+                },
+                "username": {
+                  "title": "Username",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "description": "BMC login username."
+                },
+                "password": {
+                  "title": "Password",
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Path to file containing BMC password.",
+                  "x-is-file": true
+                },
+                "address": {
+                  "title": "Address",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(idrac-virtualmedia|redfish-virtualmedia|redfish|ipmi|ilo5-virtualmedia)://.+$",
+                      "description": "BMC URI with protocol."
+                    },
+                    {
+                      "$ref": "#/$defs/ipAddress"
+                    },
+                    {
+                      "$ref": "#/$defs/fqdn"
+                    }
+                  ],
+                  "description": "BMC endpoint (IP, FQDN, or protocol://host).",
+                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
+                },
+                "macAddress": {
+                  "title": "MAC Address",
+                  "$ref": "#/$defs/macAddress",
+                  "description": "BMC management interface MAC."
+                },
+                "disableCertificateVerification": {
+                  "title": "Disable TLS Verification",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Skip BMC TLS certificate validation."
+                }
+              },
+              "additionalProperties": true,
+              "description": "Baseboard Management Controller settings.",
+              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
             },
             "zone": {
               "title": "Availability Zone",
