@@ -3947,3 +3947,8 @@ Reordered host schema properties: role → bmc → network → storage → zone 
 > now bmc is only for baremetal, so while important there, for all other installations, should be after name, role, storage, network, ...
 
 Moved bmc after the universal fields. New order: role → storage → network → bmc → zone → nodeLabels → bootMode → machine → automatedCleaningMode → ironicInspect → installerArgs → ignitionConfigOverride. Tests pass.
+
+### Prompt 67 (cont.)
+> maybe add group baremetal
+
+Added x-group: "Baremetal" to bmc, bootMode, automatedCleaningMode, ironicInspect, installerArgs, ignitionConfigOverride. Universal host fields (role, storage, network, zone, nodeLabels, machine) remain ungrouped/Basics so non-baremetal platforms stay clean.
