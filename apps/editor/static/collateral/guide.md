@@ -6,17 +6,19 @@ A clusterfile is a single YAML file that describes everything about an OpenShift
 
 ## Recommended directory layout
 
-Keep one directory per cluster. Secrets stay out of the clusterfile itself — the file only holds paths.
+Keep the repo and your clusters as siblings. Run all commands from inside `clusterfile/`.
 
 ```
-~/clusters/
-└── my-cluster/
-    ├── my-cluster.clusterfile   ← single source of truth
-    ├── secrets/
-    │   ├── pull-secret.json     ← Red Hat pull secret
-    │   ├── id_rsa.pub           ← SSH public key
-    │   └── bmc-password.txt     ← BMC / iDRAC password
-    └── manifests/               ← generated output (commit, never secrets/)
+~/
+├── clusterfile/                     ← repo clone — run all commands from here
+└── my-clusters/
+    └── my-cluster/
+        ├── my-cluster.clusterfile   ← single source of truth
+        ├── secrets/
+        │   ├── pull-secret.json     ← Red Hat pull secret
+        │   ├── id_rsa.pub           ← SSH public key
+        │   └── bmc-password.txt     ← BMC / iDRAC password
+        └── manifests/               ← generated output (commit, never secrets/)
 ```
 
 ---
@@ -26,10 +28,13 @@ Keep one directory per cluster. Secrets stay out of the clusterfile itself — t
 Clone the repo once. All clusters share the same templates.
 
 ```bash
+cd ~
 git clone https://github.com/dds/clusterfile
+mkdir -p my-clusters/my-cluster/secrets
 cd clusterfile
-mkdir -p ~/clusters/my-cluster/secrets
 ```
+
+From this point all commands run from `~/clusterfile/`.
 
 ---
 
@@ -43,13 +48,13 @@ Or from the CLI:
 
 ```bash
 # Single node (SNO)
-cp ./data/start-sno.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-sno.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
 
 # Compact (3 control nodes, no workers)
-cp ./data/start-compact.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-compact.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
 
 # Full HA (3 control + workers)
-cp ./data/start-full.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
+cp ./data/start-full.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
 ```
 
 ---
@@ -58,15 +63,15 @@ cp ./data/start-full.clusterfile ~/clusters/my-cluster/my-cluster.clusterfile
 
 ```bash
 # SSH public key
-cp ~/.ssh/id_rsa.pub ~/clusters/my-cluster/secrets/
+cp ~/.ssh/id_rsa.pub ../my-clusters/my-cluster/secrets/
 
 # Pull secret — download from console.redhat.com → OpenShift → Downloads
-cp ~/Downloads/pull-secret.json ~/clusters/my-cluster/secrets/
+cp ~/Downloads/pull-secret.json ../my-clusters/my-cluster/secrets/
 
 # BMC password (one per host, or share if identical)
-echo 'your-bmc-password' > ~/clusters/my-cluster/secrets/bmc-password.txt
+echo 'your-bmc-password' > ../my-clusters/my-cluster/secrets/bmc-password.txt
 
-chmod 600 ~/clusters/my-cluster/secrets/*
+chmod 600 ../my-clusters/my-cluster/secrets/*
 ```
 
 ---
@@ -105,18 +110,18 @@ Use the **Templates** section to choose and preview the install method:
 ```bash
 # Render to stdout
 python3 ./process.py \
-  ~/clusters/my-cluster/my-cluster.clusterfile \
+  ../my-clusters/my-cluster/my-cluster.clusterfile \
   ./templates/acm-ztp.yaml.tpl
 
 # Render to file
 python3 ./process.py \
-  ~/clusters/my-cluster/my-cluster.clusterfile \
+  ../my-clusters/my-cluster/my-cluster.clusterfile \
   ./templates/acm-ztp.yaml.tpl \
-  > ~/clusters/my-cluster/manifests/acm-ztp.yaml
+  > ../my-clusters/my-cluster/manifests/acm-ztp.yaml
 
 # Apply directly to a cluster
 python3 ./process.py \
-  ~/clusters/my-cluster/my-cluster.clusterfile \
+  ../my-clusters/my-cluster/my-cluster.clusterfile \
   ./templates/acm-ztp.yaml.tpl \
   | oc apply -f -
 ```
@@ -132,7 +137,7 @@ Or use the **Download** button in the editor header to save the rendered manifes
 podman run -d -p 8000:8000 --name clusterfile-editor \
   quay.io/dds/clusterfile-editor:latest
 
-# From source
+# From source (run from ~/clusterfile/)
 pip install -r requirements.txt
 uvicorn apps.editor.app.main:app --reload --port 8000
 ```
