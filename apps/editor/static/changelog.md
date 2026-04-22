@@ -1,7 +1,19 @@
 # Clusterfile Editor Changelog
 
+## 3.22.1
+- **Guide first**: Guide moved to top of sidebar nav for easier onboarding
+- **Relative CLI paths**: guide.md examples now use `./` relative paths (run from repo root)
+- **New starters**: `data/acm.clusterfile` and `data/workload.clusterfile` added as minimal starters
+
 ## 3.22.0
-- Log prompt 80
+- **Guide section**: step-by-step onboarding page with CLI examples, directory layout, and action buttons linking to Todo/Templates/Validation
+- **Persistent template**: selected template is remembered across page reloads (localStorage)
+- **Schema quality**: descriptions and `x-doc-url` doc links added across host, network, and operator plugin fields
+- **corePassword group**: moved to Basics group alongside sshKeys
+- **cluster.location**: added to schema and all starter files
+- **network.ntpservers**: promoted to Basics group with improved description
+- **nmstate crash fix**: `split('/')[-1]|int(24)` guards against placeholder subnet in start-compact/start-sno
+- **acm-capi-m3 cleanup**: removed hardcoded ignition override and dead image vars; Metal3MachineTemplate always uses `customDeploy: install_coreos`
 
 
 ## 3.21.1

@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.19.5';
+let APP_VERSION = '3.22.1';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,27 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.1',
+    date: '2026-04-22',
+    changes: [
+      'Guide moved to top of sidebar nav',
+      'guide.md CLI examples updated to use ./ relative paths',
+      'New acm.clusterfile and workload.clusterfile minimal starters'
+    ]
+  },
+  {
+    version: '3.22.0',
+    date: '2026-04-22',
+    changes: [
+      'Guide section: step-by-step onboarding with CLI examples, directory layout, and action buttons',
+      'Persistent template selection across page reloads (localStorage)',
+      'Schema quality pass: descriptions and doc links across host, network, and plugin fields',
+      'corePassword moved to Basics group; cluster.location and network.ntpservers added to starters',
+      'nmstate crash fix: split(/)[-1]|int(24) guards against placeholder subnet cidr',
+      'acm-capi-m3: removed hardcoded ignition override and dead image vars'
+    ]
+  },
   {
     version: '3.21.1',
     date: '2026-04-21',
