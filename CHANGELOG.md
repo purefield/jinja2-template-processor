@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.0 (2026-04-22)
+
 ## v3.21.1 (2026-04-21)
 
 ## v3.21.0 (2026-04-21)

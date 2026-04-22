@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.22.0
+- Log prompt 80
+
+
 ## 3.21.1
 - **rootDeviceHints fix**: `storage.os` is now optional. `rootDeviceHints` is only emitted when the field is explicitly set — absent hosts no longer produce `rootDeviceHints: CHANGEME` (invalid object type) in ACM ZTP, CAPI-M3, and nodes-config output.
 
