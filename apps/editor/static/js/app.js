@@ -1877,12 +1877,15 @@ function renderTemplatesSection(container) {
       const tabBtn = document.querySelector(`.tab[data-tab="${tabFromHash}"]`);
       if (tabBtn) tabBtn.click();
     }
-    // Load platform-default template if available
-    if (PLATFORM_TEMPLATES[currentPlatform]) {
-      const templateName = PLATFORM_TEMPLATES[currentPlatform];
-      if (State.state.templates.find(t => t.name === templateName)) {
-        loadTemplateSource(templateName);
-      }
+    // Restore persisted template selection, fall back to platform default
+    const savedTemplate = localStorage.getItem(State.STORAGE_KEYS.SELECTED_TEMPLATE);
+    const templateToLoad = savedTemplate && State.state.templates.find(t => (t.filename || t.name) === savedTemplate)
+      ? savedTemplate
+      : PLATFORM_TEMPLATES[currentPlatform];
+    if (templateToLoad && State.state.templates.find(t => t.name === templateToLoad || t.filename === templateToLoad)) {
+      const sel = document.getElementById('template-select');
+      if (sel) sel.value = templateToLoad;
+      loadTemplateSource(templateToLoad);
     }
   }
 }
@@ -1991,6 +1994,7 @@ async function loadTemplateSource(templateName) {
     CodeMirror.setTemplateValue(content);
     State.state.selectedTemplate = templateName;
     State.state.selectedTemplateContent = content;
+    localStorage.setItem(State.STORAGE_KEYS.SELECTED_TEMPLATE, templateName);
     updateEditorHash();
   } catch (e) {
     showToast(`Error: ${e.message}`, 'error');
