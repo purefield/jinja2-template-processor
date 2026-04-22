@@ -5,6 +5,7 @@ cluster:
   name: <cluster-name>
   version: 4.21.0
   platform: baremetal
+  location: <location>
   sshKeys:
     - secrets/id_rsa.pub
 
@@ -12,6 +13,8 @@ network:
   domain: <base-domain>
   nameservers:
     - <dns-server>
+  ntpservers:
+    - <ntp-server>
   primary:
     gateway: <gateway>
     subnet: <subnet-cidr>

@@ -36,6 +36,7 @@
     "letsencrypt": {
       "title": "LetsEncrypt Configuration",
       "description": "Configure cert-manager with LetsEncrypt DNS-01 validation. Choose the provider as aws or cloudflare. AWS uses Route53 for DNS-01. Renders ExternalSecret, ClusterIssuer, and Certificate resources.",
+      "x-doc-url": "https://cert-manager.io/docs/configuration/acme/dns01/",
       "type": "object",
       "required": [
         "email",

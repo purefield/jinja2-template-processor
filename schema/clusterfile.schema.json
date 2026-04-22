@@ -242,6 +242,13 @@
           "description": "DNS-compatible cluster name (lowercase, hyphens allowed, max 63 chars).",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuration-parameters_installing-bare-metal"
         },
+        "location": {
+          "title": "Cluster Location",
+          "x-group": "Basics",
+          "type": "string",
+          "description": "Geographic or logical location label attached to ManagedCluster and InfraEnv resources (e.g. 'datacenter-1', 'eu-west'). Used by ACM for placement policies and reporting.",
+          "x-doc-url": "https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.11/html/clusters/cluster_mce_overview#managedcluster-overview"
+        },
         "sshKeys": {
           "title": "SSH Keys",
           "x-group": "Basics",
@@ -255,13 +262,6 @@
           "minItems": 1,
           "description": "SSH public keys for node access (OpenSSH format).",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#ssh-agent-using_installing-bare-metal"
-        },
-        "location": {
-          "title": "Location",
-          "x-group": "Basics",
-          "type": "string",
-          "maxLength": 128,
-          "description": "Logical environment identifier for labels and metadata."
         },
         "manifests": {
           "title": "Manifests",
@@ -472,7 +472,8 @@
           "x-group-collapsed": true,
           "type": "boolean",
           "default": false,
-          "description": "Enable FIPS 140-2/140-3 cryptographic module validation on all cluster nodes and control plane components."
+          "description": "Enable FIPS 140-2/140-3 cryptographic module validation on all cluster nodes and control plane components.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-fips.html"
         },
         "tpm": {
           "title": "TPM Disk Encryption",
@@ -480,7 +481,8 @@
           "x-group-collapsed": true,
           "type": "boolean",
           "default": false,
-          "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs."
+          "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html#installation-special-config-encrypt-disk_installing-customizing"
         },
         "clusterType": {
           "title": "Cluster Type",
@@ -554,7 +556,7 @@
         },
         "corePassword": {
           "title": "Core User Password",
-          "x-group": "Security",
+          "x-group": "Basics",
           "x-group-collapsed": true,
           "type": "string",
           "description": "Path to file containing the plaintext password for the 'core' OS user. Automatically included as a MachineConfig (master + worker) when operators.yaml.tpl is rendered.",
@@ -641,8 +643,7 @@
         },
         "ntpservers": {
           "title": "NTP Servers",
-          "x-group": "Advanced",
-          "x-group-collapsed": true,
+          "x-group": "Basics",
           "type": "array",
           "items": {
             "anyOf": [
@@ -654,8 +655,8 @@
               }
             ]
           },
-          "description": "NTP servers for time synchronization (IP or FQDN).",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/install_config/installing-customizing.html#installation-special-config-chrony_installing-customizing"
+          "description": "NTP server addresses (IP or FQDN) injected into the InfraEnv discovery image. Required for bare-metal installs where nodes cannot reach public NTP.",
+          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html"
         },
         "nameservers": {
           "title": "DNS Servers",
@@ -1111,7 +1112,8 @@
                     "kubevirt-redfish",
                     "other"
                   ],
-                  "description": "BMC vendor."
+                  "description": "BMC hardware vendor. Controls which Redfish/IPMI driver the bmc-url template uses: dell→idrac-virtualmedia, hpe/hp→ilo5-virtualmedia, others→redfish-virtualmedia.",
+                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
                 },
                 "version": {
                   "title": "Version",
@@ -1280,17 +1282,20 @@
                 "disabled"
               ],
               "default": "disabled",
-              "description": "Ironic hardware inspection mode. Disabled skips inspection for faster provisioning."
+              "description": "Ironic hardware inspection setting on the BareMetalHost. 'disabled' skips automated hardware inventory (faster provisioning); omit or leave empty to enable.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
             },
             "installerArgs": {
               "title": "Installer Arguments",
               "type": "string",
-              "description": "Custom coreos-installer arguments for this node (JSON string)."
+              "description": "Extra coreos-installer arguments passed to the assisted agent at install time (JSON array string, e.g. '[\"-n\"]'). Use for custom kernel arguments or disk selection.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html"
             },
             "ignitionConfigOverride": {
               "title": "Ignition Config Override",
               "type": "string",
-              "description": "Raw ignition config JSON merged during provisioning for this host."
+              "description": "JSON ignition config merged during discovery for this BareMetalHost. Overrides auto-generated mirror/registry config. Use sparingly — prefer cluster.mirrors for registry mirroring.",
+              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html"
             }
           },
           "required": [

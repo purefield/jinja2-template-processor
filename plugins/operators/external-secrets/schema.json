@@ -37,6 +37,7 @@
       "title": "Vault Backend",
       "type": "object",
       "description": "Configure a ClusterSecretStore backed by HashiCorp Vault or OpenBao with Kubernetes auth.",
+      "x-doc-url": "https://external-secrets.io/latest/provider/hashicorp-vault/",
       "properties": {
         "name": {
           "type": "string",
