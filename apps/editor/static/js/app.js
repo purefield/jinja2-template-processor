@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.4';
+let APP_VERSION = '3.22.5';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.5',
+    date: '2026-04-22',
+    changes: [
+      'HP iLO BMC: corrected to redfish-virtualmedia:// — drops invalid ilo5-virtualmedia scheme and removes +https suffix that caused insert/eject media loop'
+    ]
+  },
   {
     version: '3.22.4',
     date: '2026-04-22',

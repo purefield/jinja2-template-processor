@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.5
+- **HP iLO BMC fix**: `hp`/`hpe` now uses `redfish-virtualmedia://` (drops invalid `ilo5-virtualmedia` and removes `+https` suffix that caused insert/eject loop)
+
 ## 3.22.4
 - **HP iLO fix**: `hp`/`hpe` vendor now uses `ilo5-virtualmedia` driver instead of `redfish-virtualmedia+https` — fixes continuous insert/eject media loop during ACM-driven boot; also fixes `hpe` falling through to bare address
 
