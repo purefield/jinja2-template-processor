@@ -6,10 +6,10 @@ A clusterfile is a single YAML file that describes everything about an OpenShift
 
 ## Recommended directory layout
 
-Keep the repo and your clusters as siblings. Work from `my-clusters/` — the repo is just a tool next to it.
+Clone the repo and create your clusters directory as siblings. Work from `my-clusters/`.
 
 ```
-~/
+./
 ├── clusterfile/                     ← repo clone (templates, processor)
 └── my-clusters/                     ← your working directory
     └── my-cluster/
@@ -28,13 +28,12 @@ Keep the repo and your clusters as siblings. Work from `my-clusters/` — the re
 Clone the repo once. All clusters share the same templates.
 
 ```bash
-cd ~
 git clone https://github.com/dds/clusterfile
 mkdir -p my-clusters/my-cluster/secrets
 cd my-clusters
 ```
 
-From this point all commands run from `~/my-clusters/`.
+From this point all commands run from `my-clusters/`.
 
 ---
 
@@ -138,7 +137,7 @@ podman run -d -p 8000:8000 --name clusterfile-editor \
   quay.io/dds/clusterfile-editor:latest
 
 # From source
-cd ~/clusterfile
+cd ../clusterfile
 pip install -r requirements.txt
 uvicorn apps.editor.app.main:app --reload --port 8000
 ```
