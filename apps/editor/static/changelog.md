@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 3.22.11
+- **ironicInspect default inverted**: inspection now runs by default — Metal3 inspects hardware unless you explicitly set `ironicInspect: disabled`
+- **Guide**: VMware admin translation table at the top — maps ESXi/vCenter/OVA/power-on concepts to bare-metal equivalents so admins can orient quickly
+- **Starter cards**: descriptions rewritten in hardware terms (server counts, HA context) instead of k8s role names
+- **Schema**: BMC fields now mention iDRAC (Dell), iLO (HP/HPE), and IPMI in their descriptions
+
 ## 3.22.10
 - **ironicInspect fix**: `enabled` now omits the `inspect.metal3.io` annotation entirely so Metal3 runs inspection; `disabled` (default) still emits it explicitly
 

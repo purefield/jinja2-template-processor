@@ -283,7 +283,7 @@ items:
   {%- set hasExplicitIgnitionOverride = host.ignitionConfigOverride is defined -%}
   {%- set effectiveIgnitionOverride = host.ignitionConfigOverride if hasExplicitIgnitionOverride else generatedDiscoveryIgnitionOverride %}
   metadata:
-    annotations:{% if host.ironicInspect | default("disabled") == "disabled" %}
+    annotations:{% if host.ironicInspect | default("enabled") == "disabled" %}
       inspect.metal3.io: disabled{% endif %}{%- set allNodeLabels = ({"topology.kubernetes.io/zone": host.zone} if host.zone is defined else {}) | merge(host.nodeLabels | default({})) %}{% if allNodeLabels %}
       bmac.agent-install.openshift.io/node-labels: '{{ allNodeLabels | tojson }}'{% endif %}{% if hasExplicitIgnitionOverride or effectiveIgnitionOverride %}
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ effectiveIgnitionOverride | trim }}'{% endif %}

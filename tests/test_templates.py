@@ -1790,7 +1790,8 @@ class TestAcmCapiTemplate:
         bmh = self.get_bmh(result)
 
         assert bmh is not None
-        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' not in bmh['metadata']['annotations']
+        annotations = bmh['metadata'].get('annotations') or {}
+        assert 'bmac.agent-install.openshift.io/ignition-config-overrides' not in annotations
 
 
 class TestAcmImageSetSync:
@@ -3181,8 +3182,16 @@ class TestZtpPerHostFields:
         assert 'inspect.metal3.io' not in bmh['metadata']['annotations']
 
     def test_ironic_inspect_default(self, template_env):
-        """Test ironicInspect defaults to disabled."""
+        """Test ironicInspect defaults to enabled — annotation absent, Metal3 inspects."""
         data = self.acm_ztp_data_with_host()
+        result = self.render_ztp(template_env, data)
+        bmh = self.get_bmh(result)
+
+        assert 'inspect.metal3.io' not in bmh['metadata']['annotations']
+
+    def test_ironic_inspect_disabled_emits_annotation(self, template_env):
+        """Test ironicInspect: disabled emits inspect.metal3.io: disabled."""
+        data = self.acm_ztp_data_with_host({'ironicInspect': 'disabled'})
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 

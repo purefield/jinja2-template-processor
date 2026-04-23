@@ -4,6 +4,23 @@ A clusterfile is a single YAML file that describes everything about an OpenShift
 
 ---
 
+## Coming from VMware?
+
+This tool deploys OpenShift onto **bare-metal** (or virtual) servers — not onto vSphere. The servers you're targeting are physical machines you boot via BMC (iDRAC on Dell, iLO on HP/HPE, IPMI on others). VMware is your background, not your target platform.
+
+| What you know (VMware) | What this tool does |
+|---|---|
+| ESXi host | Your physical server |
+| vCenter | ACM hub cluster |
+| Deploy OVA / mount ISO | Boot server via BMC virtual media (Redfish) |
+| VM power on | BMC triggers PXE or ISO boot |
+| Guest OS provisioning | Ignition config delivered by agent-based installer |
+| vCenter task list | `oc get clusterdeployment` on the ACM hub |
+
+The output of this tool is applied to an ACM hub cluster with `oc apply`, or used directly with `openshift-install`. ACM then powers the target servers on via Redfish/BMC virtual media and provisions OpenShift over the network.
+
+---
+
 ## Recommended directory layout
 
 Clone the repo and create your clusters directory as siblings. Work from `my-clusters/`.

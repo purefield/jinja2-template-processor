@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.11 (2026-04-23)
+- ironicInspect default inverted: inspection now runs by default (annotation absent); set `disabled` to skip it
+- Guide: VMware admin translation table at top — maps ESXi/vCenter/OVA concepts to bare-metal equivalents
+- Starter cards: hardware-term descriptions (server counts, HA context)
+- Schema: BMC field descriptions updated with iDRAC/iLO/IPMI terminology
+
 ## v3.22.10 (2026-04-23)
 - Fix `ironicInspect: enabled` — omits annotation so Metal3 runs inspection; empty-string value no longer emitted
 

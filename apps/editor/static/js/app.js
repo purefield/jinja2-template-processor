@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.10';
+let APP_VERSION = '3.22.11';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,16 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.11',
+    date: '2026-04-23',
+    changes: [
+      'ironicInspect default inverted: inspection runs by default (annotation absent); set disabled to skip',
+      'Guide: VMware admin translation table — maps ESXi/vCenter/OVA to bare-metal equivalents',
+      'Starter cards: hardware-term descriptions with server counts and HA context',
+      'Schema: BMC fields now surface iDRAC/iLO/IPMI terminology'
+    ]
+  },
   {
     version: '3.22.10',
     date: '2026-04-23',
@@ -3177,9 +3187,9 @@ function populateTemplatesDropdown() {
  */
 function showNewDocumentModal() {
   const STARTERS = [
-    { filename: 'start-sno.clusterfile', label: 'Single Node (SNO)', desc: '1 control node, no workers' },
-    { filename: 'start-compact.clusterfile', label: 'Compact (3-node)', desc: '3 control nodes, no workers' },
-    { filename: 'start-full.clusterfile', label: 'Full HA', desc: '3 control nodes + workers' },
+    { filename: 'start-sno.clusterfile', label: 'Single Node (SNO)', desc: '1 server — all roles, no HA. Good for edge or lab.' },
+    { filename: 'start-compact.clusterfile', label: 'Compact (3-node)', desc: '3 servers — control-plane with etcd HA, no workers.' },
+    { filename: 'start-full.clusterfile', label: 'Full HA', desc: '3 control + N worker servers — production topology.' },
   ];
 
   const overlay = document.createElement('div');
