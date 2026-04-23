@@ -1,0 +1,1 @@
+{%- if host.bmc.vendor == 'dell' -%}/redfish/v1/Systems/System.Embedded.1{%- elif host.bmc.vendor == 'kubevirt-redfish' -%}/redfish/v1/Systems/{{ name | replace('.', '-') }}{%- else -%}/redfish/v1/Systems/1{%- endif -%}

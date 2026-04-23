@@ -6,6 +6,6 @@ ping -c 1 -W 2 "{{ host.bmc.address }}" &>/dev/null && pass "{{ name }} BMC ({{ 
 {%- for name, host in (hosts | default({})).items() if host.bmc is defined and host.bmc.address is defined %}{% if loop.first %}
 
 section "Redfish"{% endif %}
-{%- set redfishPath = "/redfish/v1/Systems/System.Embedded.1" if host.bmc.vendor | default("") == "dell" else "/redfish/v1/Systems/1" %}
+{%- set redfishPath %}{% include "bmc-redfish-path.tpl" %}{% endset %}
 code=$(curl -sk -o /dev/null -w "%{http_code}" --connect-timeout 5 "https://{{ host.bmc.address }}{{ redfishPath }}" 2>/dev/null)
 [[ "$code" =~ ^(200|401|403)$ ]] && pass "{{ name }} Redfish ({{ host.bmc.vendor | default('unknown') }}) responds" || warn "{{ name }} Redfish HTTP $code ({{ host.bmc.address }}{{ redfishPath }})"{% endfor %}
