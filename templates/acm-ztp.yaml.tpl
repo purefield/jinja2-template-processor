@@ -250,8 +250,10 @@ items:
       infraenvs.agent-install.openshift.io: {{ cluster.name }}
     name: {{ name }}
     namespace: {{ cluster.name }}
-  spec:{% if host.storage.os %}
-    rootDeviceHints:  {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
+  spec:{% if host.storage.os is string %}
+    rootDeviceHints:
+      deviceName: {{ host.storage.os }}{% elif host.storage.os %}
+    rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
     automatedCleaningMode: {{ host.automatedCleaningMode | default("metadata") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:

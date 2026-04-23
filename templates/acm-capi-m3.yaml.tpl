@@ -293,8 +293,10 @@ items:
     name: {{ name }}
     namespace: {{ cluster.name }}
   spec:
-    preprovisioningNetworkDataName: {{ shortname }}-provisioning-nmstate{% if host.storage.os %}
-    rootDeviceHints:  {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
+    preprovisioningNetworkDataName: {{ shortname }}-provisioning-nmstate{% if host.storage.os is string %}
+    rootDeviceHints:
+      deviceName: {{ host.storage.os }}{% elif host.storage.os %}
+    rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
     automatedCleaningMode: {{ host.automatedCleaningMode | default("disabled") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:

@@ -10,7 +10,9 @@ requires:
 docs: https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html
 -#}
 hosts:{% for name,host in hosts.items() %}
-- hostname: {{ name }}{% if host.storage.os %}
-  rootDeviceHints:  {{ host.storage.os }}{% endif %}
+- hostname: {{ name }}{% if host.storage.os is string %}
+  rootDeviceHints:
+    deviceName: {{ host.storage.os }}{% elif host.storage.os %}
+  rootDeviceHints: {{ host.storage.os }}{% endif %}
   networkConfig:{%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset -%}
 {{ nmstate | indent(2,true) }}{% endfor %}

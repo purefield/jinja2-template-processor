@@ -29,7 +29,9 @@ metadata:
 rendezvousIP: {{ firstHost.network.primary.address }}
 additionalNTPSources: {{ network.ntpservers }}
 hosts:{% for name,host in hosts.items() %}
-  - hostname: {{ name }}{% if host.storage.os %}
+  - hostname: {{ name }}{% if host.storage.os is string %}
+    rootDeviceHints:
+      deviceName: {{ host.storage.os }}{% elif host.storage.os %}
     rootDeviceHints: {{ host.storage.os }}{% endif %}
     networkConfig:{%- set nmstate %}{% include "includes/nmstate.yaml.tpl" %}{% endset -%}
 {{ nmstate | indent(4,true) }}{% endfor %}

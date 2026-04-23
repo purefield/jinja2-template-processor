@@ -97,8 +97,10 @@ spec:
       bmcCredentialsName:
         name: bmc-secret-{{ name }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
       bootMACAddress: {{ bootNic.macAddress }}{% if host.bootMode is defined %}
-      bootMode: {{ host.bootMode }}{% endif %}{% if host.storage is defined and host.storage.os is defined %}
-      rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.automatedCleaningMode is defined %}
+      bootMode: {{ host.bootMode }}{% endif %}{% if host.storage is defined and host.storage.os is defined %}{% if host.storage.os is string %}
+      rootDeviceHints:
+        deviceName: {{ host.storage.os }}{% else %}
+      rootDeviceHints: {{ host.storage.os }}{% endif %}{% endif %}{% if host.automatedCleaningMode is defined %}
       automatedCleaningMode: {{ host.automatedCleaningMode }}{% endif %}{% if host.ironicInspect is defined %}
       ironicInspect: {{ host.ironicInspect }}{% endif %}{% if host.installerArgs is defined %}
       installerArgs: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
