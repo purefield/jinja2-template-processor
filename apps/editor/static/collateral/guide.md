@@ -6,12 +6,12 @@ A clusterfile is a single YAML file that describes everything about an OpenShift
 
 ## Recommended directory layout
 
-Keep the repo and your clusters as siblings. Run all commands from inside `clusterfile/`.
+Keep the repo and your clusters as siblings. Work from `my-clusters/` — the repo is just a tool next to it.
 
 ```
 ~/
-├── clusterfile/                     ← repo clone — run all commands from here
-└── my-clusters/
+├── clusterfile/                     ← repo clone (templates, processor)
+└── my-clusters/                     ← your working directory
     └── my-cluster/
         ├── my-cluster.clusterfile   ← single source of truth
         ├── secrets/
@@ -31,10 +31,10 @@ Clone the repo once. All clusters share the same templates.
 cd ~
 git clone https://github.com/dds/clusterfile
 mkdir -p my-clusters/my-cluster/secrets
-cd clusterfile
+cd my-clusters
 ```
 
-From this point all commands run from `~/clusterfile/`.
+From this point all commands run from `~/my-clusters/`.
 
 ---
 
@@ -48,13 +48,13 @@ Or from the CLI:
 
 ```bash
 # Single node (SNO)
-cp ./data/start-sno.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
+cp ../clusterfile/data/start-sno.clusterfile my-cluster/my-cluster.clusterfile
 
 # Compact (3 control nodes, no workers)
-cp ./data/start-compact.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
+cp ../clusterfile/data/start-compact.clusterfile my-cluster/my-cluster.clusterfile
 
 # Full HA (3 control + workers)
-cp ./data/start-full.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfile
+cp ../clusterfile/data/start-full.clusterfile my-cluster/my-cluster.clusterfile
 ```
 
 ---
@@ -63,15 +63,15 @@ cp ./data/start-full.clusterfile ../my-clusters/my-cluster/my-cluster.clusterfil
 
 ```bash
 # SSH public key
-cp ~/.ssh/id_rsa.pub ../my-clusters/my-cluster/secrets/
+cp ~/.ssh/id_rsa.pub my-cluster/secrets/
 
 # Pull secret — download from console.redhat.com → OpenShift → Downloads
-cp ~/Downloads/pull-secret.json ../my-clusters/my-cluster/secrets/
+cp ~/Downloads/pull-secret.json my-cluster/secrets/
 
 # BMC password (one per host, or share if identical)
-echo 'your-bmc-password' > ../my-clusters/my-cluster/secrets/bmc-password.txt
+echo 'your-bmc-password' > my-cluster/secrets/bmc-password.txt
 
-chmod 600 ../my-clusters/my-cluster/secrets/*
+chmod 600 my-cluster/secrets/*
 ```
 
 ---
@@ -109,20 +109,20 @@ Use the **Templates** section to choose and preview the install method:
 
 ```bash
 # Render to stdout
-python3 ./process.py \
-  ../my-clusters/my-cluster/my-cluster.clusterfile \
-  ./templates/acm-ztp.yaml.tpl
+python3 ../clusterfile/process.py \
+  my-cluster/my-cluster.clusterfile \
+  ../clusterfile/templates/acm-ztp.yaml.tpl
 
 # Render to file
-python3 ./process.py \
-  ../my-clusters/my-cluster/my-cluster.clusterfile \
-  ./templates/acm-ztp.yaml.tpl \
-  > ../my-clusters/my-cluster/manifests/acm-ztp.yaml
+python3 ../clusterfile/process.py \
+  my-cluster/my-cluster.clusterfile \
+  ../clusterfile/templates/acm-ztp.yaml.tpl \
+  > my-cluster/manifests/acm-ztp.yaml
 
 # Apply directly to a cluster
-python3 ./process.py \
-  ../my-clusters/my-cluster/my-cluster.clusterfile \
-  ./templates/acm-ztp.yaml.tpl \
+python3 ../clusterfile/process.py \
+  my-cluster/my-cluster.clusterfile \
+  ../clusterfile/templates/acm-ztp.yaml.tpl \
   | oc apply -f -
 ```
 
@@ -137,7 +137,8 @@ Or use the **Download** button in the editor header to save the rendered manifes
 podman run -d -p 8000:8000 --name clusterfile-editor \
   quay.io/dds/clusterfile-editor:latest
 
-# From source (run from ~/clusterfile/)
+# From source
+cd ~/clusterfile
 pip install -r requirements.txt
 uvicorn apps.editor.app.main:app --reload --port 8000
 ```
