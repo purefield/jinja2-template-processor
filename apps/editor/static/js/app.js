@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.6';
+let APP_VERSION = '3.22.7';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.7',
+    date: '2026-04-23',
+    changes: [
+      'Guide rework: work from my-clusters/, repo as ../clusterfile/ sibling; no ~/ assumption — works from any directory'
+    ]
+  },
   {
     version: '3.22.6',
     date: '2026-04-22',

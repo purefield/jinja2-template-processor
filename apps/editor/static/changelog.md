@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.7
+- **Guide rework**: working directory is `my-clusters/`, repo is a sibling at `../clusterfile/`; no `~/` assumption — works from any directory, not just home
+
 ## 3.22.6
 - **Remove ksushy**: dropped `ksushy` BMC vendor from schema enum and bmc-url template
 
