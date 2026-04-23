@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.10
+- **ironicInspect fix**: `enabled` now omits the `inspect.metal3.io` annotation entirely so Metal3 runs inspection; `disabled` (default) still emits it explicitly
+
 ## 3.22.9
 - **rootDeviceHints fix**: plain device path (`os: /dev/sda`) now renders as `deviceName` mapping — OpenShift was silently ignoring the scalar form; updated doc link to OCP 4.21 agent-based installer
 

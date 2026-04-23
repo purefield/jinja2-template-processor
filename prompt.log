@@ -4047,3 +4047,26 @@ to wrap string case as deviceName: <value>. Updated schema x-doc-url to OCP 4.21
 
 Released v3.22.9. rootDeviceHints string fix across 5 templates + doc URL update.
 All 185 tests pass. Built and pushed quay.io/dds/clusterfile-editor:v3.22.9 and :latest.
+
+### Prompt 85
+> ironicInspect: disabled — is this implemented [showed BareMetalHost annotation]
+
+Confirmed inspect.metal3.io: disabled is emitted by default via | default("disabled").
+
+### Prompt 86
+> it is disabled by default, good, what enables it
+
+Identified that ironicInspect: "" (empty string) would not trigger the default filter
+but would emit an empty annotation value — Metal3 doesn't treat that as "run inspection".
+
+### Prompt 87
+> fix it
+
+Changed template to only emit inspect.metal3.io: disabled when value is "disabled";
+"enabled" omits the annotation entirely. Schema enum changed from ["", "disabled"] to
+["disabled", "enabled"]. Updated test accordingly. 185 tests pass.
+
+### Prompt 88
+> ship it
+
+Released v3.22.10. ironicInspect enabled/disabled fix in acm-ztp and acm-capi-m3.

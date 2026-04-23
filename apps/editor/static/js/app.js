@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.9';
+let APP_VERSION = '3.22.10';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.10',
+    date: '2026-04-23',
+    changes: [
+      'ironicInspect fix: "enabled" omits inspect.metal3.io annotation so Metal3 runs inspection; "disabled" (default) emits it explicitly'
+    ]
+  },
   {
     version: '3.22.9',
     date: '2026-04-23',
