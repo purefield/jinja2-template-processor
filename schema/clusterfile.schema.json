@@ -1287,11 +1287,11 @@
               "title": "Ironic Inspect",
               "type": "string",
               "enum": [
-                "",
-                "disabled"
+                "disabled",
+                "enabled"
               ],
               "default": "disabled",
-              "description": "Ironic hardware inspection setting on the BareMetalHost. 'disabled' skips automated hardware inventory (faster provisioning); omit or leave empty to enable.",
+              "description": "Ironic hardware inspection mode. 'disabled' (default) skips hardware inventory and emits inspect.metal3.io: disabled on the BareMetalHost. 'enabled' omits the annotation, allowing Metal3 to run full hardware inspection.",
               "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
               "x-group": "Baremetal"
             },

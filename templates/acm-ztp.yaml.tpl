@@ -241,8 +241,8 @@ items:
   metadata:
     annotations:
       bmac.agent-install.openshift.io/hostname: {{ name }}
-      bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}
-      inspect.metal3.io: {{ host.ironicInspect | default("disabled") }}{%- set allNodeLabels = ({"topology.kubernetes.io/zone": host.zone} if host.zone is defined else {}) | merge(host.nodeLabels | default({})) %}{% if allNodeLabels %}
+      bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}{% if host.ironicInspect | default("disabled") == "disabled" %}
+      inspect.metal3.io: disabled{% endif %}{%- set allNodeLabels = ({"topology.kubernetes.io/zone": host.zone} if host.zone is defined else {}) | merge(host.nodeLabels | default({})) %}{% if allNodeLabels %}
       bmac.agent-install.openshift.io/node-labels: '{{ allNodeLabels | tojson }}'{% endif %}{% if host.installerArgs is defined %}
       bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ host.ignitionConfigOverride | trim }}'{% endif %}

@@ -3172,15 +3172,13 @@ class TestZtpPerHostFields:
 
         assert bmh['spec']['automatedCleaningMode'] == 'metadata'
 
-    def test_ironic_inspect_configurable(self, template_env):
-        """Test ironicInspect annotation is configurable (empty string enables inspection)."""
-        data = self.acm_ztp_data_with_host({'ironicInspect': ''})
+    def test_ironic_inspect_enabled_omits_annotation(self, template_env):
+        """Test ironicInspect: enabled omits the annotation so Metal3 runs inspection."""
+        data = self.acm_ztp_data_with_host({'ironicInspect': 'enabled'})
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
-        # Empty string in YAML loads as None; the key exists with empty/null value
-        assert 'inspect.metal3.io' in bmh['metadata']['annotations']
-        assert bmh['metadata']['annotations']['inspect.metal3.io'] in ('', None)
+        assert 'inspect.metal3.io' not in bmh['metadata']['annotations']
 
     def test_ironic_inspect_default(self, template_env):
         """Test ironicInspect defaults to disabled."""
