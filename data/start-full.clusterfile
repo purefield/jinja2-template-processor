@@ -30,6 +30,8 @@ hosts:
       address: <bmc-address>
       username: <bmc-username>
       password: secrets/bmc-password.txt
+    ironicInspect: enabled            # disabled: skip Metal3 hardware inspection
+    automatedCleaningMode: metadata   # disabled: skip Ironic disk cleaning, preserve disk contents
     network:
       interfaces:
         - name: eth0
@@ -45,6 +47,8 @@ hosts:
       address: <bmc-address>
       username: <bmc-username>
       password: secrets/bmc-password.txt
+    ironicInspect: enabled            # disabled: skip Metal3 hardware inspection
+    automatedCleaningMode: metadata   # disabled: skip Ironic disk cleaning, preserve disk contents
     network:
       interfaces:
         - name: eth0
@@ -60,6 +64,8 @@ hosts:
       address: <bmc-address>
       username: <bmc-username>
       password: secrets/bmc-password.txt
+    ironicInspect: enabled            # disabled: skip Metal3 hardware inspection
+    automatedCleaningMode: metadata   # disabled: skip Ironic disk cleaning, preserve disk contents
     network:
       interfaces:
         - name: eth0
@@ -75,6 +81,8 @@ hosts:
       address: <bmc-address>
       username: <bmc-username>
       password: secrets/bmc-password.txt
+    ironicInspect: enabled            # disabled: skip Metal3 hardware inspection
+    automatedCleaningMode: metadata   # disabled: skip Ironic disk cleaning, preserve disk contents
     network:
       interfaces:
         - name: eth0
@@ -90,6 +98,8 @@ hosts:
       address: <bmc-address>
       username: <bmc-username>
       password: secrets/bmc-password.txt
+    ironicInspect: enabled            # disabled: skip Metal3 hardware inspection
+    automatedCleaningMode: metadata   # disabled: skip Ironic disk cleaning, preserve disk contents
     network:
       interfaces:
         - name: eth0
