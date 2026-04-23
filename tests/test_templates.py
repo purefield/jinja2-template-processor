@@ -67,6 +67,7 @@ def template_env():
     env.globals["load_file"] = load_file
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
+    env.filters["merge"] = lambda a, b: {**a, **b}
 
     return env
 

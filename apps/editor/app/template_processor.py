@@ -67,6 +67,7 @@ def process_template(config_data: dict, template_content: str, template_dir: str
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
     env.filters["passwd_hash"] = passwd_hash
+    env.filters["merge"] = lambda a, b: {**a, **b}
 
     LoggingUndefined._missing = {}
     template = env.from_string(template_content)

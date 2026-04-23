@@ -95,6 +95,7 @@ def create_template_env():
     env.filters["base64encode"] = base64encode
     env.filters["as_list"] = as_list
     env.filters["passwd_hash"] = passwd_hash
+    env.filters["merge"] = lambda a, b: {**a, **b}
     return env
 
 
