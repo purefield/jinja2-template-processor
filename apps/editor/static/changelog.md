@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.12
+- **automatedCleaningMode**: `metadata` is now the consistent default across all templates — Ironic wipes partition tables before provisioning by default; set `disabled` to skip cleaning and preserve disk contents
+
 ## 3.22.11
 - **ironicInspect default inverted**: inspection now runs by default — Metal3 inspects hardware unless you explicitly set `ironicInspect: disabled`
 - **Guide**: VMware admin translation table at the top — maps ESXi/vCenter/OVA/power-on concepts to bare-metal equivalents so admins can orient quickly

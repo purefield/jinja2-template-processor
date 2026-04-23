@@ -1275,11 +1275,11 @@
               "title": "Automated Cleaning Mode",
               "type": "string",
               "enum": [
-                "disabled",
-                "metadata"
+                "metadata",
+                "disabled"
               ],
               "default": "metadata",
-              "description": "BareMetalHost disk cleaning mode before provisioning.",
+              "description": "Ironic disk cleaning before provisioning. 'metadata' (default) wipes partition tables and disk signatures — safe default that prevents stale layouts from interfering. Set 'disabled' to skip cleaning entirely and preserve existing disk contents.",
               "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
               "x-group": "Baremetal"
             },

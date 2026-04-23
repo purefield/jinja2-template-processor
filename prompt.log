@@ -4105,3 +4105,21 @@ Inverted ironicInspect default:
 Released v3.22.11. Versioned editor release.
 Changes: ironicInspect default inverted + guide VMware translation section + starter card hardware descriptions + BMC schema iDRAC/iLO/IPMI terminology.
 Tests: 186 passed. Container built and pushed. Service restarted and health-verified.
+
+### Prompt 93
+> how can we prevent ironic from deleting metadata
+
+Explained automatedCleaningMode field. Found inconsistency: acm-capi-m3 BareMetalHost defaulted to "disabled" while acm-ztp and schema both defaulted to "metadata". Hardcoded disabled at lines 164/188 are Metal3MachineTemplate entries (CAPI lifecycle, correct to stay disabled).
+
+### Prompt 94
+> make it an option to destruct by default but add an option to skip that step
+
+Fixed acm-capi-m3 BareMetalHost default from "disabled" to "metadata" — now consistent with acm-ztp and schema.
+Updated schema description to explain: metadata wipes partition tables (default), disabled preserves disk contents.
+186 tests passing.
+
+### Prompt 95
+> ship it
+
+Released v3.22.12. automatedCleaningMode consistency fix + schema description update.
+186 tests passed. Container built and pushed. Service restarted and health-verified.

@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.12 (2026-04-23)
+- automatedCleaningMode: metadata is now the consistent default across all templates; disabled skips cleaning to preserve disk contents
+- Schema: description clarifies metadata wipes partition tables, disabled preserves disks
+
 ## v3.22.11 (2026-04-23)
 - ironicInspect default inverted: inspection now runs by default (annotation absent); set `disabled` to skip it
 - Guide: VMware admin translation table at top — maps ESXi/vCenter/OVA concepts to bare-metal equivalents

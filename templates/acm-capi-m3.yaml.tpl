@@ -298,7 +298,7 @@ items:
       deviceName: {{ host.storage.os }}{% elif host.storage.os %}
     rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
-    automatedCleaningMode: {{ host.automatedCleaningMode | default("disabled") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    automatedCleaningMode: {{ host.automatedCleaningMode | default("metadata") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}
