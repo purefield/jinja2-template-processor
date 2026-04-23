@@ -4033,3 +4033,17 @@ Released v3.22.8. Single bmc-redfish-path.tpl include shared by bmc-url and pre-
 > This project should own the skill!!!
 
 Moved skills/ to .claude/skills/ so Claude Code auto-discovers them as project-owned skills. No global ~/.claude/skills install. Both ship-it and clusterfile-authoring moved via git mv, committed and pushed.
+
+### Prompt 83
+> we are not able to have openshift honor the rootdevicehints, verify the template and flow
+
+Investigated rootDeviceHints rendering. Found: string value (os: /dev/sda) was emitting
+rootDeviceHints: /dev/sda (scalar) — OpenShift requires a mapping. Object case already worked.
+Fixed all five templates (acm-ztp, agent-config, nodes-config, acm-capi-m3, clusterfile2siteconfig)
+to wrap string case as deviceName: <value>. Updated schema x-doc-url to OCP 4.21 agent-based installer.
+
+### Prompt 84
+> ship it
+
+Released v3.22.9. rootDeviceHints string fix across 5 templates + doc URL update.
+All 185 tests pass. Built and pushed quay.io/dds/clusterfile-editor:v3.22.9 and :latest.

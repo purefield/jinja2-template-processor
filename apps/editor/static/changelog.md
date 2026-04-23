@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.9
+- **rootDeviceHints fix**: plain device path (`os: /dev/sda`) now renders as `deviceName` mapping — OpenShift was silently ignoring the scalar form; updated doc link to OCP 4.21 agent-based installer
+
 ## 3.22.8
 - **DRY BMC path**: extracted `bmc-redfish-path.tpl` as single source for vendor→Redfish system path; shared by `bmc-url` and `pre-check/bmc` templates
 

@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.9 (2026-04-23)
+- Fix `rootDeviceHints` string case: plain device path now wraps as `deviceName` mapping; updated doc URL to OCP 4.21 agent-based installer
+
 ## v3.22.8 (2026-04-22)
 - Extract `bmc-redfish-path.tpl` — single source for vendor→Redfish system path (bmc-url + pre-check templates)
 
