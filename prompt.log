@@ -3993,3 +3993,8 @@ Confirmed fix. Updated bmc.vendor schema description to document that hp/hpe use
 > what changes are pending? did we implement the folder structure for the guide to be relative to the current working directory to avoid users having to change things around? we also want clusterfile repo next to my-clusters.
 
 Pending was only the bmc.vendor description doc fix (no unreleased features). Guide updated: clusterfile/ and my-clusters/ are now siblings under ~/; all CLI paths use ../my-clusters/ relative to the clusterfile/ working directory; directory layout diagram updated; Step 1 now sets up the sibling structure before cd clusterfile.
+
+### Prompt 76
+> since users will mostly edit the cluster data and not the repo, it makes sense to focus on staying in the cluster folder and make commands relative from the root of the my-clusters folder or it's parent
+
+Flipped guide perspective: working directory is now ~/my-clusters/. Repo referenced as ../clusterfile/ throughout. Step 1 ends with `cd my-clusters`. All cp, secret, and render commands are relative from there. Editor "from source" section still notes `cd ~/clusterfile` since uvicorn must run from the repo.
