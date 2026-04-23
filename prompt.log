@@ -3998,3 +3998,8 @@ Pending was only the bmc.vendor description doc fix (no unreleased features). Gu
 > since users will mostly edit the cluster data and not the repo, it makes sense to focus on staying in the cluster folder and make commands relative from the root of the my-clusters folder or it's parent
 
 Flipped guide perspective: working directory is now ~/my-clusters/. Repo referenced as ../clusterfile/ throughout. Step 1 ends with `cd my-clusters`. All cp, secret, and render commands are relative from there. Editor "from source" section still notes `cd ~/clusterfile` since uvicorn must run from the repo.
+
+### Prompt 77
+> do not assume ~/ as the starting point. only ./ as we might be in another folder than home.
+
+Removed all ~/ assumptions from directory layout and commands. Layout now shows ./ as root. Step 1 drops 'cd ~'. Editor from-source uses 'cd ../clusterfile'. Only ~/.ssh/ and ~/Downloads/ remain as they reference system-level user paths, not working directory structure.
