@@ -4024,3 +4024,12 @@ Extracted bmc-redfish-path.tpl as single source of truth for vendor→Redfish sy
 > [session resume — ship bmc-redfish-path.tpl extraction as v3.22.8]
 
 Released v3.22.8. Single bmc-redfish-path.tpl include shared by bmc-url and pre-check/bmc. Built and pushed quay.io/dds/clusterfile-editor:v3.22.8 and :latest.
+
+### Prompt 82
+> fix the Unknown skill: ship-it issue
+
+> no global skill, just project skill
+
+> This project should own the skill!!!
+
+Moved skills/ to .claude/skills/ so Claude Code auto-discovers them as project-owned skills. No global ~/.claude/skills install. Both ship-it and clusterfile-authoring moved via git mv, committed and pushed.
