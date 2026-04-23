@@ -4008,3 +4008,9 @@ Removed all ~/ assumptions from directory layout and commands. Layout now shows 
 > ship it
 
 Released v3.22.7. Guide rework with my-clusters/ working directory and no ~/ assumption. All five version locations updated. Built and pushed quay.io/dds/clusterfile-editor:v3.22.7 and :latest. Health check confirmed version 3.22.7.
+
+### Prompt 79
+> let's do 3, 4 now
+
+Item 3: nodeLabels wired in acm-ztp and acm-capi-m3. zone + host.nodeLabels merged into single bmac.agent-install.openshift.io/node-labels JSON annotation via new 'merge' Jinja2 filter (registered in process.py, template_processor.py, test envs).
+Item 4: pre-check-bmc now uses vendor-correct Redfish path (dell→/Systems/System.Embedded.1, others→/Systems/1); failure message shows full URL.
