@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.8
+- **DRY BMC path**: extracted `bmc-redfish-path.tpl` as single source for vendor→Redfish system path; shared by `bmc-url` and `pre-check/bmc` templates
+
 ## 3.22.7
 - **Guide rework**: working directory is `my-clusters/`, repo is a sibling at `../clusterfile/`; no `~/` assumption — works from any directory, not just home
 

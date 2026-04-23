@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.8 (2026-04-22)
+- Extract `bmc-redfish-path.tpl` — single source for vendor→Redfish system path (bmc-url + pre-check templates)
+
 ## v3.22.7 (2026-04-23)
 
 ## v3.22.6 (2026-04-22)

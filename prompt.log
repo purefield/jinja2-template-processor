@@ -4014,3 +4014,13 @@ Released v3.22.7. Guide rework with my-clusters/ working directory and no ~/ ass
 
 Item 3: nodeLabels wired in acm-ztp and acm-capi-m3. zone + host.nodeLabels merged into single bmac.agent-install.openshift.io/node-labels JSON annotation via new 'merge' Jinja2 filter (registered in process.py, template_processor.py, test envs).
 Item 4: pre-check-bmc now uses vendor-correct Redfish path (dell→/Systems/System.Embedded.1, others→/Systems/1); failure message shows full URL.
+
+### Prompt 80
+> instead of multiple bmc address logic blocks, we should have one that is included everywhere
+
+Extracted bmc-redfish-path.tpl as single source of truth for vendor→Redfish system path mapping. Updated bmc-url.yaml.tpl and pre-check/bmc.sh.tpl to include it. All 185 tests pass.
+
+### Prompt 81
+> [session resume — ship bmc-redfish-path.tpl extraction as v3.22.8]
+
+Released v3.22.8. Single bmc-redfish-path.tpl include shared by bmc-url and pre-check/bmc. Built and pushed quay.io/dds/clusterfile-editor:v3.22.8 and :latest.
