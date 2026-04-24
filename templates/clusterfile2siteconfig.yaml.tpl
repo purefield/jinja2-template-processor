@@ -101,9 +101,9 @@ spec:
       bootMode: {{ host.bootMode }}{% endif %}{% if host.storage is defined and host.storage.os is defined %}{% if host.storage.os is string %}
       rootDeviceHints:
         deviceName: {{ host.storage.os }}{% else %}
-      rootDeviceHints: {{ host.storage.os }}{% endif %}{% endif %}{% if bmIronic.diskCleanup is defined %}
-      automatedCleaningMode: {{ 'metadata' if bmIronic.diskCleanup else 'disabled' }}{% endif %}{% if bmIronic.hardwareInspection is defined %}
-      ironicInspect: {{ 'enabled' if bmIronic.hardwareInspection else 'disabled' }}{% endif %}{% if host.installerArgs is defined %}
+      rootDeviceHints: {{ host.storage.os }}{% endif %}{% endif %}{% if bmIronic.automatedCleaningMode is defined %}
+      automatedCleaningMode: {{ bmIronic.automatedCleaningMode }}{% endif %}{% if bmIronic.inspection is defined %}
+      ironicInspect: {{ 'enabled' if bmIronic.inspection else 'disabled' }}{% endif %}{% if host.installerArgs is defined %}
       installerArgs: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
       ignitionConfigOverride: '{{ host.ignitionConfigOverride }}'{% endif %}{% if host.nodeLabels is defined %}
       nodeLabels:{% for key, value in host.nodeLabels.items() %}

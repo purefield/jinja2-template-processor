@@ -242,7 +242,7 @@ items:
   metadata:
     annotations:
       bmac.agent-install.openshift.io/hostname: {{ name }}
-      bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}{% if not bmIronic.hardwareInspection | default(true) %}
+      bmac.agent-install.openshift.io/role: {{ 'master' if host.role == 'control' else 'worker' }}{% if not bmIronic.inspection | default(true) %}
       inspect.metal3.io: disabled{% endif %}{%- set allNodeLabels = ({"topology.kubernetes.io/zone": host.zone} if host.zone is defined else {}) | merge(host.nodeLabels | default({})) %}{% if allNodeLabels %}
       bmac.agent-install.openshift.io/node-labels: '{{ allNodeLabels | tojson }}'{% endif %}{% if host.installerArgs is defined %}
       bmac.agent-install.openshift.io/installer-args: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
@@ -256,7 +256,7 @@ items:
       deviceName: {{ host.storage.os }}{% elif host.storage.os %}
     rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
-    automatedCleaningMode: {{ 'metadata' if bmIronic.diskCleanup | default(true) else 'disabled' }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    automatedCleaningMode: {{ bmIronic.automatedCleaningMode | default('metadata') }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}

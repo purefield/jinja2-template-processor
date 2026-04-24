@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.14 (2026-04-24)
+- Ironic plugin fields renamed to exact Metal3/Ironic API terms: `hardwareInspection` → `inspection` (boolean, controls `inspect.metal3.io`), `diskCleanup` → `automatedCleaningMode` (enum: `metadata`/`disabled`, maps directly to BareMetalHost spec)
+
 ## v3.22.13 (2026-04-24)
 - Ironic flags (`hardwareInspection`, `diskCleanup`) moved from per-host to `plugins.baremetal.ironic` — cluster-level defaults, no per-host override
 - Cluster-level Ironic provisioning settings (`provisioningNetwork`, `watchAllNamespaces`, `disableVirtualMediaTLS`) moved from hardcoded values in `acm-asc.yaml.tpl` to `plugins.baremetal.ironic` — configurable via the baremetal platform plugin

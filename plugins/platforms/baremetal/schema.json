@@ -29,18 +29,19 @@
           "description": "Disable TLS for Ironic virtual media. Required for BMC vendors (e.g. Supermicro) that cannot validate self-signed certificates.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites"
         },
-        "hardwareInspection": {
-          "title": "Hardware Inspection",
+        "inspection": {
+          "title": "Inspection",
           "type": "boolean",
           "default": true,
-          "description": "Run hardware inventory before provisioning. Set false to skip — faster provisioning but no hardware inventory data.",
+          "description": "Run Ironic hardware inspection before provisioning (inspect.metal3.io). Set false to skip — faster provisioning but no hardware inventory.",
           "x-doc-url": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"
         },
-        "diskCleanup": {
-          "title": "Disk Cleanup",
-          "type": "boolean",
-          "default": true,
-          "description": "Wipe disk partition tables before provisioning. Set false to preserve existing disk contents.",
+        "automatedCleaningMode": {
+          "title": "Automated Cleaning Mode",
+          "type": "string",
+          "enum": ["metadata", "disabled"],
+          "default": "metadata",
+          "description": "Ironic automated cleaning mode (automatedCleaningMode on BareMetalHost). metadata wipes partition tables before provisioning; disabled preserves existing disk contents.",
           "x-doc-url": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"
         }
       },

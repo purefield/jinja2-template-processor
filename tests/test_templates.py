@@ -3160,41 +3160,41 @@ class TestZtpPerHostFields:
 
         assert 'bootMode' not in bmh['spec']
 
-    def test_ironic_disk_cleanup_false_disables_cleaning(self, template_env):
-        """Test plugins.baremetal.ironic.diskCleanup: false sets automatedCleaningMode: disabled."""
-        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'diskCleanup': False}}})
+    def test_ironic_automated_cleaning_disabled(self, template_env):
+        """Test plugins.baremetal.ironic.automatedCleaningMode: disabled sets BareMetalHost field."""
+        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'automatedCleaningMode': 'disabled'}}})
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
         assert bmh['spec']['automatedCleaningMode'] == 'disabled'
 
-    def test_ironic_disk_cleanup_default(self, template_env):
-        """Test plugins.baremetal.ironic.diskCleanup defaults to true — automatedCleaningMode: metadata."""
+    def test_ironic_automated_cleaning_default(self, template_env):
+        """Test plugins.baremetal.ironic.automatedCleaningMode defaults to metadata."""
         data = self.acm_ztp_data_with_host()
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
         assert bmh['spec']['automatedCleaningMode'] == 'metadata'
 
-    def test_ironic_hardware_inspection_true_omits_annotation(self, template_env):
-        """Test plugins.baremetal.ironic.hardwareInspection: true omits inspect.metal3.io."""
-        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'hardwareInspection': True}}})
+    def test_ironic_inspection_true_omits_annotation(self, template_env):
+        """Test plugins.baremetal.ironic.inspection: true omits inspect.metal3.io."""
+        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'inspection': True}}})
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
         assert 'inspect.metal3.io' not in bmh['metadata']['annotations']
 
-    def test_ironic_hardware_inspection_default(self, template_env):
-        """Test plugins.baremetal.ironic.hardwareInspection defaults to true — annotation absent."""
+    def test_ironic_inspection_default(self, template_env):
+        """Test plugins.baremetal.ironic.inspection defaults to true — annotation absent."""
         data = self.acm_ztp_data_with_host()
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 
         assert 'inspect.metal3.io' not in bmh['metadata']['annotations']
 
-    def test_ironic_hardware_inspection_false_emits_annotation(self, template_env):
-        """Test plugins.baremetal.ironic.hardwareInspection: false emits inspect.metal3.io: disabled."""
-        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'hardwareInspection': False}}})
+    def test_ironic_inspection_false_emits_annotation(self, template_env):
+        """Test plugins.baremetal.ironic.inspection: false emits inspect.metal3.io: disabled."""
+        data = self.acm_ztp_data_with_host(plugin_overrides={'baremetal': {'ironic': {'inspection': False}}})
         result = self.render_ztp(template_env, data)
         bmh = self.get_bmh(result)
 

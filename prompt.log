@@ -4155,3 +4155,17 @@ Removed `host.ironic` entirely from schema and all templates. Moved `hardwareIns
 
 Released v3.22.13. All five Ironic flags consolidated under `plugins.baremetal.ironic`.
 186 tests passed. Verified: `plugins.baremetal.ironic.{hardwareInspection,diskCleanup}: false` renders `inspect.metal3.io: disabled` and `automatedCleaningMode: disabled`; defaults render `metadata` / no annotation.
+
+### Prompt 102
+> use ironic terms as discussed in the plugin
+
+Renamed plugin fields to exact Metal3/Ironic API terms:
+- `hardwareInspection` → `inspection` (boolean; controls `inspect.metal3.io` annotation)
+- `diskCleanup` → `automatedCleaningMode` (string enum: `metadata`/`disabled`; maps directly to BareMetalHost spec field)
+Updated schema, all four templates, and tests.
+
+### Prompt 103
+> ship it
+
+Released v3.22.14. Ironic API term rename.
+186 tests passed. Verified: `inspection: false` → `inspect.metal3.io: disabled`, `automatedCleaningMode: disabled` → BareMetalHost `automatedCleaningMode: disabled`.

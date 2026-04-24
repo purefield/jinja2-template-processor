@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.14
+- **Ironic API terms**: `hardwareInspection` renamed to `inspection` (boolean); `diskCleanup` renamed to `automatedCleaningMode` (enum: `metadata`/`disabled`) — field names now match the Metal3/Ironic API directly
+
 ## 3.22.13
 - **Ironic flags moved to plugin**: `hardwareInspection` and `diskCleanup` are no longer per-host fields — they now live under `plugins.baremetal.ironic` as cluster-level defaults
 - **All Ironic settings in one place**: `plugins.baremetal.ironic` now holds all five flags: `hardwareInspection`, `diskCleanup`, `provisioningNetwork`, `watchAllNamespaces`, `disableVirtualMediaTLS` — previously three were hardcoded in templates

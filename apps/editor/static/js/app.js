@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.13';
+let APP_VERSION = '3.22.14';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.14',
+    date: '2026-04-24',
+    changes: [
+      'Ironic plugin fields renamed to API terms: inspection (boolean) and automatedCleaningMode (metadata/disabled) — match Metal3/Ironic BareMetalHost spec directly'
+    ]
+  },
   {
     version: '3.22.13',
     date: '2026-04-24',
