@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.15 (2026-04-24)
+- Editor: Plugins → Platform now renders the Ironic form for baremetal (was showing "no configuration required")
+- Editor: Node Labels field now renders a key-value editor instead of an empty fieldset
+- Schema: `plugins.baremetal` moved inline into `clusterfile.schema.json` (consistent with all other platform plugins); standalone `plugins/platforms/baremetal/schema.json` removed
+
 ## v3.22.14 (2026-04-24)
 - Ironic plugin fields renamed to exact Metal3/Ironic API terms: `hardwareInspection` → `inspection` (boolean, controls `inspect.metal3.io`), `diskCleanup` → `automatedCleaningMode` (enum: `metadata`/`disabled`, maps directly to BareMetalHost spec)
 

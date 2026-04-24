@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.22.15
+- **Baremetal plugin form**: Plugins → Platform now shows the full Ironic configuration form for baremetal clusters instead of "no configuration required"
+- **Node Labels editor**: Host node labels now render as a key-value editor with add/remove rows
+
 ## 3.22.14
 - **Ironic API terms**: `hardwareInspection` renamed to `inspection` (boolean); `diskCleanup` renamed to `automatedCleaningMode` (enum: `metadata`/`disabled`) — field names now match the Metal3/Ironic API directly
 

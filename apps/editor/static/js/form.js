@@ -166,8 +166,8 @@ const PLATFORM_TO_PLUGIN = {
   'ibmcloud': 'ibmcloud',
   'nutanix': 'nutanix',
   'kubevirt': 'kubevirt',
+  'baremetal': 'baremetal',
   // These platforms don't have specific plugins
-  'baremetal': null,
   'none': null
 };
 
@@ -1138,6 +1138,11 @@ function renderObjectField(path, key, schema, value) {
     return renderTierMapField(path, key, schema, value);
   }
 
+  // Free-form key-value map (additionalProperties: {type: string}, no fixed properties)
+  if (schema.additionalProperties && !schema.properties) {
+    return renderKVMapField(path, key, schema, value);
+  }
+
   const fieldset = document.createElement('fieldset');
   fieldset.className = 'form-fieldset';
   if (State.hasChanged(path)) {
@@ -1343,6 +1348,133 @@ function renderTierMapRow(basePath, tierKey, tierValue, tierOptions, allKeys) {
   row.appendChild(input);
   row.appendChild(removeBtn);
   return row;
+}
+
+/**
+ * Render a free-form key-value map (additionalProperties: {type: string}).
+ * Used for nodeLabels and similar open-ended string maps.
+ */
+function renderKVMapField(path, key, schema, value) {
+  const data = value || {};
+
+  const fieldset = document.createElement('fieldset');
+  fieldset.className = 'form-fieldset';
+  if (State.hasChanged(path)) fieldset.classList.add('form-group--changed');
+
+  const legend = document.createElement('legend');
+  legend.className = 'form-fieldset__legend';
+  legend.innerHTML = `<span class="form-fieldset__toggle">▼</span> ${Help.escapeHtml(schema.title || key)}`;
+  if (Help.createHelpIcon && schema.description) legend.appendChild(Help.createHelpIcon(schema, key));
+  legend.addEventListener('click', () => fieldset.classList.toggle('form-fieldset--collapsed'));
+  fieldset.appendChild(legend);
+
+  const content = document.createElement('div');
+  content.className = 'form-fieldset__content';
+
+  function commitEntry(k, v) {
+    if (!k) return;
+    const current = State.get(path) || {};
+    State.set(path, { ...current, [k]: v });
+  }
+
+  function removeEntry(k) {
+    const current = { ...(State.get(path) || {}) };
+    delete current[k];
+    State.set(path, Object.keys(current).length ? current : undefined);
+  }
+
+  function addRow(k, v) {
+    const row = document.createElement('div');
+    row.className = 'form-group tier-map-add';
+    row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:4px;';
+
+    const keyInput = document.createElement('input');
+    keyInput.type = 'text';
+    keyInput.className = 'form-input';
+    keyInput.placeholder = 'key';
+    keyInput.value = k;
+    keyInput.style.flex = '1';
+
+    const valInput = document.createElement('input');
+    valInput.type = 'text';
+    valInput.className = 'form-input';
+    valInput.placeholder = 'value';
+    valInput.value = v;
+    valInput.style.flex = '2';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn--sm';
+    removeBtn.style.cssText = 'color:var(--pf-global--danger-color--100);padding:0 6px;';
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove';
+    removeBtn.addEventListener('click', () => {
+      removeEntry(keyInput.dataset.originalKey || keyInput.value);
+      row.remove();
+    });
+
+    const origKey = k;
+    keyInput.dataset.originalKey = origKey;
+
+    function save() {
+      const newKey = keyInput.value.trim();
+      const oldKey = keyInput.dataset.originalKey;
+      if (oldKey && oldKey !== newKey) {
+        removeEntry(oldKey);
+        keyInput.dataset.originalKey = newKey;
+      }
+      if (newKey) commitEntry(newKey, valInput.value);
+    }
+
+    keyInput.addEventListener('blur', save);
+    valInput.addEventListener('blur', save);
+
+    row.appendChild(keyInput);
+    row.appendChild(valInput);
+    row.appendChild(removeBtn);
+    return row;
+  }
+
+  Object.entries(data).forEach(([k, v]) => content.appendChild(addRow(k, String(v))));
+
+  // Add-new row
+  const addArea = document.createElement('div');
+  addArea.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:8px;';
+
+  const newKey = document.createElement('input');
+  newKey.type = 'text';
+  newKey.className = 'form-input';
+  newKey.placeholder = 'key';
+  newKey.style.flex = '1';
+
+  const newVal = document.createElement('input');
+  newVal.type = 'text';
+  newVal.className = 'form-input';
+  newVal.placeholder = 'value';
+  newVal.style.flex = '2';
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'btn btn--secondary btn--sm';
+  addBtn.textContent = '+';
+  addBtn.title = 'Add entry';
+  addBtn.addEventListener('click', () => {
+    const k = newKey.value.trim();
+    const v = newVal.value;
+    if (!k) return;
+    commitEntry(k, v);
+    content.insertBefore(addRow(k, v), addArea);
+    newKey.value = '';
+    newVal.value = '';
+    newKey.focus();
+  });
+
+  addArea.appendChild(newKey);
+  addArea.appendChild(newVal);
+  addArea.appendChild(addBtn);
+  content.appendChild(addArea);
+  fieldset.appendChild(content);
+  return fieldset;
 }
 
 /**

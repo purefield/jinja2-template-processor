@@ -4169,3 +4169,22 @@ Updated schema, all four templates, and tests.
 
 Released v3.22.14. Ironic API term rename.
 186 tests passed. Verified: `inspection: false` → `inspect.metal3.io: disabled`, `automatedCleaningMode: disabled` → BareMetalHost `automatedCleaningMode: disabled`.
+
+### Prompt 104
+> loading the plugin-baremetal example shows nothing for plugins for ironic
+
+Root cause: `PLATFORM_TO_PLUGIN['baremetal'] = null` in form.js (the "no config needed" branch).
+Fix 1: changed to `'baremetal': 'baremetal'` in form.js.
+Root cause 2: baremetal schema was in standalone `plugins/platforms/baremetal/schema.json` which gets merged as `plugins.platforms.baremetal` (nested), but editor looks at `plugins.baremetal` (flat) — consistent with how all other platform plugin schemas live inline in `clusterfile.schema.json`.
+Fix 2: moved baremetal schema inline into `clusterfile.schema.json`; deleted standalone `schema.json`.
+
+### Prompt 105
+> also the node labels is empty in the ui
+
+`nodeLabels` is `type: object, additionalProperties: {type: string}` with no fixed `properties` — `renderObjectFields` returned early. Added `renderKVMapField` for free-form string maps; dispatched from `renderObjectField` when `additionalProperties` is set and `properties` is absent.
+
+### Prompt 106
+> ship it
+
+Released v3.22.15. Baremetal plugin form + node labels KV editor.
+186 tests passed. Verified schema at `plugins.baremetal` with all five ironic fields visible in live editor.
