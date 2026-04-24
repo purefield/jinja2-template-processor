@@ -16,6 +16,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 -#}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
+{%- set bm = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
 apiVersion: v1
 kind: List
 metadata:
@@ -41,10 +42,9 @@ items:
   metadata:
     name: provisioning-configuration
   spec:
-    provisioningNetwork: "Disabled"
-    watchAllNamespaces: true
-    # https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites
-    disableVirtualMediaTLS: true{% if cluster.mirrors %}
+    provisioningNetwork: "{{ bm.provisioningNetwork | default('Disabled') }}"
+    watchAllNamespaces: {{ bm.watchAllNamespaces | default(true) | lower }}
+    disableVirtualMediaTLS: {{ bm.disableVirtualMediaTLS | default(true) | lower }}{% if cluster.mirrors %}
 - kind: ConfigMap
   apiVersion: v1
   metadata:

@@ -4123,3 +4123,35 @@ Updated schema description to explain: metadata wipes partition tables (default)
 
 Released v3.22.12. automatedCleaningMode consistency fix + schema description update.
 186 tests passed. Container built and pushed. Service restarted and health-verified.
+
+### Prompt 96
+> this looks inline with cluster not /plugin/platform/ironic/
+
+Clarification that per-host `ironic:` block is correct (inline with host config, not a cluster plugin).
+Fixed test failures caused by Jinja2 chained undefined access on `host.ironic` — wrapped with `(host.ironic | default({}))`.
+
+### Prompt 97
+> all ironic specific options/flags from the cluster level should move into a plugin as they are not generic
+
+Moved cluster-level Ironic provisioning settings (`provisioningNetwork`, `watchAllNamespaces`, `disableVirtualMediaTLS`) out of hardcoded `acm-asc.yaml.tpl` into `plugins.baremetal.ironic`. Created `plugins/platforms/baremetal/schema.json`. Both `acm-asc.yaml.tpl` and ACM plugin manifests read from `plugins.baremetal.ironic`.
+
+### Prompt 98
+> ugh, not operator, that would configure acm, this is a workload managed by acm as a platform automation provider
+
+Corrected plugin home: reverted ACM operator schema changes, moved all three provisioning fields to `plugins.baremetal.ironic` (the correct platform plugin path, not the ACM operator plugin). Schema at `plugins/platforms/baremetal/schema.json`.
+
+### Prompt 99
+> what is the status on the ironic work to cleanup disks and inspect?
+
+Status check — all ironic work complete, 186 tests passing, nothing committed yet.
+
+### Prompt 100
+> There should not be a host specific ironic option, it should be part of the plugins
+
+Removed `host.ironic` entirely from schema and all templates. Moved `hardwareInspection` and `diskCleanup` to `plugins.baremetal.ironic` alongside the three cluster-level provisioning flags. All five Ironic settings now under `plugins.baremetal.ironic`. Starter files cleaned up. Tests updated to pass ironic flags via plugin_overrides. 186 tests passed.
+
+### Prompt 101
+> ship it
+
+Released v3.22.13. All five Ironic flags consolidated under `plugins.baremetal.ironic`.
+186 tests passed. Verified: `plugins.baremetal.ironic.{hardwareInspection,diskCleanup}: false` renders `inspect.metal3.io: disabled` and `automatedCleaningMode: disabled`; defaults render `metadata` / no annotation.

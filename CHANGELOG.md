@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.13 (2026-04-24)
+- Ironic flags (`hardwareInspection`, `diskCleanup`) moved from per-host to `plugins.baremetal.ironic` — cluster-level defaults, no per-host override
+- Cluster-level Ironic provisioning settings (`provisioningNetwork`, `watchAllNamespaces`, `disableVirtualMediaTLS`) moved from hardcoded values in `acm-asc.yaml.tpl` to `plugins.baremetal.ironic` — configurable via the baremetal platform plugin
+- New `plugins/platforms/baremetal/schema.json` exposes all five Ironic flags in the editor UI as checkboxes
+- ACM plugin `provisioning` section no longer owns Ironic settings; `acm-asc.yaml.tpl` and ACM manifests both read from `plugins.baremetal.ironic`
+
 ## v3.22.12 (2026-04-23)
 - automatedCleaningMode: metadata is now the consistent default across all templates; disabled skips cleaning to preserve disk contents
 - Schema: description clarifies metadata wipes partition tables, disabled preserves disks

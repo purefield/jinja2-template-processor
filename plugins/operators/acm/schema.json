@@ -88,16 +88,8 @@
     "provisioning": {
       "title": "Provisioning",
       "type": "object",
-      "description": "Bare metal provisioning configuration (Ironic). Controls which namespaces can provision bare metal hosts.",
+      "description": "Assisted-service provisioning configuration. Use plugins.baremetal.ironic for Ironic/Metal3 settings.",
       "x-doc-url": "https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/clusters/cluster_mce_overview#enable-cim",
-      "properties": {
-        "watchAllNamespaces": {
-          "title": "Watch All Namespaces",
-          "type": "boolean",
-          "default": true,
-          "description": "Allow bare metal provisioning (BareMetalHost resources) in all namespaces, not just openshift-machine-api."
-        }
-      },
       "additionalProperties": true
     }
   },

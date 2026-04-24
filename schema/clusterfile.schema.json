@@ -1271,30 +1271,6 @@
               "$ref": "#/$defs/machineSpec",
               "description": "Per-host resource override. Takes precedence over cluster.machine role defaults."
             },
-            "automatedCleaningMode": {
-              "title": "Automated Cleaning Mode",
-              "type": "string",
-              "enum": [
-                "metadata",
-                "disabled"
-              ],
-              "default": "metadata",
-              "description": "Ironic disk cleaning before provisioning. 'metadata' (default) wipes partition tables and disk signatures — safe default that prevents stale layouts from interfering. Set 'disabled' to skip cleaning entirely and preserve existing disk contents.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
-              "x-group": "Baremetal"
-            },
-            "ironicInspect": {
-              "title": "Ironic Inspect",
-              "type": "string",
-              "enum": [
-                "enabled",
-                "disabled"
-              ],
-              "default": "enabled",
-              "description": "Ironic hardware inspection mode. 'enabled' (default) omits the annotation — Metal3 runs full hardware inspection. 'disabled' emits inspect.metal3.io: disabled on the BareMetalHost, skipping inspection.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
-              "x-group": "Baremetal"
-            },
             "installerArgs": {
               "title": "Installer Arguments",
               "type": "string",

@@ -23,6 +23,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
+{%- set bmIronic = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
 {%- set enableDisconnected = cluster.disconnected is defined -%}
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}
@@ -283,7 +284,7 @@ items:
   {%- set hasExplicitIgnitionOverride = host.ignitionConfigOverride is defined -%}
   {%- set effectiveIgnitionOverride = host.ignitionConfigOverride if hasExplicitIgnitionOverride else generatedDiscoveryIgnitionOverride %}
   metadata:
-    annotations:{% if host.ironicInspect | default("enabled") == "disabled" %}
+    annotations:{% if not bmIronic.hardwareInspection | default(true) %}
       inspect.metal3.io: disabled{% endif %}{%- set allNodeLabels = ({"topology.kubernetes.io/zone": host.zone} if host.zone is defined else {}) | merge(host.nodeLabels | default({})) %}{% if allNodeLabels %}
       bmac.agent-install.openshift.io/node-labels: '{{ allNodeLabels | tojson }}'{% endif %}{% if hasExplicitIgnitionOverride or effectiveIgnitionOverride %}
       bmac.agent-install.openshift.io/ignition-config-overrides: '{{ effectiveIgnitionOverride | trim }}'{% endif %}
@@ -298,7 +299,7 @@ items:
       deviceName: {{ host.storage.os }}{% elif host.storage.os %}
     rootDeviceHints: {{ host.storage.os }}{% endif %}{% if host.bootMode is defined %}
     bootMode: {{ host.bootMode }}{% endif %}
-    automatedCleaningMode: {{ host.automatedCleaningMode | default("metadata") }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
+    automatedCleaningMode: {{ 'metadata' if bmIronic.diskCleanup | default(true) else 'disabled' }}{% if host.bmc %}{%- set bmc %}{% include "includes/bmc.yaml.tpl" %}{% endset %}
     bmc:
 {{ bmc | indent(6, true) }}{% endif %}{% set bootNic = host.network.interfaces | selectattr('name', 'equalto', host.network.primary.ports[0]) | first %}
     bootMACAddress: {{ bootNic.macAddress }}

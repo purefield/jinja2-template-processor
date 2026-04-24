@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.12';
+let APP_VERSION = '3.22.13';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,15 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.13',
+    date: '2026-04-24',
+    changes: [
+      'Ironic flags (hardwareInspection, diskCleanup) moved from per-host to plugins.baremetal.ironic — cluster-level defaults',
+      'All five Ironic settings now in plugins.baremetal.ironic — previously three were hardcoded in templates',
+      'New plugins/platforms/baremetal schema: full editor UI with checkboxes and doc links for all Ironic flags'
+    ]
+  },
   {
     version: '3.22.12',
     date: '2026-04-23',

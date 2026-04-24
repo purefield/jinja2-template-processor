@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.22.13
+- **Ironic flags moved to plugin**: `hardwareInspection` and `diskCleanup` are no longer per-host fields — they now live under `plugins.baremetal.ironic` as cluster-level defaults
+- **All Ironic settings in one place**: `plugins.baremetal.ironic` now holds all five flags: `hardwareInspection`, `diskCleanup`, `provisioningNetwork`, `watchAllNamespaces`, `disableVirtualMediaTLS` — previously three were hardcoded in templates
+- **New schema**: `plugins.baremetal.ironic` is fully described in the editor with checkboxes and doc links
+
 ## 3.22.12
 - **automatedCleaningMode**: `metadata` is now the consistent default across all templates — Ironic wipes partition tables before provisioning by default; set `disabled` to skip cleaning and preserve disk contents
 

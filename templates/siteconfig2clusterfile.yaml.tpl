@@ -70,9 +70,7 @@ hosts:{% for node in s.nodes %}
       address: {{ node.bmcAddress }}
       username: admin
       password: bmc-password.txt{% endif %}{% if node.bootMode is defined %}
-    bootMode: {{ node.bootMode }}{% endif %}{% if node.automatedCleaningMode is defined %}
-    automatedCleaningMode: {{ node.automatedCleaningMode }}{% endif %}{% if node.ironicInspect is defined %}
-    ironicInspect: {{ node.ironicInspect }}{% endif %}{% if node.installerArgs is defined %}
+    bootMode: {{ node.bootMode }}{% endif %}{% if node.installerArgs is defined %}
     installerArgs: '{{ node.installerArgs }}'{% endif %}{% if node.ignitionConfigOverride is defined %}
     ignitionConfigOverride: '{{ node.ignitionConfigOverride }}'{% endif %}{% if node.nodeLabels is defined %}
     nodeLabels:{% for key, value in node.nodeLabels.items() %}

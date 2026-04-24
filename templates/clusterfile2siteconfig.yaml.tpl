@@ -17,6 +17,7 @@ relatedTemplates:
   - acm-ztp.yaml.tpl
 docs: https://github.com/stolostron/siteconfig
 -#}
+{%- set bmIronic = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
@@ -100,9 +101,9 @@ spec:
       bootMode: {{ host.bootMode }}{% endif %}{% if host.storage is defined and host.storage.os is defined %}{% if host.storage.os is string %}
       rootDeviceHints:
         deviceName: {{ host.storage.os }}{% else %}
-      rootDeviceHints: {{ host.storage.os }}{% endif %}{% endif %}{% if host.automatedCleaningMode is defined %}
-      automatedCleaningMode: {{ host.automatedCleaningMode }}{% endif %}{% if host.ironicInspect is defined %}
-      ironicInspect: {{ host.ironicInspect }}{% endif %}{% if host.installerArgs is defined %}
+      rootDeviceHints: {{ host.storage.os }}{% endif %}{% endif %}{% if bmIronic.diskCleanup is defined %}
+      automatedCleaningMode: {{ 'metadata' if bmIronic.diskCleanup else 'disabled' }}{% endif %}{% if bmIronic.hardwareInspection is defined %}
+      ironicInspect: {{ 'enabled' if bmIronic.hardwareInspection else 'disabled' }}{% endif %}{% if host.installerArgs is defined %}
       installerArgs: '{{ host.installerArgs }}'{% endif %}{% if host.ignitionConfigOverride is defined %}
       ignitionConfigOverride: '{{ host.ignitionConfigOverride }}'{% endif %}{% if host.nodeLabels is defined %}
       nodeLabels:{% for key, value in host.nodeLabels.items() %}
