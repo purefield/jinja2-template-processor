@@ -4255,3 +4255,8 @@ Investigated. Found: ALL `docs.openshift.com/container-platform/4.21/*` URLs red
 > 4.20 links were already broken, so fixing them is the only option. Create a csv file with urls we need. Name, description of key content, current url. I will take a stab at updating it for import. Then move on to the next issues. ship the work as is first, still broken, no regression.
 
 Decision: ship v3.22.17 as-is (no regression vs prior already-broken state), then produce CSV for hand-update of working `html-single` URLs. CSV deliverable: `schema/x-doc-urls.csv` with columns source_file, json_path, title, description, current_url, new_url (empty for user). To produce after this ship.
+
+### Prompt 117
+> commit and ship it
+
+Generated CSV + scripts for the docs.redhat.com html-single URL rewrite. Three new files: `schema/x-doc-urls.csv` (115 rows), `scripts/extract-doc-urls.py` (re-runnable extractor), `scripts/import-doc-urls.py` (CSV-to-schema importer with --dry-run and JSON validation). No app behavior change → no version bump, no container rebuild. Tooling-only commit, tagged `doc-urls-csv`, pushed.
