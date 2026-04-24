@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.22.15';
+let APP_VERSION = '3.22.16';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,13 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.22.16',
+    date: '2026-04-24',
+    changes: [
+      'Ironic split: plugins.baremetal.ironic.operator configures hub Metal3 (Provisioning CR); .host sets BareMetalHost defaults on managed clusters'
+    ]
+  },
   {
     version: '3.22.15',
     date: '2026-04-24',

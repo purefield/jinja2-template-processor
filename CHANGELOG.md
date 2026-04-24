@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.16 (2026-04-24)
+- `plugins.baremetal.ironic` split into `operator` (hub Metal3 Provisioning CR: provisioningNetwork, watchAllNamespaces, disableVirtualMediaTLS) and `host` (BareMetalHost defaults: inspection, automatedCleaningMode)
+
 ## v3.22.15 (2026-04-24)
 - Editor: Plugins → Platform now renders the Ironic form for baremetal (was showing "no configuration required")
 - Editor: Node Labels field now renders a key-value editor instead of an empty fieldset

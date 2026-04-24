@@ -26,7 +26,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 {%- set enableTPM = cluster.tpm | default(false) -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
-{%- set bmIronic = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
+{%- set bmIronic = (((plugins | default({})).baremetal | default({})).ironic | default({})).host | default({}) -%}
 {%- set disc = cluster.disconnected | default({}) -%}
 {%- set enableDisconnected = cluster.disconnected is defined -%}
 {%- set osImageHost = disc.osImageHost | default("") -%}

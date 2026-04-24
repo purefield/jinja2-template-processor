@@ -16,7 +16,7 @@ docs: https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_manageme
 -#}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
-{%- set bm = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
+{%- set bm = (((plugins | default({})).baremetal | default({})).ironic | default({})).operator | default({}) -%}
 apiVersion: v1
 kind: List
 metadata:

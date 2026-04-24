@@ -23,7 +23,7 @@ docs: https://github.com/openshift-assisted/cluster-api-provider-openshift-assis
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set enableTang = cluster.diskEncryption is defined and cluster.diskEncryption.type | default("none") == "tang" -%}
 {%- set isKubevirt = (plugins | default({})).kubevirt is defined -%}
-{%- set bmIronic = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
+{%- set bmIronic = (((plugins | default({})).baremetal | default({})).ironic | default({})).host | default({}) -%}
 {%- set enableDisconnected = cluster.disconnected is defined -%}
 {%- set hasMirrorRegistries = cluster.mirrors | default([]) | length > 0 -%}
 {%- set insecureMirrors = cluster.mirrors | default([]) | selectattr('insecure', 'defined') | selectattr('insecure') | list -%}

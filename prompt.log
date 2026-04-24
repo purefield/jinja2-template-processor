@@ -4188,3 +4188,19 @@ Fix 2: moved baremetal schema inline into `clusterfile.schema.json`; deleted sta
 
 Released v3.22.15. Baremetal plugin form + node labels KV editor.
 186 tests passed. Verified schema at `plugins.baremetal` with all five ironic fields visible in live editor.
+
+### Prompt 107
+> some components of Ironic are for the hub configuration and some platform consumption, they should be clear to users. How can we separate the two. Plan a clean separation.
+
+Planned split: hub operator config (provisioningNetwork, watchAllNamespaces, disableVirtualMediaTLS) → `ironic.operator`; managed cluster BareMetalHost defaults (inspection, automatedCleaningMode) → `ironic.host`.
+
+### Prompt 108
+> do it
+
+Implemented split across schema and five templates. Hub templates (acm-asc, acm/manifests) read `bmIronic.operator.*`; cluster templates (acm-ztp, acm-capi-m3, clusterfile2siteconfig) read `bmIronic.host.*`. Tests updated. 186 passed. Render verified.
+
+### Prompt 109
+> ship it
+
+Released v3.22.16. Ironic operator/host split.
+186 tests passed. Verified both sides render independently from correct sub-objects.

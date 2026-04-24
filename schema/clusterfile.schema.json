@@ -2303,42 +2303,57 @@
             "ironic": {
               "title": "Ironic",
               "type": "object",
-              "description": "Ironic/Metal3 provisioning operator settings. Applied via the Provisioning CR on the hub cluster.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
+              "description": "Ironic/Metal3 settings split by concern: operator configures the hub, host sets BareMetalHost defaults on managed clusters.",
               "properties": {
-                "provisioningNetwork": {
-                  "title": "Provisioning Network",
-                  "type": "string",
-                  "default": "Disabled",
-                  "description": "Ironic provisioning network mode. Disabled uses the machine network — no dedicated provisioning VLAN required."
+                "operator": {
+                  "title": "Operator",
+                  "type": "object",
+                  "description": "Metal3/Ironic operator configuration on the ACM hub. Applied via the Provisioning CR.",
+                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
+                  "properties": {
+                    "provisioningNetwork": {
+                      "title": "Provisioning Network",
+                      "type": "string",
+                      "default": "Disabled",
+                      "description": "Ironic provisioning network mode. Disabled uses the machine network — no dedicated provisioning VLAN required."
+                    },
+                    "watchAllNamespaces": {
+                      "title": "Watch All Namespaces",
+                      "type": "boolean",
+                      "default": true,
+                      "description": "Allow BareMetalHost provisioning in all namespaces, not just openshift-machine-api."
+                    },
+                    "disableVirtualMediaTLS": {
+                      "title": "Disable Virtual Media TLS",
+                      "type": "boolean",
+                      "default": true,
+                      "description": "Disable TLS for Ironic virtual media. Required for BMC vendors (e.g. Supermicro) that cannot validate self-signed certificates.",
+                      "x-doc-url": "https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites"
+                    }
+                  },
+                  "additionalProperties": false
                 },
-                "watchAllNamespaces": {
-                  "title": "Watch All Namespaces",
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Allow BareMetalHost provisioning in all namespaces, not just openshift-machine-api."
-                },
-                "disableVirtualMediaTLS": {
-                  "title": "Disable Virtual Media TLS",
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Disable TLS for Ironic virtual media. Required for BMC vendors (e.g. Supermicro) that cannot validate self-signed certificates.",
-                  "x-doc-url": "https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites"
-                },
-                "inspection": {
-                  "title": "Inspection",
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Run Ironic hardware inspection before provisioning (inspect.metal3.io). Set false to skip — faster provisioning but no hardware inventory.",
-                  "x-doc-url": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"
-                },
-                "automatedCleaningMode": {
-                  "title": "Automated Cleaning Mode",
-                  "type": "string",
-                  "enum": ["metadata", "disabled"],
-                  "default": "metadata",
-                  "description": "Ironic automated cleaning mode (automatedCleaningMode on BareMetalHost). metadata wipes partition tables before provisioning; disabled preserves existing disk contents.",
-                  "x-doc-url": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer"
+                "host": {
+                  "title": "Host",
+                  "type": "object",
+                  "description": "Default BareMetalHost provisioning behavior applied to all managed cluster hosts.",
+                  "x-doc-url": "https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/installing_an_on-premise_cluster_with_the_agent-based_installer/preparing-to-install-with-agent-based-installer#root-device-hints_preparing-to-install-with-agent-based-installer",
+                  "properties": {
+                    "inspection": {
+                      "title": "Inspection",
+                      "type": "boolean",
+                      "default": true,
+                      "description": "Run Ironic hardware inspection before provisioning (inspect.metal3.io). Set false to skip — faster provisioning but no hardware inventory."
+                    },
+                    "automatedCleaningMode": {
+                      "title": "Automated Cleaning Mode",
+                      "type": "string",
+                      "enum": ["metadata", "disabled"],
+                      "default": "metadata",
+                      "description": "Ironic automated cleaning mode (automatedCleaningMode on BareMetalHost). metadata wipes partition tables before provisioning; disabled preserves existing disk contents."
+                    }
+                  },
+                  "additionalProperties": false
                 }
               },
               "additionalProperties": false

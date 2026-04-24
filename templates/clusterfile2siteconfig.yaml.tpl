@@ -17,7 +17,7 @@ relatedTemplates:
   - acm-ztp.yaml.tpl
 docs: https://github.com/stolostron/siteconfig
 -#}
-{%- set bmIronic = ((plugins | default({})).baremetal | default({})).ironic | default({}) -%}
+{%- set bmIronic = (((plugins | default({})).baremetal | default({})).ironic | default({})).host | default({}) -%}
 {%- set controlCount = hosts.values() | selectattr('role', 'equalto', 'control') | list | length -%}
 {%- set workerCount  = hosts.values() | selectattr('role', 'equalto', 'worker')  | list | length -%}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}

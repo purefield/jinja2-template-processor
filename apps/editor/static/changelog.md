@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.16
+- **Ironic split**: `plugins.baremetal.ironic.operator` configures the Metal3 hub operator (Provisioning CR); `plugins.baremetal.ironic.host` sets BareMetalHost defaults on managed clusters
+
 ## 3.22.15
 - **Baremetal plugin form**: Plugins → Platform now shows the full Ironic configuration form for baremetal clusters instead of "no configuration required"
 - **Node Labels editor**: Host node labels now render as a key-value editor with add/remove rows

@@ -3,7 +3,7 @@
 {%- set mch = acm.multiClusterHub | default({}) -%}
 {%- set asc = acm.agentServiceConfig | default({}) -%}
 {%- set prov = acm.provisioning | default({}) -%}
-{%- set bm = (plugins.baremetal | default({})).ironic | default({}) -%}
+{%- set bm = ((plugins.baremetal | default({})).ironic | default({})).operator | default({}) -%}
 {%- set imageArch = cluster.arch | default("x86_64", true) -%}
 {%- set majorMinor = cluster.version.split('.')[:2] | join('.') -%}
 {%- set rhcosPath = "pre-release/" + cluster.version if "-" in cluster.version else majorMinor + "/latest" -%}
