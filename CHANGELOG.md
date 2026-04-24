@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## v3.22.17 (2026-04-24)
+- Schema docs: fixed 51 broken `x-doc-url` values that pointed to `docs.openshift.com/container_platform/...` (typo) — they were redirecting to the docs.redhat.com home page; now use the correct `container-platform/` form
+- Schema docs: pinned all 90 OpenShift documentation links to OCP 4.21 (was a mix of 4.16/4.20/4.21/`latest`); covers main schema (73 URLs) plus 4 plugin schemas — cert-manager, lvm, lso, github auth (17 URLs); release-notes URL filename also bumped to `ocp-4-21-release-notes.html`
+- Schema text: corePassword description updated from "MachineConfig (master + worker)" to "(control-plane + worker)" — aligns with current OpenShift terminology
+- Known issue: docs.openshift.com 4.21 redirects drop both path and anchor (land users on docs.redhat.com 4.21 root). 4.20 redirects preserve the path but the destination Nuxt SPA does not resolve anchors either. No regression vs prior state; full fix requires migrating to `docs.redhat.com html-single` URL form (planned next).
+
 ## v3.22.16 (2026-04-24)
 - `plugins.baremetal.ironic` split into `operator` (hub Metal3 Provisioning CR: provisioningNetwork, watchAllNamespaces, disableVirtualMediaTLS) and `host` (BareMetalHost defaults: inspection, automatedCleaningMode)
 

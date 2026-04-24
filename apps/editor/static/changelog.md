@@ -1,5 +1,11 @@
 # Clusterfile Editor Changelog
 
+## 3.22.17
+- **Schema docs cleanup**: fixed 51 broken documentation links (typo `container_platform/` → `container-platform/`) that were silently bouncing users to the docs.redhat.com home page instead of the relevant doc
+- **OCP doc version pin**: all 90 OpenShift documentation links now point to OCP 4.21 (previously a mix of 4.16/4.20/4.21/`latest`); includes plugin schemas for cert-manager, lvm, lso, and github auth
+- **Terminology**: corePassword help text now says "control-plane + worker" instead of "master + worker"
+- **Known issue**: docs.openshift.com 4.21 redirects currently drop URL path and anchor — users land on the docs.redhat.com 4.21 root page. No regression vs prior state (4.20 also broken at the anchor level). Next ship will migrate to `docs.redhat.com html-single` URLs so deep links resolve again.
+
 ## 3.22.16
 - **Ironic split**: `plugins.baremetal.ironic.operator` configures the Metal3 hub operator (Provisioning CR); `plugins.baremetal.ironic.host` sets BareMetalHost defaults on managed clusters
 

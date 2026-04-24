@@ -2,7 +2,7 @@
   "title": "cert-manager Operator",
   "description": "TLS certificate automation. Install-and-go operator with no additional CRs needed for base install. Specify {} for all defaults.",
   "type": "object",
-  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/index.html",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/security/cert_manager_operator/index.html",
   "properties": {
     "enabled": {
       "title": "Enabled",
@@ -15,7 +15,7 @@
       "type": "string",
       "default": "stable-v1",
       "description": "OLM subscription channel (e.g. stable-v1).",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/security/cert_manager_operator/cert-manager-operator-install.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/security/cert_manager_operator/cert-manager-operator-install.html"
     },
     "approval": {
       "title": "Install Plan Approval",

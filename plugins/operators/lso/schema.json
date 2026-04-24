@@ -2,7 +2,7 @@
   "title": "Local Storage Operator (LSO)",
   "description": "Exposes local block devices as PVs via LocalVolumeSet. Provides StorageClass for ODF on bare-metal/KubeVirt nodes. Specify {} for all defaults.",
   "type": "object",
-  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html",
   "properties": {
     "enabled": {
       "title": "Enabled",
@@ -15,7 +15,7 @@
       "type": "string",
       "default": "stable",
       "description": "OLM subscription channel (e.g. stable, stable-4.18).",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-storage-install_local-storage-operator"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-storage-install_local-storage-operator"
     },
     "approval": {
       "title": "Install Plan Approval",
@@ -38,7 +38,7 @@
       "type": "string",
       "default": "local-block",
       "description": "Name of the StorageClass created by the LocalVolumeSet. Referenced by ODF StorageCluster as the underlying block PVC class.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
     },
     "volumeMode": {
       "title": "Volume Mode",
@@ -49,7 +49,7 @@
       ],
       "default": "Block",
       "description": "PV volume mode. Block for ODF/Ceph raw device access; Filesystem for general-purpose file storage.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
     },
     "fsType": {
       "title": "Filesystem Type",
@@ -65,7 +65,7 @@
       "title": "Device Inclusion Spec",
       "type": "object",
       "description": "Filter which local devices the operator should discover and provision. Omit to use all available block devices.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator",
       "properties": {
         "deviceTypes": {
           "title": "Device Types",
@@ -90,7 +90,7 @@
       "title": "Node Selector",
       "type": "object",
       "description": "Label selector for nodes with local disks. Defaults to ODF storage label: cluster.ocs.openshift.io/openshift-storage.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-local-volume.html#local-volume-cr_local-storage-operator"
     }
   },
   "additionalProperties": true

@@ -196,7 +196,7 @@
           "minLength": 1,
           "description": "Path to file containing Red Hat pull secret JSON for registry authentication.",
           "x-is-file": true,
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-obtaining-installer_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-obtaining-installer_installing-bare-metal"
         }
       },
       "required": [
@@ -233,14 +233,14 @@
             }
           ],
           "description": "OpenShift release version to install.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/release_notes/ocp-4-20-release-notes.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/release_notes/ocp-4-21-release-notes.html"
         },
         "name": {
           "title": "Cluster Name",
           "x-group": "Basics",
           "$ref": "#/$defs/dnsLabel",
           "description": "DNS-compatible cluster name (lowercase, hyphens allowed, max 63 chars).",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configuration-parameters_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-configuration-parameters_installing-bare-metal"
         },
         "location": {
           "title": "Cluster Location",
@@ -261,7 +261,7 @@
           },
           "minItems": 1,
           "description": "SSH public keys for node access (OpenSSH format).",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#ssh-agent-using_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#ssh-agent-using_installing-bare-metal"
         },
         "manifests": {
           "title": "Manifests",
@@ -294,7 +294,7 @@
             "additionalProperties": true
           },
           "description": "Extra Kubernetes manifests to apply during installation.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-user-infra-generate-k8s-manifest-ignition_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-user-infra-generate-k8s-manifest-ignition_installing-bare-metal"
         },
         "mirrors": {
           "title": "Image Mirrors",
@@ -337,7 +337,7 @@
             "additionalProperties": true
           },
           "description": "Registry mirrors for disconnected installations.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/installing-mirroring-disconnected.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/disconnected_install/installing-mirroring-disconnected.html"
         },
         "disconnected": {
           "title": "Disconnected",
@@ -345,7 +345,7 @@
           "x-group-collapsed": true,
           "type": "object",
           "description": "Air-gapped cluster configuration. Presence of this key enables disconnected mode: disables default OperatorHub sources and skips internet-dependent sync jobs.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/disconnected_install/index-disconnected.html",
           "properties": {
             "osImageHost": {
               "title": "RHCOS Mirror Host",
@@ -361,7 +361,7 @@
           "type": "string",
           "pattern": "^sha256:[a-f0-9]{64}$",
           "description": "SHA256 digest of the release image. Required for disconnected installs where IDMS/ICSP only trigger on digest pulls. Get with: oc adm release info quay.io/openshift-release-dev/ocp-release:<version>-<arch>",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/index-disconnected.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/disconnected_install/index-disconnected.html"
         },
         "catalogSources": {
           "title": "Catalog Sources",
@@ -403,7 +403,7 @@
             "additionalProperties": true
           },
           "description": "Custom operator catalog sources for disconnected installations. Requires cluster.disconnected: true.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/disconnected_install/installing-mirroring-disconnected.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/disconnected_install/installing-mirroring-disconnected.html"
         },
         "platform": {
           "title": "Platform",
@@ -432,7 +432,7 @@
             }
           ],
           "description": "Target infrastructure platform for the cluster.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/index.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/index.html"
         },
         "arch": {
           "title": "Architecture",
@@ -446,7 +446,7 @@
           ],
           "default": "x86_64",
           "description": "CPU architecture.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
         },
         "machine": {
           "title": "Machine Resources",
@@ -473,7 +473,7 @@
           "type": "boolean",
           "default": false,
           "description": "Enable FIPS 140-2/140-3 cryptographic module validation on all cluster nodes and control plane components.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-fips.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/install_config/installing-fips.html"
         },
         "tpm": {
           "title": "TPM Disk Encryption",
@@ -482,7 +482,7 @@
           "type": "boolean",
           "default": false,
           "description": "Enable LUKS disk encryption with TPM 2.0 on the provisioned cluster. On virtual platforms (kubevirt), a persistent vTPM device is automatically added to VMs.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html#installation-special-config-encrypt-disk_installing-customizing"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/install_config/installing-customizing.html#installation-special-config-encrypt-disk_installing-customizing"
         },
         "clusterType": {
           "title": "Cluster Type",
@@ -494,7 +494,7 @@
             "HighlyAvailableArbiter"
           ],
           "description": "Cluster topology. Derived from host count \u2014 do not set unless using HighlyAvailableArbiter. 1 control = SNO, 3+ controls = HighlyAvailable.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html"
         },
         "cpuPartitioningMode": {
           "title": "CPU Partitioning",
@@ -507,7 +507,7 @@
           ],
           "default": "None",
           "description": "Workload partitioning mode. AllNodes enables management workload isolation on all nodes (typically for SNO).",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/scalability_and_performance/ztp_far_edge/ztp-reference-cluster-configuration-for-vdu.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/scalability_and_performance/ztp_far_edge/ztp-reference-cluster-configuration-for-vdu.html"
         },
         "diskEncryption": {
           "title": "Disk Encryption",
@@ -552,16 +552,16 @@
             }
           },
           "description": "Structured disk encryption configuration. Use cluster.tpm as shorthand for TPM2.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/install_config/installing-customizing.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/install_config/installing-customizing.html"
         },
         "corePassword": {
           "title": "Core User Password",
           "x-group": "Basics",
           "x-group-collapsed": true,
           "type": "string",
-          "description": "Path to file containing the plaintext password for the 'core' OS user. Automatically included as a MachineConfig (master + worker) when operators.yaml.tpl is rendered.",
+          "description": "Path to file containing the plaintext password for the 'core' OS user. Automatically included as a MachineConfig (control-plane + worker) when operators.yaml.tpl is rendered.",
           "x-is-file": true,
-          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/install_config/installing-customizing.html"
         },
         "installConfigOverrides": {
           "title": "Install Config Overrides",
@@ -585,7 +585,7 @@
       ],
       "additionalProperties": true,
       "description": "Cluster-level configuration for installation.",
-      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html"
     },
     "network": {
       "title": "Network",
@@ -599,7 +599,7 @@
           "x-group": "Basics",
           "$ref": "#/$defs/fqdn",
           "description": "Base DNS domain (e.g., example.com). Cannot be changed after installation.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "trustBundle": {
           "title": "Trust Bundle",
@@ -609,7 +609,7 @@
           "minLength": 1,
           "description": "Path to PEM-encoded CA certificate bundle for cluster-wide TLS trust.",
           "x-is-file": true,
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/configuring-a-custom-pki.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/configuring-a-custom-pki.html"
         },
         "proxy": {
           "title": "Proxy",
@@ -621,25 +621,25 @@
               "title": "HTTP Proxy",
               "$ref": "#/$defs/proxyUrl",
               "description": "HTTP proxy URL (http://host:port).",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             },
             "httpsProxy": {
               "title": "HTTPS Proxy",
               "$ref": "#/$defs/proxyUrl",
               "description": "HTTPS proxy URL (http://host:port or https://host:port).",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             },
             "noProxy": {
               "title": "No Proxy",
               "type": "string",
               "pattern": "^[a-zA-Z0-9.*,/-]+$",
               "description": "Comma-separated hosts/CIDRs that bypass the proxy.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
             }
           },
           "additionalProperties": true,
           "description": "Proxy settings for cluster egress traffic.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-configure-proxy_installing-bare-metal"
         },
         "ntpservers": {
           "title": "NTP Servers",
@@ -656,7 +656,7 @@
             ]
           },
           "description": "NTP server addresses (IP or FQDN) injected into the InfraEnv discovery image. Required for bare-metal installs where nodes cannot reach public NTP.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html"
         },
         "nameservers": {
           "title": "DNS Servers",
@@ -668,7 +668,7 @@
           "minItems": 1,
           "maxItems": 3,
           "description": "DNS server IPs (1-3 recommended).",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "dnsResolver": {
           "title": "DNS Resolver",
@@ -683,12 +683,12 @@
               },
               "maxItems": 6,
               "description": "DNS search domains (max 6).",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
             }
           },
           "additionalProperties": true,
           "description": "DNS resolver configuration.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal"
         },
         "primary": {
           "title": "Primary Network",
@@ -708,7 +708,7 @@
                 }
               ],
               "description": "Linux bonding mode (active-backup, balance-rr, etc.). Omit or set false for no bonding.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "vlan": {
               "title": "VLAN ID",
@@ -723,7 +723,7 @@
                 }
               ],
               "description": "VLAN tag for OCP node traffic (1-4094). Omit or set false for untagged.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "mtu": {
               "title": "MTU",
@@ -740,19 +740,19 @@
                 }
               ],
               "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/changing-cluster-network-mtu.html"
             },
             "gateway": {
               "title": "Gateway",
               "$ref": "#/$defs/ipAddress",
               "description": "Default gateway IP address.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "subnet": {
               "title": "Subnet",
               "$ref": "#/$defs/cidr",
               "description": "Network CIDR (e.g., 192.168.0.0/24).",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "vips": {
               "title": "Virtual IPs",
@@ -774,7 +774,7 @@
                     }
                   ],
                   "description": "Kubernetes API virtual IP (single or dual-stack array).",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
                 },
                 "apps": {
                   "title": "Ingress VIP",
@@ -792,7 +792,7 @@
                     }
                   ],
                   "description": "Application ingress virtual IP (single or dual-stack array).",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
                 }
               },
               "required": [
@@ -801,12 +801,12 @@
               ],
               "additionalProperties": true,
               "description": "Virtual IPs for API and ingress endpoints.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
           "description": "Primary network settings for cluster communication.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
         },
         "cluster": {
           "title": "Cluster Network",
@@ -819,7 +819,7 @@
               "$ref": "#/$defs/cidr",
               "default": "10.128.0.0/14",
               "description": "IP range for pod networking. Defaults to the OCP standard 10.128.0.0/14.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             },
             "hostPrefix": {
               "title": "Host Prefix",
@@ -828,12 +828,12 @@
               "maximum": 128,
               "default": 23,
               "description": "Subnet prefix per node (23=/512 pods, 24=/256 pods).",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
           "description": "Pod network CIDR and per-node allocation.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/cluster-network-operator.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/cluster-network-operator.html"
         },
         "service": {
           "title": "Service Network",
@@ -846,12 +846,12 @@
               "$ref": "#/$defs/cidr",
               "default": "172.30.0.0/16",
               "description": "IP range for Kubernetes Services. Defaults to the OCP standard 172.30.0.0/16.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-bare-metal-config-yaml_installing-bare-metal"
             }
           },
           "additionalProperties": true,
           "description": "Service network CIDR for ClusterIP allocation.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/cluster-network-operator.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/cluster-network-operator.html"
         },
         "secondary": {
           "title": "Secondary Networks",
@@ -868,7 +868,7 @@
                 "maxLength": 63,
                 "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
                 "description": "Logical name (e.g., storage, oob).",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/multiple_networks/understanding-multiple-networks.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/multiple_networks/understanding-multiple-networks.html"
               },
               "type": {
                 "title": "Network Type",
@@ -879,7 +879,7 @@
                   "vlan"
                 ],
                 "description": "NMState interface type.",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "state": {
                 "title": "State",
@@ -909,7 +909,7 @@
                   }
                 ],
                 "description": "VLAN tag (1-4094). Use false for untagged.",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "ports": {
                 "title": "Ports",
@@ -932,7 +932,7 @@
                   }
                 ],
                 "description": "Network CIDR or 'dhcp' for dynamic.",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "gateway": {
                 "title": "Gateway",
@@ -951,7 +951,7 @@
                   }
                 ],
                 "description": "Linux bonding mode. Use false to disable.",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
               },
               "mtu": {
                 "title": "MTU",
@@ -968,7 +968,7 @@
                   }
                 ],
                 "description": "Interface MTU. Select preset, enter custom (576-9216), or disable to omit.",
-                "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/changing-cluster-network-mtu.html"
+                "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/changing-cluster-network-mtu.html"
               }
             },
             "required": [
@@ -977,12 +977,12 @@
             "additionalProperties": true
           },
           "description": "Additional networks (storage, OOB, provisioning).",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/multiple_networks/understanding-multiple-networks.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/multiple_networks/understanding-multiple-networks.html"
         }
       },
       "additionalProperties": true,
       "description": "Network configuration for cluster and node networking.",
-      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-network-user-infra_installing-bare-metal"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-network-user-infra_installing-bare-metal"
     },
     "hosts": {
       "title": "Hosts",
@@ -1001,7 +1001,7 @@
                 "worker",
                 "bootstrap"
               ],
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-requirements-user-infra_installing-bare-metal"
             },
             "storage": {
               "title": "Storage",
@@ -1122,7 +1122,7 @@
                   },
                   "minItems": 1,
                   "description": "Physical network interfaces on the host.",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
                 },
                 "primary": {
                   "title": "Primary",
@@ -1152,7 +1152,7 @@
               },
               "additionalProperties": true,
               "description": "Host-specific network configuration.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
             },
             "bmc": {
               "title": "BMC",
@@ -1173,7 +1173,7 @@
                     "other"
                   ],
                   "description": "BMC hardware vendor (iDRAC on Dell, iLO on HP/HPE, IPMI on others). Controls the Redfish driver: dell\u2192idrac-virtualmedia (iDRAC 9+) or redfish-virtualmedia (older), hp/hpe\u2192redfish-virtualmedia (iLO5; do not use +https \u2014 causes insert/eject loop), others\u2192redfish-virtualmedia.",
-                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
                 },
                 "version": {
                   "title": "Version",
@@ -1219,7 +1219,7 @@
                     }
                   ],
                   "description": "BMC endpoint (IP, FQDN, or protocol://host).",
-                  "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow"
                 },
                 "macAddress": {
                   "title": "MAC Address",
@@ -1235,7 +1235,7 @@
               },
               "additionalProperties": true,
               "description": "Baseboard Management Controller (BMC) — called iDRAC on Dell servers, iLO on HP/HPE, and IPMI/Redfish on most others.",
-              "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html#bmc-addressing_ipi-install-installation-workflow",
               "x-group": "Baremetal"
             },
             "zone": {
@@ -1243,7 +1243,7 @@
               "x-group": "Basics",
               "type": "string",
               "description": "Logical availability zone for this node. Injected as the 'topology.kubernetes.io/zone' node label \u2014 used by ODF rack awareness, scheduler topology constraints, and placement policies.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html"
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html"
             },
             "nodeLabels": {
               "title": "Node Labels",
@@ -1263,7 +1263,7 @@
               ],
               "default": "UEFI",
               "description": "Host boot mode for BareMetalHost provisioning.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
               "x-group": "Baremetal"
             },
             "machine": {
@@ -1275,14 +1275,14 @@
               "title": "Installer Arguments",
               "type": "string",
               "description": "Extra coreos-installer arguments passed to the assisted agent at install time (JSON array string, e.g. '[\"-n\"]'). Use for custom kernel arguments or disk selection.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_with_agent_based_installer/preparing-to-install-with-agent-based-installer.html",
               "x-group": "Baremetal"
             },
             "ignitionConfigOverride": {
               "title": "Ignition Config Override",
               "type": "string",
               "description": "JSON ignition config merged during discovery for this BareMetalHost. Overrides auto-generated mirror/registry config. Use sparingly \u2014 prefer cluster.mirrors for registry mirroring.",
-              "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/install_config/installing-customizing.html",
+              "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/install_config/installing-customizing.html",
               "x-group": "Baremetal"
             }
           },
@@ -1300,7 +1300,7 @@
         "description": "Hostname or FQDN."
       },
       "description": "Host inventory keyed by hostname (minimum 1 host required).",
-      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html"
     },
     "plugins": {
       "title": "Plugins",
@@ -1359,7 +1359,7 @@
           },
           "additionalProperties": true,
           "description": "Nutanix platform integration settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_nutanix/installing-nutanix-installer-provisioned.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_nutanix/installing-nutanix-installer-provisioned.html"
         },
         "vsphere": {
           "title": "vSphere",
@@ -1550,7 +1550,7 @@
           ],
           "additionalProperties": true,
           "description": "vSphere IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_vsphere/ipi/installing-vsphere-installer-provisioned.html"
         },
         "aws": {
           "title": "AWS",
@@ -1702,7 +1702,7 @@
           ],
           "additionalProperties": true,
           "description": "AWS IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_aws/ipi/installing-aws-customizations.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_aws/ipi/installing-aws-customizations.html"
         },
         "azure": {
           "title": "Azure",
@@ -1846,7 +1846,7 @@
           ],
           "additionalProperties": true,
           "description": "Azure IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_azure/ipi/installing-azure-customizations.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_azure/ipi/installing-azure-customizations.html"
         },
         "gcp": {
           "title": "GCP",
@@ -1963,7 +1963,7 @@
           ],
           "additionalProperties": true,
           "description": "GCP IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_gcp/ipi/installing-gcp-customizations.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_gcp/ipi/installing-gcp-customizations.html"
         },
         "openstack": {
           "title": "OpenStack",
@@ -2046,7 +2046,7 @@
           ],
           "additionalProperties": true,
           "description": "OpenStack IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_openstack/installing-openstack-installer-custom.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_openstack/installing-openstack-installer-custom.html"
         },
         "ibmcloud": {
           "title": "IBM Cloud",
@@ -2150,7 +2150,7 @@
           ],
           "additionalProperties": true,
           "description": "IBM Cloud IPI platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/installing_ibm_cloud/ipi/installing-ibm-cloud-customizations.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_ibm_cloud/ipi/installing-ibm-cloud-customizations.html"
         },
         "kubevirt": {
           "title": "KubeVirt",
@@ -2292,13 +2292,13 @@
           },
           "additionalProperties": true,
           "description": "KubeVirt / OpenShift Virtualization settings for VM-based cluster provisioning.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/4.20/virt/about_virt/about-virt.html"
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/virt/about_virt/about-virt.html"
         },
         "baremetal": {
           "title": "Baremetal",
           "type": "object",
           "description": "Baremetal platform settings.",
-          "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
+          "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
           "properties": {
             "ironic": {
               "title": "Ironic",
@@ -2309,7 +2309,7 @@
                   "title": "Operator",
                   "type": "object",
                   "description": "Metal3/Ironic operator configuration on the ACM hub. Applied via the Provisioning CR.",
-                  "x-doc-url": "https://docs.openshift.com/container-platform/latest/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
+                  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
                   "properties": {
                     "provisioningNetwork": {
                       "title": "Provisioning Network",
@@ -2328,7 +2328,7 @@
                       "type": "boolean",
                       "default": true,
                       "description": "Disable TLS for Ironic virtual media. Required for BMC vendors (e.g. Supermicro) that cannot validate self-signed certificates.",
-                      "x-doc-url": "https://docs.openshift.com/container-platform/4.16/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites"
+                      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/edge_computing/ztp-deploying-far-edge-sites.html#ztp-troubleshooting-ztp-gitops-supermicro-tls_ztp-deploying-far-edge-sites"
                     }
                   },
                   "additionalProperties": false
@@ -2382,7 +2382,7 @@
       },
       "additionalProperties": true,
       "description": "Platform-specific plugin configurations.",
-      "x-doc-url": "https://docs.openshift.com/container_platform/4.20/installing/index.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/index.html"
     }
   },
   "additionalProperties": false,

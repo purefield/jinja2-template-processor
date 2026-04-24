@@ -2,14 +2,14 @@
   "title": "GitHub OAuth",
   "description": "Configure one or more GitHub identity providers for OpenShift OAuth. Credentials are loaded from Vault by external secret name at apply time.",
   "type": "object",
-  "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/authentication/identity_providers/configuring-github-identity-provider.html",
   "properties": {
     "hostname": {
       "title": "Hostname",
       "type": "string",
       "default": "",
       "description": "Optional GitHub Enterprise hostname. Leave empty to use github.com.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/authentication/identity_providers/configuring-github-identity-provider.html"
     },
     "mappingMethod": {
       "title": "Mapping Method",
@@ -22,19 +22,19 @@
       ],
       "default": "claim",
       "description": "OpenShift identity mapping method. claim=use GitHub username directly, lookup=must pre-exist, generate=create unique name, add=link existing.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/authentication/identity_providers/configuring-github-identity-provider.html"
     },
     "secretNamespace": {
       "title": "Secret Namespace",
       "type": "string",
       "default": "openshift-config",
       "description": "Namespace where OAuth client secret objects are created. Should match the OAuth cluster configuration namespace.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/authentication/identity_providers/configuring-github-identity-provider.html"
     },
     "providers": {
       "title": "Providers",
       "description": "GitHub identity providers to render into OpenShift OAuth configuration. Each provider maps to one GitHub OAuth App.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/latest/authentication/identity_providers/configuring-github-identity-provider.html",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/authentication/identity_providers/configuring-github-identity-provider.html",
       "type": "array",
       "items": {
         "type": "object",

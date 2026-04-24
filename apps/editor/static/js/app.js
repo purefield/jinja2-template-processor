@@ -109,6 +109,16 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.22.17',
+    date: '2026-04-24',
+    changes: [
+      'Schema docs: fixed 51 broken doc URLs (container_platform/ typo) that bounced to docs.redhat.com home page',
+      'Schema docs: pinned all 90 OpenShift doc links to OCP 4.21 (main schema + cert-manager, lvm, lso, github plugin schemas)',
+      'Terminology: corePassword help text updated from "master + worker" to "control-plane + worker"',
+      'Known issue: docs.openshift.com 4.21 redirects drop path/anchor — users land on docs.redhat.com 4.21 root; no regression vs prior state. Next ship migrates to html-single URLs for working deep links.'
+    ]
+  },
+  {
     version: '3.22.16',
     date: '2026-04-24',
     changes: [

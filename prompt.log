@@ -4204,3 +4204,54 @@ Implemented split across schema and five templates. Hub templates (acm-asc, acm/
 
 Released v3.22.16. Ironic operator/host split.
 186 tests passed. Verified both sides render independently from correct sub-objects.
+
+### Prompt 110
+> review our project, find previous review asks and revisit with new model and considering latest changes. consider the switch for openshift from master to control-plane. Tune schema documentation and documentation links to be spot on. review guided tour to help build clusters without hand holding.
+
+Re-reviewed the project after v3.22.16 across three areas: master→control-plane terminology, schema documentation links, and the guided tour. Findings:
+- 51 broken doc URLs (typo `container_platform/` instead of `container-platform/`) silently redirected to docs.redhat.com home page
+- Doc URL version skew: 1× 4.16, 62× 4.20, 4× 4.21, 10× `latest`
+- 91 schema fields with weak/missing descriptions
+- master→control-plane: schema enum already `control`; only one description string remained ("MachineConfig (master + worker)" in corePassword)
+- Guided tour: a static 4-step welcome modal, not an interactive tour; new users land on `account: {}` empty skeleton
+
+User decisions: pin all OCP doc URLs to 4.21; tour rework = enhance modal + smart starter (no JS dependency).
+
+Plan written to ~/.claude/plans/fizzy-greeting-brook.md and approved. Three ships:
+- Ship 1: A1 fix broken URLs + A2 pin to 4.21 + C1 master→control-plane string
+- Ship 2: A3 specific anchors + B1 top-level descriptions + B2 explain 16 defaults
+- Ship 3: D1 smart starter + D2 task-oriented modal + D3 ready-to-render hint
+
+Implemented Ship 1 file changes (schema-only): A1 mass-fixed 51 URLs (`container_platform/` → `container-platform/`); A2 pinned all 73 OCP doc links to 4.21; A2 corrected release-notes filename `ocp-4-20-` → `ocp-4-21-`; C1 corePassword description "master + worker" → "control-plane + worker". 186 tests pass; spot-checked 6 representative 4.21 URLs return 200. Bumped APP_VERSION to 3.22.17 and updated CHANGELOG.md, apps/editor/static/changelog.md, apps/editor/static/js/app.js CHANGELOG array, and Containerfile header to v3.22.17. Holding for explicit ship-it confirmation before commit/tag/push/build/deploy.
+
+Local container test surfaced 17 stale URLs in 4 plugin schemas (cert-manager, lvm, lso, github auth) that the original audit had missed but get merged into the served schema. Pinned those to 4.21 too. Final served-schema verification: 0 broken `container_platform/` URLs, 0 stale 4.20/`latest` URLs, 90 URLs pinned to 4.21, "master + worker" gone. Container `quay.io/dds/clusterfile-editor:v3.22.17` built locally and running; `/healthz` reports 3.22.17.
+
+### Prompt 111
+> stage locally for review
+
+Staged 7 files (CHANGELOG.md, APP_VERSION, Containerfile, both changelogs, app.js, prompt.log, schema/clusterfile.schema.json) for review. No commit yet.
+
+### Prompt 112
+> restart the container to test
+
+Built `quay.io/dds/clusterfile-editor:v3.22.17` locally and restarted via `podman run --replace --network host`. `/healthz` reported `{"status":"ok","version":"3.22.17"}`. Container test surfaced 17 stale URLs in 4 plugin schemas (cert-manager, lvm, lso, github auth) that the original audit had missed but get merged into the served schema — pinned those to 4.21 too. Final served-schema verification: 0 broken `container_platform/`, 0 stale 4.20/`latest`, 90 URLs at 4.21, "master + worker" gone. Rebuilt and restarted; healthz still 3.22.17. Updated changelogs from 73 → 90.
+
+### Prompt 113
+> next fix, after this is done: ironic needs to show up for any cluster that installs acm hub, baremetal or not, however only the cluster installed and managed by acm needs the configurations. so the switch should be based on using acm for either, kind of template/install method dependent. This needs significant planing. hence for later.
+
+Logged future planning item to memory: gate ironic by ACM hub vs ACM-managed role, not by `cluster.platform`. `.operator` (Metal3 Provisioning CR) needed whenever the cluster installs ACM hub regardless of platform. `.host` (BareMetalHost defaults) needed only on managed clusters provisioned to baremetal. Memory file: `project_ironic_visibility_refactor.md`.
+
+### Prompt 114
+> next fix, after this is done, #2: the plugins are not clean, vsphere has for instance fields outside the grouping wrapper.
+
+Logged future planning item to memory: plugin schema grouping audit. vSphere example: `vcenter` is grouped (server, username, password, datacenter, defaultDatastore, cluster, folder, resourcePool) but VM-defaults siblings (network, diskGiB, memoryMiB, cpus, coresPerSocket, failureDomains) are not. Sweep needed across all plugin platform schemas. Memory file: `project_plugins_grouping_cleanup.md`.
+
+### Prompt 115
+> deep links are broken https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#installation-obtaining-installer_installing-bare-metal for instance
+
+Investigated. Found: ALL `docs.openshift.com/container-platform/4.21/*` URLs redirect to `docs.redhat.com/.../4.21` root — path AND anchor dropped. The 4.21 pin made deep links worse than the prior 4.20 state (4.20 redirects preserved path but anchor dies on docs.redhat.com Nuxt SPA). The only URL form where browser anchors actually resolve is `docs.redhat.com/.../{ver}/html-single/{book}/index#{anchor}` — confirmed `id="installation-obtaining-installer_installing-bare-metal"` exists in 4.21 html-single page.
+
+### Prompt 116
+> 4.20 links were already broken, so fixing them is the only option. Create a csv file with urls we need. Name, description of key content, current url. I will take a stab at updating it for import. Then move on to the next issues. ship the work as is first, still broken, no regression.
+
+Decision: ship v3.22.17 as-is (no regression vs prior already-broken state), then produce CSV for hand-update of working `html-single` URLs. CSV deliverable: `schema/x-doc-urls.csv` with columns source_file, json_path, title, description, current_url, new_url (empty for user). To produce after this ship.

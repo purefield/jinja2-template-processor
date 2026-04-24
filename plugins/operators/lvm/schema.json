@@ -2,7 +2,7 @@
   "title": "LVM Storage (LVMS)",
   "description": "Local volume management for SNO and compact clusters using TopoLVM. Specify {} for all defaults.",
   "type": "object",
-  "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html",
+  "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html",
   "properties": {
     "enabled": {
       "title": "Enabled",
@@ -15,7 +15,7 @@
       "type": "string",
       "default": "stable",
       "description": "OLM subscription channel (e.g. stable, stable-4.18).",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#install-lvms-operator-cli_logical-volume-manager-storage"
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#install-lvms-operator-cli_logical-volume-manager-storage"
     },
     "approval": {
       "title": "Install Plan Approval",
@@ -37,7 +37,7 @@
       "title": "Device Classes",
       "type": "array",
       "description": "LVM volume group device class configurations. Defaults to single vg1 using all available disks.",
-      "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
+      "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
       "items": {
         "type": "object",
         "properties": {
@@ -67,7 +67,7 @@
             "title": "Thin Pool Config",
             "type": "object",
             "description": "Thin provisioning configuration. Enables overprovisioning of storage capacity.",
-            "x-doc-url": "https://docs.openshift.com/container-platform/4.20/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
+            "x-doc-url": "https://docs.openshift.com/container-platform/4.21/storage/persistent_storage/persistent_storage_local/persistent-storage-using-lvms.html#lvms-creating-lvmcluster-cli_logical-volume-manager-storage",
             "properties": {
               "name": {
                 "title": "Pool Name",
