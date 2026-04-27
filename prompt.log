@@ -4291,3 +4291,18 @@ Added inline topology switcher row (SNO / Compact / Full HA / Blank buttons) so 
 D3 — Ready-to-render banner: new `renderReadyToRenderHint(container)` injected after `Form.renderSection()` for account/cluster/network/hosts/plugins. When `findPlaceholders().length` == 0 AND validation+renderWarnings == 0, prepends a green banner "Configuration looks complete — Render a template →" with one-click navigation to Templates section. Added `.ready-to-render-hint` CSS to app.css.
 
 186 tests pass. Container `quay.io/dds/clusterfile-editor:v3.22.19` built locally; `/healthz` reports 3.22.19; served JS verified to contain the SNO modal text, first-visit `loadStarter` path, and "Configuration looks complete" banner. Full browser interactive test (modal layout, banner appearance after editing) needs a fresh-profile browser load.
+
+### Prompt 121
+> ship it
+
+Working tree was clean and v3.22.19 was already on main with tags pushed. Reported that nothing new was outstanding and listed candidate next moves (CSV update, deferred items, browser test).
+
+### Prompt 122
+> how do I see the new modal
+
+Provided three ways to surface the welcome modal: open in private/incognito window for the full first-visit experience (modal + smart SNO starter), or `localStorage.clear()` / `localStorage.removeItem('CLUSTERFILE_TOUR_SHOWN')` in DevTools console. Also noted `State.resetTourShown()` helper is exposed.
+
+### Prompt 123
+> Add option to trigger guided (start over)
+
+Added a header **Tour** button (next to Feedback) that calls `showWelcomeTour()` directly. Modal text/buttons unchanged — closing without picking a topology preserves current document; picking a topology (SNO/Compact/Full/Blank) loads that starter and replaces current document. Bumped to v3.22.20, updated all changelog locations.

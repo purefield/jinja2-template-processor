@@ -1,5 +1,8 @@
 # Clusterfile Editor Changelog
 
+## 3.22.20
+- **Tour button in header**: opens the welcome modal at any time. Read the onboarding steps again, or click a topology button (SNO / Compact / Full HA / Blank) to swap the current document for that starter — i.e. "start over" in one click.
+
 ## 3.22.19
 - **Smart starter on first visit**: opens with a pre-filled SNO starter (placeholder values to replace) instead of an empty form — no more "blank page, where do I start?"
 - **Task-oriented welcome modal**: rewrites the 4-step intro to walk through what you're looking at → how to fill it → where to get help → where to render. Includes inline topology switcher (SNO / Compact / Full HA / Blank).

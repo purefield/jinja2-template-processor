@@ -109,6 +109,13 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.22.20',
+    date: '2026-04-27',
+    changes: [
+      'Header Tour button: re-opens the welcome modal at any time; topology buttons in the modal swap the current document for the chosen starter ("start over")'
+    ]
+  },
+  {
     version: '3.22.19',
     date: '2026-04-27',
     changes: [
@@ -1596,6 +1603,9 @@ function setupHeaderActions() {
 
   // Preview overview button
   document.getElementById('btn-preview-overview')?.addEventListener('click', previewClusterOverview);
+
+  // Tour button — re-show welcome modal at any time
+  document.getElementById('btn-tour')?.addEventListener('click', showWelcomeTour);
 
   // Feedback button
   document.getElementById('btn-feedback')?.addEventListener('click', openFeedback);
