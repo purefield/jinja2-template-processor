@@ -4273,3 +4273,21 @@ Implemented Ship 2 (B1+B2). Audit revised after schema reading: top-level `clust
 - B1: `<defs.operatorCommon>.approval` (Automatic vs Manual), `cluster.arch` (x86_64/aarch64/ppc64le/s390x with hardware match guidance), host `bootMode` (UEFI vs UEFISecureBoot vs legacy)
 - B2: AWS controlPlane+compute `type` (m6i.xlarge sizing), `rootVolume.size` (120 OCP minimum), `rootVolume.type` (gp3 rationale); Azure `type` (D8s_v3/D4s_v3 sizing), `osDisk.diskSizeGB` (1024/128 rationale), `osDisk.diskType` (Premium_LRS rationale); GCP `type` (n2-standard-4 sizing), `osDisk.diskSizeGB` (128 rationale), `osDisk.diskType` (pd-ssd rationale); IBM Cloud `type` (bx2-4x16 sizing), `bootVolume.size` (120 rationale)
 186 tests pass. JSON valid. 15 weak-desc fields remain — already-informative shorts (memory, sockets, ports, OpenStack flavors, vsphere VM specs); not worth chasing further. Bumped APP_VERSION 3.22.17 → 3.22.18, updated changelogs and Containerfile header.
+
+### Prompt 120
+> ship 3
+
+Implemented Ship 3 (D1+D2+D3): editor onboarding rework.
+
+D1 — Smart starter: `newDocument()` left untouched (still creates empty skeleton, used by Blank starter). Added shared `loadStarter(filename)` helper. First-load path (no saved doc, no TOUR_SHOWN) now calls `loadStarter('start-sno.clusterfile')` instead of `newDocument()`, so users land on a real SNO clusterfile with `<placeholder>` values to replace rather than an empty `account: {}` skeleton. New Document modal also refactored to use `loadStarter()` for code reuse.
+
+D2 — Task-oriented welcome modal: rewrote the 4-step intro from "what is this UI" to "what you're seeing + what to do":
+  1. You're looking at a starter SNO cluster — replace the <placeholder> values
+  2. Walk Account → Cluster → Network → Hosts; drive Todo + Validation badges to 0
+  3. Stuck? Click ? next to any field for help text and doc link
+  4. Done? Open Templates → choose acm-ztp / install-config → render → apply
+Added inline topology switcher row (SNO / Compact / Full HA / Blank buttons) so users can swap topology without leaving the modal. Buttons call `loadStarter()` then close.
+
+D3 — Ready-to-render banner: new `renderReadyToRenderHint(container)` injected after `Form.renderSection()` for account/cluster/network/hosts/plugins. When `findPlaceholders().length` == 0 AND validation+renderWarnings == 0, prepends a green banner "Configuration looks complete — Render a template →" with one-click navigation to Templates section. Added `.ready-to-render-hint` CSS to app.css.
+
+186 tests pass. Container `quay.io/dds/clusterfile-editor:v3.22.19` built locally; `/healthz` reports 3.22.19; served JS verified to contain the SNO modal text, first-visit `loadStarter` path, and "Configuration looks complete" banner. Full browser interactive test (modal layout, banner appearance after editing) needs a fresh-profile browser load.

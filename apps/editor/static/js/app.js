@@ -109,6 +109,15 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.22.19',
+    date: '2026-04-27',
+    changes: [
+      'Smart starter on first visit: opens with pre-filled SNO starter (placeholders to replace) instead of empty form',
+      'Task-oriented welcome modal: rewritten to walk through what you see → how to fill → where to get help → where to render; includes inline topology switcher (SNO/Compact/Full/Blank)',
+      'Ready-to-render banner: shown at top of form sections when Todo + Validation badges are both 0, with one-click jump to Templates'
+    ]
+  },
+  {
     version: '3.22.18',
     date: '2026-04-27',
     changes: [
@@ -1183,7 +1192,10 @@ async function init() {
       }, 100);
     }
   } else {
-    newDocument();
+    // First visit (or cleared storage): load SNO starter so the form is
+    // not an empty {} skeleton. The welcome modal lets users switch
+    // topology if they need Compact / Full / Blank instead.
+    loadStarter('start-sno.clusterfile').catch(() => newDocument());
   }
 
   // Show welcome tour on first visit
@@ -1775,12 +1787,36 @@ function renderCurrentSection() {
     renderAboutSection(container);
   } else {
     Form.renderSection(section, container);
+    renderReadyToRenderHint(container);
   }
 
   // Update badges
   updateValidationBadge();
   updateTodoBadge();
   updateChangesBadge();
+}
+
+/**
+ * Inject a small banner at the top of a form section when the document
+ * has zero placeholders and zero validation errors. Helps new users find
+ * the Templates section once they're done filling out the form.
+ */
+function renderReadyToRenderHint(container) {
+  const todoCount = findPlaceholders(State.state.currentObject || {}).length;
+  const validationCount = (State.state.validationErrors || []).length
+    + (State.state.renderWarnings || []).length;
+  if (todoCount > 0 || validationCount > 0) return;
+
+  const hint = document.createElement('div');
+  hint.className = 'ready-to-render-hint';
+  hint.innerHTML = `
+    <span>Configuration looks complete — no placeholders, no validation errors.</span>
+    <button class="btn btn--primary" id="ready-render-btn">Render a template →</button>
+  `;
+  container.insertBefore(hint, container.firstChild);
+  document.getElementById('ready-render-btn')?.addEventListener('click', () => {
+    navigateToSection('templates');
+  });
 }
 
 /**
@@ -3077,7 +3113,7 @@ function loadDocument(yamlText, filename = 'untitled.clusterfile', setAsBaseline
 }
 
 /**
- * Create new document
+ * Create new blank document (called from "Blank" starter button).
  */
 function newDocument() {
   const emptyDoc = `# Clusterfile
@@ -3088,6 +3124,25 @@ network:
 hosts: {}
 `;
   loadDocument(emptyDoc, 'untitled.clusterfile', true);
+}
+
+/**
+ * Load a starter clusterfile by filename. Used by both the welcome modal
+ * and the New Document modal so behavior is identical from either entry.
+ */
+async function loadStarter(filename) {
+  if (!filename) { newDocument(); return; }
+  let content;
+  if (isStandaloneMode) {
+    const sample = EMBEDDED_SAMPLES.find(s => s.filename === filename);
+    if (!sample) throw new Error(`Starter not found: ${filename}`);
+    content = sample.content;
+  } else {
+    const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(filename)}`);
+    if (!resp.ok) throw new Error(`Failed to load ${filename}`);
+    content = (await resp.json()).content;
+  }
+  loadDocument(content, 'untitled.clusterfile', true);
 }
 
 /**
@@ -3282,20 +3337,8 @@ function showNewDocumentModal() {
   overlay.querySelectorAll('.starter-choice').forEach(btn => {
     btn.addEventListener('click', async () => {
       closeModal();
-      const filename = btn.dataset.filename;
-      if (!filename) { newDocument(); return; }
       try {
-        let content;
-        if (isStandaloneMode) {
-          const sample = EMBEDDED_SAMPLES.find(s => s.filename === filename);
-          if (!sample) throw new Error('Starter not found');
-          content = sample.content;
-        } else {
-          const resp = await fetch(`${API_BASE}/api/samples/${encodeURIComponent(filename)}`);
-          if (!resp.ok) throw new Error('Failed to load starter');
-          content = (await resp.json()).content;
-        }
-        loadDocument(content, 'untitled.clusterfile', true);
+        await loadStarter(btn.dataset.filename);
       } catch (e) {
         showToast(`Error: ${e.message}`, 'error');
       }
@@ -3315,30 +3358,39 @@ function showWelcomeTour() {
       <div class="modal__body">
         <div class="tour-step">
           <span class="tour-step__number">1</span>
-          <div class="tour-step__title">Choose Your Mode</div>
+          <div class="tour-step__title">You're looking at a starter SNO cluster</div>
           <div class="tour-step__description">
-            Use <strong>Guided</strong> mode for form-based editing, or <strong>Advanced</strong> for direct YAML editing.
+            Replace the <code>&lt;placeholder&gt;</code> values in the form (or YAML pane) with your real cluster name, network, BMC details, etc. Want a different topology? Pick one below.
           </div>
         </div>
         <div class="tour-step">
           <span class="tour-step__number">2</span>
-          <div class="tour-step__title">Navigate Sections</div>
+          <div class="tour-step__title">Account → Cluster → Network → Hosts</div>
           <div class="tour-step__description">
-            Use the sidebar to navigate between Account, Cluster, Network, Hosts, and Plugins sections.
+            Use the sidebar to walk the sections. The <strong>Todo</strong> badge counts unfilled <code>&lt;placeholder&gt;</code> values; <strong>Validation</strong> shows schema errors. Drive both to 0.
           </div>
         </div>
         <div class="tour-step">
           <span class="tour-step__number">3</span>
-          <div class="tour-step__title">Get Help</div>
+          <div class="tour-step__title">Stuck on a field?</div>
           <div class="tour-step__description">
-            Click the <strong>?</strong> icon next to any field to see documentation and helpful links.
+            Click the <strong>?</strong> next to any field for help text and a doc link. The full <strong>Guide</strong> in the sidebar covers end-to-end deployment.
           </div>
         </div>
         <div class="tour-step">
           <span class="tour-step__number">4</span>
-          <div class="tour-step__title">Render Templates</div>
+          <div class="tour-step__title">Done editing?</div>
           <div class="tour-step__description">
-            Go to <strong>Templates</strong> to render install-config.yaml and other manifests.
+            Open <strong>Templates</strong>, choose a template (e.g. <code>acm-ztp</code> for ACM-managed baremetal, <code>install-config</code> for openshift-install), render, and apply.
+          </div>
+        </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--pf-global--BorderColor--100, #444);">
+          <div style="font-size:0.85em;opacity:0.75;margin-bottom:6px;">Start with a different topology:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn--secondary tour-starter" data-filename="start-sno.clusterfile" title="1 server — all roles, no HA">SNO</button>
+            <button class="btn btn--secondary tour-starter" data-filename="start-compact.clusterfile" title="3 servers — control-plane only, etcd HA, no workers">Compact (3-node)</button>
+            <button class="btn btn--secondary tour-starter" data-filename="start-full.clusterfile" title="3 control + N worker — production">Full HA</button>
+            <button class="btn btn--secondary tour-starter" data-filename="" title="Empty document">Blank</button>
           </div>
         </div>
       </div>
@@ -3365,6 +3417,16 @@ function showWelcomeTour() {
   overlay.querySelector('#tour-close').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closeModal();
+  });
+  overlay.querySelectorAll('.tour-starter').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await loadStarter(btn.dataset.filename);
+      } catch (e) {
+        showToast(`Error: ${e.message}`, 'error');
+      }
+      closeModal();
+    });
   });
 }
 

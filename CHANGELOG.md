@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 - Tooling: `scripts/extract-doc-urls.py` walks all schemas and emits `schema/x-doc-urls.csv` (115 rows × 6 columns); `scripts/import-doc-urls.py` reads the CSV and applies non-empty `new_url` values back into the source schema files (with `--dry-run` and JSON validation). Sets up the docs.redhat.com html-single URL rewrite — fill `new_url` column then re-import.
 
+## v3.22.19 (2026-04-27)
+- Editor onboarding: first-time visitors now land on a pre-filled SNO starter (`<placeholder>` values inline) instead of an empty `account: {}` skeleton — no more "blank page, where do I start?"
+- Welcome modal rewritten to be task-oriented: walks through "you're looking at a starter SNO cluster" → sidebar → ? help → Templates. Includes inline topology switcher (SNO / Compact / Full HA / Blank) so users can pick the right starter without leaving the modal.
+- Form pane now shows a "Configuration looks complete — Render a template →" banner when both the Todo and Validation badges hit 0, with one-click navigation to the Templates section.
+
 ## v3.22.18 (2026-04-27)
 - Schema descriptions: added "what + when to change" guidance to 24 platform-defaults fields. Now explained: AWS instance types and rootVolume size/type; Azure VM sizes and osDisk size/type (Premium_LRS rationale, control-plane vs worker sizing); GCP machine types and pd-ssd disk types; IBM Cloud bx2 profiles and bootVolume sizes; host bootMode (UEFI/UEFISecureBoot/legacy); cluster.arch (x86_64/aarch64/ppc64le/s390x); operator subscription approval (Automatic vs Manual).
 

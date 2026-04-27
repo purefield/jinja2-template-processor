@@ -1820,6 +1820,24 @@ html, body {
   margin-left: calc(24px + var(--pf-global--spacer--sm));
 }
 
+.ready-to-render-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pf-global--spacer--md);
+  padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md);
+  margin-bottom: var(--pf-global--spacer--md);
+  background: rgba(62, 134, 53, 0.12);
+  border: 1px solid rgba(62, 134, 53, 0.4);
+  border-radius: var(--pf-global--BorderRadius--sm);
+  color: var(--pf-global--Color--100);
+  font-size: var(--pf-global--FontSize--sm);
+}
+
+.ready-to-render-hint .btn {
+  flex-shrink: 0;
+}
+
 /* Empty State */
 .empty-state {
   display: flex;

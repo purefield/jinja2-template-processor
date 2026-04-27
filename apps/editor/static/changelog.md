@@ -1,5 +1,10 @@
 # Clusterfile Editor Changelog
 
+## 3.22.19
+- **Smart starter on first visit**: opens with a pre-filled SNO starter (placeholder values to replace) instead of an empty form — no more "blank page, where do I start?"
+- **Task-oriented welcome modal**: rewrites the 4-step intro to walk through what you're looking at → how to fill it → where to get help → where to render. Includes inline topology switcher (SNO / Compact / Full HA / Blank).
+- **"Ready to render" banner**: appears at the top of any form section once the Todo and Validation badges are both 0, with a one-click button to jump to Templates.
+
 ## 3.22.18
 - **Better field help**: 24 platform-defaults fields now explain *why* the default is what it is and *when* to change it — covers AWS/Azure/GCP/IBM instance types and disk types, host boot mode (UEFI vs UEFISecureBoot vs legacy), cluster architecture (x86_64 vs aarch64 vs ppc64le vs s390x), and operator subscription approval mode (Automatic vs Manual)
 - **Note**: Doc-link anchors still don't resolve at the target page — that fix is queued in the html-single URL migration
