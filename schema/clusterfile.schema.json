@@ -174,7 +174,8 @@
             "Automatic",
             "Manual"
           ],
-          "default": "Automatic"
+          "default": "Automatic",
+          "description": "OLM install plan approval mode. Automatic installs each new version on the channel as soon as it's published. Manual requires a cluster admin to approve every install plan — use this for change-controlled environments or to pin to a specific version."
         },
         "source": {
           "title": "Catalog Source",
@@ -445,7 +446,7 @@
             "s390x"
           ],
           "default": "x86_64",
-          "description": "CPU architecture.",
+          "description": "CPU architecture. Must match the target hardware. x86_64 for Intel/AMD servers (most common); aarch64 for ARM-based hardware (e.g., Ampere Altra); ppc64le for IBM Power; s390x for IBM Z mainframes. The release image is architecture-specific.",
           "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal/installing-bare-metal.html#supported-platforms-for-openshift-clusters_installing-bare-metal"
         },
         "machine": {
@@ -1262,7 +1263,7 @@
                 "legacy"
               ],
               "default": "UEFI",
-              "description": "Host boot mode for BareMetalHost provisioning.",
+              "description": "Host firmware boot mode. UEFI for most modern servers (default). UEFISecureBoot for FIPS or secure-boot environments — requires firmware support and signed bootloaders. legacy only for older BIOS-only hardware that cannot UEFI boot.",
               "x-doc-url": "https://docs.openshift.com/container-platform/4.21/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html",
               "x-group": "Baremetal"
             },
@@ -1613,7 +1614,7 @@
                   "title": "Instance Type",
                   "type": "string",
                   "default": "m6i.xlarge",
-                  "description": "EC2 instance type for control plane nodes."
+                  "description": "EC2 instance type for control plane nodes. m6i.xlarge (4 vCPU / 16 GiB) is the OCP minimum; scale to m6i.2xlarge or larger for production clusters >50 nodes or when running heavy operators (etcd compaction, ACM hub workloads)."
                 },
                 "zones": {
                   "title": "Availability Zones",
@@ -1631,7 +1632,7 @@
                       "type": "integer",
                       "minimum": 120,
                       "default": 120,
-                      "description": "Volume size in GiB."
+                      "description": "Root volume size in GiB. 120 is the OCP minimum; increase only if you have local-disk-heavy workloads (logs, image cache)."
                     },
                     "type": {
                       "type": "string",
@@ -1642,7 +1643,7 @@
                         "io2"
                       ],
                       "default": "gp3",
-                      "description": "EBS volume type."
+                      "description": "EBS volume type. gp3 balances cost, throughput, and IOPS for typical OCP workloads. Use io2 for high-IOPS databases (etcd is fine on gp3); gp2 only for legacy compatibility."
                     },
                     "iops": {
                       "type": "integer",
@@ -1662,7 +1663,7 @@
                   "title": "Instance Type",
                   "type": "string",
                   "default": "m6i.xlarge",
-                  "description": "EC2 instance type for worker nodes."
+                  "description": "EC2 instance type for worker nodes. m6i.xlarge (4 vCPU / 16 GiB) is balanced cost/performance; pick c6i.* for CPU-bound workloads, r6i.* for memory-heavy, or m6id.* if you need local NVMe."
                 },
                 "zones": {
                   "title": "Availability Zones",
@@ -1679,7 +1680,8 @@
                     "size": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 120
+                      "default": 120,
+                      "description": "Root volume size in GiB. 120 is the OCP minimum; increase if workers run local-disk-heavy workloads (logs, image cache, ephemeral PVs)."
                     },
                     "type": {
                       "type": "string",
@@ -1689,7 +1691,8 @@
                         "io1",
                         "io2"
                       ],
-                      "default": "gp3"
+                      "default": "gp3",
+                      "description": "EBS volume type. gp3 balances cost, throughput, and IOPS for typical OCP workloads. Use io2 for high-IOPS databases; gp2 only for legacy compatibility."
                     }
                   }
                 }
@@ -1773,7 +1776,7 @@
                 "type": {
                   "type": "string",
                   "default": "Standard_D8s_v3",
-                  "description": "VM size for control plane."
+                  "description": "VM size for control plane. Standard_D8s_v3 (8 vCPU / 32 GiB) is the recommended baseline; scale up (Standard_D16s_v3 or larger) for clusters >50 nodes or heavy operator workloads."
                 },
                 "zones": {
                   "type": "array",
@@ -1788,7 +1791,8 @@
                     "diskSizeGB": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 1024
+                      "default": 1024,
+                      "description": "OS disk size in GiB. 1024 is the OCP recommendation for control plane (etcd plus image cache headroom). Do not reduce below 120 (OCP minimum) without confirming etcd defrag headroom."
                     },
                     "diskType": {
                       "type": "string",
@@ -1797,7 +1801,8 @@
                         "StandardSSD_LRS",
                         "Standard_LRS"
                       ],
-                      "default": "Premium_LRS"
+                      "default": "Premium_LRS",
+                      "description": "Azure managed disk SKU. Premium_LRS (premium SSD) is recommended for control plane (etcd performance). StandardSSD_LRS for cost-sensitive deployments; avoid Standard_LRS (HDD) for control plane."
                     }
                   }
                 }
@@ -1810,7 +1815,7 @@
                 "type": {
                   "type": "string",
                   "default": "Standard_D4s_v3",
-                  "description": "VM size for workers."
+                  "description": "VM size for workers. Standard_D4s_v3 (4 vCPU / 16 GiB) is balanced cost/perf; pick Standard_F* for CPU-bound, Standard_E* for memory-heavy, Standard_L* for local NVMe."
                 },
                 "zones": {
                   "type": "array",
@@ -1824,7 +1829,8 @@
                     "diskSizeGB": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 128
+                      "default": 128,
+                      "description": "Worker OS disk size in GiB. 128 is sufficient for most workloads; increase if pods require local ephemeral storage (logs, image cache)."
                     },
                     "diskType": {
                       "type": "string",
@@ -1833,7 +1839,8 @@
                         "StandardSSD_LRS",
                         "Standard_LRS"
                       ],
-                      "default": "Premium_LRS"
+                      "default": "Premium_LRS",
+                      "description": "Azure managed disk SKU. Premium_LRS (premium SSD) is the safe default. StandardSSD_LRS for cost-sensitive workloads; Standard_LRS (HDD) only for archival/non-latency-sensitive workers."
                     }
                   }
                 }
@@ -1891,7 +1898,7 @@
                 "type": {
                   "type": "string",
                   "default": "n2-standard-4",
-                  "description": "Machine type for control plane."
+                  "description": "Machine type for control plane. n2-standard-4 (4 vCPU / 16 GiB) is the OCP minimum; scale to n2-standard-8 or larger for clusters >50 nodes or heavy operator workloads."
                 },
                 "zones": {
                   "type": "array",
@@ -1906,7 +1913,8 @@
                     "diskSizeGB": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 128
+                      "default": 128,
+                      "description": "Persistent disk size in GiB. 128 is sufficient for control plane (etcd plus headroom). Increase only if you observe etcd-defrag pressure."
                     },
                     "diskType": {
                       "type": "string",
@@ -1915,7 +1923,8 @@
                         "pd-standard",
                         "pd-balanced"
                       ],
-                      "default": "pd-ssd"
+                      "default": "pd-ssd",
+                      "description": "GCE persistent disk type. pd-ssd is recommended for control plane (etcd performance). pd-balanced for cost-sensitive deployments; avoid pd-standard (HDD) for control plane."
                     }
                   }
                 }
@@ -1927,7 +1936,8 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "default": "n2-standard-4"
+                  "default": "n2-standard-4",
+                  "description": "Machine type for workers. n2-standard-4 (4 vCPU / 16 GiB) is balanced cost/perf; pick c2-* for CPU-bound, m2-* for memory-heavy, n2-standard-8/16 for general scale-up."
                 },
                 "zones": {
                   "type": "array",
@@ -1941,7 +1951,8 @@
                     "diskSizeGB": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 128
+                      "default": 128,
+                      "description": "Worker persistent disk size in GiB. 128 is sufficient for most workloads; increase if pods require local ephemeral storage (logs, image cache)."
                     },
                     "diskType": {
                       "type": "string",
@@ -1950,7 +1961,8 @@
                         "pd-standard",
                         "pd-balanced"
                       ],
-                      "default": "pd-ssd"
+                      "default": "pd-ssd",
+                      "description": "GCE persistent disk type. pd-ssd is the safe default. pd-balanced for cost-sensitive workloads; pd-standard (HDD) only for archival/non-latency-sensitive workers."
                     }
                   }
                 }
@@ -2096,7 +2108,7 @@
                 "type": {
                   "type": "string",
                   "default": "bx2-4x16",
-                  "description": "Instance profile for control plane."
+                  "description": "Instance profile for control plane. bx2-4x16 (4 vCPU / 16 GiB, balanced family) is the OCP minimum; scale to bx2-8x32 for clusters >50 nodes or heavy operator workloads."
                 },
                 "zones": {
                   "type": "array",
@@ -2111,7 +2123,8 @@
                     "size": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 120
+                      "default": 120,
+                      "description": "Boot volume size in GiB. 120 is the OCP minimum; increase only if etcd-defrag pressure is observed."
                     }
                   }
                 }
@@ -2123,7 +2136,8 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "default": "bx2-4x16"
+                  "default": "bx2-4x16",
+                  "description": "Instance profile for workers. bx2-4x16 (4 vCPU / 16 GiB, balanced) is balanced cost/perf; pick cx2-* for CPU-bound, mx2-* for memory-heavy."
                 },
                 "zones": {
                   "type": "array",
@@ -2137,7 +2151,8 @@
                     "size": {
                       "type": "integer",
                       "minimum": 120,
-                      "default": 120
+                      "default": 120,
+                      "description": "Worker boot volume size in GiB. 120 is sufficient for most workloads; increase if pods require local ephemeral storage."
                     }
                   }
                 }

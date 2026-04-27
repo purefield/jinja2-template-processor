@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.22.18
+- **Better field help**: 24 platform-defaults fields now explain *why* the default is what it is and *when* to change it — covers AWS/Azure/GCP/IBM instance types and disk types, host boot mode (UEFI vs UEFISecureBoot vs legacy), cluster architecture (x86_64 vs aarch64 vs ppc64le vs s390x), and operator subscription approval mode (Automatic vs Manual)
+- **Note**: Doc-link anchors still don't resolve at the target page — that fix is queued in the html-single URL migration
+
 ## 3.22.17
 - **Schema docs cleanup**: fixed 51 broken documentation links (typo `container_platform/` → `container-platform/`) that were silently bouncing users to the docs.redhat.com home page instead of the relevant doc
 - **OCP doc version pin**: all 90 OpenShift documentation links now point to OCP 4.21 (previously a mix of 4.16/4.20/4.21/`latest`); includes plugin schemas for cert-manager, lvm, lso, and github auth

@@ -4260,3 +4260,16 @@ Decision: ship v3.22.17 as-is (no regression vs prior already-broken state), the
 > commit and ship it
 
 Generated CSV + scripts for the docs.redhat.com html-single URL rewrite. Three new files: `schema/x-doc-urls.csv` (115 rows), `scripts/extract-doc-urls.py` (re-runnable extractor), `scripts/import-doc-urls.py` (CSV-to-schema importer with --dry-run and JSON validation). No app behavior change → no version bump, no container rebuild. Tooling-only commit, tagged `doc-urls-csv`, pushed.
+
+### Prompt 118
+> what next?
+
+Reported remaining tracks: Ship 2 (descriptions, unblocked), Ship 3 (smart starter+modal), and deferred items (ironic visibility, plugin grouping). Recommended Ship 2 next — pure schema text, low risk, immediately improves field help.
+
+### Prompt 119
+> ship 2
+
+Implemented Ship 2 (B1+B2). Audit revised after schema reading: top-level `cluster.controlPlane`/`compute` don't exist (only per-platform), so worked on the actual gaps instead. 24 fields gained "what + when to change" descriptions:
+- B1: `<defs.operatorCommon>.approval` (Automatic vs Manual), `cluster.arch` (x86_64/aarch64/ppc64le/s390x with hardware match guidance), host `bootMode` (UEFI vs UEFISecureBoot vs legacy)
+- B2: AWS controlPlane+compute `type` (m6i.xlarge sizing), `rootVolume.size` (120 OCP minimum), `rootVolume.type` (gp3 rationale); Azure `type` (D8s_v3/D4s_v3 sizing), `osDisk.diskSizeGB` (1024/128 rationale), `osDisk.diskType` (Premium_LRS rationale); GCP `type` (n2-standard-4 sizing), `osDisk.diskSizeGB` (128 rationale), `osDisk.diskType` (pd-ssd rationale); IBM Cloud `type` (bx2-4x16 sizing), `bootVolume.size` (120 rationale)
+186 tests pass. JSON valid. 15 weak-desc fields remain — already-informative shorts (memory, sockets, ports, OpenStack flavors, vsphere VM specs); not worth chasing further. Bumped APP_VERSION 3.22.17 → 3.22.18, updated changelogs and Containerfile header.

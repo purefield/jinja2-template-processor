@@ -109,6 +109,14 @@ function getTemplateIcon(category) {
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
   {
+    version: '3.22.18',
+    date: '2026-04-27',
+    changes: [
+      'Schema descriptions: 24 platform-defaults fields now explain why the default is what it is and when to change it',
+      'Covers: AWS/Azure/GCP/IBM Cloud instance types + disk types, host bootMode (UEFI vs UEFISecureBoot vs legacy), cluster.arch (x86_64/aarch64/ppc64le/s390x), operator subscription approval (Automatic vs Manual)'
+    ]
+  },
+  {
     version: '3.22.17',
     date: '2026-04-24',
     changes: [

@@ -5,6 +5,9 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 - Tooling: `scripts/extract-doc-urls.py` walks all schemas and emits `schema/x-doc-urls.csv` (115 rows × 6 columns); `scripts/import-doc-urls.py` reads the CSV and applies non-empty `new_url` values back into the source schema files (with `--dry-run` and JSON validation). Sets up the docs.redhat.com html-single URL rewrite — fill `new_url` column then re-import.
 
+## v3.22.18 (2026-04-27)
+- Schema descriptions: added "what + when to change" guidance to 24 platform-defaults fields. Now explained: AWS instance types and rootVolume size/type; Azure VM sizes and osDisk size/type (Premium_LRS rationale, control-plane vs worker sizing); GCP machine types and pd-ssd disk types; IBM Cloud bx2 profiles and bootVolume sizes; host bootMode (UEFI/UEFISecureBoot/legacy); cluster.arch (x86_64/aarch64/ppc64le/s390x); operator subscription approval (Automatic vs Manual).
+
 ## v3.22.17 (2026-04-24)
 - Schema docs: fixed 51 broken `x-doc-url` values that pointed to `docs.openshift.com/container_platform/...` (typo) — they were redirecting to the docs.redhat.com home page; now use the correct `container-platform/` form
 - Schema docs: pinned all 90 OpenShift documentation links to OCP 4.21 (was a mix of 4.16/4.20/4.21/`latest`); covers main schema (73 URLs) plus 4 plugin schemas — cert-manager, lvm, lso, github auth (17 URLs); release-notes URL filename also bumped to `ocp-4-21-release-notes.html`
