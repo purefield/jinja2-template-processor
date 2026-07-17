@@ -1455,6 +1455,33 @@ class TestAcmZtpTemplate:
                 assert item['metadata']['name'] != 'tpm-disk-encryption', \
                     "ManifestWork must not be used for TPM — LUKS post-install wipes root disks"
 
+    def test_inline_manifest_content_in_extraclustermanifests(self, template_env):
+        """Test that inline manifest content appears in extraclustermanifests ConfigMap."""
+        data = self.acm_ztp_data(platform='baremetal')
+        data['cluster']['manifests'] = [{
+            'name': 'multipath',
+            'content': 'apiVersion: machineconfiguration.openshift.io/v1\nkind: MachineConfig\nmetadata:\n  name: 99-master-multipath'
+        }]
+        result = self.render_template(template_env, data)
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None, "extraclustermanifests ConfigMap not found"
+        assert '99-multipath.yaml' in cm['data']
+        assert 'kind: MachineConfig' in cm['data']['99-multipath.yaml']
+        assert '99-master-multipath' in cm['data']['99-multipath.yaml']
+
+    def test_inline_manifest_without_file_field(self, template_env):
+        """Test that manifest with content and no file field renders correctly."""
+        data = self.acm_ztp_data(platform='baremetal')
+        data['cluster']['manifests'] = [{
+            'name': 'udev-rules',
+            'content': 'apiVersion: machineconfiguration.openshift.io/v1\nkind: MachineConfig\nmetadata:\n  name: 99-worker-udev'
+        }]
+        result = self.render_template(template_env, data)
+        cm = self.get_configmap(result, 'extraclustermanifests')
+        assert cm is not None
+        assert '99-udev-rules.yaml' in cm['data']
+        assert '99-worker-udev' in cm['data']['99-udev-rules.yaml']
+
     def test_poc_banner_present(self, template_env):
         """Test that POC banner ManifestWork is always present in ZTP output."""
         data = self.acm_ztp_data(platform='baremetal', tpm=False)
