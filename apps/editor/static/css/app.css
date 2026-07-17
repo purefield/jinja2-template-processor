@@ -524,6 +524,15 @@ html, body {
   width: 120px;
 }
 
+.form-input--textarea {
+  font-family: var(--pf-global--FontFamily--monospace);
+  font-size: var(--pf-global--FontSize--sm);
+  resize: vertical;
+  min-height: 6em;
+  white-space: pre;
+  tab-size: 2;
+}
+
 /* File path inputs */
 .file-path-input {
   display: flex;

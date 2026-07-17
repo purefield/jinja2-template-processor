@@ -799,6 +799,22 @@ function renderStringField(path, key, schema, value) {
     return group;
   }
 
+  if (schema['x-display'] === 'textarea') {
+    const ta = document.createElement('textarea');
+    ta.className = 'form-input form-input--textarea';
+    ta.id = `field-${path.replace(/[.\[\]"]/g, '-')}`;
+    ta.value = value || '';
+    ta.rows = 8;
+    ta.placeholder = schema.default !== undefined ? String(schema.default) : '';
+    ta.spellcheck = false;
+    ta.addEventListener('input', () => {
+      updateFieldValue(path, ta.value, schema);
+    });
+    group.appendChild(ta);
+    addFieldDescription(group, schema);
+    return group;
+  }
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'form-input';
