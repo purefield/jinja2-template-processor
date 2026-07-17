@@ -265,6 +265,20 @@ def build_agent_iso(yaml_text: str, files_map: Optional[dict],
         joined = "; ".join(f"{f['filename']}: {f['error']}" for f in failures)
         raise RuntimeError(f"agent bundle render failures: {joined}")
 
+    # Inline manifests from cluster.manifests[].content → openshift/
+    for m in (cluster.get("manifests") or []):
+        content = m.get("content")
+        name = m.get("name")
+        if content and name:
+            rendered.append({
+                "filename": f"99-{name}.yaml",
+                "name": name,
+                "bundleOrder": 99,
+                "success": True,
+                "content": content,
+                "error": "",
+            })
+
     # Verify the rendered install-config still has placeholders the installer
     # will reject — give the user a clear error rather than a cryptic openshift-
     # install failure.
