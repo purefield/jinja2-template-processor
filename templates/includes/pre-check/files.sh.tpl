@@ -18,6 +18,7 @@ if [ -f "{{ network.trustBundle }}" ]; then
     openssl x509 -in "{{ network.trustBundle }}" -noout &>/dev/null && pass "{{ network.trustBundle }} valid PEM" || warn "{{ network.trustBundle }} invalid PEM"
 else
     warn "{{ network.trustBundle }} not found"
-fi{% endif %}{% for manifest in cluster.manifests | default([]) %}
-[ -f "{{ manifest.file }}" ] && pass "{{ manifest.file }} exists" || warn "{{ manifest.file }} not found"{% endfor %}{% for name, host in (hosts | default({})).items() if host.bmc is defined and host.bmc.password is defined %}
+fi{% endif %}{% for manifest in cluster.manifests | default([]) %}{% if manifest.file is defined %}
+[ -f "{{ manifest.file }}" ] && pass "{{ manifest.file }} exists" || warn "{{ manifest.file }} not found"{% else %}
+pass "{{ manifest.name }} (inline content)"{% endif %}{% endfor %}{% for name, host in (hosts | default({})).items() if host.bmc is defined and host.bmc.password is defined %}
 [ -f "{{ host.bmc.password }}" ] && pass "{{ host.bmc.password }} exists" || warn "{{ host.bmc.password }} not found ({{ name }})"{% endfor %}

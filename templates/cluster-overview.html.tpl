@@ -421,9 +421,9 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 <section>
   <h2>Additional Manifests</h2>
   <table>
-    <thead><tr><th>Name</th><th>File</th></tr></thead>
+    <thead><tr><th>Name</th><th>Source</th></tr></thead>
     <tbody>{% for manifest in cluster.manifests %}
-      <tr><td><code>{{ manifest.name }}</code></td><td>{{ manifest.file }}</td></tr>{% endfor %}
+      <tr><td><code>{{ manifest.name }}</code></td><td>{{ manifest.file if manifest.file is defined else "<em>inline</em>" }}</td></tr>{% endfor %}
     </tbody>
   </table>
 </section>
@@ -451,7 +451,7 @@ docs: https://docs.openshift.com/container-platform/latest/installing/index.html
 {%- for name, host in hosts.items() -%}
 {%- if host.bmc is defined and host.bmc.password is defined -%}{%- set _ = files.append({'purpose': 'BMC Password (' ~ name ~ ')', 'path': host.bmc.password}) -%}{%- endif -%}
 {%- endfor -%}
-{%- if cluster.manifests is defined -%}{%- for manifest in cluster.manifests -%}{%- set _ = files.append({'purpose': 'Manifest: ' ~ manifest.name, 'path': manifest.file}) -%}{%- endfor -%}{%- endif -%}
+{%- if cluster.manifests is defined -%}{%- for manifest in cluster.manifests -%}{%- if manifest.file is defined -%}{%- set _ = files.append({'purpose': 'Manifest: ' ~ manifest.name, 'path': manifest.file}) -%}{%- endif -%}{%- endfor -%}{%- endif -%}
 {%- if plugins is defined -%}
 {%- set platformPlugin = plugins[platform] | default({}) -%}
 {%- if platformPlugin.credentials is defined -%}{%- set _ = files.append({'purpose': 'Platform Credentials', 'path': platformPlugin.credentials}) -%}{%- endif -%}

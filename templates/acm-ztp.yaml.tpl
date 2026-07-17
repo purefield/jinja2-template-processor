@@ -109,7 +109,7 @@ items:
     namespace: {{ cluster.name }}
   data:{% if cluster.manifests %}{% for manifest in cluster.manifests %}
     99-{{ manifest.name }}.yaml: |
-{{ load_file(manifest.file )|safe|indent(8,true) }}{% endfor %}{% endif %}{% if enableTPM %}{%- set tpmManifest %}{% include "includes/tpm-disk-encryption.yaml.tpl" %}{% endset %}
+{{ (manifest.content if manifest.content is defined else load_file(manifest.file))|safe|indent(8,true) }}{% endfor %}{% endif %}{% if enableTPM %}{%- set tpmManifest %}{% include "includes/tpm-disk-encryption.yaml.tpl" %}{% endset %}
     99-tpm-disk-encryption.yaml: |
 {{ tpmManifest | indent(8, true) }}{% endif %}{% if enableTang %}{%- set tangManifest %}{% include "includes/tang-machineconfig.yaml.tpl" %}{% endset %}
     99-tang-disk-encryption.yaml: |
