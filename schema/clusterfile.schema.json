@@ -284,13 +284,18 @@
                 "title": "Manifest File",
                 "type": "string",
                 "minLength": 1,
-                "description": "Path to manifest file.",
+                "description": "Path to manifest file (alternative to inline content).",
                 "x-is-file": true
+              },
+              "content": {
+                "title": "Manifest Content",
+                "type": "string",
+                "description": "Inline YAML manifest (alternative to file path).",
+                "x-display": "textarea"
               }
             },
             "required": [
-              "name",
-              "file"
+              "name"
             ],
             "additionalProperties": true
           },
