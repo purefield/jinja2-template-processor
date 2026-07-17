@@ -3,4 +3,6 @@ CLAUDE.md
 __pycache__/
 # Runtime caches (openshift-install + RHCOS for the agent ISO builder)
 cache/
+# Quay.io robot account credentials
+robot.quayio.creds
 

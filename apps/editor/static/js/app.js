@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.25.0';
+let APP_VERSION = '3.25.1';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.25.1',
+    date: '2026-07-17',
+    changes: [
+      'Updated editor logo/icon SVG',
+      'Added quay.io robot account credentials to .gitignore'
+    ]
+  },
   {
     version: '3.25.0',
     date: '2026-07-17',

@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.25.1
+- Updated editor logo/icon SVG
+- Added quay.io robot account credentials to .gitignore
+
 ## 3.25.0
 - **Inline manifest content** — paste MachineConfig YAML (multipath, udev rules, boot-from-SAN configs) directly into the Manifests section instead of requiring a local file. Works in both agent ISO builds and ACM ZTP deployments.
 - New textarea form input for multiline YAML fields

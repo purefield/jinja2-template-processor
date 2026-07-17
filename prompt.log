@@ -4634,3 +4634,13 @@ Added inline manifest content support:
 > ship it
 
 Shipping v3.25.0: inline manifest content support. Version synced across all 5 locations (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). Tests: 188/188 pass. Tagged v3.25.0. Container built and deployed.
+
+### Prompt 501
+> continue. use new file for robot account for quay access
+
+Logged into quay.io using dds+claudecode robot account from robot.quayio.creds. Added robot.quayio.creds to .gitignore.
+
+### Prompt 502
+> finish our ship it for the latest release of clusterfile changes, use the skills and follow the established workflow
+
+Shipping v3.25.1: updated editor SVG logo, .gitignore housekeeping. Version synced across all 5 locations (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). Tests: 188/188 pass. Tagged v3.25.1. Container built and deployed to quay.io/dds/clusterfile-editor.
