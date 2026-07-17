@@ -4629,3 +4629,8 @@ Added inline manifest content support:
 - Tests: 2 new tests for inline manifest content in ZTP extraclustermanifests
 - Commits: schema change, form textarea support, ISO builder staging, template updates, tests
 - Tags: inline-manifest-content
+
+### Prompt 500
+> ship it
+
+Shipping v3.25.0: inline manifest content support. Version synced across all 5 locations (APP_VERSION, Containerfile, CHANGELOG.md, static/changelog.md, app.js). Tests: 188/188 pass. Tagged v3.25.0. Container built and deployed.

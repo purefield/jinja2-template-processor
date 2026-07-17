@@ -3,8 +3,10 @@
 All notable changes to this project are documented in this file.
 
 ## Unreleased
-- **Inline manifest content** — `cluster.manifests` items now accept a `content` field as an alternative to `file`. Online editor users can paste MachineConfig YAML (e.g. multipath, udev rules for boot-from-SAN) directly instead of requiring local files. Inline manifests are staged into the agent ISO `openshift/` directory and rendered into the ACM ZTP `extraclustermanifests` ConfigMap. New `x-display: textarea` schema annotation drives monospace multiline editing in the form UI.
 - Tooling: `scripts/extract-doc-urls.py` walks all schemas and emits `schema/x-doc-urls.csv` (115 rows × 6 columns); `scripts/import-doc-urls.py` reads the CSV and applies non-empty `new_url` values back into the source schema files (with `--dry-run` and JSON validation). Sets up the docs.redhat.com html-single URL rewrite — fill `new_url` column then re-import.
+
+## v3.25.0 (2026-07-17)
+- **Inline manifest content** — `cluster.manifests` items now accept a `content` field as an alternative to `file`. Online editor users can paste MachineConfig YAML (e.g. multipath, udev rules for boot-from-SAN) directly instead of requiring local files. Inline manifests are staged into the agent ISO `openshift/` directory and rendered into the ACM ZTP `extraclustermanifests` ConfigMap. New `x-display: textarea` schema annotation drives monospace multiline editing in the form UI.
 
 ## v3.24.7 (2026-05-08)
 - **CAPI NMStateConfig race condition fix** — NMStateConfigs moved before Cluster/OACP in the rendered List so they exist in the API server before CAPI controllers create InfraEnvs. Previously, InfraEnvs were created with `nmstateCount=0` (ISOs had no network config) because `oc apply` hadn't created the NMStateConfigs yet when the controller queried for them.

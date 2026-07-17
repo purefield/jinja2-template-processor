@@ -25,7 +25,7 @@ const isStandaloneMode = (
 const API_BASE = window.location.origin;
 
 // Application version (fetched from backend or embedded)
-let APP_VERSION = '3.24.7';
+let APP_VERSION = '3.25.0';
 
 // Embedded data for standalone mode (populated by build-standalone.sh)
 let EMBEDDED_SCHEMA = null;
@@ -108,6 +108,14 @@ function getTemplateIcon(category) {
 
 // Changelog data - KEEP THIS UPDATED with each release
 const CHANGELOG = [
+  {
+    version: '3.25.0',
+    date: '2026-07-17',
+    changes: [
+      'Inline manifest content: paste MachineConfig YAML (multipath, udev rules, boot-from-SAN configs) directly into the Manifests section instead of requiring a local file — works in both agent ISO builds and ACM ZTP deployments',
+      'New textarea form input for multiline YAML fields (x-display: textarea schema annotation)'
+    ]
+  },
   {
     version: '3.24.7',
     date: '2026-05-08',

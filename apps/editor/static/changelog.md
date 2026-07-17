@@ -1,5 +1,9 @@
 # Clusterfile Editor Changelog
 
+## 3.25.0
+- **Inline manifest content** — paste MachineConfig YAML (multipath, udev rules, boot-from-SAN configs) directly into the Manifests section instead of requiring a local file. Works in both agent ISO builds and ACM ZTP deployments.
+- New textarea form input for multiline YAML fields
+
 ## 3.24.7
 - **CAPI NMStateConfig race condition fix** — NMStateConfigs moved before Cluster/OACP in the rendered List so they exist before CAPI controllers create InfraEnvs (prevents nmstateCount=0 ISOs with no network config)
 - **BMH binder policy namespace fix** — Policy, Placement, PlacementBinding, ManagedClusterSetBinding moved from cluster namespace to `open-cluster-management` (ACM propagator was deleting them)
