@@ -4616,3 +4616,16 @@ Analyzed diagnostic output — confirmed nmstateCount: 0, BMH imageURL: NONE, bi
 > ship it
 
 Shipping v3.24.7: fix NMStateConfig race condition + binder policy namespace.
+
+### Prompt 499
+> I would like to guide a customer to use this project hosted on our acm hub cluster to build their bare metal workload cluster that requires custom manifests for the discovery iso for boot from san (multipath and udev). Our online version cannot combine external files like the CLI. We do not want secrets to be ever provided online but manifests might be ok. How can we provide a way to virtually add manifests? Also I would like to guide the user in a short email on how to use the tool.
+
+Added inline manifest content support:
+- Schema: `cluster.manifests[].content` field (x-display: textarea) as alternative to file path
+- Form UI: textarea rendering for `x-display: textarea` annotated fields
+- ISO builder: inline manifests staged as `99-<name>.yaml` in `openshift/` directory
+- ACM ZTP template: uses `manifest.content` when defined, falls back to `load_file(manifest.file)`
+- Templates: cluster-overview shows "inline" for content-based manifests, pre-check skips file-exists check
+- Tests: 2 new tests for inline manifest content in ZTP extraclustermanifests
+- Commits: schema change, form textarea support, ISO builder staging, template updates, tests
+- Tags: inline-manifest-content
